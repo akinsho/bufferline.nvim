@@ -1,33 +1,49 @@
 local api = vim.api
-local bufs = {}
+local tabline_highlight = '%#TabLine#'
+local tabline_fill = '%#TabLineFill#%T'
+local tabline_close = '%=%#TabLine#%999X'
 
 local function add_buffer(line, path)
   if path == "" then
-    return line
+    path = "[No Name]"
   end
+  local padding = " "
   local file_name = api.nvim_call_function('fnamemodify', {path, ":p:t"})
-  line = line..'%#TabLine#'..file_name
+  local devicons_loaded = api.nvim_call_function('exists', {'*WebDevIconsGetFileTypeSymbol'})
+  local icon = ""
+  if devicons_loaded then
+    -- parameters: a:1 (filename), a:2 (isDirectory)
+    icon = api.nvim_call_function('WebDevIconsGetFileTypeSymbol', {path})
+  end
+  line = line..padding..tabline_highlight..icon..padding..file_name..padding
   return line
+end
+
+-- The provided api nvim_is_buf_loaded filters out
+-- all hidden buffers
+local function is_valid(buffer)
+  local listed = api.nvim_buf_get_option(buffer, "buflisted")
+  local exists = api.nvim_buf_is_valid(buffer)
+  return listed and exists
 end
 
 local function bufferline()
   local buf_nums = api.nvim_list_bufs()
   local line = ""
   for _,v in pairs(buf_nums) do
-    if api.nvim_buf_is_loaded(v) then
+    if is_valid(v) then
       local name =  api.nvim_buf_get_name(v)
-      bufs[v] = name
       line = add_buffer(line, name)
     end
   end
-  print(vim.inspect(bufs))
-  line = line..'%#TabLineFill#%T'
-  line = line..'%=%#TabLine#%999Xclose'
-  print("Bufferline is: "..line)
+  local icon = api.nvim_get_var("bufferline_close_icon")
+  if icon == "" then
+    icon = "close"
+  end
+  line = line..tabline_fill
+  line = line..tabline_close..icon
   return line
 end
-
-bufferline()
 
 return {
   bufferline = bufferline
