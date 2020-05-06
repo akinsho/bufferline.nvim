@@ -1,7 +1,9 @@
 local api = vim.api
-local tabline_highlight = '%#TabLine#'
-local tabline_fill = '%#TabLineFill#%T'
-local tabline_close = '%=%#TabLine#%999X'
+local highlight = '%#BufferLine#'
+local selected_highlight = '%#BufferLineSelected#'
+local background = '%#BufferLineBackground#%T'
+local close = '%=%#BufferLine#%999X'
+local padding = " "
 
 local function safely_get_var(var)
   if pcall(function() api.nvim_get_var(var) end) then
@@ -18,15 +20,16 @@ local function add_buffer(line, path, buf_num)
     return ' '..api.nvim_call_function('fnamemodify', {path, ":p:t"})
   end
 
-  local padding = " "
   local modified = api.nvim_buf_get_option(buf_num, 'modified')
   local file_name = api.nvim_call_function('fnamemodify', {path, ":p:t"})
+  local is_current = api.nvim_get_current_buf() == buf_num
+  local buf_highlight = is_current and selected_highlight or highlight
   local devicons_loaded = api.nvim_call_function('exists', {'*WebDevIconsGetFileTypeSymbol'})
-  line = line..padding..tabline_highlight
+  line = line..buf_highlight
 
   -- parameters: a:1 (filename), a:2 (isDirectory)
   local icon = devicons_loaded and api.nvim_call_function('WebDevIconsGetFileTypeSymbol', {path}) or ""
-  line = line..icon..padding..file_name..padding
+  line = padding .. line..padding..icon..padding..file_name..padding
 
   if modified then
     local modified_icon = safely_get_var("bufferline_modified_icon")
@@ -44,6 +47,8 @@ local function is_valid(buffer)
   return listed and exists
 end
 
+-- TODO
+-- 1. Handle showing duplicate buffers if more than one tab is open
 local function bufferline()
   local buf_nums = api.nvim_list_bufs()
   local line = ""
@@ -53,16 +58,12 @@ local function bufferline()
       line = add_buffer(line, name, v)
     end
   end
-  local icon = api.nvim_get_var("bufferline_close_icon")
-  if icon == "" then
-    icon = "close"
-  end
-  line = line..tabline_fill
-  line = line..tabline_close..icon
+  local icon = safely_get_var("bufferline_close_icon")
+  icon = icon ~= nil and icon or "close "
+  line = line..background
+  line = line..padding..close..icon
   return line
 end
-
-bufferline()
 
 return {
   bufferline = bufferline
