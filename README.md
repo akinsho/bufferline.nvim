@@ -35,3 +35,13 @@ A _snazzy_ 😎💅 buffer line (with minimal tab integration) for **Neovim** bu
 ```vim
 Plug 'Akin909/nvim-bufferline'
 ```
+
+## Configuration
+
+```vim
+" Somehwere in your init.vim
+let g:bufferline_buffer = { "guifg": "color_i_like", "guibg": "color_i_like" }
+let g:bufferline_background = { "guibg": "color_i_like" }
+let g:bufferline_selected = {"guifg": "color_i_like", "guibg": "color_i_like", "gui": "bold,italic"}
+
+```

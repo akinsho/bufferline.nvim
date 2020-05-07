@@ -15,33 +15,6 @@ local function safely_get_var(var)
   end
 end
 
-local function coc_diagnostics()
-  local result = {}
-  local coc_exists = api.nvim_call_function("exists", {"*CocAction"})
-  if not coc_exists then
-    return result
-  end
-
-  local diagnostics = api.nvim_call_function("CocAction", {'diagnosticList'})
-  if diagnostics == nil or diagnostics == "" then
-    return result
-  end
-
-  for _,diagnostic in pairs(diagnostics) do
-    local current_file = diagnostic.file
-    if result[current_file] == nil then
-      result[current_file] = {count = 1}
-    else
-      result[current_file].count = result[current_file].count + 1
-    end
-  end
-  return result
-end
-
-local function get_diagnostic_count(diagnostics, path)
-  return diagnostics[path] ~= nil and diagnostics[path].count or 0
-end
-
 -- Source: https://teukka.tech/luanvim.html
 local function nvim_create_augroups(definitions)
   for group_name, definition in pairs(definitions) do
@@ -60,26 +33,43 @@ local function get_hex(hl_name, part)
   return api.nvim_call_function('synIDattr', {id, part})
 end
 
--- This is a global so it can be called from our autocommands
-function _G.colors()
-  -- local default_colors = {
-  --   gold         = '#F5F478',
-  --   bright_blue  = '#A2E8F6',
-  --   dark_blue    = '#4e88ff',
-  --   dark_yellow  = '#d19a66',
-  --   green        = '#98c379'
-  -- }
+local function contains(table, element)
+  for key, _ in pairs(table) do
+    if key == element then
+      return true
+    end
+  end
+  return false
+end
 
-  local comment_fg = get_hex('Comment', 'fg')
-  local normal_bg = get_hex('Normal', 'bg')
-  local normal_fg = get_hex('Normal', 'fg')
+local function table_size(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
 
-  -- TODO: fix hard coded colors
-  api.nvim_command("highlight! TabLineFill guibg=#1b1e24")
-  api.nvim_command("highlight! BufferLineBackground guibg=#1b1e24")
-  api.nvim_command("highlight! BufferLine guifg="..comment_fg..' guibg=#1b1e24 gui=NONE')
-  api.nvim_command('highlight! BufferLineSelected guifg='..normal_fg..' guibg='..normal_bg..' gui=bold,italic')
+local function set_highlight(name, user_var)
+  local dict = safely_get_var(user_var)
+  if dict ~= nil and table_size(dict) > 0 then
+    local cmd = "highlight! "..name
+    if contains(dict, "gui") then
+        cmd = cmd.." ".."gui="..dict.gui
+    end
+    if contains(dict, "guifg") then
+        cmd = cmd.." ".."guifg="..dict.guifg
+    end
+    if contains(dict, "guibg") then
+        cmd = cmd.." ".."guibg="..dict.guibg
+    end
+    pcall(api.nvim_command, cmd)
+  end
+end
 
+local function colors()
+  set_highlight('TabLineFill','bufferline_background')
+  set_highlight('BufferLine', 'bufferline_buffer')
+  set_highlight('BufferLineBackground','bufferline_buffer')
+  set_highlight('BufferLineSelected','bufferline_selected')
 end
 
 local function handle_click(id)
@@ -91,8 +81,7 @@ end
 local function make_clickable(item, buf_num)
   local is_clickable = api.nvim_call_function('has', {'tablineat'})
   if is_clickable then
-    -- TODO: can the arbitrary function we pass be a lua func
-    -- if so HOW...
+    -- TODO: can the arbitrary function we pass be a lua func, if so HOW...
     return "%"..buf_num.."@nvim_bufferline#handle_click@"..item
   else
     return item
@@ -147,12 +136,10 @@ end
 local function bufferline()
   local line = ""
   local buf_nums = api.nvim_list_bufs()
-  local diagnostics = coc_diagnostics()
   for _,buf_id in pairs(buf_nums) do
     if is_valid(buf_id) then
       local name =  api.nvim_buf_get_name(buf_id)
-      local diagnostic_count = get_diagnostic_count(diagnostics, name)
-      line = add_buffer(line, name, buf_id, diagnostic_count)
+      line = add_buffer(line, name, buf_id, 0)
     end
   end
   local icon = safely_get_var("bufferline_close_icon")
@@ -162,11 +149,12 @@ local function bufferline()
   return line
 end
 
+-- I'd ideally like to pass the preferences through on setup to go into the colors function
 local function setup()
   nvim_create_augroups({
       BufferlineColors = {
-        {"VimEnter", "*", [[lua colors()]]};
-        {"ColorScheme", "*", [[lua colors()]]};
+        {"VimEnter", "*", [[lua require('bufferline').colors()]]};
+        {"ColorScheme", "*", [[lua require('bufferline').colors()]]};
       }
     })
 end
@@ -174,6 +162,7 @@ end
 return {
   setup = setup,
   handle_click = handle_click,
+  colors = colors,
   bufferline = bufferline,
 }
 
