@@ -9,12 +9,37 @@ local background = '%#BufferLineBackground#'
 local close = '%#BufferLine#%999X'
 local padding = " "
 
+---------------------------------------------------------------------------//
+-- EXPORT
+---------------------------------------------------------------------------//
+
+local M = {}
+
+---------------------------------------------------------------------------//
+-- HELPERS
+---------------------------------------------------------------------------//
+
 local function safely_get_var(var)
   if pcall(function() api.nvim_get_var(var) end) then
     return api.nvim_get_var(var)
   else
     return nil
   end
+end
+
+local function contains(table, element)
+  for key, _ in pairs(table) do
+    if key == element then
+      return true
+    end
+  end
+  return false
+end
+
+local function table_size(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
 end
 
 -- Source: https://teukka.tech/luanvim.html
@@ -33,21 +58,6 @@ end
 local function get_hex(hl_name, part)
   local id = api.nvim_call_function('hlID', {hl_name})
   return api.nvim_call_function('synIDattr', {id, part})
-end
-
-local function contains(table, element)
-  for key, _ in pairs(table) do
-    if key == element then
-      return true
-    end
-  end
-  return false
-end
-
-local function table_size(T)
-  local count = 0
-  for _ in pairs(T) do count = count + 1 end
-  return count
 end
 
 local function set_highlight(name, user_var)
@@ -71,7 +81,27 @@ local function set_highlight(name, user_var)
   end
 end
 
-local function colors()
+local function make_clickable(item, buf_num)
+  local is_clickable = api.nvim_call_function('has', {'tablineat'})
+  if is_clickable then
+    -- TODO: can the arbitrary function we pass be a lua func, if so HOW...
+    return "%"..buf_num.."@nvim_bufferline#handle_click@"..item
+  else
+    return item
+  end
+end
+
+---------------------------------------------------------------------------//
+-- CORE
+---------------------------------------------------------------------------//
+function M.handle_click(id)
+  if id ~= nil then
+    api.nvim_command('buffer '..id)
+  end
+end
+
+
+function M.colors()
   set_highlight('TabLineFill','bufferline_background')
   set_highlight('BufferLine', 'bufferline_buffer')
   set_highlight('BufferLineBackground','bufferline_buffer')
@@ -80,22 +110,6 @@ local function colors()
   set_highlight('BufferLineTabSelected', 'bufferline_tab_selected')
 end
 
-local function handle_click(id)
-  if id ~= nil then
-    api.nvim_command('buffer '..id)
-  end
-end
-
-local function make_clickable(item, buf_num)
-  local is_clickable = api.nvim_call_function('has', {'tablineat'})
-  if is_clickable then
-    -- TODO: can the arbitrary function we pass be a lua func, if so HOW...
-    -- Also handle clicking tabs
-    return "%"..buf_num.."@nvim_bufferline#handle_click@"..item
-  else
-    return item
-  end
-end
 
 local function create_buffer(line, path, buf_num, diagnostic_count)
   local is_current = api.nvim_get_current_buf() == buf_num
@@ -163,7 +177,7 @@ end
 -- [X] Show tabs
 -- [ ] Buffer label truncation
 -- [ ] Handle keeping active buffer always in view
-local function bufferline()
+function M.bufferline()
   local line = ""
   local tab_string = table.concat(get_tabs(), "")
   line = line..tab_string
@@ -184,7 +198,7 @@ local function bufferline()
 end
 
 -- I'd ideally like to pass the preferences through on setup to go into the colors function
-local function setup()
+function M.setup()
   nvim_create_augroups({
       BufferlineColors = {
         {"VimEnter", "*", [[lua require('bufferline').colors()]]};
@@ -193,10 +207,4 @@ local function setup()
     })
 end
 
-return {
-  setup = setup,
-  handle_click = handle_click,
-  colors = colors,
-  bufferline = bufferline,
-}
-
+return M
