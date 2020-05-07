@@ -1,6 +1,6 @@
 # nvim-bufferline
 
-[Bufferline screenshot]('./nvim-bufferline.png')
+![Bufferline screenshot](./nvim-bufferline.png "Nvim Bufferline")
 
 A _snazzy_ 😎💅 buffer line (with minimal tab integration) for **Neovim** built using `lua`.
 
