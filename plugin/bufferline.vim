@@ -14,6 +14,9 @@ function! TabLine() abort
 endfunction
 
 " Setup plugin internals like autocommands
+" Expose this to the user so they can pass in color
+" preferences in using lua syntax
+" BLOCKED: by not knowing how to set tabline via lua
 lua require'bufferline'.setup()
 
 set showtabline=2

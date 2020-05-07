@@ -1,10 +1,12 @@
 local vim = _G.vim
 local api = vim.api
 local highlight = '%#BufferLine#'
+local tab_highlight = '%#BufferLineTab#'
+local tab_selected_highlight = '%#BufferLineTabSelected#'
 local selected_highlight = '%#BufferLineSelected#'
 local diagnostic_highlight = '%#ErrorMsg#'
 local background = '%#BufferLineBackground#%T'
-local close = '%=%#BufferLine#%999X'
+local close = '%#BufferLine#%999X'
 local padding = " "
 
 local function safely_get_var(var)
@@ -61,7 +63,11 @@ local function set_highlight(name, user_var)
     if contains(dict, "guibg") then
         cmd = cmd.." ".."guibg="..dict.guibg
     end
-    pcall(api.nvim_command, cmd)
+    if not pcall(api.nvim_command, cmd) then
+      api.nvim_err_writeln(
+        "Unable to set your highlights, something isn't configured correctly"
+      )
+    end
   end
 end
 
@@ -70,6 +76,8 @@ local function colors()
   set_highlight('BufferLine', 'bufferline_buffer')
   set_highlight('BufferLineBackground','bufferline_buffer')
   set_highlight('BufferLineSelected','bufferline_selected')
+  set_highlight('BufferLineTab', 'bufferline_tab')
+  set_highlight('BufferLineTabSelected', 'bufferline_tab_selected')
 end
 
 local function handle_click(id)
@@ -82,6 +90,7 @@ local function make_clickable(item, buf_num)
   local is_clickable = api.nvim_call_function('has', {'tablineat'})
   if is_clickable then
     -- TODO: can the arbitrary function we pass be a lua func, if so HOW...
+    -- Also handle clicking tabs
     return "%"..buf_num.."@nvim_bufferline#handle_click@"..item
   else
     return item
@@ -122,6 +131,23 @@ local function add_buffer(line, path, buf_num, diagnostic_count)
   return line
 end
 
+local function create_tab(num, is_active)
+  local hl = is_active and tab_selected_highlight or tab_highlight
+  return hl .. padding.. num ..padding
+end
+
+local function tabs()
+  local all_tabs = {}
+  local tabcount = api.nvim_call_function('tabpagenr', {'$'})
+  local current_tab = api.nvim_call_function('tabpagenr', {})
+
+  for i=1,tabcount do
+    local is_active_tab = current_tab == i
+    all_tabs[i] = create_tab(i, is_active_tab)
+  end
+  return all_tabs
+end
+
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
 local function is_valid(buffer)
   local listed = api.nvim_buf_get_option(buffer, "buflisted")
@@ -143,9 +169,11 @@ local function bufferline()
     end
   end
   local icon = safely_get_var("bufferline_close_icon")
-  icon = icon ~= nil and icon or "close "
+  icon = icon ~= nil and icon or " close "
   line = line..background
-  line = line..padding..close..icon
+  line = line..padding
+  local tab_string = table.concat(tabs(), "")
+  line = line.."%="..tab_string..close..icon
   return line
 end
 
