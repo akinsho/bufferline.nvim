@@ -111,9 +111,8 @@ function M.colors()
 end
 
 
-local function create_buffer(line, path, buf_num, diagnostic_count)
-  local is_current = api.nvim_get_current_buf() == buf_num
-  local buf_highlight = is_current and selected_highlight or highlight
+local function create_buffer(path, buf_num, current_buf, diagnostic_count)
+  local buf_highlight = current_buf == buf_num and selected_highlight or highlight
 
   if path == "" then
     path = "[No Name]"
@@ -124,25 +123,23 @@ local function create_buffer(line, path, buf_num, diagnostic_count)
   local modified = api.nvim_buf_get_option(buf_num, 'modified')
   local file_name = api.nvim_call_function('fnamemodify', {path, ":p:t"})
   local devicons_loaded = api.nvim_call_function('exists', {'*WebDevIconsGetFileTypeSymbol'})
-  line = line..buf_highlight
 
   -- parameters for devicons func: (filename), (isDirectory)
   local icon = devicons_loaded and api.nvim_call_function('WebDevIconsGetFileTypeSymbol', {path}) or ""
-  local buffer = padding..icon..padding..file_name..padding
-  local clickable_buffer = make_clickable(buffer, buf_num)
-  line = padding..line..clickable_buffer
+  local buffer = buf_highlight..padding..icon..padding..file_name..padding
+  buffer = make_clickable(buffer, buf_num)
 
   if diagnostic_count > 0 then
-    line = line..diagnostic_highlight..diagnostic_count..padding
+    buffer = buffer..diagnostic_highlight..diagnostic_count..padding
   end
 
   if modified then
     local modified_icon = safely_get_var("bufferline_modified_icon")
     modified_icon = modified_icon ~= nil and modified_icon or "●"
-    line = line..modified_icon..padding
+    buffer = buffer..modified_icon..padding
   end
 
-  return line .."%X"
+  return buffer .."%X"
 end
 
 local function tab_click_component(num)
@@ -183,10 +180,12 @@ function M.bufferline()
   line = line..tab_string
 
   local buf_nums = api.nvim_list_bufs()
-  for _,buf_id in pairs(buf_nums) do
+  local current_buf = api.nvim_get_current_buf()
+  for _,buf_id in ipairs(buf_nums) do
     if is_valid(buf_id) then
       local name =  api.nvim_buf_get_name(buf_id)
-      line = create_buffer(line, name, buf_id, 0)
+      local buf = create_buffer(name, buf_id, current_buf, 0)
+      line = line .. buf
     end
   end
   local close_icon = safely_get_var("bufferline_close_icon")
