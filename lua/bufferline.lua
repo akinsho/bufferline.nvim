@@ -5,7 +5,7 @@ local tab_highlight = '%#BufferLineTab#'
 local tab_selected_highlight = '%#BufferLineTabSelected#'
 local selected_highlight = '%#BufferLineSelected#'
 local diagnostic_highlight = '%#ErrorMsg#'
-local background = '%#BufferLineBackground#%T'
+local background = '%#BufferLineBackground#'
 local close = '%#BufferLine#%999X'
 local padding = " "
 
@@ -97,7 +97,7 @@ local function make_clickable(item, buf_num)
   end
 end
 
-local function add_buffer(line, path, buf_num, diagnostic_count)
+local function create_buffer(line, path, buf_num, diagnostic_count)
   local is_current = api.nvim_get_current_buf() == buf_num
   local buf_highlight = is_current and selected_highlight or highlight
 
@@ -128,22 +128,26 @@ local function add_buffer(line, path, buf_num, diagnostic_count)
     line = line..modified_icon..padding
   end
 
-  return line
+  return line .."%X"
+end
+
+local function tab_click_component(num)
+  return "%"..num.."T"
 end
 
 local function create_tab(num, is_active)
   local hl = is_active and tab_selected_highlight or tab_highlight
-  return hl .. padding.. num ..padding
+  return hl .. tab_click_component(num) .. padding.. num ..padding .. "%X"
 end
 
-local function tabs()
+local function get_tabs()
   local all_tabs = {}
-  local tabcount = api.nvim_call_function('tabpagenr', {'$'})
-  local current_tab = api.nvim_call_function('tabpagenr', {})
+  local tabs = api.nvim_list_tabpages()
+  local current_tab = api.nvim_get_current_tabpage()
 
-  for i=1,tabcount do
-    local is_active_tab = current_tab == i
-    all_tabs[i] = create_tab(i, is_active_tab)
+  for _,tab in pairs(tabs) do
+    local is_active_tab = current_tab == tab
+    all_tabs[tab] = create_tab(tab, is_active_tab)
   end
   return all_tabs
 end
@@ -156,24 +160,26 @@ local function is_valid(buffer)
 end
 
 -- TODO
--- Show tabs
--- Buffer label truncation
--- Handle keeping active buffer always in view
+-- [X] Show tabs
+-- [ ] Buffer label truncation
+-- [ ] Handle keeping active buffer always in view
 local function bufferline()
   local line = ""
+  local tab_string = table.concat(get_tabs(), "")
+  line = line..tab_string..padding
+
   local buf_nums = api.nvim_list_bufs()
   for _,buf_id in pairs(buf_nums) do
     if is_valid(buf_id) then
       local name =  api.nvim_buf_get_name(buf_id)
-      line = add_buffer(line, name, buf_id, 0)
+      line = create_buffer(line, name, buf_id, 0)
     end
   end
-  local icon = safely_get_var("bufferline_close_icon")
-  icon = icon ~= nil and icon or " close "
+  local close_icon = safely_get_var("bufferline_close_icon")
+  close_icon = close_icon ~= nil and close_icon or " close "
   line = line..background
   line = line..padding
-  local tab_string = table.concat(tabs(), "")
-  line = line.."%="..tab_string..close..icon
+  line = line.."%="..close..close_icon
   return line
 end
 
