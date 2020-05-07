@@ -14,8 +14,4 @@ endif
 " BLOCKED: by not knowing how to set tabline via lua
 lua require'bufferline'.setup()
 
-set showtabline=2
-" TODO figure out how to do this directly in lua
-set tabline=%!nvim_bufferline#render()
-
 let g:loaded_bufferline = 1

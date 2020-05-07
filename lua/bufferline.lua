@@ -211,9 +211,6 @@ end
 --     inactive_highlight: '#mycolor'
 --  }
 --})
--- The main blocker to this currently is if we call setup we should also be
--- setting the tabline here but it's not clear if this is possible from inside
--- lua
 function M.setup()
   function _G.setup_bufferline_colors()
     set_highlight('TabLineFill','bufferline_background')
@@ -230,6 +227,8 @@ function M.setup()
         {"ColorScheme", "*", [[lua setup_bufferline_colors()]]};
       }
     })
+  api.nvim_set_option("showtabline", 2)
+  api.nvim_set_option("tabline", [[%!luaeval("require'bufferline'.bufferline()")]])
 end
 
 return M
