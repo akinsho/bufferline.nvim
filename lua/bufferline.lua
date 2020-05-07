@@ -42,8 +42,8 @@ function _G.colors()
   -- }
 
   local comment_fg = get_hex('Comment', 'fg')
-  local normal_bg= get_hex('Normal', 'bg')
-  local normal_fg= get_hex('Normal', 'fg')
+  local normal_bg = get_hex('Normal', 'bg')
+  local normal_fg = get_hex('Normal', 'fg')
 
   -- TODO: fix hard coded colors
   api.nvim_command("highlight! TabLineFill guibg=#1b1e24")
@@ -53,10 +53,18 @@ function _G.colors()
 
 end
 
+local function handle_click(id)
+  if id ~= nil then
+    api.nvim_command('buffer '..id)
+  end
+end
+
 local function make_clickable(item, buf_num)
   local is_clickable = api.nvim_call_function('has', {'tablineat'})
   if is_clickable then
-    return "%"..buf_num.."@HandleBufferlineClick@"..item
+    -- TODO: can the arbitrary function we pass be a lua func
+    -- if so HOW...
+    return "%"..buf_num.."@nvim_bufferline#handle_click@"..item
   else
     return item
   end
@@ -66,7 +74,7 @@ local function add_buffer(line, path, buf_num)
   if path == "" then
     path = "[No Name]"
   elseif string.find(path, 'term://') ~= nil then
-    return ' '..api.nvim_call_function('fnamemodify', {path, ":p:t"})..padding
+    return padding..' '..api.nvim_call_function('fnamemodify', {path, ":p:t"})..padding
   end
 
   local modified = api.nvim_buf_get_option(buf_num, 'modified')
@@ -76,7 +84,7 @@ local function add_buffer(line, path, buf_num)
   local devicons_loaded = api.nvim_call_function('exists', {'*WebDevIconsGetFileTypeSymbol'})
   line = line..buf_highlight
 
-  -- parameters: a:1 (filename), a:2 (isDirectory)
+  -- parameters for devicons func: (filename), (isDirectory)
   local icon = devicons_loaded and api.nvim_call_function('WebDevIconsGetFileTypeSymbol', {path}) or ""
   local buffer = padding..icon..padding..file_name..padding
   local clickable_buffer = make_clickable(buffer, buf_num)
@@ -100,8 +108,8 @@ end
 
 -- TODO
 -- Show tabs
+-- Buffer label truncation
 -- Handle keeping active buffer always in view
--- Truncation
 local function bufferline()
   local buf_nums = api.nvim_list_bufs()
   local line = ""
@@ -129,6 +137,7 @@ end
 
 return {
   setup = setup,
+  handle_click = handle_click,
   bufferline = bufferline
 }
 

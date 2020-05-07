@@ -1,0 +1,10 @@
+" Thin VimL wrapper around a lua function call because I can't figure out
+" how not to have to do this. The clickable tabline lable looks like
+"
+" %@ArbitraryFunction@My_File.js
+" Not sure how to pass a lua function to that instead of a viml one
+function! nvim_bufferline#handle_click(minwid, clicks, btn, modifiers) abort
+  " To pass an argument to a required lua function we need to use
+  " eval and pass it the arg. At least as far as I know
+  call luaeval("require'bufferline'.handle_click(_A)", a:minwid)
+endfunction
