@@ -101,17 +101,6 @@ function M.handle_click(id)
   end
 end
 
-
-function M.colors()
-  set_highlight('TabLineFill','bufferline_background')
-  set_highlight('BufferLine', 'bufferline_buffer')
-  set_highlight('BufferLineInactive', 'bufferline_buffer_inactive')
-  set_highlight('BufferLineBackground','bufferline_buffer')
-  set_highlight('BufferLineSelected','bufferline_selected')
-  set_highlight('BufferLineTab', 'bufferline_tab')
-  set_highlight('BufferLineTabSelected', 'bufferline_tab_selected')
-end
-
 -- Borrowed this trick from
 -- https://github.com/bagrat/vim-buffet/blob/28e8535766f1a48e6006dc70178985de2b8c026d/autoload/buffet.vim#L186
 -- If the current buffer in the current window has a matching ID it is ours and so should
@@ -215,12 +204,30 @@ function M.bufferline()
   return line
 end
 
--- I'd ideally like to pass the preferences through on setup to go into the colors function
+-- TODO pass the preferences through on setup to go into the colors function
+-- this way we can setup config vars in lua e.g.
+-- lua require('bufferline').setup({
+--  highlight = {
+--     inactive_highlight: '#mycolor'
+--  }
+--})
+-- The main blocker to this currently is if we call setup we should also be
+-- setting the tabline here but it's not clear if this is possible from inside
+-- lua
 function M.setup()
+  function _G.setup_bufferline_colors()
+    set_highlight('TabLineFill','bufferline_background')
+    set_highlight('BufferLine', 'bufferline_buffer')
+    set_highlight('BufferLineInactive', 'bufferline_buffer_inactive')
+    set_highlight('BufferLineBackground','bufferline_buffer')
+    set_highlight('BufferLineSelected','bufferline_selected')
+    set_highlight('BufferLineTab', 'bufferline_tab')
+    set_highlight('BufferLineTabSelected', 'bufferline_tab_selected')
+  end
   nvim_create_augroups({
       BufferlineColors = {
-        {"VimEnter", "*", [[lua require('bufferline').colors()]]};
-        {"ColorScheme", "*", [[lua require('bufferline').colors()]]};
+        {"VimEnter", "*", [[lua setup_bufferline_colors()]]};
+        {"ColorScheme", "*", [[lua setup_bufferline_colors()]]};
       }
     })
 end
