@@ -1,6 +1,7 @@
 local vim = _G.vim
 local api = vim.api
 local highlight = '%#BufferLine#'
+local inactive_highlight = '%#BufferLineInactive#'
 local tab_highlight = '%#BufferLineTab#'
 local tab_selected_highlight = '%#BufferLineTabSelected#'
 local selected_highlight = '%#BufferLineSelected#'
@@ -55,7 +56,7 @@ local function nvim_create_augroups(definitions)
   end
 end
 
-local function get_hex(hl_name, part)
+local function _get_hex(hl_name, part)
   local id = api.nvim_call_function('hlID', {hl_name})
   return api.nvim_call_function('synIDattr', {id, part})
 end
@@ -104,15 +105,32 @@ end
 function M.colors()
   set_highlight('TabLineFill','bufferline_background')
   set_highlight('BufferLine', 'bufferline_buffer')
+  set_highlight('BufferLineInactive', 'bufferline_buffer_inactive')
   set_highlight('BufferLineBackground','bufferline_buffer')
   set_highlight('BufferLineSelected','bufferline_selected')
   set_highlight('BufferLineTab', 'bufferline_tab')
   set_highlight('BufferLineTabSelected', 'bufferline_tab_selected')
 end
 
+-- Borrowed this trick from
+-- https://github.com/bagrat/vim-buffet/blob/28e8535766f1a48e6006dc70178985de2b8c026d/autoload/buffet.vim#L186
+-- If the current buffer in the current window has a matching ID it is ours and so should
+-- have the main selected highlighting. If it isn't but it is the window highlight it as inactive
+-- the "trick" here is that "bufwinnr" retunrs a value which is the first window associated with a buffer
+-- if there are no windows associated i.e. it is not in view and the function returns -1
+local function get_buffer_highlight(buf_id)
+  local current = api.nvim_call_function('winbufnr', {0}) == buf_id
+  if current then
+    return selected_highlight
+  elseif api.nvim_call_function('bufwinnr', {buf_id}) > 0 then
+    return inactive_highlight
+  else
+    return highlight
+  end
+end
 
-local function create_buffer(path, buf_num, current_buf, diagnostic_count)
-  local buf_highlight = current_buf == buf_num and selected_highlight or highlight
+local function create_buffer(path, buf_num, diagnostic_count)
+  local buf_highlight = get_buffer_highlight(buf_num)
 
   if path == "" then
     path = "[No Name]"
@@ -174,17 +192,18 @@ end
 -- [X] Show tabs
 -- [ ] Buffer label truncation
 -- [ ] Handle keeping active buffer always in view
+-- [X] Fix current buffer highlight disappearing when inside ignored buffer
 function M.bufferline()
   local line = ""
-  local tab_string = table.concat(get_tabs(), "")
-  line = line..tab_string
+  local all_tabs = get_tabs()
+  local tabs = all_tabs ~= nil and table.concat(all_tabs, "") or ""
+  line = line..tabs
 
   local buf_nums = api.nvim_list_bufs()
-  local current_buf = api.nvim_get_current_buf()
   for _,buf_id in ipairs(buf_nums) do
     if is_valid(buf_id) then
       local name =  api.nvim_buf_get_name(buf_id)
-      local buf = create_buffer(name, buf_id, current_buf, 0)
+      local buf = create_buffer(name, buf_id, 0)
       line = line .. buf
     end
   end
