@@ -2,6 +2,9 @@
 
 ![Bufferline screenshot](./nvim-bufferline.png "Nvim Bufferline")
 
+**Inactive buffer highlighting**
+![Inactive buffer highlighting](./inactive_highlight.png "Inactive buffer highlighting")
+
 A _snazzy_ 😎💅 buffer line (with minimal tab integration) for **Neovim** built using `lua`.
 
 🚧 **V. WIP** - Definitely not ready for anyone else's use ATM.
