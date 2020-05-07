@@ -1,6 +1,8 @@
-local api = _G.vim.api
+local vim = _G.vim
+local api = vim.api
 local highlight = '%#BufferLine#'
 local selected_highlight = '%#BufferLineSelected#'
+local diagnostic_highlight = '%#ErrorMsg#'
 local background = '%#BufferLineBackground#%T'
 local close = '%=%#BufferLine#%999X'
 local padding = " "
@@ -13,13 +15,40 @@ local function safely_get_var(var)
   end
 end
 
+local function coc_diagnostics()
+  local result = {}
+  local coc_exists = api.nvim_call_function("exists", {"*CocAction"})
+  if not coc_exists then
+    return result
+  end
+
+  local diagnostics = api.nvim_call_function("CocAction", {'diagnosticList'})
+  if diagnostics == nil or diagnostics == "" then
+    return result
+  end
+
+  for _,diagnostic in pairs(diagnostics) do
+    local current_file = diagnostic.file
+    if result[current_file] == nil then
+      result[current_file] = {count = 1}
+    else
+      result[current_file].count = result[current_file].count + 1
+    end
+  end
+  return result
+end
+
+local function get_diagnostic_count(diagnostics, path)
+  return diagnostics[path] ~= nil and diagnostics[path].count or 0
+end
+
 -- Source: https://teukka.tech/luanvim.html
 local function nvim_create_augroups(definitions)
   for group_name, definition in pairs(definitions) do
     api.nvim_command('augroup '..group_name)
     api.nvim_command('autocmd!')
     for _,def in pairs(definition) do
-      local command = table.concat(_G.vim.tbl_flatten{'autocmd', def}, ' ')
+      local command = table.concat(vim.tbl_flatten{'autocmd', def}, ' ')
       api.nvim_command(command)
     end
     api.nvim_command('augroup END')
@@ -70,17 +99,18 @@ local function make_clickable(item, buf_num)
   end
 end
 
-local function add_buffer(line, path, buf_num)
+local function add_buffer(line, path, buf_num, diagnostic_count)
+  local is_current = api.nvim_get_current_buf() == buf_num
+  local buf_highlight = is_current and selected_highlight or highlight
+
   if path == "" then
     path = "[No Name]"
   elseif string.find(path, 'term://') ~= nil then
-    return padding..' '..api.nvim_call_function('fnamemodify', {path, ":p:t"})..padding
+    return buf_highlight..padding..' '..api.nvim_call_function('fnamemodify', {path, ":p:t"})..padding
   end
 
   local modified = api.nvim_buf_get_option(buf_num, 'modified')
   local file_name = api.nvim_call_function('fnamemodify', {path, ":p:t"})
-  local is_current = api.nvim_get_current_buf() == buf_num
-  local buf_highlight = is_current and selected_highlight or highlight
   local devicons_loaded = api.nvim_call_function('exists', {'*WebDevIconsGetFileTypeSymbol'})
   line = line..buf_highlight
 
@@ -89,6 +119,10 @@ local function add_buffer(line, path, buf_num)
   local buffer = padding..icon..padding..file_name..padding
   local clickable_buffer = make_clickable(buffer, buf_num)
   line = padding..line..clickable_buffer
+
+  if diagnostic_count > 0 then
+    line = line..diagnostic_highlight..diagnostic_count..padding
+  end
 
   if modified then
     local modified_icon = safely_get_var("bufferline_modified_icon")
@@ -111,12 +145,14 @@ end
 -- Buffer label truncation
 -- Handle keeping active buffer always in view
 local function bufferline()
-  local buf_nums = api.nvim_list_bufs()
   local line = ""
-  for _,v in pairs(buf_nums) do
-    if is_valid(v) then
-      local name =  api.nvim_buf_get_name(v)
-      line = add_buffer(line, name, v)
+  local buf_nums = api.nvim_list_bufs()
+  local diagnostics = coc_diagnostics()
+  for _,buf_id in pairs(buf_nums) do
+    if is_valid(buf_id) then
+      local name =  api.nvim_buf_get_name(buf_id)
+      local diagnostic_count = get_diagnostic_count(diagnostics, name)
+      line = add_buffer(line, name, buf_id, diagnostic_count)
     end
   end
   local icon = safely_get_var("bufferline_close_icon")
@@ -138,6 +174,6 @@ end
 return {
   setup = setup,
   handle_click = handle_click,
-  bufferline = bufferline
+  bufferline = bufferline,
 }
 
