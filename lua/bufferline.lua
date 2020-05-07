@@ -145,7 +145,7 @@ local function get_tabs()
   local tabs = api.nvim_list_tabpages()
   local current_tab = api.nvim_get_current_tabpage()
 
-  for _,tab in pairs(tabs) do
+  for _,tab in ipairs(tabs) do
     local is_active_tab = current_tab == tab
     all_tabs[tab] = create_tab(tab, is_active_tab)
   end
@@ -166,7 +166,7 @@ end
 local function bufferline()
   local line = ""
   local tab_string = table.concat(get_tabs(), "")
-  line = line..tab_string..padding
+  line = line..tab_string
 
   local buf_nums = api.nvim_list_bufs()
   for _,buf_id in pairs(buf_nums) do
