@@ -8,11 +8,6 @@ if !has('nvim')
     finish
 endif
 
-" TODO figure out how to do this directly in lua
-function! TabLine() abort
-    return luaeval("require'bufferline'.bufferline()")
-endfunction
-
 " Setup plugin internals like autocommands
 " Expose this to the user so they can pass in color
 " preferences in using lua syntax
@@ -20,6 +15,7 @@ endfunction
 lua require'bufferline'.setup()
 
 set showtabline=2
-set tabline=%!TabLine()
+" TODO figure out how to do this directly in lua
+set tabline=%!nvim_bufferline#render()
 
 let g:loaded_bufferline = 1
