@@ -237,6 +237,7 @@ end
 -- [ ] Handle keeping active buffer always in view
 -- [ ] Highlight file type icons if possible
 -- [X] Fix current buffer highlight disappearing when inside ignored buffer
+-- [ ] Refactor buffers to be a metatable with methods for sizing, and stringifying
 function M.bufferline()
   local buf_nums = api.nvim_list_bufs()
   local buffers = {}
