@@ -22,6 +22,13 @@ local M = {}
 ---------------------------------------------------------------------------//
 -- HELPERS
 ---------------------------------------------------------------------------//
+local function combine_lists(t1, t2)
+  local result = {unpack(t1)}
+  for i=1,#t2 do
+    result[#result+1] = t2[i]
+  end
+  return result
+end
 
 local function safely_get_var(var)
   if pcall(function() api.nvim_get_var(var) end) then
@@ -255,18 +262,16 @@ local function truncate(before, current, after, available_width, marker)
   local total_length = before.length + current.length + after.length
   if available_width >= total_length then
     -- Merge all the buffers and render the components
-    local buffers = {}
-    vim.list_extend(buffers, before.buffers)
-    vim.list_extend(buffers, current.buffers)
-    vim.list_extend(buffers, after.buffers)
+    local buffers = combine_lists(before.buffers, current.buffers)
+    buffers = combine_lists(buffers, after.buffers)
     for _,buf in ipairs(buffers) do line = line .. buf.component end
     return line, marker
   else
     if before.length >= after.length then
-      before = drop_one(before, 1)
+      before:drop(1)
       marker.left = true
     else
-      after = drop_one(after, #after.buffers)
+      after:drop(#after.buffers)
       marker.right = true
     end
     marker.count = marker.count + 1
