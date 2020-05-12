@@ -3,7 +3,7 @@ local highlight = '%#BufferLine#'
 local inactive_highlight = '%#BufferLineInactive#'
 local tab_highlight = '%#BufferLineTab#'
 local tab_selected_highlight = '%#BufferLineTabSelected#'
-local suffix_highlight = '%#BufferLineTabSelected#'
+local suffix_highlight = '%#BufferLine#'
 local selected_highlight = '%#BufferLineSelected#'
 local diagnostic_highlight = '%#ErrorMsg#'
 local background = '%#BufferLineBackground#'
@@ -26,6 +26,11 @@ local function safely_get_var(var)
   else
     return nil
   end
+end
+
+local function get_var_or_default(var, default)
+  local user_var = safely_get_var(var)
+  return user_var ~= nil and user_var or default
 end
 
 local function contains(table, element)
@@ -56,8 +61,6 @@ local function nvim_create_augroups(definitions)
   end
 end
 
--- TODO: do I need this?
--- luacheck: ignore
 local function _get_hex(hl_name, part)
   local id = api.nvim_call_function('hlID', {hl_name})
   return api.nvim_call_function('synIDattr', {id, part})
@@ -109,11 +112,11 @@ end
 -- have the main selected highlighting. If it isn't but it is the window highlight it as inactive
 -- the "trick" here is that "bufwinnr" retunrs a value which is the first window associated with a buffer
 -- if there are no windows associated i.e. it is not in view and the function returns -1
-function is_current_buffer(buf_id)
+local function is_current_buffer(buf_id)
   return api.nvim_call_function('winbufnr', {0}) == buf_id
 end
 
-function is_visible_buffer(buf_id)
+local function is_visible_buffer(buf_id)
  return api.nvim_call_function('bufwinnr', {buf_id}) > 0
 end
 
@@ -211,12 +214,11 @@ local function get_sections(buffers)
   local before = {length = 0, buffers = {}}
   local after = {length = 0, buffers = {}}
 
-  for i,buf in ipairs(buffers) do
+  for _,buf in ipairs(buffers) do
     if buf.current then
       table.insert(current.buffers, buf)
       current.length = buf.length
-    -- We haven't reached the current buffer yet
-    elseif current.length == 0 then
+    elseif current.length == 0 then -- We haven't reached the current buffer yet
       table.insert(before.buffers, buf)
       before.length = before.length + buf.length
     else
@@ -238,7 +240,16 @@ local function drop_one(section, index)
   end
 end
 
-local function truncate(before, current, after, available_width, omitted)
+--[[
+PREREQUISITE: active buffer always remains in view
+1. Find amount of available space in the window
+2. Find the amount of space the bufferline will take up
+3. If the bufferline will be too long remove one tab from the before or after
+section
+4. Re-check the size, if still too long truncate recursively till it fits
+5. Add the number of truncated buffers as an indicator
+--]]
+local function truncate(before, current, after, available_width, marker)
   local line = ""
   local total_length = before.length + current.length + after.length
   if available_width >= total_length then
@@ -248,27 +259,21 @@ local function truncate(before, current, after, available_width, omitted)
     vim.list_extend(buffers, current.buffers)
     vim.list_extend(buffers, after.buffers)
     for _,buf in ipairs(buffers) do line = line .. buf.component end
-    return line, omitted
+    return line, marker
   else
     if before.length >= after.length then
       before = drop_one(before, 1)
+      marker.left = true
     else
       after = drop_one(after, #after.buffers)
+      marker.right = true
     end
-    omitted = omitted + 1
-    line = truncate(before, current, after, available_width, omitted)
-    return line, omitted
+    marker.count = marker.count + 1
+    return truncate(before, current, after, available_width, marker), marker
   end
 end
 
--- PREREQUISITE: active buffer always remains in view
--- 1. Find amount of available space in the window
--- 2. Find the amount of space the bufferline will take up
--- 3. If the bufferline will be too long truncate it by one buffer
--- 4. Re-check the size
--- 5. If still too long truncate recursively till it fits
--- 6. Add the number of truncated buffers as an indicator
-local function truncate_if_needed(buffers, tabs, close_length)
+local function components_to_string(buffers, tabs, close_length)
   local tab_components = ""
   local total_length = close_length
 
@@ -282,10 +287,23 @@ local function truncate_if_needed(buffers, tabs, close_length)
 
   local available_width = api.nvim_get_option("columns") - total_length
   local before, current, after = get_sections(buffers)
-  local line, omitted = truncate(before, current, after, available_width, 0)
+  local line, marker = truncate(
+    before,
+    current,
+    after,
+    available_width,
+    { count = 0, left = false, right = false}
+  )
 
-  if omitted > 0 then
-    line = line .. suffix_highlight .. padding.."+"..omitted..padding
+  if marker.count > 0 then
+    if marker.left then
+      local trunc_icon = get_var_or_default("bufferline_left_trunc_marker", "⬅")
+      line = suffix_highlight .. padding..trunc_icon..marker.count..padding ..line
+    end
+    if marker.right then
+      local trunc_icon = get_var_or_default("bufferline_right_trunc_marker", "➡")
+      line = line .. suffix_highlight .. padding..trunc_icon..marker.count..padding
+    end
   end
 
   return tab_components..line
@@ -296,7 +314,7 @@ end
 -- [ ] Buffer label truncation
 -- [x] Handle keeping active buffer always in view
 -- [ ] Highlight file type icons if possible
--- [ ] Show remainder marker as <- or -> depending on where truncation occured
+-- [x] Show remainder marker as <- or -> depending on where truncation occured
 -- [X] Fix current buffer highlight disappearing when inside ignored buffer
 -- [ ] Refactor buffers to be a metatable with methods for sizing, and stringifying
 function M.bufferline()
@@ -308,7 +326,7 @@ function M.bufferline()
   -- not contain gaps otherwise "ipairs" will stop at the first gap
   -- i.e the indices should be contiguous
   local count = 0
-  for i,buf_id in ipairs(buf_nums) do
+  for _,buf_id in ipairs(buf_nums) do
     if is_valid(buf_id) then
       count = count + 1
       local name =  api.nvim_buf_get_name(buf_id)
@@ -325,7 +343,7 @@ function M.bufferline()
   end
 
   local close_component, close_length = get_close_component()
-  local buffer_line = truncate_if_needed(buffers, tabs, close_length)
+  local buffer_line = components_to_string(buffers, tabs, close_length)
 
   buffer_line = buffer_line..background
   buffer_line = buffer_line..padding
