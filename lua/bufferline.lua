@@ -242,7 +242,7 @@ local function truncate(before, current, after, available_width, omitted)
   local line = ""
   local total_length = before.length + current.length + after.length
   if available_width >= total_length then
-    -- Merge all the buffers and render the components overriding
+    -- Merge all the buffers and render the components
     local buffers = {}
     vim.list_extend(buffers, before.buffers)
     vim.list_extend(buffers, current.buffers)
