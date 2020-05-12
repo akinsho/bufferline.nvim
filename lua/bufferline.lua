@@ -329,7 +329,7 @@ function M.bufferline()
       local name =  api.nvim_buf_get_name(buf_id)
       local buf, length = create_buffer(name, buf_id, 0)
       local is_current = is_current_buffer(buf_id)
-      buffers[count] = {
+      buffers[count] = Buffer:new {
         component = buf,
         length = length,
         current = is_current,

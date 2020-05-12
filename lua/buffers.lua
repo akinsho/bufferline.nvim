@@ -1,3 +1,6 @@
+--------------------------------
+-- A collection of buffers
+--------------------------------
 Buffers = {}
 
 function Buffers:new(n)
@@ -24,4 +27,22 @@ end
 function Buffers:add(buf)
   table.insert(self.buffers, buf)
   self.length = self.length + buf.length
+end
+
+--------------------------------
+-- A single buffer
+--------------------------------
+
+Buffer = {}
+
+function Buffer:new(n)
+  local new = n or {
+    id = nil,
+    component = nil,
+    current = false,
+    ordinal = nil,
+    length = 0
+  }
+  self.__index = self
+  return setmetatable(new, self)
 end
