@@ -37,9 +37,9 @@ local function contains(table, element)
   return false
 end
 
-local function table_size(T)
+local function table_size(t)
   local count = 0
-  for _ in pairs(T) do count = count + 1 end
+  for _ in pairs(t) do count = count + 1 end
   return count
 end
 
@@ -66,18 +66,18 @@ local function set_highlight(name, user_var)
   if dict ~= nil and table_size(dict) > 0 then
     local cmd = "highlight! "..name
     if contains(dict, "gui") then
-        cmd = cmd.." ".."gui="..dict.gui
+      cmd = cmd.." ".."gui="..dict.gui
     end
     if contains(dict, "guifg") then
-        cmd = cmd.." ".."guifg="..dict.guifg
+      cmd = cmd.." ".."guifg="..dict.guifg
     end
     if contains(dict, "guibg") then
-        cmd = cmd.." ".."guibg="..dict.guibg
+      cmd = cmd.." ".."guibg="..dict.guibg
     end
     if not pcall(api.nvim_command, cmd) then
       api.nvim_err_writeln(
         "Unable to set your highlights, something isn't configured correctly"
-      )
+        )
     end
   end
 end
@@ -120,11 +120,15 @@ end
 
 local function create_buffer(path, buf_num, diagnostic_count)
   local buf_highlight = get_buffer_highlight(buf_num)
+  local length
 
   if path == "" then
     path = "[No Name]"
   elseif string.find(path, 'term://') ~= nil then
-    return buf_highlight..padding..' '..api.nvim_call_function('fnamemodify', {path, ":p:t"})..padding
+    local name = api.nvim_call_function('fnamemodify', {path, ":p:t"})
+    name = padding..' '..name..padding
+    length = string.len(name)
+    return buf_highlight..name, length
   end
 
   local modified = api.nvim_buf_get_option(buf_num, 'modified')
@@ -133,20 +137,26 @@ local function create_buffer(path, buf_num, diagnostic_count)
 
   -- parameters for devicons func: (filename), (isDirectory)
   local icon = devicons_loaded and api.nvim_call_function('WebDevIconsGetFileTypeSymbol', {path}) or ""
-  local buffer = buf_highlight..padding..icon..padding..file_name..padding
-  buffer = make_clickable(buffer, buf_num)
+  local buffer = padding..icon..padding..file_name..padding
+  -- Avoid including highlight strings in the buffer length
+  length = string.len(buffer)
+  buffer = buf_highlight..make_clickable(buffer, buf_num)
 
   if diagnostic_count > 0 then
-    buffer = buffer..diagnostic_highlight..diagnostic_count..padding
+    local diagnostic_section = diagnostic_count..padding
+    length = length + string.len(diagnostic_section)
+    buffer = buffer..diagnostic_highlight..diagnostic_section
   end
 
   if modified then
     local modified_icon = safely_get_var("bufferline_modified_icon")
     modified_icon = modified_icon ~= nil and modified_icon or "●"
-    buffer = buffer..modified_icon..padding
+    local modified_section = modified_icon..padding
+    length = length + string.len(modified_section)
+    buffer = buffer..modified_section
   end
 
-  return buffer .."%X"
+  return buffer .."%X", length
 end
 
 local function tab_click_component(num)
@@ -155,7 +165,9 @@ end
 
 local function create_tab(num, is_active)
   local hl = is_active and tab_selected_highlight or tab_highlight
-  return hl .. tab_click_component(num) .. padding.. num ..padding .. "%X"
+  local name = padding.. num ..padding
+  local length = string.len(name)
+  return hl .. tab_click_component(num) .. name .. "%X", length
 end
 
 local function get_tabs()
@@ -165,9 +177,16 @@ local function get_tabs()
 
   for _,tab in ipairs(tabs) do
     local is_active_tab = current_tab == tab
-    all_tabs[tab] = create_tab(tab, is_active_tab)
+    local component, length = create_tab(tab, is_active_tab)
+    all_tabs[tab] = {component = component, length = length}
   end
   return all_tabs
+end
+
+local function get_close_component()
+  local close_icon = safely_get_var("bufferline_close_icon")
+  close_icon = close_icon ~= nil and close_icon or " close "
+  return close_icon, string.len(close_icon)
 end
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
@@ -177,31 +196,66 @@ local function is_valid(buffer)
   return listed and exists
 end
 
+-- PREREQUISITE: active buffer always remains in view
+-- 1. Find amount of available space in the window
+-- 2. Find the amount of space the bufferline will take up
+-- 3. If the bufferline will be too long truncate it by one buffer
+-- 4. Re-check the size
+-- 5. If still too long truncate recursively till it fits
+-- 6. Add the number of truncated buffers as an indicator
+local function truncate_if_needed(buffers, tabs, close_length)
+  local line = ""
+  local suffix = ""
+  local omitted = 0
+  local available_width = api.nvim_get_option("columns")
+  local total_length = close_length
+
+  -- Add the length of the tabs + close components to total length
+  for _,t in pairs(tabs) do
+    if t.length ~= nil and t.component ~= nil then
+      total_length = total_length + t.length
+      line = line .. t.component
+    end
+  end
+
+  for _,v in pairs(buffers) do
+    if available_width >= total_length + v.length then
+      total_length = total_length + v.length
+      line = line .. v.component
+    else
+      omitted = omitted + 1
+      suffix = "+"..omitted..padding
+    end
+  end
+  return line..suffix
+end
+
 -- TODO
 -- [X] Show tabs
 -- [ ] Buffer label truncation
 -- [ ] Handle keeping active buffer always in view
+-- [ ] Highlight file type icons if possible
 -- [X] Fix current buffer highlight disappearing when inside ignored buffer
 function M.bufferline()
-  local line = ""
-  local all_tabs = get_tabs()
-  local tabs = all_tabs ~= nil and table.concat(all_tabs, "") or ""
-  line = line..tabs
-
   local buf_nums = api.nvim_list_bufs()
+  local buffers = {}
+  local tabs = get_tabs()
+
   for _,buf_id in ipairs(buf_nums) do
     if is_valid(buf_id) then
       local name =  api.nvim_buf_get_name(buf_id)
-      local buf = create_buffer(name, buf_id, 0)
-      line = line .. buf
+      local buf, length = create_buffer(name, buf_id, 0)
+      buffers[buf_id] = {component = buf, length = length}
     end
   end
-  local close_icon = safely_get_var("bufferline_close_icon")
-  close_icon = close_icon ~= nil and close_icon or " close "
-  line = line..background
-  line = line..padding
-  line = line.."%="..close..close_icon
-  return line
+
+  local close_component, close_length = get_close_component()
+  local buffer_line = truncate_if_needed(buffers, tabs, close_length)
+
+  buffer_line = buffer_line..background
+  buffer_line = buffer_line..padding
+  buffer_line = buffer_line.."%="..close..close_component
+  return buffer_line
 end
 
 -- TODO pass the preferences through on setup to go into the colors function
