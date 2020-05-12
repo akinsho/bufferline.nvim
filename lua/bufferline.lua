@@ -237,17 +237,6 @@ local function get_sections(buffers)
   return before, current, after
 end
 
--- Take a section remove a buffer arbitrarily and reduce it's length
--- Reducing the length is very important as otherwise we don't know
--- a section is actually smaller now
-local function drop_one(section, index)
-  if section.buffers[index] ~= nil then
-    section.length = section.length - section.buffers[index].length
-    table.remove(section.buffers, index)
-    return section
-  end
-end
-
 --[[
 PREREQUISITE: active buffer always remains in view
 1. Find amount of available space in the window
