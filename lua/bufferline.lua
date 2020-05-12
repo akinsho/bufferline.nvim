@@ -309,15 +309,17 @@ local function components_to_string(buffers, tabs, close_length)
   return tab_components..line
 end
 
--- TODO
--- [X] Show tabs
--- [ ] Buffer label truncation
--- [x] Handle keeping active buffer always in view
--- [ ] Highlight file type icons if possible see:
--- https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
--- [x] Show remainder marker as <- or -> depending on where truncation occured
--- [X] Fix current buffer highlight disappearing when inside ignored buffer
--- [ ] Refactor buffers to be a metatable with methods for sizing, and stringifying
+--[[
+TODO
+ [X] Show tabs
+ [ ] Buffer label truncation
+ [x] Handle keeping active buffer always in view
+ [ ] Highlight file type icons if possible see:
+ https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
+ [x] Show remainder marker as <- or -> depending on where truncation occured
+ [X] Fix current buffer highlight disappearing when inside ignored buffer
+ [ ] Refactor buffers to be a metatable with methods for sizing, and stringifying
+--]]
 function M.bufferline()
   local buf_nums = api.nvim_list_bufs()
   local buffers = {}
@@ -352,13 +354,14 @@ function M.bufferline()
   return buffer_line
 end
 
--- TODO pass the preferences through on setup to go into the colors function
--- this way we can setup config vars in lua e.g.
--- lua require('bufferline').setup({
---  highlight = {
---     inactive_highlight: '#mycolor'
---  }
---})
+--[[ TODO pass the preferences through on setup to go into the colors function
+ this way we can setup config vars in lua e.g.
+ lua require('bufferline').setup({
+  highlight = {
+    inactive_highlight: '#mycolor'
+  }
+})
+--]]
 function M.setup()
   function _G.setup_bufferline_colors()
     set_highlight('TabLineFill','bufferline_background')
