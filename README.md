@@ -23,7 +23,7 @@ A _snazzy_ 😎💅 buffer line (with minimal tab integration) for **Neovim** bu
 - [ ] Make it snazzy
 - [ ] Show LSP diagnostics in bufferline so it's clear which buffers have errors
 - [ ] Show only the buffers relevant/open in a specific tab as a configurable setting
-- [ ] A _few_ different configuration options for filenames
+- [ ] A _few_ different configuration options for file names
 
 ## Non-goals
 
@@ -42,9 +42,8 @@ Plug 'Akin909/nvim-bufferline'
 ## Configuration
 
 ```vim
-" Somehwere in your init.vim
+" Somewhere in your init.vim
 let g:bufferline_buffer = { "guifg": "color_i_like", "guibg": "color_i_like" }
 let g:bufferline_background = { "guibg": "color_i_like" }
 let g:bufferline_selected = {"guifg": "color_i_like", "guibg": "color_i_like", "gui": "bold,italic"}
-
 ```
