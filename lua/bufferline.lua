@@ -313,7 +313,8 @@ end
 -- [X] Show tabs
 -- [ ] Buffer label truncation
 -- [x] Handle keeping active buffer always in view
--- [ ] Highlight file type icons if possible
+-- [ ] Highlight file type icons if possible see:
+-- https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
 -- [x] Show remainder marker as <- or -> depending on where truncation occured
 -- [X] Fix current buffer highlight disappearing when inside ignored buffer
 -- [ ] Refactor buffers to be a metatable with methods for sizing, and stringifying
