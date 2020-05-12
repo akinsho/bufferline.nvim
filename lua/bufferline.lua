@@ -1,4 +1,7 @@
+require('buffers')
+
 local api = vim.api
+
 local highlight = '%#BufferLine#'
 local inactive_highlight = '%#BufferLineInactive#'
 local tab_highlight = '%#BufferLineTab#'
@@ -210,20 +213,18 @@ local function is_valid(buffer)
 end
 
 local function get_sections(buffers)
-  local current = {length = 0, buffers = {}}
-  local before = {length = 0, buffers = {}}
-  local after = {length = 0, buffers = {}}
+  local current = Buffers:new()
+  local before = Buffers:new()
+  local after = Buffers:new()
 
   for _,buf in ipairs(buffers) do
     if buf.current then
-      table.insert(current.buffers, buf)
-      current.length = buf.length
-    elseif current.length == 0 then -- We haven't reached the current buffer yet
-      table.insert(before.buffers, buf)
-      before.length = before.length + buf.length
+      current:add(buf)
+    -- We haven't reached the current buffer yet
+    elseif current.length == 0 then
+      before:add(buf)
     else
-      table.insert(after.buffers, buf)
-      after.length = after.length + buf.length
+      after:add(buf)
     end
   end
   return before, current, after

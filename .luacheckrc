@@ -4,6 +4,9 @@
 cache = true
 
 -- Global objects defined by the C code
+globals = {
+  "Buffers"
+}
 read_globals = {
   "vim",
 }
