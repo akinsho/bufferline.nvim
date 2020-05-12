@@ -1,4 +1,3 @@
-local vim = _G.vim
 local api = vim.api
 local highlight = '%#BufferLine#'
 local inactive_highlight = '%#BufferLineInactive#'
@@ -57,6 +56,8 @@ local function nvim_create_augroups(definitions)
   end
 end
 
+-- TODO: do I need this?
+-- luacheck: ignore
 local function _get_hex(hl_name, part)
   local id = api.nvim_call_function('hlID', {hl_name})
   return api.nvim_call_function('synIDattr', {id, part})
@@ -108,11 +109,19 @@ end
 -- have the main selected highlighting. If it isn't but it is the window highlight it as inactive
 -- the "trick" here is that "bufwinnr" retunrs a value which is the first window associated with a buffer
 -- if there are no windows associated i.e. it is not in view and the function returns -1
+function is_current_buffer(buf_id)
+  return api.nvim_call_function('winbufnr', {0}) == buf_id
+end
+
+function is_visible_buffer(buf_id)
+ return api.nvim_call_function('bufwinnr', {buf_id}) > 0
+end
+
 local function get_buffer_highlight(buf_id)
-  local current = api.nvim_call_function('winbufnr', {0}) == buf_id
+  local current = is_current_buffer(buf_id)
   if current then
     return selected_highlight
-  elseif api.nvim_call_function('bufwinnr', {buf_id}) > 0 then
+  elseif is_visible_buffer(buf_id) then
     return inactive_highlight
   else
     return highlight
@@ -197,6 +206,61 @@ local function is_valid(buffer)
   return listed and exists
 end
 
+local function get_sections(buffers)
+  local current = {length = 0, buffers = {}}
+  local before = {length = 0, buffers = {}}
+  local after = {length = 0, buffers = {}}
+
+  for i,buf in ipairs(buffers) do
+    if buf.current then
+      table.insert(current.buffers, buf)
+      current.length = buf.length
+    -- We haven't reached the current buffer yet
+    elseif current.length == 0 then
+      table.insert(before.buffers, buf)
+      before.length = before.length + buf.length
+    else
+      table.insert(after.buffers, buf)
+      after.length = after.length + buf.length
+    end
+  end
+  return before, current, after
+end
+
+-- Take a section remove a buffer arbitrarily and reduce it's length
+-- Reducing the length is very important as otherwise we don't know
+-- a section is actually smaller now
+local function drop_one(section, index)
+  if section.buffers[index] ~= nil then
+    section.length = section.length - section.buffers[index].length
+    table.remove(section.buffers, index)
+    return section
+  end
+end
+
+local function truncate(before, current, after, available_width, omitted)
+  local line = ""
+  local total_length = before.length + current.length + after.length
+  if available_width >= total_length then
+    -- Merge all the buffers and render the components overriding
+    local buffers = {}
+    vim.list_extend(buffers, before.buffers)
+    vim.list_extend(buffers, current.buffers)
+    vim.list_extend(buffers, after.buffers)
+    for _,buf in ipairs(buffers) do line = line .. buf.component end
+    return line, omitted
+  else
+    if before.length >= after.length then
+      before = drop_one(before, 1)
+    else
+      after = drop_one(after, #after.buffers)
+    end
+    omitted = omitted + 1
+    line = truncate(before, current, after, available_width, omitted)
+    return line, omitted
+  end
+end
+
 -- PREREQUISITE: active buffer always remains in view
 -- 1. Find amount of available space in the window
 -- 2. Find the amount of space the bufferline will take up
@@ -205,37 +269,34 @@ end
 -- 5. If still too long truncate recursively till it fits
 -- 6. Add the number of truncated buffers as an indicator
 local function truncate_if_needed(buffers, tabs, close_length)
-  local line = ""
-  local suffix = ""
-  local omitted = 0
-  local available_width = api.nvim_get_option("columns")
+  local tab_components = ""
   local total_length = close_length
 
   -- Add the length of the tabs + close components to total length
   for _,t in pairs(tabs) do
-    if t.length ~= nil and t.component ~= nil then
+    if not vim.tbl_isempty(t) then
       total_length = total_length + t.length
-      line = line .. t.component
+      tab_components = tab_components .. t.component
     end
   end
 
-  for _,v in pairs(buffers) do
-    if available_width >= total_length + v.length then
-      total_length = total_length + v.length
-      line = line .. v.component
-    else
-      omitted = omitted + 1
-      suffix = padding.."+"..omitted..padding
-    end
+  local available_width = api.nvim_get_option("columns") - total_length
+  local before, current, after = get_sections(buffers)
+  local line, omitted = truncate(before, current, after, available_width, 0)
+
+  if omitted > 0 then
+    line = line .. suffix_highlight .. padding.."+"..omitted..padding
   end
-  return line..suffix_highlight..suffix
+
+  return tab_components..line
 end
 
 -- TODO
 -- [X] Show tabs
 -- [ ] Buffer label truncation
--- [ ] Handle keeping active buffer always in view
+-- [x] Handle keeping active buffer always in view
 -- [ ] Highlight file type icons if possible
+-- [ ] Show remainder marker as <- or -> depending on where truncation occured
 -- [X] Fix current buffer highlight disappearing when inside ignored buffer
 -- [ ] Refactor buffers to be a metatable with methods for sizing, and stringifying
 function M.bufferline()
@@ -243,15 +304,22 @@ function M.bufferline()
   local buffers = {}
   local tabs = get_tabs()
 
-  for _,buf_id in ipairs(buf_nums) do
+  -- NOTE: In lua in order to iterate an array, indices should
+  -- not contain gaps otherwise "ipairs" will stop at the first gap
+  -- i.e the indices should be contiguous
+  local count = 0
+  for i,buf_id in ipairs(buf_nums) do
     if is_valid(buf_id) then
+      count = count + 1
       local name =  api.nvim_buf_get_name(buf_id)
       local buf, length = create_buffer(name, buf_id, 0)
-      local is_current = api.nvim_call_function('winbufnr', {0}) == buf_id
-      buffers[buf_id] = {
+      local is_current = is_current_buffer(buf_id)
+      buffers[count] = {
         component = buf,
         length = length,
-        current = is_current
+        current = is_current,
+        id = buf_id,
+        ordinal = count
       }
     end
   end
