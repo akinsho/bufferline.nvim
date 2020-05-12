@@ -4,6 +4,7 @@ local highlight = '%#BufferLine#'
 local inactive_highlight = '%#BufferLineInactive#'
 local tab_highlight = '%#BufferLineTab#'
 local tab_selected_highlight = '%#BufferLineTabSelected#'
+local suffix_highlight = '%#BufferLineTabSelected#'
 local selected_highlight = '%#BufferLineSelected#'
 local diagnostic_highlight = '%#ErrorMsg#'
 local background = '%#BufferLineBackground#'
@@ -224,10 +225,10 @@ local function truncate_if_needed(buffers, tabs, close_length)
       line = line .. v.component
     else
       omitted = omitted + 1
-      suffix = "+"..omitted..padding
+      suffix = padding.."+"..omitted..padding
     end
   end
-  return line..suffix
+  return line..suffix_highlight..suffix
 end
 
 -- TODO
@@ -245,7 +246,12 @@ function M.bufferline()
     if is_valid(buf_id) then
       local name =  api.nvim_buf_get_name(buf_id)
       local buf, length = create_buffer(name, buf_id, 0)
-      buffers[buf_id] = {component = buf, length = length}
+      local is_current = api.nvim_call_function('winbufnr', {0}) == buf_id
+      buffers[buf_id] = {
+        component = buf,
+        length = length,
+        current = is_current
+      }
     end
   end
 
