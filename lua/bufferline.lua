@@ -258,12 +258,13 @@ local function truncate(before, current, after, available_width, marker)
   else
     if before.length >= after.length then
       before:drop(1)
+      marker.left_count = marker.left_count + 1
       marker.left = true
     else
       after:drop(#after.buffers)
+      marker.right_count = marker.right_count + 1
       marker.right = true
     end
-    marker.count = marker.count + 1
     return truncate(before, current, after, available_width, marker), marker
   end
 end
@@ -287,18 +288,16 @@ local function components_to_string(buffers, tabs, close_length)
     current,
     after,
     available_width,
-    { count = 0, left = false, right = false}
-  )
+    { left_count = 0, right_count = 0, left = false, right = false}
+    )
 
-  if marker.count > 0 then
-    if marker.left then
-      local trunc_icon = get_var_or_default("bufferline_left_trunc_marker", "⬅")
-      line = suffix_highlight .. padding..trunc_icon..marker.count..padding ..line
-    end
-    if marker.right then
-      local trunc_icon = get_var_or_default("bufferline_right_trunc_marker", "➡")
-      line = line .. suffix_highlight .. padding..trunc_icon..marker.count..padding
-    end
+  if marker.left and marker.left_count > 0 then
+    local trunc_icon = get_var_or_default("bufferline_left_trunc_marker", "⬅")
+    line = suffix_highlight .. padding..marker.left_count..padding..trunc_icon..padding ..line
+  end
+  if marker.right and marker.right_count > 0 then
+    local trunc_icon = get_var_or_default("bufferline_right_trunc_marker", "➡")
+    line = line .. suffix_highlight .. padding..marker.right_count..padding..trunc_icon..padding
   end
 
   return tab_components..line
