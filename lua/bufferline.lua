@@ -1,4 +1,4 @@
-require('buffers')
+require 'buffers'
 
 local api = vim.api
 
@@ -10,6 +10,7 @@ local suffix_highlight = '%#BufferLine#'
 local selected_highlight = '%#BufferLineSelected#'
 local diagnostic_highlight = '%#ErrorMsg#'
 local background = '%#BufferLineBackground#'
+local separator_highlight = '%#BufferLineSeparator#'
 local close = '%#BufferLine#%999X'
 local padding = " "
 
@@ -39,6 +40,10 @@ local function safely_get_var(var)
 end
 
 local function get_plugin_variable(var, default)
+  -- NOTE: in Nightly nvim you can use
+  -- see: https://www.reddit.com/r/neovim/comments/gi8w8o/best_practice_lua_vimapinvim_get_var/
+  -- var = "bufferline_"..var
+  -- local user_var = vim.g[var]
   local user_var = safely_get_var("bufferline_"..var)
   return user_var or default
 end
@@ -137,7 +142,6 @@ local function render_buffer(buffer, diagnostic_count)
     return buf_highlight..name, length
   end
 
-
   local component = padding..buffer.icon..padding..buffer.filename..padding
   -- Avoid including highlight strings in the buffer length
   length = string.len(component)
@@ -154,6 +158,13 @@ local function render_buffer(buffer, diagnostic_count)
     local modified_section = modified_icon..padding
     length = length + string.len(modified_section)
     component = component..modified_section
+  end
+
+  if buffer:current() or buffer:visible() then
+    local separator_component = " "
+    length = length + string.len(separator_component) * 2 -- we render 2 separators
+    local separator = separator_highlight..separator_component.."%X"
+    return separator..component .."%X"..separator, length
   end
 
   return component .."%X", length
@@ -282,13 +293,21 @@ end
 --[[
 TODO
  [X] Show tabs
- [ ] Buffer label truncation
+
  [x] Handle keeping active buffer always in view
- [ ] Highlight file type icons if possible see:
  https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
+
  [x] Show remainder marker as <- or -> depending on where truncation occured
+
  [X] Fix current buffer highlight disappearing when inside ignored buffer
- [ ] Refactor buffers to be a metatable with methods for sizing, and stringifying
+
+ [/] Refactor buffers to be a metatable with methods for sizing, and stringifying
+
+ [ ] Dynamically set styling to appear consistent across colorschemes
+
+ [ ] Buffer label truncation
+
+ [ ] Highlight file type icons if possible see:
 --]]
 function M.bufferline()
   local buf_nums = api.nvim_list_bufs()
@@ -338,6 +357,7 @@ function M.setup()
     set_highlight('BufferLineBackground','bufferline_buffer')
     set_highlight('BufferLineSelected','bufferline_selected')
     set_highlight('BufferLineTab', 'bufferline_tab')
+    set_highlight('BufferLineSeparator', 'bufferline_separator')
     set_highlight('BufferLineTabSelected', 'bufferline_tab_selected')
   end
   nvim_create_augroups({

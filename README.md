@@ -21,6 +21,7 @@ A _snazzy_ 😎💅 buffer line (with minimal tab integration) for **Neovim** bu
 ## Goals
 
 - [ ] Make it snazzy
+- [ ] Maintain general appearance across various colorschemes
 - [ ] Show LSP diagnostics in bufferline so it's clear which buffers have errors
 - [ ] Show only the buffers relevant/open in a specific tab as a configurable setting
 - [ ] A _few_ different configuration options for file names
