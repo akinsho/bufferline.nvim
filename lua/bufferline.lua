@@ -136,7 +136,7 @@ local function make_clickable(item, buf_num)
   local is_clickable = vim.fn.has('tablineat')
   if is_clickable then
     -- TODO once v:lua is in stable neovim deprecate the autoload function
-    if vim.fn.exists('v:lua') then
+    if vim.fn.exists('v:lua') > 0 then
       return "%"..buf_num.."@v:lua.bufferline.handle_click@"..item
     else
       return "%"..buf_num.."@nvim_bufferline#handle_click@"..item

@@ -42,7 +42,7 @@ function Buffer:new(n)
   if n.path == "" then n.path = "[No Name]" end
 
   -- Set icon
-  local devicons_loaded = vim.fn.exists('*WebDevIconsGetFileTypeSymbol')
+  local devicons_loaded = vim.fn.exists('*WebDevIconsGetFileTypeSymbol') > 0
   n.icon = devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(n.path) or ""
 
   self.__index = self
