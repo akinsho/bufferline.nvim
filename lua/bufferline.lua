@@ -135,8 +135,12 @@ end
 local function make_clickable(item, buf_num)
   local is_clickable = vim.fn.has('tablineat')
   if is_clickable then
-    -- TODO: can the arbitrary function we pass be a lua func, if so HOW...
-    return "%"..buf_num.."@nvim_bufferline#handle_click@"..item
+    -- TODO once v:lua is in stable neovim deprecate the autoload function
+    if vim.fn.exists('v:lua') then
+      return "%"..buf_num.."@v:lua.bufferline.handle_click@"..item
+    else
+      return "%"..buf_num.."@nvim_bufferline#handle_click@"..item
+    end
   else
     return item
   end
@@ -331,7 +335,7 @@ TODO
 
  [/] Refactor buffers to be a metatable with methods for sizing, and stringifying
 
- [ ] Dynamically set styling to appear consistent across colorschemes
+ [x] Dynamically set styling to appear consistent across colorschemes
 
  [ ] Buffer label truncation
 
