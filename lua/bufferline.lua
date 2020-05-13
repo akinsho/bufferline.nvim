@@ -76,23 +76,50 @@ local function nvim_create_augroups(definitions)
   end
 end
 
-local function _get_hex(hl_name, part)
+-- SOURCE:
+-- https://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
+local function shade_color(color, percent)
+  local r = tonumber(string.sub(color, 2,3), 16)
+  local g = tonumber(string.sub(color, 4,5), 16)
+  local b = tonumber(string.sub(color, 6), 16)
+
+  r = math.floor(tonumber(r * (100 + percent) / 100))
+  g = math.floor(tonumber(g * (100 + percent) / 100))
+  b = math.floor(tonumber(b * (100 + percent) / 100))
+
+  r = r < 255 and r or 255
+  g = g < 255 and g or 255
+  b = b < 255 and b or 255
+
+  -- see:
+  -- https://stackoverflow.com/questions/37796287/convert-decimal-to-hex-in-lua-4
+  r = string.format("%x", r)
+  g = string.format("%x", g)
+  b = string.format("%x", b)
+
+  local rr = string.len(r) == 1 and "0" .. r or r
+  local gg = string.len(g) == 1 and "0" .. g or g
+  local bb = string.len(b) == 1 and "0" .. b or b
+
+  return "#"..rr..gg..bb
+end
+
+local function get_hex(hl_name, part) -- luacheck: ignore
   local id = vim.fn.hlID(hl_name)
   return vim.fn.synIDattr(id, part)
 end
 
-local function set_highlight(name, user_var)
-  local dict = safely_get_var(user_var)
-  if dict and table_size(dict) > 0 then
+local function set_highlight(name, hl)
+  if hl and table_size(hl) > 0 then
     local cmd = "highlight! "..name
-    if contains(dict, "gui") then
-      cmd = cmd.." ".."gui="..dict.gui
+    if contains(hl, "gui") then
+      cmd = cmd.." ".."gui="..hl.gui
     end
-    if contains(dict, "guifg") then
-      cmd = cmd.." ".."guifg="..dict.guifg
+    if contains(hl, "guifg") then
+      cmd = cmd.." ".."guifg="..hl.guifg
     end
-    if contains(dict, "guibg") then
-      cmd = cmd.." ".."guibg="..dict.guibg
+    if contains(hl, "guibg") then
+      cmd = cmd.." ".."guibg="..hl.guibg
     end
     if not pcall(api.nvim_command, cmd) then
       api.nvim_err_writeln(
@@ -161,7 +188,9 @@ local function render_buffer(buffer, diagnostic_count)
   end
 
   if buffer:current() or buffer:visible() then
-    local separator_component = " "
+    -- Can we render a space character "Smaller" than a classic space
+    -- http://jkorpela.fi/chars/spaces.html
+    local separator_component = " " -- \u2009
     length = length + string.len(separator_component) * 2 -- we render 2 separators
     local separator = separator_highlight..separator_component.."%X"
     return separator..component .."%X"..separator, length
@@ -341,6 +370,47 @@ function M.bufferline()
   return buffer_line
 end
 
+-- Ideally this plugin should generate a beautiful statusline a little similar
+-- to what you would get on other editors. The aim is that the default should
+-- be so nice it's what anyone using this plugin sticks with. It should ideally
+-- work across any well designed colorscheme deriving colors automagically.
+local function get_defaults()
+  local comment_fg = get_hex('Comment', 'fg')
+  local normal_fg = get_hex('Normal', 'fg')
+  local normal_bg = get_hex('Normal', 'bg')
+  local tabline_sel_bg = get_hex('TabLineSel', 'bg')
+
+  return {
+    bufferline_tab = {
+      guifg = comment_fg,
+      guibg = normal_bg,
+    };
+    bufferline_tab_selected = {
+      guifg = comment_fg,
+      guibg = tabline_sel_bg,
+    };
+    bufferline_buffer = {
+      guifg = comment_fg,
+      guibg = shade_color(normal_bg, -30),
+    };
+    bufferline_buffer_inactive = {
+      guifg = comment_fg,
+      guibg = normal_bg,
+    };
+    bufferline_background = {
+      guibg = shade_color(normal_bg, -20),
+    };
+    bufferline_separator = {
+      guibg = shade_color(normal_bg, -32),
+    };
+    bufferline_selected = {
+      guifg = normal_fg,
+      guibg = normal_bg,
+      gui = "bold,italic",
+    };
+  }
+end
+
 --[[ TODO pass the preferences through on setup to go into the colors function
  this way we can setup config vars in lua e.g.
  lua require('bufferline').setup({
@@ -349,16 +419,18 @@ end
   }
 })
 --]]
-function M.setup()
+function M.setup(prefs)
+  -- TODO: Validate user preferences and only set pres that exists
+  local highlights = prefs or get_defaults()
   function _G.setup_bufferline_colors()
-    set_highlight('TabLineFill','bufferline_background')
-    set_highlight('BufferLine', 'bufferline_buffer')
-    set_highlight('BufferLineInactive', 'bufferline_buffer_inactive')
-    set_highlight('BufferLineBackground','bufferline_buffer')
-    set_highlight('BufferLineSelected','bufferline_selected')
-    set_highlight('BufferLineTab', 'bufferline_tab')
-    set_highlight('BufferLineSeparator', 'bufferline_separator')
-    set_highlight('BufferLineTabSelected', 'bufferline_tab_selected')
+    set_highlight('TabLineFill', highlights.bufferline_background)
+    set_highlight('BufferLine', highlights.bufferline_buffer)
+    set_highlight('BufferLineInactive', highlights.bufferline_buffer_inactive)
+    set_highlight('BufferLineBackground',highlights.bufferline_buffer)
+    set_highlight('BufferLineSelected',highlights.bufferline_selected)
+    set_highlight('BufferLineTab', highlights.bufferline_tab)
+    set_highlight('BufferLineSeparator', highlights.bufferline_separator)
+    set_highlight('BufferLineTabSelected', highlights.bufferline_tab_selected)
   end
   nvim_create_augroups({
       BufferlineColors = {
