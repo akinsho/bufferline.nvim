@@ -1,3 +1,4 @@
+local api = vim.api
 --------------------------------
 -- A collection of buffers
 --------------------------------
@@ -36,13 +37,28 @@ end
 Buffer = {}
 
 function Buffer:new(n)
-  local new = n or {
-    id = nil,
-    component = nil,
-    current = false,
-    ordinal = nil,
-    length = 0
-  }
+  n.modified = api.nvim_buf_get_option(n.id, 'modified')
+  n.filename = vim.fn.fnamemodify(n.path, ":p:t")
+  if n.path == "" then n.path = "[No Name]" end
+
+  -- Set icon
+  local devicons_loaded = vim.fn.exists('*WebDevIconsGetFileTypeSymbol')
+  n.icon = devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(n.path) or ""
+
   self.__index = self
-  return setmetatable(new, self)
+  return setmetatable(n, self)
+end
+
+-- Borrowed this trick from
+-- https://github.com/bagrat/vim-buffet/blob/28e8535766f1a48e6006dc70178985de2b8c026d/autoload/buffet.vim#L186
+-- If the current buffer in the current window has a matching ID it is ours and so should
+-- have the main selected highlighting. If it isn't but it is the window highlight it as inactive
+-- the "trick" here is that "bufwinnr" retunrs a value which is the first window associated with a buffer
+-- if there are no windows associated i.e. it is not in view and the function returns -1
+function Buffer:current()
+  return vim.fn.winbufnr(0) == self.id
+end
+
+function Buffer:visible()
+  return vim.fn.bufwinnr(self.id) > 0
 end

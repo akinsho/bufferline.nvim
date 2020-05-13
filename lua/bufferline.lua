@@ -98,7 +98,7 @@ local function set_highlight(name, user_var)
 end
 
 local function make_clickable(item, buf_num)
-  local is_clickable = api.nvim_call_function('has', {'tablineat'})
+  local is_clickable = vim.fn.has('tablineat')
   if is_clickable then
     -- TODO: can the arbitrary function we pass be a lua func, if so HOW...
     return "%"..buf_num.."@nvim_bufferline#handle_click@"..item
@@ -116,77 +116,55 @@ function M.handle_click(id)
   end
 end
 
--- Borrowed this trick from
--- https://github.com/bagrat/vim-buffet/blob/28e8535766f1a48e6006dc70178985de2b8c026d/autoload/buffet.vim#L186
--- If the current buffer in the current window has a matching ID it is ours and so should
--- have the main selected highlighting. If it isn't but it is the window highlight it as inactive
--- the "trick" here is that "bufwinnr" retunrs a value which is the first window associated with a buffer
--- if there are no windows associated i.e. it is not in view and the function returns -1
-local function is_current_buffer(buf_id)
-  return api.nvim_call_function('winbufnr', {0}) == buf_id
-end
-
-local function is_visible_buffer(buf_id)
- return api.nvim_call_function('bufwinnr', {buf_id}) > 0
-end
-
-local function get_buffer_highlight(buf_id)
-  local current = is_current_buffer(buf_id)
-  if current then
+local function get_buffer_highlight(buffer)
+  if buffer:current() then
     return selected_highlight
-  elseif is_visible_buffer(buf_id) then
+  elseif buffer:visible() then
     return inactive_highlight
   else
     return highlight
   end
 end
 
-local function create_buffer(path, buf_num, diagnostic_count)
-  local buf_highlight = get_buffer_highlight(buf_num)
+local function render_buffer(buffer, diagnostic_count)
+  local buf_highlight = get_buffer_highlight(buffer)
   local length
 
-  if path == "" then
-    path = "[No Name]"
-  elseif string.find(path, 'term://') ~= nil then
-    local name = api.nvim_call_function('fnamemodify', {path, ":p:t"})
+  if string.find(buffer.path, 'term://') ~= nil then
+    local name = vim.fn.fnamemodify(buffer.path, ":p:t")
     name = padding..' '..name..padding
     length = string.len(name)
     return buf_highlight..name, length
   end
 
-  local modified = api.nvim_buf_get_option(buf_num, 'modified')
-  local file_name = api.nvim_call_function('fnamemodify', {path, ":p:t"})
-  local devicons_loaded = api.nvim_call_function('exists', {'*WebDevIconsGetFileTypeSymbol'})
 
-  -- parameters for devicons func: (filename), (isDirectory)
-  local icon = devicons_loaded and api.nvim_call_function('WebDevIconsGetFileTypeSymbol', {path}) or ""
-  local buffer = padding..icon..padding..file_name..padding
+  local component = padding..buffer.icon..padding..buffer.filename..padding
   -- Avoid including highlight strings in the buffer length
-  length = string.len(buffer)
-  buffer = buf_highlight..make_clickable(buffer, buf_num)
+  length = string.len(component)
+  component = buf_highlight..make_clickable(component, buffer.id)
 
   if diagnostic_count > 0 then
     local diagnostic_section = diagnostic_count..padding
     length = length + string.len(diagnostic_section)
-    buffer = buffer..diagnostic_highlight..diagnostic_section
+    component = component..diagnostic_highlight..diagnostic_section
   end
 
-  if modified then
+  if buffer.modified then
     local modified_icon = safely_get_var("bufferline_modified_icon")
     modified_icon = modified_icon ~= nil and modified_icon or "●"
     local modified_section = modified_icon..padding
     length = length + string.len(modified_section)
-    buffer = buffer..modified_section
+    component = component..modified_section
   end
 
-  return buffer .."%X", length
+  return component .."%X", length
 end
 
 local function tab_click_component(num)
   return "%"..num.."T"
 end
 
-local function create_tab(num, is_active)
+local function render_tab(num, is_active)
   local hl = is_active and tab_selected_highlight or tab_highlight
   local name = padding.. num ..padding
   local length = string.len(name)
@@ -200,13 +178,13 @@ local function get_tabs()
 
   for _,tab in ipairs(tabs) do
     local is_active_tab = current_tab == tab
-    local component, length = create_tab(tab, is_active_tab)
+    local component, length = render_tab(tab, is_active_tab)
     all_tabs[tab] = {component = component, length = length}
   end
   return all_tabs
 end
 
-local function get_close_component()
+local function render_close()
   local close_icon = safely_get_var("bufferline_close_icon")
   close_icon = close_icon ~= nil and close_icon or " close "
   return close_icon, string.len(close_icon)
@@ -225,7 +203,7 @@ local function get_sections(buffers)
   local after = Buffers:new()
 
   for _,buf in ipairs(buffers) do
-    if buf.current then
+    if buf:current() then
       current:add(buf)
     -- We haven't reached the current buffer yet
     elseif current.length == 0 then
@@ -269,7 +247,7 @@ local function truncate(before, current, after, available_width, marker)
   end
 end
 
-local function components_to_string(buffers, tabs, close_length)
+local function render(buffers, tabs, close_length)
   local tab_components = ""
   local total_length = close_length
 
@@ -327,20 +305,18 @@ function M.bufferline()
     if is_valid(buf_id) then
       count = count + 1
       local name =  api.nvim_buf_get_name(buf_id)
-      local buf, length = create_buffer(name, buf_id, 0)
-      local is_current = is_current_buffer(buf_id)
-      buffers[count] = Buffer:new {
-        component = buf,
-        length = length,
-        current = is_current,
-        id = buf_id,
-        ordinal = count
-      }
+      local buf = Buffer:new {path = name, id = buf_id, ordinal = count}
+      -- TODO: consider incorporating render_buffer into a buffer method
+      -- ?? or should the data model be separate from highlighting concerns
+      local component, length = render_buffer(buf, 0)
+      buf.length = length
+      buf.component = component
+      buffers[count] = buf
     end
   end
 
-  local close_component, close_length = get_close_component()
-  local buffer_line = components_to_string(buffers, tabs, close_length)
+  local close_component, close_length = render_close()
+  local buffer_line = render(buffers, tabs, close_length)
 
   buffer_line = buffer_line..background
   buffer_line = buffer_line..padding
