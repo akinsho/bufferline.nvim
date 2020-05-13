@@ -110,6 +110,8 @@ local function get_hex(hl_name, part) -- luacheck: ignore
 end
 
 local function set_highlight(name, hl)
+-- TODO: if the value does not exist in the colorscheme this will return ""
+-- which will fail in the set highlight function
   if hl and table_size(hl) > 0 then
     local cmd = "highlight! "..name
     if contains(hl, "gui") then
@@ -121,9 +123,10 @@ local function set_highlight(name, hl)
     if contains(hl, "guibg") then
       cmd = cmd.." ".."guibg="..hl.guibg
     end
-    if not pcall(api.nvim_command, cmd) then
+    local success, err = pcall(api.nvim_command, cmd)
+    if not success then
       api.nvim_err_writeln(
-        "Unable to set your highlights, something isn't configured correctly"
+        "Failed setting "..name.." highlight, something isn't configured correctly".."\n"..err
       )
     end
   end
@@ -420,9 +423,9 @@ end
 })
 --]]
 function M.setup(prefs)
-  -- TODO: Validate user preferences and only set pres that exists
-  local highlights = prefs or get_defaults()
+  -- TODO: Validate user preferences and only set prefs that exists
   function _G.setup_bufferline_colors()
+    local highlights = prefs or get_defaults()
     set_highlight('TabLineFill', highlights.bufferline_background)
     set_highlight('BufferLine', highlights.bufferline_buffer)
     set_highlight('BufferLineInactive', highlights.bufferline_buffer_inactive)
