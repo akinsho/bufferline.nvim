@@ -190,16 +190,12 @@ local function render_buffer(buffer, diagnostic_count)
     component = component..modified_section
   end
 
-  if buffer:current() or buffer:visible() then
-    -- Can we render a space character "Smaller" than a classic space
-    -- http://jkorpela.fi/chars/spaces.html
-    local separator_component = " " -- \u2009
-    length = length + string.len(separator_component) * 2 -- we render 2 separators
-    local separator = separator_highlight..separator_component.."%X"
-    return separator..component .."%X"..separator, length
-  end
-
-  return component .."%X", length
+  -- Is rendering a space character "smaller" than a classic space possible
+  -- http://jkorpela.fi/chars/spaces.html
+  local separator_component = " "
+  length = length + string.len(separator_component) * 2 -- we render 2 separators
+  local separator = separator_highlight..separator_component.."%X"
+  return separator..component .."%X", length
 end
 
 local function tab_click_component(num)
