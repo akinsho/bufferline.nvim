@@ -38,8 +38,8 @@ local function safely_get_var(var)
   end
 end
 
-local function get_var_or_default(var, default)
-  local user_var = safely_get_var(var)
+local function get_plugin_variable(var, default)
+  local user_var = safely_get_var("bufferline_"..var)
   return user_var ~= nil and user_var or default
 end
 
@@ -150,8 +150,7 @@ local function render_buffer(buffer, diagnostic_count)
   end
 
   if buffer.modified then
-    local modified_icon = safely_get_var("bufferline_modified_icon")
-    modified_icon = modified_icon ~= nil and modified_icon or "●"
+    local modified_icon = get_plugin_variable("modified_icon", "●")
     local modified_section = modified_icon..padding
     length = length + string.len(modified_section)
     component = component..modified_section
@@ -185,8 +184,7 @@ local function get_tabs()
 end
 
 local function render_close()
-  local close_icon = safely_get_var("bufferline_close_icon")
-  close_icon = close_icon ~= nil and close_icon or " close "
+  local close_icon = get_plugin_variable("close_icon", " close ")
   return close_icon, string.len(close_icon)
 end
 
@@ -270,11 +268,11 @@ local function render(buffers, tabs, close_length)
     )
 
   if marker.left and marker.left_count > 0 then
-    local trunc_icon = get_var_or_default("bufferline_left_trunc_marker", "⬅")
+    local trunc_icon = get_plugin_variable("left_trunc_marker", "⬅")
     line = suffix_highlight .. padding..marker.left_count..padding..trunc_icon..padding ..line
   end
   if marker.right and marker.right_count > 0 then
-    local trunc_icon = get_var_or_default("bufferline_right_trunc_marker", "➡")
+    local trunc_icon = get_plugin_variable("right_trunc_marker", "➡")
     line = line .. suffix_highlight .. padding..marker.right_count..padding..trunc_icon..padding
   end
 
