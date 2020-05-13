@@ -48,15 +48,6 @@ local function get_plugin_variable(var, default)
   return user_var or default
 end
 
-local function contains(table, element)
-  for key, _ in pairs(table) do
-    if key == element then
-      return true
-    end
-  end
-  return false
-end
-
 local function table_size(t)
   local count = 0
   for _ in pairs(t) do count = count + 1 end
@@ -104,23 +95,21 @@ local function shade_color(color, percent)
   return "#"..rr..gg..bb
 end
 
-local function get_hex(hl_name, part) -- luacheck: ignore
+local function get_hex(hl_name, part)
   local id = vim.fn.hlID(hl_name)
   return vim.fn.synIDattr(id, part)
 end
 
 local function set_highlight(name, hl)
--- TODO: if the value does not exist in the colorscheme this will return ""
--- which will fail in the set highlight function
   if hl and table_size(hl) > 0 then
     local cmd = "highlight! "..name
-    if contains(hl, "gui") then
+    if hl.gui and hl.gui ~= "" then
       cmd = cmd.." ".."gui="..hl.gui
     end
-    if contains(hl, "guifg") then
+    if hl.guifg and hl.guifg ~= "" then
       cmd = cmd.." ".."guifg="..hl.guifg
     end
-    if contains(hl, "guibg") then
+    if hl.guibg and hl.guibg ~= "" then
       cmd = cmd.." ".."guibg="..hl.guibg
     end
     local success, err = pcall(api.nvim_command, cmd)
