@@ -72,8 +72,8 @@ local function nvim_create_augroups(definitions)
 end
 
 local function _get_hex(hl_name, part)
-  local id = api.nvim_call_function('hlID', {hl_name})
-  return api.nvim_call_function('synIDattr', {id, part})
+  local id = vim.fn.hlID(hl_name)
+  return vim.fn.synIDattr(id, part)
 end
 
 local function set_highlight(name, user_var)
@@ -92,7 +92,7 @@ local function set_highlight(name, user_var)
     if not pcall(api.nvim_command, cmd) then
       api.nvim_err_writeln(
         "Unable to set your highlights, something isn't configured correctly"
-        )
+      )
     end
   end
 end
