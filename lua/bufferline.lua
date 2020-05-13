@@ -40,7 +40,7 @@ end
 
 local function get_plugin_variable(var, default)
   local user_var = safely_get_var("bufferline_"..var)
-  return user_var ~= nil and user_var or default
+  return user_var or default
 end
 
 local function contains(table, element)
@@ -78,7 +78,7 @@ end
 
 local function set_highlight(name, user_var)
   local dict = safely_get_var(user_var)
-  if dict ~= nil and table_size(dict) > 0 then
+  if dict and table_size(dict) > 0 then
     local cmd = "highlight! "..name
     if contains(dict, "gui") then
       cmd = cmd.." ".."gui="..dict.gui
@@ -111,7 +111,7 @@ end
 -- CORE
 ---------------------------------------------------------------------------//
 function M.handle_click(id)
-  if id ~= nil then
+  if id then
     api.nvim_command('buffer '..id)
   end
 end
