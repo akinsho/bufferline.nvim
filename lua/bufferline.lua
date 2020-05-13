@@ -8,6 +8,7 @@ local tab_highlight = '%#BufferLineTab#'
 local tab_selected_highlight = '%#BufferLineTabSelected#'
 local suffix_highlight = '%#BufferLine#'
 local selected_highlight = '%#BufferLineSelected#'
+local modified_highlight = '%#BufferLineModified#'
 local diagnostic_highlight = '%#ErrorMsg#'
 local background = '%#BufferLineBackground#'
 local separator_highlight = '%#BufferLineSeparator#'
@@ -180,7 +181,7 @@ local function render_buffer(buffer, diagnostic_count)
     local modified_icon = get_plugin_variable("modified_icon", "●")
     local modified_section = modified_icon..padding
     length = length + string.len(modified_section)
-    component = component..modified_section
+    component = component..modified_highlight..modified_section
   end
 
   -- Is rendering a space character "smaller" than a classic space possible
@@ -370,6 +371,7 @@ local function get_defaults()
   local comment_fg = get_hex('Comment', 'fg')
   local normal_fg = get_hex('Normal', 'fg')
   local normal_bg = get_hex('Normal', 'bg')
+  local diff_add_fg = get_hex('DiffAdd', 'fg')
   local tabline_sel_bg = get_hex('TabLineSel', 'bg')
 
   return {
@@ -388,6 +390,9 @@ local function get_defaults()
     bufferline_buffer_inactive = {
       guifg = comment_fg,
       guibg = normal_bg,
+    };
+    bufferline_modified = {
+      guifg = diff_add_fg,
     };
     bufferline_background = {
       guibg = shade_color(normal_bg, -20),
@@ -420,6 +425,7 @@ function M.setup(prefs)
     set_highlight('BufferLineInactive', highlights.bufferline_buffer_inactive)
     set_highlight('BufferLineBackground',highlights.bufferline_buffer)
     set_highlight('BufferLineSelected',highlights.bufferline_selected)
+    set_highlight('BufferLineModified',highlights.bufferline_modified)
     set_highlight('BufferLineTab', highlights.bufferline_tab)
     set_highlight('BufferLineSeparator', highlights.bufferline_separator)
     set_highlight('BufferLineTabSelected', highlights.bufferline_tab_selected)
