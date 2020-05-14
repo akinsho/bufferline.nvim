@@ -36,8 +36,9 @@ A _snazzy_ 😎💅 buffer line (with minimal tab integration) for **Neovim** bu
 
 ### Urgent
 
-- [x] Fix modified highlight coloring
+- [ ] Expose user configuration
 - [ ] Fix truncation happening too early i.e. available width reported incorrectly
+- [x] Fix modified highlight coloring
 
 ### Longterm
 
