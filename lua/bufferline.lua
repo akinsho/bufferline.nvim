@@ -398,7 +398,7 @@ local function get_defaults()
       guibg = shade_color(normal_bg, -20),
     };
     bufferline_separator = {
-      guibg = shade_color(normal_bg, -32),
+      guibg = shade_color(normal_bg, -35),
     };
     bufferline_selected = {
       guifg = normal_fg,
