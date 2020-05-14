@@ -1,11 +1,8 @@
 # nvim-bufferline
 
-![Bufferline screenshot](./nvim_bufferline.png "Nvim Bufferline")
-
-**Inactive buffer highlighting**
-![Inactive buffer highlighting](./inactive_highlight.png "Inactive buffer highlighting")
-
 A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built using **lua**.
+
+![Bufferline screenshot](./nvim_bufferline.png "Nvim Bufferline")
 
 **Status: 🚧 WIP**
 
@@ -16,7 +13,7 @@ A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built usin
 
 ### Why make it public rather than as part of your `init.vim`
 
-🤷
+🤷 figured someone else might like the aesthetic. Don't make me regret this...
 
 ## Goals
 
