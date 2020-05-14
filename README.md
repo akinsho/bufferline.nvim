@@ -59,13 +59,17 @@ without configuring it this shouldn't affect you too much.
 Plug 'Akin909/nvim-bufferline'
 ```
 
-## Configuration [Work in Progress 🚧]
+## Usage
 
-This plugin is designed to work automatically, deriving colors from the user's theme,
+```vim
+" In your init.vim AFTER loading plugins
+lua require'bufferline'.setup()
+```
+
+This plugin is designed to work automatically, deriving colours from the user's theme,
 but if you must...
 
 ```vim
-" In your init.vim, after loading the plugin
 lua require'bufferline'.setup{
     bufferline_tab = {
       guifg = comment_fg,

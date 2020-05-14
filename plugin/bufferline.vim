@@ -8,10 +8,4 @@ if !has('nvim')
     finish
 endif
 
-" Setup plugin internals like autocommands
-" Expose this to the user so they can pass in color
-" preferences in using lua syntax
-" BLOCKED: by not knowing how to set tabline via lua
-lua require'bufferline'.setup()
-
 let g:loaded_bufferline = 1
