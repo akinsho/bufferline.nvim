@@ -386,7 +386,7 @@ local function get_defaults()
   local normal_bg = get_hex('Normal', 'bg')
   local diff_add_fg = get_hex('DiffAdd', 'fg')
   local tabline_sel_bg = get_hex('TabLineSel', 'bg')
-  local separator_background_color = shade_color(normal_bg, -35)
+  local separator_background_color = shade_color(normal_bg, -33)
   local tabline_background_color = shade_color(normal_bg, -20)
   local background_color = shade_color(normal_bg, -30)
 
