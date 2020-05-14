@@ -2,6 +2,9 @@ require 'buffers'
 
 local api = vim.api
 
+---------------------------------------------------------------------------//
+-- Highlights
+---------------------------------------------------------------------------//
 local highlight = '%#BufferLine#'
 local inactive_highlight = '%#BufferLineInactive#'
 local tab_highlight = '%#BufferLineTab#'
@@ -9,10 +12,16 @@ local tab_selected_highlight = '%#BufferLineTabSelected#'
 local suffix_highlight = '%#BufferLine#'
 local selected_highlight = '%#BufferLineSelected#'
 local modified_highlight = '%#BufferLineModified#'
+local modified_inactive_highlight = '%#BufferLineModifiedInactive#'
+local modified_selected_highlight = '%#BufferLineModifiedSelected#'
 local diagnostic_highlight = '%#ErrorMsg#'
 local background = '%#BufferLineBackground#'
 local separator_highlight = '%#BufferLineSeparator#'
 local close = '%#BufferLine#%999X'
+ 
+---------------------------------------------------------------------------//
+-- Constants
+---------------------------------------------------------------------------//
 local padding = " "
 
 ---------------------------------------------------------------------------//
@@ -147,16 +156,16 @@ end
 
 local function get_buffer_highlight(buffer)
   if buffer:current() then
-    return selected_highlight
+    return selected_highlight, modified_selected_highlight
   elseif buffer:visible() then
-    return inactive_highlight
+    return inactive_highlight, modified_inactive_highlight
   else
-    return highlight
+    return highlight, modified_highlight
   end
 end
 
 local function render_buffer(buffer, diagnostic_count)
-  local buf_highlight = get_buffer_highlight(buffer)
+  local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
   local length
 
   if string.find(buffer.path, 'term://') ~= nil then
@@ -180,8 +189,7 @@ local function render_buffer(buffer, diagnostic_count)
   if buffer.modified then
     local modified_icon = get_plugin_variable("modified_icon", "●")
     local modified_section = modified_icon..padding
-    -- FIXME: Remove modified highlight for now: ..modified_highlight
-    component = component..modified_section.."%X"
+    component = component..modified_hl_to_use..modified_section.."%X"
     length = length + string.len(modified_section)
   end
 
@@ -384,6 +392,9 @@ local function get_defaults()
   local normal_bg = get_hex('Normal', 'bg')
   local diff_add_fg = get_hex('DiffAdd', 'fg')
   local tabline_sel_bg = get_hex('TabLineSel', 'bg')
+  local separator_background_color = shade_color(normal_bg, -35)
+  local tabline_background_color = shade_color(normal_bg, -20)
+  local background_color = shade_color(normal_bg, -30)
 
   return {
     bufferline_tab = {
@@ -396,7 +407,7 @@ local function get_defaults()
     };
     bufferline_buffer = {
       guifg = comment_fg,
-      guibg = shade_color(normal_bg, -30),
+      guibg = background_color,
     };
     bufferline_buffer_inactive = {
       guifg = comment_fg,
@@ -404,13 +415,21 @@ local function get_defaults()
     };
     bufferline_modified = {
       guifg = diff_add_fg,
-      guibg = "none"
+      guibg = background_color,
+    };
+    bufferline_modified_inactive = {
+      guifg = diff_add_fg,
+      guibg = normal_bg
+    };
+    bufferline_modified_selected = {
+      guifg = diff_add_fg,
+      guibg = normal_bg
     };
     bufferline_background = {
-      guibg = shade_color(normal_bg, -20),
+      guibg = tabline_background_color,
     };
     bufferline_separator = {
-      guibg = shade_color(normal_bg, -35),
+      guibg = separator_background_color,
     };
     bufferline_selected = {
       guifg = normal_fg,
@@ -427,17 +446,20 @@ end
     inactive_highlight: '#mycolor'
   }
 })
+  TODO: then validate user preferences and only set prefs that exists
 --]]
 function M.setup(prefs)
-  -- TODO: Validate user preferences and only set prefs that exists
   function _G.setup_bufferline_colors()
     local highlights = prefs or get_defaults()
+    -- TODO: should tabline fill be a different color from background
     set_highlight('TabLineFill', highlights.bufferline_background)
     set_highlight('BufferLine', highlights.bufferline_buffer)
     set_highlight('BufferLineInactive', highlights.bufferline_buffer_inactive)
-    set_highlight('BufferLineBackground',highlights.bufferline_buffer)
-    set_highlight('BufferLineSelected',highlights.bufferline_selected)
-    set_highlight('BufferLineModified',highlights.bufferline_modified)
+    set_highlight('BufferLineBackground', highlights.bufferline_buffer)
+    set_highlight('BufferLineSelected', highlights.bufferline_selected)
+    set_highlight('BufferLineModified', highlights.bufferline_modified)
+    set_highlight('BufferLineModifiedSelected', highlights.bufferline_modified_selected)
+    set_highlight('BufferLineModifiedInactive', highlights.bufferline_modified_inactive)
     set_highlight('BufferLineTab', highlights.bufferline_tab)
     set_highlight('BufferLineSeparator', highlights.bufferline_separator)
     set_highlight('BufferLineTabSelected', highlights.bufferline_tab_selected)
