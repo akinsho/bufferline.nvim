@@ -173,22 +173,23 @@ local function render_buffer(buffer, diagnostic_count)
 
   if diagnostic_count > 0 then
     local diagnostic_section = diagnostic_count..padding
-    length = length + string.len(diagnostic_section)
     component = component..diagnostic_highlight..diagnostic_section
+    length = length + string.len(diagnostic_section)
   end
 
   if buffer.modified then
     local modified_icon = get_plugin_variable("modified_icon", "●")
     local modified_section = modified_icon..padding
+    -- FIXME: Remove modified highlight for now: ..modified_highlight
+    component = component..modified_section.."%X"
     length = length + string.len(modified_section)
-    component = component..modified_highlight..modified_section
   end
 
   -- Is rendering a space character "smaller" than a classic space possible
   -- http://jkorpela.fi/chars/spaces.html
-  local separator_component = " "
-  length = length + string.len(separator_component) * 2 -- we render 2 separators
+  local separator_component = " "
   local separator = separator_highlight..separator_component.."%X"
+  length = length + string.len(separator_component) * 2 -- we render 2 separators
   return separator..component .."%X", length
 end
 
@@ -314,6 +315,15 @@ end
 
 --[[
 TODO
+===========
+
+URGENT:
+===========
+ [ ] Fix modified highlight coloring
+
+ [ ] Fix truncation happening too early i.e. available width reported incorrectly
+
+===========
  [X] Show tabs
 
  [x] Handle keeping active buffer always in view
@@ -330,6 +340,7 @@ TODO
  [ ] Buffer label truncation
 
  [ ] Highlight file type icons if possible see:
+
 --]]
 function M.bufferline()
   local buf_nums = api.nvim_list_bufs()
@@ -393,6 +404,7 @@ local function get_defaults()
     };
     bufferline_modified = {
       guifg = diff_add_fg,
+      guibg = "none"
     };
     bufferline_background = {
       guibg = shade_color(normal_bg, -20),

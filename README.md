@@ -7,7 +7,7 @@
 
 A _snazzy_ 😎💅 buffer line (with minimal tab integration) for **Neovim** built using `lua`.
 
-🚧 **V. WIP** - Definitely not ready for anyone else's use ATM.
+**Status: 🚧 WIP**
 
 ## Why another buffer line plugin?
 
@@ -29,22 +29,73 @@ A _snazzy_ 😎💅 buffer line (with minimal tab integration) for **Neovim** bu
 ## Non-goals
 
 - Supporting `vim` please don't ask. The whole point was to create a `lua` plugin. If vim ends up supporting `lua` in the _same_ way then **maybe**.
-- Add every possible feature under the sun ☀, to appease everybody 🤷.
+- Add every possible feature under the sun ☀, to appease everybody.
 - Create and maintain a monolith ⛏ 😓.
+
+## Todo
+
+### Urgent
+
+- [ ] Fix modified highlight coloring
+- [ ] Fix truncation happening too early i.e. available width reported incorrectly
+
+### Longterm
+
+- [x] Show tabs
+- [x] Handle keeping active buffer always in view
+- [x] Show remainder marker as <- or -> depending on where truncation occured
+- [x] Fix current buffer highlight disappearing when inside ignored buffer
+- [x] Dynamically set styling to appear consistent across colorschemes
+- [ ] Buffer label truncation
+- [ ] Highlight file type icons if possible see [for example](https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2)
 
 ## Installation
 
-😅 _Don't_, not yet anyway
+Super early days there might be some breaking changes, if you use this
+without configuring it this shouldn't affect you too much.
 
 ```vim
 Plug 'Akin909/nvim-bufferline'
 ```
 
-## Configuration
+## Configuration [Work in Progress 🚧]
+
+This plugin is designed to work automatically, deriving colors from the user's theme,
+but if you must...
 
 ```vim
 " Somewhere in your init.vim
-let g:bufferline_buffer = { "guifg": "color_i_like", "guibg": "color_i_like" }
-let g:bufferline_background = { "guibg": "color_i_like" }
-let g:bufferline_selected = {"guifg": "color_i_like", "guibg": "color_i_like", "gui": "bold,italic"}
+lua require'bufferline'.setup{
+    bufferline_tab = {
+      guifg = comment_fg,
+      guibg = normal_bg,
+    };
+    bufferline_tab_selected = {
+      guifg = comment_fg,
+      guibg = tabline_sel_bg,
+    };
+    bufferline_buffer = {
+      guifg = comment_fg,
+      guibg = custom_bg,
+    };
+    bufferline_buffer_inactive = {
+      guifg = comment_fg,
+      guibg = normal_bg,
+    };
+    bufferline_modified = {
+      guifg = diff_add_fg,
+      guibg = "none"
+    };
+    bufferline_background = {
+      guibg = custom_bg,
+    };
+    bufferline_separator = {
+      guibg = custom_bg,
+    };
+    bufferline_selected = {
+      guifg = normal_fg,
+      guibg = normal_bg,
+      gui = "bold,italic",
+    };
+}
 ```
