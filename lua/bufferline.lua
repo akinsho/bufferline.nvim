@@ -18,7 +18,7 @@ local diagnostic_highlight = '%#ErrorMsg#'
 local background = '%#BufferLineBackground#'
 local separator_highlight = '%#BufferLineSeparator#'
 local close = '%#BufferLine#%999X'
- 
+
 ---------------------------------------------------------------------------//
 -- Constants
 ---------------------------------------------------------------------------//

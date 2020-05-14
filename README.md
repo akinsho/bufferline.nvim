@@ -1,6 +1,6 @@
 # nvim-bufferline
 
-![Bufferline screenshot](./nvim-bufferline.png "Nvim Bufferline")
+![Bufferline screenshot](./nvim_bufferline.png "Nvim Bufferline")
 
 **Inactive buffer highlighting**
 ![Inactive buffer highlighting](./inactive_highlight.png "Inactive buffer highlighting")
@@ -20,7 +20,7 @@ A _snazzy_ 😎💅 buffer line (with minimal tab integration) for **Neovim** bu
 
 ## Goals
 
-- [ ] Make it snazzy
+- [x] Make it snazzy
 - [ ] Maintain general appearance across various colorschemes
 - [ ] Show LSP diagnostics in bufferline so it's clear which buffers have errors
 - [ ] Show only the buffers relevant/open in a specific tab as a configurable setting
@@ -36,7 +36,7 @@ A _snazzy_ 😎💅 buffer line (with minimal tab integration) for **Neovim** bu
 
 ### Urgent
 
-- [ ] Fix modified highlight coloring
+- [x] Fix modified highlight coloring
 - [ ] Fix truncation happening too early i.e. available width reported incorrectly
 
 ### Longterm
@@ -64,7 +64,7 @@ This plugin is designed to work automatically, deriving colors from the user's t
 but if you must...
 
 ```vim
-" Somewhere in your init.vim
+" In your init.vim, after loading the plugin
 lua require'bufferline'.setup{
     bufferline_tab = {
       guifg = comment_fg,
