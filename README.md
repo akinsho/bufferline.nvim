@@ -5,38 +5,41 @@
 **Inactive buffer highlighting**
 ![Inactive buffer highlighting](./inactive_highlight.png "Inactive buffer highlighting")
 
-A _snazzy_ 😎💅 buffer line (with minimal tab integration) for **Neovim** built using `lua`.
+A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built using **lua**.
 
 **Status: 🚧 WIP**
 
 ## Why another buffer line plugin?
 
-1. I was looking for an excuse to play with `lua` and learn to create a plugin with it for **Neovim**.
+1. I was looking for an excuse to play with **lua** and learn to create a plugin with it for Neovim.
 2. I wanted to add some tweaks to my buffer line and didn't want to figure out a bunch of `vimscript` in some other plugin.
 
 ### Why make it public rather than as part of your `init.vim`
 
-🤷🤷🤷
+🤷
 
 ## Goals
 
 - [x] Make it snazzy
-- [ ] Maintain general appearance across various colorschemes
+- [x] Maintain general appearance across various colorschemes. Tested with:
+  - `one.vim`
+  - `night-owl.vim`
+  - `vim-monokai-tasty`
 - [ ] Show LSP diagnostics in bufferline so it's clear which buffers have errors
 - [ ] Show only the buffers relevant/open in a specific tab as a configurable setting
 - [ ] A _few_ different configuration options for file names
 
 ## Non-goals
 
-- Supporting `vim` please don't ask. The whole point was to create a `lua` plugin. If vim ends up supporting `lua` in the _same_ way then **maybe**.
+- Supporting vim please don't ask. The whole point was to create a lua plugin. If vim ends up supporting lua in the _same_ way then maybe.
 - Add every possible feature under the sun ☀, to appease everybody.
-- Create and maintain a monolith ⛏ 😓.
+- Create and maintain a monolith 😓.
 
 ## Todo
 
 ### Urgent
 
-- [ ] Expose user configuration
+- [x] Expose user configuration
 - [ ] Fix truncation happening too early i.e. available width reported incorrectly
 - [x] Fix modified highlight coloring
 
