@@ -1,5 +1,11 @@
 local api = vim.api
 --------------------------------
+-- Constants
+--------------------------------
+local terminal_icon = " "
+local terminal_buftype = "terminal"
+
+--------------------------------
 -- A collection of buffers
 --------------------------------
 Buffers = {}
@@ -30,23 +36,34 @@ function Buffers:add(buf)
   self.length = self.length + buf.length
 end
 
+local function buffer_is_terminal(buf)
+  return string.find(buf.path, 'term://') or buf.buftype == terminal_buftype
+end
+
 --------------------------------
 -- A single buffer
 --------------------------------
-
 Buffer = {}
 
-function Buffer:new(n)
-  n.modified = api.nvim_buf_get_option(n.id, 'modified')
-  n.filename = vim.fn.fnamemodify(n.path, ":p:t")
-  if n.path == "" then n.path = "[No Name]" end
+function Buffer:new(buf)
+  buf.modifiable = api.nvim_buf_get_option(buf.id, 'modifiable')
+  buf.modified = api.nvim_buf_get_option(buf.id, 'modified')
+  buf.buftype = api.nvim_buf_get_option(buf.id, 'buftype')
+  if buf.path == "" then buf.path = "[No Name]" end
 
   -- Set icon
-  local devicons_loaded = vim.fn.exists('*WebDevIconsGetFileTypeSymbol') > 0
-  n.icon = devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(n.path) or ""
+  if buffer_is_terminal(buf)  then
+    buf.icon = terminal_icon
+    buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
+  else
+  -- TODO: allow the format specifier to be configured
+    buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
+    local devicons_loaded = vim.fn.exists('*WebDevIconsGetFileTypeSymbol') > 0
+    buf.icon = devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
+  end
 
   self.__index = self
-  return setmetatable(n, self)
+  return setmetatable(buf, self)
 end
 
 -- Borrowed this trick from

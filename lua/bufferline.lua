@@ -168,13 +168,6 @@ local function render_buffer(buffer, diagnostic_count)
   local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
   local length
 
-  if string.find(buffer.path, 'term://') ~= nil then
-    local name = vim.fn.fnamemodify(buffer.path, ":p:t")
-    name = padding..' '..name..padding
-    length = string.len(name)
-    return buf_highlight..name, length
-  end
-
   local component = padding..buffer.icon..padding..buffer.filename..padding
   -- Avoid including highlight strings in the buffer length
   length = string.len(component)
@@ -186,7 +179,7 @@ local function render_buffer(buffer, diagnostic_count)
     length = length + string.len(diagnostic_section)
   end
 
-  if buffer.modified then
+  if buffer.modifieable and buffer.modified then
     local modified_icon = get_plugin_variable("modified_icon", "●")
     local modified_section = modified_icon..padding
     component = component..modified_hl_to_use..modified_section.."%X"
