@@ -387,7 +387,6 @@ local function get_defaults()
   local diff_add_fg = get_hex('DiffAdd', 'fg')
   local tabline_sel_bg = get_hex('TabLineSel', 'bg')
   local separator_background_color = shade_color(normal_bg, -33)
-  local tabline_background_color = shade_color(normal_bg, -20)
   local background_color = shade_color(normal_bg, -30)
 
   return {
@@ -419,9 +418,6 @@ local function get_defaults()
       guifg = diff_add_fg,
       guibg = normal_bg
     };
-    bufferline_background = {
-      guibg = tabline_background_color,
-    };
     bufferline_separator = {
       guibg = separator_background_color,
     };
@@ -445,8 +441,6 @@ end
 function M.setup(prefs)
   function _G.setup_bufferline_colors()
     local highlights = prefs or get_defaults()
-    -- TODO: should tabline fill be a different color from background
-    set_highlight('TabLineFill', highlights.bufferline_background)
     set_highlight('BufferLine', highlights.bufferline_buffer)
     set_highlight('BufferLineInactive', highlights.bufferline_buffer_inactive)
     set_highlight('BufferLineBackground', highlights.bufferline_buffer)
