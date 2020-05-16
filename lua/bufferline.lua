@@ -179,7 +179,7 @@ local function render_buffer(buffer, diagnostic_count)
     length = length + string.len(diagnostic_section)
   end
 
-  if buffer.modifieable and buffer.modified then
+  if buffer.modifiable and buffer.modified then
     local modified_icon = get_plugin_variable("modified_icon", "●")
     local modified_section = modified_icon..padding
     component = component..modified_hl_to_use..modified_section.."%X"

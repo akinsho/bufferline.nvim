@@ -52,7 +52,7 @@ function Buffer:new(buf)
   if buf.path == "" then buf.path = "[No Name]" end
 
   -- Set icon
-  if buffer_is_terminal(buf)  then
+  if buffer_is_terminal(buf) then
     buf.icon = terminal_icon
     buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
   else
