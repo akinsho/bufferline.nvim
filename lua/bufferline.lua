@@ -33,12 +33,24 @@ local M = {}
 ---------------------------------------------------------------------------//
 -- HELPERS
 ---------------------------------------------------------------------------//
-local function combine_lists(t1, t2)
-  local result = {unpack(t1)}
-  for i=1,#t2 do
-    result[#result+1] = t2[i]
-  end
-  return result
+-- return a new array containing the concatenation of all of its
+-- parameters. Scaler parameters are included in place, and array
+-- parameters have their values shallow-copied to the final array.
+-- Note that userdata and function values are treated as scalar.
+-- https://stackoverflow.com/questions/1410862/concatenation-of-tables-in-lua
+local function array_concat(...)
+    local t = {}
+    for n = 1,select("#",...) do
+        local arg = select(n,...)
+        if type(arg) == "table" then
+            for _,v in ipairs(arg) do
+                t[#t+1] = v
+            end
+        else
+            t[#t+1] = arg
+        end
+    end
+    return t
 end
 
 local function safely_get_var(var)
@@ -262,8 +274,7 @@ local function truncate(before, current, after, available_width, marker)
   local total_length = before.length + current.length + after.length
   if available_width >= total_length then
     -- Merge all the buffers and render the components
-    local buffers = combine_lists(before.buffers, current.buffers)
-    buffers = combine_lists(buffers, after.buffers)
+    local buffers = array_concat(before.buffers, current.buffers, after.buffers)
     for _,buf in ipairs(buffers) do line = line .. buf.component end
     return line, marker
   else
