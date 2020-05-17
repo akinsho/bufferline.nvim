@@ -198,9 +198,12 @@ local function render_buffer(buffer, diagnostic_count)
     length = length + string.len(modified_section)
   end
 
-  -- Is rendering a space character "smaller" than a classic space possible
-  -- http://jkorpela.fi/chars/spaces.html
-  local separator_component = " "
+  -- Use: https://en.wikipedia.org/wiki/Block_Elements
+  -- separator is is "translucent" so coloring is more subtle
+  -- a bit more like a real shadow
+  -- TODO: investigate using a smaller block character (▍) at the start of the
+  -- tab and end making sure to handle the empty space background highlight
+  local separator_component = "░"
   local separator = separator_highlight..separator_component.."%X"
   length = length + string.len(separator_component) * 2 -- we render 2 separators
   return separator..component .."%X", length
@@ -390,7 +393,7 @@ local function get_defaults()
   local normal_bg = get_hex('Normal', 'bg')
   local diff_add_fg = get_hex('DiffAdd', 'fg')
   local tabline_sel_bg = get_hex('TabLineSel', 'bg')
-  local separator_background_color = shade_color(normal_bg, -33)
+  local separator_background_color = shade_color(normal_bg, -40)
   local background_color = shade_color(normal_bg, -30)
 
   return {
@@ -423,7 +426,8 @@ local function get_defaults()
       guibg = normal_bg
     };
     bufferline_separator = {
-      guibg = separator_background_color,
+      guifg = separator_background_color,
+      guibg = background_color,
     };
     bufferline_selected = {
       guifg = normal_fg,
