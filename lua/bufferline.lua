@@ -395,6 +395,8 @@ local function get_defaults()
   local normal_bg = get_hex('Normal', 'bg')
   local diff_add_fg = get_hex('DiffAdd', 'fg')
   local tabline_sel_bg = get_hex('TabLineSel', 'bg')
+  -- TODO: we should determine how much to darken this based on the brightness
+  -- of the background color
   local separator_background_color = shade_color(normal_bg, -80)
   local background_color = shade_color(normal_bg, -30)
 
