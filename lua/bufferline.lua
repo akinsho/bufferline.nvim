@@ -316,12 +316,14 @@ local function render(buffers, tabs, close_length)
     { left_count = 0, right_count = 0, left = false, right = false}
     )
 
+  -- Icons from https://fontawesome.com/cheatsheet
+  -- TODO: Add a check to see if user wants fancy icons or not
   if marker.left and marker.left_count > 0 then
-    local trunc_icon = get_plugin_variable("left_trunc_marker", "⬅")
+    local trunc_icon = get_plugin_variable("left_trunc_marker", "")
     line = suffix_highlight .. padding..marker.left_count..padding..trunc_icon..padding ..line
   end
   if marker.right and marker.right_count > 0 then
-    local trunc_icon = get_plugin_variable("right_trunc_marker", "➡")
+    local trunc_icon = get_plugin_variable("right_trunc_marker", "")
     line = line .. suffix_highlight .. padding..marker.right_count..padding..trunc_icon..padding
   end
 
