@@ -441,18 +441,19 @@ local function get_defaults()
   }
 end
 
---[[ TODO pass the preferences through on setup to go into the colors function
- this way we can setup config vars in lua e.g.
- lua require('bufferline').setup({
-  highlight = {
-    inactive_highlight: '#mycolor'
-  }
-})
-  TODO: then validate user preferences and only set prefs that exists
+--[[
+  TODO then validate user preferences and only set prefs that exists
 --]]
 function M.setup(prefs)
   function _G.setup_bufferline_colors()
-    local highlights = prefs or get_defaults()
+    local highlights
+    if prefs and type(prefs) == "table" then
+      -- "keep" behavior means that left > right in terms of priority
+      highlights = vim.tbl_extend("keep", prefs, get_defaults())
+    else
+      highlights = get_defaults()
+    end
+
     set_highlight('BufferLine', highlights.bufferline_buffer)
     set_highlight('BufferLineInactive', highlights.bufferline_buffer_inactive)
     set_highlight('BufferLineBackground', highlights.bufferline_buffer)
