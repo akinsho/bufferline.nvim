@@ -1,4 +1,4 @@
-# nvim-bufferline
+# nvim-bufferline.lua
 
 A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built using **lua**.
 

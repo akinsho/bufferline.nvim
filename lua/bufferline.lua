@@ -181,8 +181,10 @@ local function render_buffer(buffer, diagnostic_count)
   local length
 
   local component = padding..buffer.icon..padding..buffer.filename..padding
-  -- Avoid including highlight strings in the buffer length
-  length = string.len(component)
+  -- string.len counts number of bytes and so the unicode icons are counted
+  -- larger than their display width. So we force this to one also
+  -- avoid including highlight strings in the buffer length
+  length = string.len(buffer.filename) + (string.len(padding) * 3) + 1 -- icon
   component = buf_highlight..make_clickable(component, buffer.id)
 
   if diagnostic_count > 0 then
@@ -195,7 +197,7 @@ local function render_buffer(buffer, diagnostic_count)
     local modified_icon = get_plugin_variable("modified_icon", "●")
     local modified_section = modified_icon..padding
     component = component..modified_hl_to_use..modified_section.."%X"
-    length = length + string.len(modified_section)
+    length = length + 2 -- icon(1) + padding(1)
   end
 
   -- Use: https://en.wikipedia.org/wiki/Block_Elements
@@ -205,7 +207,7 @@ local function render_buffer(buffer, diagnostic_count)
   -- tab and end making sure to handle the empty space background highlight
   local separator_component = "░"
   local separator = separator_highlight..separator_component.."%X"
-  length = length + string.len(separator_component) * 2 -- we render 2 separators
+  length = length + 1 -- icon(1)
   return separator..component .."%X", length
 end
 
@@ -338,7 +340,7 @@ URGENT:
 ===========
  [ ] Investigate using guibg=none for modified symbol highlight instead of multiple
  highlight groups per status
- [ ] Fix truncation happening too early i.e. available width reported incorrectly
+ [x] Fix truncation happening too early i.e. available width reported incorrectly
 
 ===========
  [x] Fix modified highlight coloring
