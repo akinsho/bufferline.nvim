@@ -56,7 +56,7 @@ Super early days there might be some breaking changes, if you use this
 without configuring it this shouldn't affect you too much.
 
 ```vim
-Plug 'Akin909/nvim-bufferline'
+Plug 'Akin909/nvim-bufferline.lua'
 ```
 
 ## Usage
@@ -90,9 +90,6 @@ lua require'bufferline'.setup{
     bufferline_modified = {
       guifg = diff_add_fg,
       guibg = "none"
-    };
-    bufferline_background = {
-      guibg = custom_bg,
     };
     bufferline_separator = {
       guibg = custom_bg,
