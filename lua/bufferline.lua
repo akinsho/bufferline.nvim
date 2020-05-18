@@ -1,6 +1,7 @@
 require 'buffers'
 
 local api = vim.api
+local strwidth = vim.fn.strwidth
 
 ---------------------------------------------------------------------------//
 -- Highlights
@@ -182,22 +183,22 @@ local function render_buffer(buffer, diagnostic_count)
 
   local component = padding..buffer.icon..padding..buffer.filename..padding
   -- string.len counts number of bytes and so the unicode icons are counted
-  -- larger than their display width. So we force this to one also
-  -- avoid including highlight strings in the buffer length
-  length = string.len(buffer.filename) + (string.len(padding) * 3) + 1 -- icon
+  -- larger than their display width. So we use nvim's strwidth
+  -- also avoid including highlight strings in the buffer length
+  length = strwidth(component)
   component = buf_highlight..make_clickable(component, buffer.id)
 
   if diagnostic_count > 0 then
     local diagnostic_section = diagnostic_count..padding
     component = component..diagnostic_highlight..diagnostic_section
-    length = length + string.len(diagnostic_section)
+    length = length + strwidth(diagnostic_section)
   end
 
   if buffer.modifiable and buffer.modified then
     local modified_icon = get_plugin_variable("modified_icon", "●")
     local modified_section = modified_icon..padding
     component = component..modified_hl_to_use..modified_section.."%X"
-    length = length + 2 -- icon(1) + padding(1)
+    length = length + strwidth(modified_section) -- icon(1) + padding(1)
   end
 
   -- Use: https://en.wikipedia.org/wiki/Block_Elements
@@ -207,7 +208,7 @@ local function render_buffer(buffer, diagnostic_count)
   -- tab and end making sure to handle the empty space background highlight
   local separator_component = "░"
   local separator = separator_highlight..separator_component.."%X"
-  length = length + 1 -- icon(1)
+  length = length + strwidth(separator_component)
   return separator..component .."%X", length
 end
 
@@ -218,7 +219,7 @@ end
 local function render_tab(num, is_active)
   local hl = is_active and tab_selected_highlight or tab_highlight
   local name = padding.. num ..padding
-  local length = string.len(name)
+  local length = strwidth(name)
   return hl .. tab_click_component(num) .. name .. "%X", length
 end
 
@@ -237,7 +238,7 @@ end
 
 local function render_close()
   local close_icon = get_plugin_variable("close_icon", " close ")
-  return close_icon, string.len(close_icon)
+  return close_icon, strwidth(close_icon)
 end
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
