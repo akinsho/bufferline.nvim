@@ -300,17 +300,17 @@ end
 
 local function render(buffers, tabs, close_length)
   local tab_components = ""
-  local total_length = close_length
+  local tabs_and_close_length = close_length
 
   -- Add the length of the tabs + close components to total length
   for _,t in pairs(tabs) do
     if not vim.tbl_isempty(t) then
-      total_length = total_length + t.length
+      tabs_and_close_length = tabs_and_close_length + t.length
       tab_components = tab_components .. t.component
     end
   end
 
-  local available_width = api.nvim_get_option("columns") - total_length
+  local available_width = api.nvim_get_option("columns") - tabs_and_close_length
   local before, current, after = get_sections(buffers)
   local line, marker = truncate(
     before,
@@ -341,14 +341,16 @@ TODO
 URGENT:
 ===========
  [ ] Investigate using guibg=none for modified symbol highlight instead of multiple
- highlight groups per status
+     highlight groups per status
  [x] Fix truncation happening too early i.e. available width reported incorrectly
-
+ [ ] Fix visibility on light backgrounds by checking the set background option
+     if set background light use another color other than comment for background buffer
+     text
 ===========
  [x] Fix modified highlight coloring
  [X] Show tabs
  [x] Handle keeping active buffer always in view
- https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
+     https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
  [x] Show remainder marker as <- or -> depending on where truncation occured
  [X] Fix current buffer highlight disappearing when inside ignored buffer
  [/] Refactor buffers to be a metatable with methods for sizing, and stringifying
