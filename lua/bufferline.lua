@@ -55,10 +55,11 @@ local function array_concat(...)
 end
 
 local function safely_get_var(var)
-  if pcall(function() api.nvim_get_var(var) end) then
-    return api.nvim_get_var(var)
-  else
+  local success, result =  pcall(function() api.nvim_get_var(var) end)
+  if not success then
     return nil
+  else
+    return result
   end
 end
 
