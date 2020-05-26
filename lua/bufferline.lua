@@ -91,13 +91,17 @@ local function nvim_create_augroups(definitions)
   end
 end
 
--- SOURCE:
--- https://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
-local function shade_color(color, percent)
+local function to_rgb(color)
   local r = tonumber(string.sub(color, 2,3), 16)
   local g = tonumber(string.sub(color, 4,5), 16)
   local b = tonumber(string.sub(color, 6), 16)
+  return r, g, b
+end
 
+-- SOURCE:
+-- https://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
+local function shade_color(color, percent)
+  local r, g, b = to_rgb(color)
   r = math.floor(tonumber(r * (100 + percent) / 100))
   g = math.floor(tonumber(g * (100 + percent) / 100))
   b = math.floor(tonumber(b * (100 + percent) / 100))
@@ -117,6 +121,20 @@ local function shade_color(color, percent)
   local bb = string.len(b) == 1 and "0" .. b or b
 
   return "#"..rr..gg..bb
+end
+
+--- Determine whether to use black or white text
+-- Ref: https://stackoverflow.com/a/1855903/837964
+-- https://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color
+local function color_is_bright(hex)
+  local r, g, b = to_rgb(hex)
+  -- Counting the perceptive luminance - human eye favors green color
+  local luminance = (0.299*r + 0.587*g + 0.114*b)/255
+  if luminance > 0.5 then
+    return true -- Bright colors, black font
+  else
+    return false -- Dark colors, white font
+  end
 end
 
 local function get_hex(hl_name, part)
@@ -401,10 +419,15 @@ local function get_defaults()
   local normal_bg = get_hex('Normal', 'bg')
   local diff_add_fg = get_hex('DiffAdd', 'fg')
   local tabline_sel_bg = get_hex('TabLineSel', 'bg')
-  -- TODO: we should determine how much to darken this based on the brightness
-  -- of the background color
-  local separator_background_color = shade_color(normal_bg, -65)
-  local background_color = shade_color(normal_bg, -30)
+
+  -- If the colorscheme is bright we shouldn't do as much shading
+  -- as this makes light color schemes harder to read
+  local is_bright_background = color_is_bright(normal_bg)
+  local separator_shading = is_bright_background and -35 or -65
+  local background_shading = is_bright_background and -15 or -30
+
+  local separator_background_color = shade_color(normal_bg, separator_shading)
+  local background_color = shade_color(normal_bg, background_shading)
 
   return {
     bufferline_tab = {
