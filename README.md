@@ -18,7 +18,7 @@ A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built usin
 ## Goals
 
 - [x] Make it snazzy
-- [x] Maintain general appearance across various colorschemes. Tested with:
+- [x] Maintain general appearance across various colour schemes. Tested with:
   - `one.vim`
   - `night-owl.vim`
   - `vim-monokai-tasty`
@@ -38,15 +38,15 @@ A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built usin
 
 - [x] Expose user configuration
 - [ ] Fix truncation happening too early i.e. available width reported incorrectly
-- [x] Fix modified highlight coloring
+- [x] Fix modified highlight colouring
 
-### Longterm
+### Long term
 
 - [x] Show tabs
 - [x] Handle keeping active buffer always in view
-- [x] Show remainder marker as <- or -> depending on where truncation occured
+- [x] Show remainder marker as <- or -> depending on where truncation occurred
 - [x] Fix current buffer highlight disappearing when inside ignored buffer
-- [x] Dynamically set styling to appear consistent across colorschemes
+- [x] Dynamically set styling to appear consistent across colour schemes
 - [ ] Buffer label truncation
 - [ ] Highlight file type icons if possible see [for example](https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2)
 
