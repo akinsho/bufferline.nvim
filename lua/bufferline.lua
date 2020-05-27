@@ -200,19 +200,24 @@ end
 local function render_buffer(buffer, diagnostic_count)
   local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
   local length
+  local is_current = buffer:current()
 
-  local component = padding..buffer.icon..padding..buffer.filename..padding
+  local component = buffer.icon..padding..buffer.filename..padding
+  -- pad the non active buffer before the highlighting is applied
+  if not is_current then
+    component = padding .. component
+  end
   -- string.len counts number of bytes and so the unicode icons are counted
   -- larger than their display width. So we use nvim's strwidth
   -- also avoid including highlight strings in the buffer length
   length = strwidth(component)
   component = buf_highlight..make_clickable(component, buffer.id)
 
-  if buffer:current() then
+  if is_current then
     -- U+2590 ▐ Right half block, this character is right aligned so the
     -- background highlight doesn't appear in th middle
-    -- alternative = ▕
-    local active_indicator = '▐'
+    -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
+    local active_indicator = '▎'
     local active_highlight = selected_indicator_highlight.. active_indicator .. '%*'
     length = length + strwidth(active_indicator)
     component = active_highlight .. component
@@ -491,7 +496,7 @@ local function get_defaults()
     };
     bufferline_selected_indicator = {
       guifg = tabline_sel_bg,
-      guibg = background_color,
+      guibg = normal_bg,
     };
     bufferline_selected = {
       guifg = normal_fg,
