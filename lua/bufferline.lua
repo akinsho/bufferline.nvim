@@ -312,6 +312,13 @@ local function truncate(before, current, after, available_width, marker)
       marker.right_count = marker.right_count + 1
       marker.right = true
     end
+      -- This represents the number associated with each truncation marker prefix
+      -- if we are truncating more than 10 buffers then the display width of the
+      -- marker count will be 2 i.e. 10 vs < 10 which would be e.g. 5
+      -- I've assumed it will not be 3 digits because that seems insane to me
+      local right_marker_count = marker.right_count > 9 and 2 or 1
+      local left_marker_count = marker.left_count > 9 and 2 or 1
+      available_width = available_width - right_marker_count - left_marker_count
     return truncate(before, current, after, available_width, marker), marker
   end
 end
@@ -328,7 +335,15 @@ local function render(buffers, tabs, close_length)
     end
   end
 
-  local available_width = api.nvim_get_option("columns") - tabs_and_close_length
+  local left_trunc_icon = get_plugin_variable("left_trunc_marker", "")
+  local right_trunc_icon = get_plugin_variable("right_trunc_marker", "")
+  local left_icon_size = strwidth(left_trunc_icon)
+  local right_icon_size = strwidth(right_trunc_icon)
+  -- We remove this amount from the available width so if we have to truncate
+  -- we have enough space to show the markers.
+  local truncation_marker_offset = left_icon_size + right_icon_size
+
+  local available_width = api.nvim_get_option("columns") - tabs_and_close_length - truncation_marker_offset
   local before, current, after = get_sections(buffers)
   local line, marker = truncate(
     before,
@@ -341,12 +356,10 @@ local function render(buffers, tabs, close_length)
   -- Icons from https://fontawesome.com/cheatsheet
   -- TODO: Add a check to see if user wants fancy icons or not
   if marker.left and marker.left_count > 0 then
-    local trunc_icon = get_plugin_variable("left_trunc_marker", "")
-    line = suffix_highlight .. padding..marker.left_count..padding..trunc_icon..padding ..line
+    line = suffix_highlight .. padding..marker.left_count..padding..left_trunc_icon..padding ..line
   end
   if marker.right and marker.right_count > 0 then
-    local trunc_icon = get_plugin_variable("right_trunc_marker", "")
-    line = line .. suffix_highlight .. padding..marker.right_count..padding..trunc_icon..padding
+    line = line .. suffix_highlight .. padding..marker.right_count..padding..right_trunc_icon..padding
   end
 
   return tab_components..line

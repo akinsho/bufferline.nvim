@@ -22,6 +22,9 @@ A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built usin
   - `one.vim`
   - `night-owl.vim`
   - `vim-monokai-tasty`
+
+### Future Goals
+
 - [ ] Show LSP diagnostics in bufferline so it's clear which buffers have errors
 - [ ] Show only the buffers relevant/open in a specific tab as a configurable setting
 - [ ] A _few_ different configuration options for file names
