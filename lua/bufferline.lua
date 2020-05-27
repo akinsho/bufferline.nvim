@@ -335,13 +335,15 @@ local function render(buffers, tabs, close_length)
     end
   end
 
+  -- Icons from https://fontawesome.com/cheatsheet
   local left_trunc_icon = get_plugin_variable("left_trunc_marker", "")
   local right_trunc_icon = get_plugin_variable("right_trunc_marker", "")
   local left_icon_size = strwidth(left_trunc_icon)
   local right_icon_size = strwidth(right_trunc_icon)
+  local truncation_padding = 3 -- padding + count + padding + icon + padding
   -- We remove this amount from the available width so if we have to truncate
   -- we have enough space to show the markers.
-  local truncation_marker_offset = left_icon_size + right_icon_size
+  local truncation_marker_offset = left_icon_size + right_icon_size + (truncation_padding * 2)
 
   local available_width = api.nvim_get_option("columns") - tabs_and_close_length - truncation_marker_offset
   local before, current, after = get_sections(buffers)
@@ -353,8 +355,9 @@ local function render(buffers, tabs, close_length)
     { left_count = 0, right_count = 0, left = false, right = false}
     )
 
-  -- Icons from https://fontawesome.com/cheatsheet
   -- TODO: Add a check to see if user wants fancy icons or not
+  -- TODO: Deriving the size of the truncation marker should happen before so
+  -- we can account for it in the truncation function
   if marker.left and marker.left_count > 0 then
     line = suffix_highlight .. padding..marker.left_count..padding..left_trunc_icon..padding ..line
   end
