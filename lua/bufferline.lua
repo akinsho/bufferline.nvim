@@ -12,6 +12,7 @@ local tab_highlight = '%#BufferLineTab#'
 local tab_selected_highlight = '%#BufferLineTabSelected#'
 local suffix_highlight = '%#BufferLine#'
 local selected_highlight = '%#BufferLineSelected#'
+local selected_indicator_highlight = '%#BufferLineSelectedIndicator#'
 local modified_highlight = '%#BufferLineModified#'
 local modified_inactive_highlight = '%#BufferLineModifiedInactive#'
 local modified_selected_highlight = '%#BufferLineModifiedSelected#'
@@ -206,6 +207,16 @@ local function render_buffer(buffer, diagnostic_count)
   -- also avoid including highlight strings in the buffer length
   length = strwidth(component)
   component = buf_highlight..make_clickable(component, buffer.id)
+
+  if buffer:current() then
+    -- U+2590 ▐ Right half block, this character is right aligned so the
+    -- background highlight doesn't appear in th middle
+    -- alternative = ▕
+    local active_indicator = '▐'
+    local active_highlight = selected_indicator_highlight.. active_indicator .. '%*'
+    length = length + strwidth(active_indicator)
+    component = active_highlight .. component
+  end
 
   if diagnostic_count > 0 then
     local diagnostic_section = diagnostic_count..padding
@@ -478,6 +489,10 @@ local function get_defaults()
       guifg = separator_background_color,
       guibg = background_color,
     };
+    bufferline_selected_indicator = {
+      guifg = tabline_sel_bg,
+      guibg = background_color,
+    };
     bufferline_selected = {
       guifg = normal_fg,
       guibg = normal_bg,
@@ -503,6 +518,7 @@ function M.setup(prefs)
     set_highlight('BufferLineInactive', highlights.bufferline_buffer_inactive)
     set_highlight('BufferLineBackground', highlights.bufferline_buffer)
     set_highlight('BufferLineSelected', highlights.bufferline_selected)
+    set_highlight('BufferLineSelectedIndicator', highlights.bufferline_selected_indicator)
     set_highlight('BufferLineModified', highlights.bufferline_modified)
     set_highlight('BufferLineModifiedSelected', highlights.bufferline_modified_selected)
     set_highlight('BufferLineModifiedInactive', highlights.bufferline_modified_inactive)
