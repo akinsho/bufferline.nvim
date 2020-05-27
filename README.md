@@ -2,7 +2,7 @@
 
 A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built using **lua**.
 
-![Bufferline screenshot](./nvim_bufferline.png "Nvim Bufferline")
+![Bufferline screenshot](./nvim-bufferline.png "Nvim Bufferline")
 
 **Status: 🚧 WIP**
 
