@@ -444,7 +444,7 @@ local function get_defaults()
   local comment_fg = get_hex('Comment', 'fg')
   local normal_fg = get_hex('Normal', 'fg')
   local normal_bg = get_hex('Normal', 'bg')
-  local diff_add_fg = get_hex('DiffAdd', 'fg')
+  local string_fg = get_hex('String', 'fg')
   local tabline_sel_bg = get_hex('TabLineSel', 'bg')
 
   -- If the colorscheme is bright we shouldn't do as much shading
@@ -474,15 +474,15 @@ local function get_defaults()
       guibg = normal_bg,
     };
     bufferline_modified = {
-      guifg = diff_add_fg,
+      guifg = string_fg,
       guibg = background_color,
     };
     bufferline_modified_inactive = {
-      guifg = diff_add_fg,
+      guifg = string_fg,
       guibg = normal_bg
     };
     bufferline_modified_selected = {
-      guifg = diff_add_fg,
+      guifg = string_fg,
       guibg = normal_bg
     };
     bufferline_separator = {
