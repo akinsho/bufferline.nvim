@@ -103,6 +103,10 @@ end
 -- https://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
 local function shade_color(color, percent)
   local r, g, b = to_rgb(color)
+
+  -- If any of the colors are missing return "NONE" i.e. no highlight
+  if not r or not g or not b then return "NONE" end
+
   r = math.floor(tonumber(r * (100 + percent) / 100))
   g = math.floor(tonumber(g * (100 + percent) / 100))
   b = math.floor(tonumber(b * (100 + percent) / 100))
@@ -128,7 +132,12 @@ end
 -- Ref: https://stackoverflow.com/a/1855903/837964
 -- https://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color
 local function color_is_bright(hex)
+  if not hex then
+    return false
+  end
   local r, g, b = to_rgb(hex)
+  -- If any of the colors are missing return false
+  if not r or not g or not b then return false end
   -- Counting the perceptive luminance - human eye favors green color
   local luminance = (0.299*r + 0.587*g + 0.114*b)/255
   if luminance > 0.5 then
