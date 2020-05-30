@@ -310,6 +310,10 @@ local function get_sections(buffers)
   return before, current, after
 end
 
+local function get_marker_size(count, element_size)
+  return count > 0 and strwidth(count) + element_size or 0
+end
+
 --[[
 PREREQUISITE: active buffer always remains in view
 1. Find amount of available space in the window
@@ -321,10 +325,11 @@ section
 --]]
 local function truncate(before, current, after, available_width, marker)
   local line = ""
-  local right_marker_size = marker.right_count > 9 and 2 or 1
-  local left_marker_size = marker.left_count > 9 and 2 or 1
-  local total_length =
-    before.length + current.length + after.length + right_marker_size + left_marker_size
+  local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)
+  local right_trunc_marker = get_marker_size(marker.right_count, marker.right_element_size)
+  local markers_length = left_trunc_marker + right_trunc_marker
+  local total_length = before.length + current.length + after.length + markers_length
+
   if available_width >= total_length then
     -- Merge all the buffers and render the components
     local buffers = array_concat(before.buffers, current.buffers, after.buffers)
@@ -334,11 +339,9 @@ local function truncate(before, current, after, available_width, marker)
     if before.length >= after.length then
       before:drop(1)
       marker.left_count = marker.left_count + 1
-      marker.left = true
     else
       after:drop(#after.buffers)
       marker.right_count = marker.right_count + 1
-      marker.right = true
     end
     return truncate(before, current, after, available_width, marker), marker
   end
@@ -359,30 +362,30 @@ local function render(buffers, tabs, close_length)
   -- Icons from https://fontawesome.com/cheatsheet
   local left_trunc_icon = get_plugin_variable("left_trunc_marker", "")
   local right_trunc_icon = get_plugin_variable("right_trunc_marker", "")
-  local left_icon_size = strwidth(left_trunc_icon)
-  local right_icon_size = strwidth(right_trunc_icon)
-  local truncation_padding = 3 -- padding + count + padding + icon + padding
-  -- We remove this amount from the available width so if we have to truncate
-  -- we have enough space to show the markers.
-  local truncation_marker_offset = left_icon_size + right_icon_size + (truncation_padding * 2)
+  -- measure the surrounding trunc items: padding + count + padding + icon + padding
+  local left_element_size = strwidth(padding..padding..left_trunc_icon..padding)
+  local right_element_size = strwidth(padding..padding..right_trunc_icon..padding)
 
-  local available_width = api.nvim_get_option("columns") - tabs_and_close_length - truncation_marker_offset
+  local available_width = api.nvim_get_option("columns") - tabs_and_close_length
   local before, current, after = get_sections(buffers)
   local line, marker = truncate(
     before,
     current,
     after,
     available_width,
-    { left_count = 0, right_count = 0, left = false, right = false}
-    )
+    {
+      left_count = 0,
+      right_count = 0,
+      left_element_size = left_element_size,
+      right_element_size = right_element_size,
+    }
+  )
 
   -- TODO: Add a check to see if user wants fancy icons or not
-  -- TODO: Deriving the size of the truncation marker should happen before so
-  -- we can account for it in the truncation function
-  if marker.left and marker.left_count > 0 then
+  if marker.left_count > 0 then
     line = suffix_highlight .. padding..marker.left_count..padding..left_trunc_icon..padding ..line
   end
-  if marker.right and marker.right_count > 0 then
+  if marker.right_count > 0 then
     line = line .. suffix_highlight .. padding..marker.right_count..padding..right_trunc_icon..padding
   end
 
