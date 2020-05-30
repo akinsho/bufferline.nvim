@@ -395,27 +395,11 @@ end
 --[[
 TODO
 ===========
-
-URGENT:
-===========
  [ ] Investigate using guibg=none for modified symbol highlight instead of multiple
      highlight groups per status
- [x] Fix truncation happening too early i.e. available width reported incorrectly
- [ ] Fix visibility on light backgrounds by checking the set background option
-     if set background light use another color other than comment for background buffer
-     text
-===========
- [x] Fix modified highlight coloring
- [X] Show tabs
- [x] Handle keeping active buffer always in view
-     https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
- [x] Show remainder marker as <- or -> depending on where truncation occured
- [X] Fix current buffer highlight disappearing when inside ignored buffer
- [/] Refactor buffers to be a metatable with methods for sizing, and stringifying
- [x] Dynamically set styling to appear consistent across colorschemes
  [ ] Buffer label truncation
  [ ] Highlight file type icons if possible see:
-
+  https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
 --]]
 function M.bufferline()
   local buf_nums = api.nvim_list_bufs()
