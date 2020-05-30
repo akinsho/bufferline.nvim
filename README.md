@@ -4,7 +4,29 @@ A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built usin
 
 ![Bufferline screenshot](./nvim-bufferline.png "Nvim Bufferline")
 
-**Status: 🚧 WIP**
+**Status: 🚧 Alpha**
+
+## Requirements
+
+- Nightly nvim
+- A patched font (see [nerd fonts](https://github.com/ryanoasis/nerd-fonts))
+
+## Installation
+
+Super early days there might be some breaking changes, if you use this
+without configuring it this shouldn't affect you too much.
+
+```vim
+Plug 'ryanoasis/vim-devicons' " Optional but recommended
+Plug 'Akin909/nvim-bufferline.lua'
+```
+
+## Usage
+
+```vim
+" In your init.vim AFTER loading plugins
+lua require'bufferline'.setup()
+```
 
 ## Why another buffer line plugin?
 
@@ -53,21 +75,7 @@ A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built usin
 - [ ] Buffer label truncation
 - [ ] Highlight file type icons if possible see [for example](https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2)
 
-## Installation
-
-Super early days there might be some breaking changes, if you use this
-without configuring it this shouldn't affect you too much.
-
-```vim
-Plug 'Akin909/nvim-bufferline.lua'
-```
-
-## Usage
-
-```vim
-" In your init.vim AFTER loading plugins
-lua require'bufferline'.setup()
-```
+## Configuration
 
 This plugin is designed to work automatically, deriving colours from the user's theme,
 but if you must...
