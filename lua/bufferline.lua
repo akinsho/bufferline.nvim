@@ -321,7 +321,10 @@ section
 --]]
 local function truncate(before, current, after, available_width, marker)
   local line = ""
-  local total_length = before.length + current.length + after.length
+  local right_marker_size = marker.right_count > 9 and 2 or 1
+  local left_marker_size = marker.left_count > 9 and 2 or 1
+  local total_length =
+    before.length + current.length + after.length + right_marker_size + left_marker_size
   if available_width >= total_length then
     -- Merge all the buffers and render the components
     local buffers = array_concat(before.buffers, current.buffers, after.buffers)
@@ -337,13 +340,6 @@ local function truncate(before, current, after, available_width, marker)
       marker.right_count = marker.right_count + 1
       marker.right = true
     end
-      -- This represents the number associated with each truncation marker prefix
-      -- if we are truncating more than 10 buffers then the display width of the
-      -- marker count will be 2 i.e. 10 vs < 10 which would be e.g. 5
-      -- I've assumed it will not be 3 digits because that seems insane to me
-      local right_marker_count = marker.right_count > 9 and 2 or 1
-      local left_marker_count = marker.left_count > 9 and 2 or 1
-      available_width = available_width - right_marker_count - left_marker_count
     return truncate(before, current, after, available_width, marker), marker
   end
 end
