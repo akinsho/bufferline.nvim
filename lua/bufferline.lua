@@ -392,6 +392,42 @@ local function render(buffers, tabs, close_length)
   return tab_components..line
 end
 
+--- @param bufs table | nil
+local function get_valid_buffers(bufs)
+  local buf_nums = bufs or api.nvim_list_bufs()
+  local valid_bufs = {}
+
+  -- NOTE: In lua in order to iterate an array, indices should
+  -- not contain gaps otherwise "ipairs" will stop at the first gap
+  -- i.e the indices should be contiguous
+  local count = 0
+  for _,buf in ipairs(buf_nums) do
+    if is_valid(buf) then
+      count = count + 1
+      valid_bufs[count] = buf
+    end
+  end
+  return valid_bufs
+end
+
+--- @param mode string | nil
+local function get_buffers_by_mode(mode)
+--[[
+  show only relevant buffers depending on the layout of the current tabpage:
+    - In tabs with only one window all buffers are listed.
+    - In tabs with more than one window, only the buffers that are being displayed are listed.
+--]]
+  if mode == "multiwindow" then
+    local current_tab = api.nvim_get_current_tabpage()
+    local is_single_tab = vim.fn.tabpagenr('$') == 1
+    local number_of_tab_wins = vim.fn.tabpagewinnr(current_tab, '$')
+    if number_of_tab_wins > 1 and not is_single_tab then
+      return get_valid_buffers(vim.fn.tabpagebuflist())
+    end
+  end
+  return get_valid_buffers()
+end
+
 --[[
 TODO
 ===========
@@ -401,27 +437,19 @@ TODO
  [ ] Highlight file type icons if possible see:
   https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
 --]]
-function M.bufferline()
-  local buf_nums = api.nvim_list_bufs()
+--- @param mode string
+--- @return string
+function M.bufferline(mode)
+  local buf_nums = get_buffers_by_mode(mode)
   local buffers = {}
   local tabs = get_tabs()
-
-  -- NOTE: In lua in order to iterate an array, indices should
-  -- not contain gaps otherwise "ipairs" will stop at the first gap
-  -- i.e the indices should be contiguous
-  local count = 0
-  for _,buf_id in ipairs(buf_nums) do
-    if is_valid(buf_id) then
-      count = count + 1
+  for i, buf_id in ipairs(buf_nums) do
       local name =  api.nvim_buf_get_name(buf_id)
-      local buf = Buffer:new {path = name, id = buf_id, ordinal = count}
-      -- TODO: consider incorporating render_buffer into a buffer method
-      -- ?? or should the data model be separate from highlighting concerns
+      local buf = Buffer:new {path = name, id = buf_id, ordinal = i}
       local component, length = render_buffer(buf, 0)
       buf.length = length
       buf.component = component
-      buffers[count] = buf
-    end
+      buffers[i] = buf
   end
 
   local close_component, close_length = render_close()
@@ -523,14 +551,19 @@ function M.setup(prefs)
     set_highlight('BufferLineSeparator', highlights.bufferline_separator)
     set_highlight('BufferLineTabSelected', highlights.bufferline_tab_selected)
   end
+
   nvim_create_augroups({
       BufferlineColors = {
         {"VimEnter", "*", [[lua setup_bufferline_colors()]]};
         {"ColorScheme", "*", [[lua setup_bufferline_colors()]]};
       }
     })
-  api.nvim_set_option("showtabline", 2)
-  api.nvim_set_option("tabline", [[%!luaeval("require'bufferline'.bufferline()")]])
+
+
+  vim.o.showtabline = 2
+  -- One day there will be a better way to do this
+  -- NOTE: the '%%' is an escape sequence for  a '%' in string.format
+  vim.o.tabline = string.format("%%!luaeval(\"require'bufferline'.bufferline('%s')\")", prefs.mode)
 end
 
 return M

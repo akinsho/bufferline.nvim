@@ -77,6 +77,21 @@ lua require'bufferline'.setup()
 
 ## Configuration
 
+### Multiwindow mode (inspired by [`vem-tabline`](https://github.com/pacha/vem-tabline))
+
+When this mode is active, for layouts of multiple windows in the tabpage,
+only the buffers that are displayed in those windows are listed in the
+tabline. That only applies to multi-window layouts, if there is only one
+window in the tabpage, all buffers are listed.
+
+```vim
+lua require'bufferline'.setup{
+  mode = "multiwindow";
+}
+```
+
+### Highlight configuration
+
 This plugin is designed to work automatically, deriving colours from the user's theme,
 but if you must...
 
