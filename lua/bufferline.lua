@@ -55,21 +55,9 @@ local function array_concat(...)
     return t
 end
 
-local function safely_get_var(var)
-  local success, result =  pcall(function() api.nvim_get_var(var) end)
-  if not success then
-    return nil
-  else
-    return result
-  end
-end
-
 local function get_plugin_variable(var, default)
-  -- NOTE: in Nightly nvim you can use
-  -- see: https://www.reddit.com/r/neovim/comments/gi8w8o/best_practice_lua_vimapinvim_get_var/
-  -- var = "bufferline_"..var
-  -- local user_var = vim.g[var]
-  local user_var = safely_get_var("bufferline_"..var)
+  var = "bufferline_"..var
+  local user_var = vim.g[var]
   return user_var or default
 end
 
@@ -82,13 +70,13 @@ end
 -- Source: https://teukka.tech/luanvim.html
 local function nvim_create_augroups(definitions)
   for group_name, definition in pairs(definitions) do
-    api.nvim_command('augroup '..group_name)
-    api.nvim_command('autocmd!')
+    vim.cmd('augroup '..group_name)
+    vim.cmd('autocmd!')
     for _,def in pairs(definition) do
       local command = table.concat(vim.tbl_flatten{'autocmd', def}, ' ')
-      api.nvim_command(command)
+      vim.cmd(command)
     end
-    api.nvim_command('augroup END')
+    vim.cmd('augroup END')
   end
 end
 
@@ -164,6 +152,7 @@ local function set_highlight(name, hl)
     if hl.guibg and hl.guibg ~= "" then
       cmd = cmd.." ".."guibg="..hl.guibg
     end
+    -- TODO using api here as it warns of an error if setting highlight fails
     local success, err = pcall(api.nvim_command, cmd)
     if not success then
       api.nvim_err_writeln(
@@ -173,7 +162,10 @@ local function set_highlight(name, hl)
   end
 end
 
-local function make_clickable(item, buf_num)
+--- @param mode string
+--- @param item string
+--- @param buf_num number
+local function make_clickable(mode, item, buf_num)
   local is_clickable = vim.fn.has('tablineat')
   if is_clickable then
     -- TODO once v:lua is in stable neovim deprecate the autoload function
@@ -192,7 +184,7 @@ end
 ---------------------------------------------------------------------------//
 function M.handle_click(id)
   if id then
-    api.nvim_command('buffer '..id)
+    vim.cmd('buffer '..id)
   end
 end
 
