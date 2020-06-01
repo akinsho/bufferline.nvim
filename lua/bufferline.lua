@@ -402,6 +402,21 @@ local function get_valid_buffers(bufs)
   return valid_bufs
 end
 
+--- @param array table
+--- @return table
+local function filter_duplicates(array)
+  local seen = {}
+  local res = {}
+
+  for _,v in ipairs(array) do
+    if (not seen[v]) then
+      res[#res+1] = v
+      seen[v] = true
+    end
+  end
+  return res
+end
+
 --- @param mode string | nil
 local function get_buffers_by_mode(mode)
 --[[
@@ -414,7 +429,11 @@ local function get_buffers_by_mode(mode)
     local is_single_tab = vim.fn.tabpagenr('$') == 1
     local number_of_tab_wins = vim.fn.tabpagewinnr(current_tab, '$')
     if number_of_tab_wins > 1 and not is_single_tab then
-      return get_valid_buffers(vim.fn.tabpagebuflist())
+      -- TODO filter out duplicates because currently I don't know
+      -- how to make it clear which buffer relates to which window
+      -- buffers don't have an identifier to say which buffer they are in
+      local unique = filter_duplicates(vim.fn.tabpagebuflist())
+      return get_valid_buffers(unique)
     end
   end
   return get_valid_buffers()
