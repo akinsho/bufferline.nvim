@@ -432,7 +432,16 @@ local function get_buffers_by_mode(mode)
     local current_tab = api.nvim_get_current_tabpage()
     local is_single_tab = vim.fn.tabpagenr('$') == 1
     local number_of_tab_wins = vim.fn.tabpagewinnr(current_tab, '$')
-    if number_of_tab_wins > 1 and not is_single_tab then
+    local valid_wins = 0
+    -- Check that the window contains a listed buffer, if the buffre isn't
+    -- listed we shouldn't be hiding the remaining buffers because of it
+    for i=1,number_of_tab_wins do
+      local buf_nr = vim.fn.winbufnr(i)
+      if is_valid(buf_nr) then
+        valid_wins = valid_wins + 1
+      end
+    end
+    if valid_wins > 1 and not is_single_tab then
       -- TODO filter out duplicates because currently I don't know
       -- how to make it clear which buffer relates to which window
       -- buffers don't have an identifier to say which buffer they are in
