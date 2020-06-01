@@ -162,26 +162,27 @@ local function set_highlight(name, hl)
   end
 end
 
---- @param mode string
+--- @param mode string | nil
 --- @param item string
 --- @param buf_num number
 local function make_clickable(mode, item, buf_num)
-  local is_clickable = vim.fn.has('tablineat')
-  if is_clickable then
-    -- TODO once v:lua is in stable neovim deprecate the autoload function
-    if vim.fn.exists('v:lua') > 0 then
-      return "%"..buf_num.."@v:lua.bufferline.handle_click@"..item
-    else
-      return "%"..buf_num.."@nvim_bufferline#handle_click@"..item
-    end
+  if not vim.fn.has('tablineat') then return item end
+  -- TODO once v:lua is in stable neovim deprecate the autoload function
+  if mode == "multiwindow" then
+    return "%"..buf_num.."@nvim_bufferline#handle_win_click@"..item
   else
-    return item
+    return "%"..buf_num.."@nvim_bufferline#handle_click@"..item
   end
 end
 
 ---------------------------------------------------------------------------//
 -- CORE
 ---------------------------------------------------------------------------//
+function M.handle_win_click(id)
+  local win_id = vim.fn.bufwinid(id)
+  vim.fn.win_gotoid(win_id)
+end
+
 function M.handle_click(id)
   if id then
     vim.cmd('buffer '..id)
@@ -198,7 +199,10 @@ local function get_buffer_highlight(buffer)
   end
 end
 
-local function render_buffer(buffer, diagnostic_count)
+--- @param mode string
+--- @param buffer Buffers
+--- @param diagnostic_count number
+local function render_buffer(mode, buffer, diagnostic_count)
   local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
   local length
   local is_current = buffer:current()
@@ -212,7 +216,7 @@ local function render_buffer(buffer, diagnostic_count)
   -- larger than their display width. So we use nvim's strwidth
   -- also avoid including highlight strings in the buffer length
   length = strwidth(component)
-  component = buf_highlight..make_clickable(component, buffer.id)
+  component = buf_highlight..make_clickable(mode, component, buffer.id)
 
   if is_current then
     -- U+2590 ▐ Right half block, this character is right aligned so the
@@ -433,10 +437,10 @@ local function get_buffers_by_mode(mode)
       -- how to make it clear which buffer relates to which window
       -- buffers don't have an identifier to say which buffer they are in
       local unique = filter_duplicates(vim.fn.tabpagebuflist())
-      return get_valid_buffers(unique)
+      return get_valid_buffers(unique), mode
     end
   end
-  return get_valid_buffers()
+  return get_valid_buffers(), nil
 end
 
 --[[
@@ -451,13 +455,13 @@ TODO
 --- @param mode string
 --- @return string
 function M.bufferline(mode)
-  local buf_nums = get_buffers_by_mode(mode)
+  local buf_nums, current_mode = get_buffers_by_mode(mode)
   local buffers = {}
   local tabs = get_tabs()
   for i, buf_id in ipairs(buf_nums) do
       local name =  api.nvim_buf_get_name(buf_id)
       local buf = Buffer:new {path = name, id = buf_id, ordinal = i}
-      local component, length = render_buffer(buf, 0)
+      local component, length = render_buffer(current_mode, buf, 0)
       buf.length = length
       buf.component = component
       buffers[i] = buf

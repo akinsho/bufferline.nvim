@@ -8,3 +8,7 @@ function! nvim_bufferline#handle_click(minwid, clicks, btn, modifiers) abort
   " eval and pass it the arg. At least as far as I know
   call luaeval("require'bufferline'.handle_click(_A)", a:minwid)
 endfunction
+
+function! nvim_bufferline#handle_win_click(minwid, clicks, btn, modifiers) abort
+  call luaeval("require'bufferline'.handle_win_click(_A)", a:minwid)
+endfunction

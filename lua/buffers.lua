@@ -8,6 +8,7 @@ local terminal_buftype = "terminal"
 --------------------------------
 -- A collection of buffers
 --------------------------------
+---@class Buffers @parent class
 Buffers = {}
 
 function Buffers:new(n)
@@ -72,6 +73,9 @@ end
 -- have the main selected highlighting. If it isn't but it is the window highlight it as inactive
 -- the "trick" here is that "bufwinnr" retunrs a value which is the first window associated with a buffer
 -- if there are no windows associated i.e. it is not in view and the function returns -1
+
+-- FIXME this does not work if the same buffer is open in multiple window
+-- maybe do something with win_findbuf(bufnr('%'))
 function Buffer:current()
   return vim.fn.winbufnr(0) == self.id
 end
