@@ -86,7 +86,11 @@ window in the tabpage, all buffers are listed.
 
 ```vim
 lua require'bufferline'.setup{
-  mode = "multiwindow";
+  options = {
+    view = "multiwindow" | "default",
+    numbers = "none" | "ordinal" | "buffer_id"
+    number_style = "superscript" | ""
+  }
 }
 ```
 

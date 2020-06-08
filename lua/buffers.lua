@@ -44,6 +44,7 @@ end
 --------------------------------
 -- A single buffer
 --------------------------------
+---@class Buffer @parent class
 Buffer = {}
 
 function Buffer:new(buf)
