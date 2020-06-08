@@ -199,10 +199,19 @@ local function get_buffer_highlight(buffer)
   end
 end
 
---- @param mode string
---- @param buffer Buffers
+local function get_number_prefix(buffer, mode)
+  if mode == "ordinal" then
+      return buffer.ordinal
+    else
+      return buffer.id
+  end
+end
+
+--- @param options table
+--- @param buffer Buffer
 --- @param diagnostic_count number
-local function render_buffer(mode, buffer, diagnostic_count)
+--- @return string
+local function render_buffer(options, buffer, diagnostic_count)
   local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
   local length
   local is_current = buffer:current()
@@ -212,11 +221,14 @@ local function render_buffer(mode, buffer, diagnostic_count)
   if not is_current then
     component = padding .. component
   end
+
+  local number_to_use = get_number_prefix(buffer, options.numbers_mode)
+  component = number_to_use .. "." .. (is_current and padding or "") .. component
   -- string.len counts number of bytes and so the unicode icons are counted
   -- larger than their display width. So we use nvim's strwidth
   -- also avoid including highlight strings in the buffer length
   length = strwidth(component)
-  component = buf_highlight..make_clickable(mode, component, buffer.id)
+  component = buf_highlight..make_clickable(options.mode, component, buffer.id)
 
   if is_current then
     -- U+2590 ▐ Right half block, this character is right aligned so the
@@ -468,10 +480,14 @@ function M.bufferline(mode)
   local buf_nums, current_mode = get_buffers_by_mode(mode)
   local buffers = {}
   local tabs = get_tabs()
+  local opts = {
+    buffers_mode = current_mode,
+    numbers_mode = "ordinal",
+  }
   for i, buf_id in ipairs(buf_nums) do
       local name =  api.nvim_buf_get_name(buf_id)
       local buf = Buffer:new {path = name, id = buf_id, ordinal = i}
-      local component, length = render_buffer(current_mode, buf, 0)
+      local component, length = render_buffer(opts, buf, 0)
       buf.length = length
       buf.component = component
       buffers[i] = buf
