@@ -567,7 +567,8 @@ local function get_defaults()
     options = {
       view = "default",
       numbers = "none",
-      number_style = "superscript"
+      number_style = "superscript",
+      mappings = false,
     };
     bufferline_tab = {
       guifg = comment_fg,
@@ -613,9 +614,14 @@ local function get_defaults()
   }
 end
 
---[[
-  TODO then validate user preferences and only set prefs that exists
---]]
+function M.go_to_buffer(num)
+  local buf_nums = get_buffers_by_mode()
+  if num <= table.getn(buf_nums) then
+    vim.cmd("buffer "..buf_nums[num])
+  end
+end
+
+-- TODO then validate user preferences and only set prefs that exists
 function M.setup(prefs)
   function _G.__setup_bufferline_colors()
     local highlights
@@ -645,10 +651,18 @@ function M.setup(prefs)
       }
     })
 
-  -- The user's preferences are passed inside of a closure so they are
-  -- and the globally defined lua function is passed to the tabline setting
+  -- The user's preferences are passed inside of a closure so they are accessible
+  -- inside the globally defined lua function which is passed to the tabline setting
   function _G.__bufferline_render()
       return bufferline(prefs.options)
+  end
+
+  if prefs.options.mappings then
+    for i=1, 10 do
+      api.nvim_set_keymap('n', '<leader>'..i, ':lua require"bufferline".go_to_buffer('..i..')<CR>', {
+          silent = true, nowait = true, noremap = true
+        })
+    end
   end
 
   vim.o.showtabline = 2

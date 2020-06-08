@@ -48,7 +48,7 @@ lua require'bufferline'.setup()
 ### Future Goals
 
 - [ ] Show LSP diagnostics in bufferline so it's clear which buffers have errors
-- [ ] Show only the buffers relevant/open in a specific tab as a configurable setting
+- [x] Show only the buffers relevant/open in a specific tab as a configurable setting
 - [ ] A _few_ different configuration options for file names
 
 ## Non-goals
@@ -77,6 +77,17 @@ lua require'bufferline'.setup()
 
 ## Configuration
 
+```vim
+lua require'bufferline'.setup{
+  options = {
+    view = "multiwindow" | "default",
+    numbers = "none" | "ordinal" | "buffer_id"
+    number_style = "superscript" | ""
+    mappings = true | false
+  }
+}
+```
+
 ### Multiwindow mode (inspired by [`vem-tabline`](https://github.com/pacha/vem-tabline))
 
 When this mode is active, for layouts of multiple windows in the tabpage,
@@ -84,14 +95,15 @@ only the buffers that are displayed in those windows are listed in the
 tabline. That only applies to multi-window layouts, if there is only one
 window in the tabpage, all buffers are listed.
 
+### Mappings
+
+If the `mappings` option is set to `true`. `<leader>`1-10 mappings will
+be created to navigate the first to the tenth buffer in the bufferline.
+**This is false by default**. If you'd rather map these yourself, use:
+
 ```vim
-lua require'bufferline'.setup{
-  options = {
-    view = "multiwindow" | "default",
-    numbers = "none" | "ordinal" | "buffer_id"
-    number_style = "superscript" | ""
-  }
-}
+nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>
+
 ```
 
 ### Highlight configuration
