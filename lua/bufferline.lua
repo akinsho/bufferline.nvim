@@ -26,7 +26,30 @@ local close = '%#BufferLine#%999X'
 ---------------------------------------------------------------------------//
 local padding = " "
 
----------------------------------------------------------------------------//
+local superscript_numbers = {
+  [0] = '⁰',
+  [1] = '¹',
+  [2] = '²',
+  [3] = '³',
+  [4] = '⁴',
+  [5] = '⁵',
+  [6] = '⁶',
+  [7] = '⁷',
+  [8] = '⁸',
+  [9] = '⁹',
+  [10] = '¹⁰',
+  [11] = '¹¹',
+  [12] = '¹²',
+  [13] = '¹³',
+  [14] = '¹⁴',
+  [15] = '¹⁵',
+  [16] = '¹⁶',
+  [17] = '¹⁷',
+  [18] = '¹⁸',
+  [19] = '¹⁹',
+  [20] = '²⁰'
+}
+-------------------------------------------------------------------------//
 -- EXPORT
 ---------------------------------------------------------------------------//
 
@@ -35,6 +58,17 @@ local M = {}
 ---------------------------------------------------------------------------//
 -- HELPERS
 ---------------------------------------------------------------------------//
+-- https://stackoverflow.com/questions/1283388/lua-merge-tables
+local function deep_merge(t1, t2)
+    for k, v in pairs(t2) do
+        if (type(v) == "table") and (type(t1[k] or false) == "table") then
+            deep_merge(t1[k], t2[k])
+        else
+            t1[k] = v
+        end
+    end
+    return t1
+end
 -- return a new array containing the concatenation of all of its
 -- parameters. Scaler parameters are included in place, and array
 -- parameters have their values shallow-copied to the final array.
@@ -199,12 +233,10 @@ local function get_buffer_highlight(buffer)
   end
 end
 
-local function get_number_prefix(buffer, mode)
-  if mode == "ordinal" then
-      return buffer.ordinal
-    else
-      return buffer.id
-  end
+local function get_number_prefix(buffer, mode, style)
+  local n = mode == "ordinal" and buffer.ordinal or buffer.id
+  local num = style == "superscript" and superscript_numbers[n] or n .. "."
+  return num
 end
 
 --- @param options table
@@ -215,29 +247,38 @@ local function render_buffer(options, buffer, diagnostic_count)
   local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
   local length
   local is_current = buffer:current()
+  local is_visible = buffer:visible()
 
   local component = buffer.icon..padding..buffer.filename..padding
-  -- pad the non active buffer before the highlighting is applied
-  if not is_current then
-    component = padding .. component
-  end
 
-  local number_to_use = get_number_prefix(buffer, options.numbers_mode)
-  component = number_to_use .. "." .. (is_current and padding or "") .. component
+  if options.numbers ~= "none" then
+    local number_prefix = get_number_prefix(
+      buffer,
+      options.numbers,
+      options.number_style
+    )
+    local number_component = number_prefix .. padding
+    component = number_component  .. component
+  end
   -- string.len counts number of bytes and so the unicode icons are counted
   -- larger than their display width. So we use nvim's strwidth
   -- also avoid including highlight strings in the buffer length
   length = strwidth(component)
   component = buf_highlight..make_clickable(options.mode, component, buffer.id)
 
-  if is_current then
+  if is_current or is_visible then
     -- U+2590 ▐ Right half block, this character is right aligned so the
     -- background highlight doesn't appear in th middle
     -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
-    local active_indicator = '▎'
-    local active_highlight = selected_indicator_highlight.. active_indicator .. '%*'
-    length = length + strwidth(active_indicator)
-    component = active_highlight .. component
+    local indicator_symbol = '▎'
+    local indicator_highlight =
+      is_current and selected_indicator_highlight or inactive_highlight
+    local indicator = indicator_highlight .. indicator_symbol .. '%*'
+    length = length + strwidth(indicator_symbol)
+    component = indicator .. component
+  else
+    length = length + strwidth(padding)
+    component = padding .. component
   end
 
   if diagnostic_count > 0 then
@@ -448,6 +489,7 @@ local function get_buffers_by_mode(mode)
     local valid_wins = 0
     -- Check that the window contains a listed buffer, if the buffre isn't
     -- listed we shouldn't be hiding the remaining buffers because of it
+    -- FIXME this is sending an invalid buf_nr to is_valid buf
     for i=1,number_of_tab_wins do
       local buf_nr = vim.fn.winbufnr(i)
       if is_valid(buf_nr) then
@@ -474,20 +516,18 @@ TODO
  [ ] Highlight file type icons if possible see:
   https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
 --]]
---- @param mode string
+--- @param options table<string, string>
 --- @return string
-function M.bufferline(mode)
-  local buf_nums, current_mode = get_buffers_by_mode(mode)
+local function bufferline(options)
+  local buf_nums, current_mode = get_buffers_by_mode(options.view)
   local buffers = {}
   local tabs = get_tabs()
-  local opts = {
-    buffers_mode = current_mode,
-    numbers_mode = "ordinal",
-  }
+  options.view = current_mode
+
   for i, buf_id in ipairs(buf_nums) do
       local name =  api.nvim_buf_get_name(buf_id)
       local buf = Buffer:new {path = name, id = buf_id, ordinal = i}
-      local component, length = render_buffer(opts, buf, 0)
+      local component, length = render_buffer(options, buf, 0)
       buf.length = length
       buf.component = component
       buffers[i] = buf
@@ -523,6 +563,11 @@ local function get_defaults()
   local background_color = shade_color(normal_bg, background_shading)
 
   return {
+    options = {
+      view = "default",
+      numbers = "none",
+      number_style = "superscript"
+    };
     bufferline_tab = {
       guifg = comment_fg,
       guibg = normal_bg,
@@ -571,11 +616,10 @@ end
   TODO then validate user preferences and only set prefs that exists
 --]]
 function M.setup(prefs)
-  function _G.setup_bufferline_colors()
+  function _G.__setup_bufferline_colors()
     local highlights
     if prefs and type(prefs) == "table" then
-      -- "keep" behavior means that left > right in terms of priority
-      highlights = vim.tbl_extend("keep", prefs, get_defaults())
+      highlights = deep_merge(get_defaults(), prefs)
     else
       highlights = get_defaults()
     end
@@ -595,16 +639,19 @@ function M.setup(prefs)
 
   nvim_create_augroups({
       BufferlineColors = {
-        {"VimEnter", "*", [[lua setup_bufferline_colors()]]};
-        {"ColorScheme", "*", [[lua setup_bufferline_colors()]]};
+        {"VimEnter", "*", [[lua __setup_bufferline_colors()]]};
+        {"ColorScheme", "*", [[lua __setup_bufferline_colors()]]};
       }
     })
 
+  -- The user's preferences are passed inside of a closure so they are
+  -- and the globally defined lua function is passed to the tabline setting
+  function _G.__bufferline_render()
+      return bufferline(prefs.options)
+  end
 
   vim.o.showtabline = 2
-  -- One day there will be a better way to do this
-  -- NOTE: the '%%' is an escape sequence for  a '%' in string.format
-  vim.o.tabline = string.format("%%!luaeval(\"require'bufferline'.bufferline('%s')\")", prefs.mode)
+  vim.o.tabline = "%!v:lua.__bufferline_render()"
 end
 
 return M
