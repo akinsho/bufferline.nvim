@@ -12,7 +12,7 @@ local tab_highlight = '%#BufferLineTab#'
 local tab_selected_highlight = '%#BufferLineTabSelected#'
 local suffix_highlight = '%#BufferLine#'
 local selected_highlight = '%#BufferLineSelected#'
-local selected_indicator_highlight = '%#BufferLineSelectedIndicator#'
+local indicator_highlight = '%#BufferLineSelectedIndicator#'
 local modified_highlight = '%#BufferLineModified#'
 local modified_inactive_highlight = '%#BufferLineModifiedInactive#'
 local modified_selected_highlight = '%#BufferLineModifiedSelected#'
@@ -247,7 +247,6 @@ local function render_buffer(options, buffer, diagnostic_count)
   local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
   local length
   local is_current = buffer:current()
-  local is_visible = buffer:visible()
 
   local component = buffer.icon..padding..buffer.filename..padding
 
@@ -260,25 +259,27 @@ local function render_buffer(options, buffer, diagnostic_count)
     local number_component = number_prefix .. padding
     component = number_component  .. component
   end
+
   -- string.len counts number of bytes and so the unicode icons are counted
   -- larger than their display width. So we use nvim's strwidth
   -- also avoid including highlight strings in the buffer length
   length = strwidth(component)
-  component = buf_highlight..make_clickable(options.mode, component, buffer.id)
+  component = make_clickable(options.mode, component, buffer.id)
 
-  if is_current or is_visible then
+  if is_current then
     -- U+2590 ▐ Right half block, this character is right aligned so the
     -- background highlight doesn't appear in th middle
     -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
     local indicator_symbol = '▎'
-    local indicator_highlight =
-      is_current and selected_indicator_highlight or inactive_highlight
     local indicator = indicator_highlight .. indicator_symbol .. '%*'
+
     length = length + strwidth(indicator_symbol)
-    component = indicator .. component
+    component = indicator .. buf_highlight .. component
   else
+    -- since all non-current buffers do not have an indicator they need
+    -- to be padded to make up the difference in size
     length = length + strwidth(padding)
-    component = padding .. component
+    component = buf_highlight .. padding .. component
   end
 
   if diagnostic_count > 0 then
