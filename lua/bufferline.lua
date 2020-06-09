@@ -19,7 +19,7 @@ local modified_selected_highlight = '%#BufferLineModifiedSelected#'
 local diagnostic_highlight = '%#ErrorMsg#'
 local background = '%#BufferLineBackground#'
 local separator_highlight = '%#BufferLineSeparator#'
-local close = '%#BufferLine#%999X'
+local close = '%#BufferLineTabClose#%999X'
 
 ---------------------------------------------------------------------------//
 -- Constants
@@ -330,9 +330,9 @@ local function get_tabs()
   return all_tabs
 end
 
-local function render_close()
-  local close_icon = get_plugin_variable("close_icon", " close ")
-  return close_icon, strwidth(close_icon)
+local function render_close(icon)
+  local component = padding .. icon .. padding
+  return component, strwidth(component)
 end
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
@@ -534,7 +534,7 @@ local function bufferline(options)
       buffers[i] = buf
   end
 
-  local close_component, close_length = render_close()
+  local close_component, close_length = render_close(options.close_icon)
   local buffer_line = render(buffers, tabs, close_length)
 
   buffer_line = buffer_line..background
@@ -552,6 +552,7 @@ local function get_defaults()
   local normal_fg = get_hex('Normal', 'fg')
   local normal_bg = get_hex('Normal', 'bg')
   local string_fg = get_hex('String', 'fg')
+  local error_fg = get_hex('Error', 'fg')
   local tabline_sel_bg = get_hex('TabLineSel', 'bg')
 
   -- If the colorscheme is bright we shouldn't do as much shading
@@ -569,48 +570,55 @@ local function get_defaults()
       numbers = "none",
       number_style = "superscript",
       mappings = false,
+      close_icon = ""
     };
-    bufferline_tab = {
-      guifg = comment_fg,
-      guibg = normal_bg,
-    };
-    bufferline_tab_selected = {
-      guifg = comment_fg,
-      guibg = tabline_sel_bg,
-    };
-    bufferline_buffer = {
-      guifg = comment_fg,
-      guibg = background_color,
-    };
-    bufferline_buffer_inactive = {
-      guifg = comment_fg,
-      guibg = normal_bg,
-    };
-    bufferline_modified = {
-      guifg = string_fg,
-      guibg = background_color,
-    };
-    bufferline_modified_inactive = {
-      guifg = string_fg,
-      guibg = normal_bg
-    };
-    bufferline_modified_selected = {
-      guifg = string_fg,
-      guibg = normal_bg
-    };
-    bufferline_separator = {
-      guifg = separator_background_color,
-      guibg = background_color,
-    };
-    bufferline_selected_indicator = {
-      guifg = tabline_sel_bg,
-      guibg = normal_bg,
-    };
-    bufferline_selected = {
-      guifg = normal_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
-    };
+    highlights = {
+      bufferline_tab = {
+        guifg = comment_fg,
+        guibg = normal_bg,
+      };
+      bufferline_tab_selected = {
+        guifg = comment_fg,
+        guibg = tabline_sel_bg,
+      };
+      bufferline_tab_close = {
+        guifg = error_fg,
+        guibg = background_color
+      };
+      bufferline_buffer = {
+        guifg = comment_fg,
+        guibg = background_color,
+      };
+      bufferline_buffer_inactive = {
+        guifg = comment_fg,
+        guibg = normal_bg,
+      };
+      bufferline_modified = {
+        guifg = string_fg,
+        guibg = background_color,
+      };
+      bufferline_modified_inactive = {
+        guifg = string_fg,
+        guibg = normal_bg
+      };
+      bufferline_modified_selected = {
+        guifg = string_fg,
+        guibg = normal_bg
+      };
+      bufferline_separator = {
+        guifg = separator_background_color,
+        guibg = background_color,
+      };
+      bufferline_selected_indicator = {
+        guifg = tabline_sel_bg,
+        guibg = normal_bg,
+      };
+      bufferline_selected = {
+        guifg = normal_fg,
+        guibg = normal_bg,
+        gui = "bold,italic",
+      };
+    }
   }
 end
 
@@ -624,12 +632,12 @@ end
 -- TODO then validate user preferences and only set prefs that exists
 function M.setup(prefs)
   function _G.__setup_bufferline_colors()
-    local highlights
+    -- Combine user preferences with defaults preferring the user's own settings
     if prefs and type(prefs) == "table" then
-      highlights = deep_merge(get_defaults(), prefs)
-    else
-      highlights = get_defaults()
+      prefs = deep_merge(get_defaults(), prefs)
     end
+
+    local highlights = prefs.highlights
 
     set_highlight('BufferLine', highlights.bufferline_buffer)
     set_highlight('BufferLineInactive', highlights.bufferline_buffer_inactive)
@@ -642,6 +650,7 @@ function M.setup(prefs)
     set_highlight('BufferLineTab', highlights.bufferline_tab)
     set_highlight('BufferLineSeparator', highlights.bufferline_separator)
     set_highlight('BufferLineTabSelected', highlights.bufferline_tab_selected)
+    set_highlight('BufferLineTabClose', highlights.bufferline_tab_close)
   end
 
   nvim_create_augroups({
