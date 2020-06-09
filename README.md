@@ -103,7 +103,6 @@ be created to navigate the first to the tenth buffer in the bufferline.
 
 ```vim
 nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>
-
 ```
 
 ### Highlight configuration
@@ -113,6 +112,7 @@ but if you must...
 
 ```vim
 lua require'bufferline'.setup{
+  highlights = {
     bufferline_tab = {
       guifg = comment_fg,
       guibg = normal_bg,
@@ -141,5 +141,6 @@ lua require'bufferline'.setup{
       guibg = normal_bg,
       gui = "bold,italic",
     };
+  };
 }
 ```
