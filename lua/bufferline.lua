@@ -631,13 +631,14 @@ end
 
 -- TODO then validate user preferences and only set prefs that exists
 function M.setup(prefs)
+  local preferences = get_defaults()
   function _G.__setup_bufferline_colors()
     -- Combine user preferences with defaults preferring the user's own settings
     if prefs and type(prefs) == "table" then
-      prefs = deep_merge(get_defaults(), prefs)
+      preferences = deep_merge(preferences, prefs)
     end
 
-    local highlights = prefs.highlights
+    local highlights = preferences.highlights
 
     set_highlight('BufferLine', highlights.bufferline_buffer)
     set_highlight('BufferLineInactive', highlights.bufferline_buffer_inactive)
@@ -663,10 +664,10 @@ function M.setup(prefs)
   -- The user's preferences are passed inside of a closure so they are accessible
   -- inside the globally defined lua function which is passed to the tabline setting
   function _G.__bufferline_render()
-      return bufferline(prefs.options)
+      return bufferline(preferences.options)
   end
 
-  if prefs.options.mappings then
+  if preferences.options.mappings then
     for i=1, 10 do
       api.nvim_set_keymap('n', '<leader>'..i, ':lua require"bufferline".go_to_buffer('..i..')<CR>', {
           silent = true, nowait = true, noremap = true
