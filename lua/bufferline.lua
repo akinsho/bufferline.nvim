@@ -123,7 +123,7 @@ end
 
 -- SOURCE:
 -- https://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
-local function shade_color(color, percent)
+function M.shade_color(color, percent)
   local r, g, b = to_rgb(color)
 
   -- If any of the colors are missing return "NONE" i.e. no highlight
@@ -561,8 +561,8 @@ local function get_defaults()
   local separator_shading = is_bright_background and -35 or -65
   local background_shading = is_bright_background and -15 or -30
 
-  local separator_background_color = shade_color(normal_bg, separator_shading)
-  local background_color = shade_color(normal_bg, background_shading)
+  local separator_background_color = M.shade_color(normal_bg, separator_shading)
+  local background_color = M.shade_color(normal_bg, background_shading)
 
   return {
     options = {
