@@ -17,7 +17,7 @@ This plugin shamelessly attempts to emulate the aesthetics of GUI text editors/D
 - Close icons for closing individual buffers
 - Modified symbol
 
-![Modified icon](./screenshots/bufferline_with_modified.png "modified icon" =350x)
+<img src="./screenshots/bufferline_with_modified.png" alt="modified icon" width="350px" />
 
 ## Requirements
 
