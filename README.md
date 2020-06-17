@@ -2,9 +2,22 @@
 
 A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built using **lua**.
 
-![Bufferline screenshot](./nvim-bufferline.png "Nvim Bufferline")
+![Bufferline_with_close](./screenshots/bufferline_with_close.png "Bufferline with close icons")
+
+![Bufferline screenshot](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
+
+This plugin shamelessly attempts to emulate the aesthetics of GUI text editors/Doom Emacs.
 
 **Status: 🚧 Alpha**
+
+## Features
+
+- Colours derived from colorscheme where possible, should appear similar in most cases
+- Option to show buffer numbers
+- Close icons for closing individual buffers
+- Modified symbol
+
+![Modified icon](./screenshots/bufferline_with_modified.png "modified icon" =350x)
 
 ## Requirements
 
@@ -72,7 +85,7 @@ lua require'bufferline'.setup()
 - [x] Show remainder marker as <- or -> depending on where truncation occurred
 - [x] Fix current buffer highlight disappearing when inside ignored buffer
 - [x] Dynamically set styling to appear consistent across colour schemes
-- [ ] Buffer label truncation
+- [x] Buffer label truncation
 - [ ] Highlight file type icons if possible see [for example](https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2)
 
 ## Configuration
@@ -81,9 +94,12 @@ lua require'bufferline'.setup()
 lua require'bufferline'.setup{
   options = {
     view = "multiwindow" | "default",
-    numbers = "none" | "ordinal" | "buffer_id"
-    number_style = "superscript" | ""
-    mappings = true | false
+    numbers = "none" | "ordinal" | "buffer_id",
+    number_style = "superscript" | "",
+    mappings = true | false,
+    close_icon = "x"
+    max_name_length = 20,
+    show_buffer_close_icons = true | false,
   }
 }
 ```
