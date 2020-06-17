@@ -125,6 +125,7 @@ local function make_clickable(mode, item, buf_num)
   end
 end
 
+-- @param buf_id number
 local function close_button(buf_id)
   local symbol = "✕"..padding
   local size = strwidth(symbol)
