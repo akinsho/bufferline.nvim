@@ -1,4 +1,5 @@
 require 'buffers'
+local colors = require 'colors'
 
 local api = vim.api
 local strwidth = vim.fn.strwidth
@@ -53,7 +54,9 @@ local superscript_numbers = {
 -- EXPORT
 ---------------------------------------------------------------------------//
 
-local M = {}
+local M = {
+  shade_color = colors.shade_color
+}
 
 ---------------------------------------------------------------------------//
 -- HELPERS
@@ -95,12 +98,6 @@ local function get_plugin_variable(var, default)
   return user_var or default
 end
 
-local function table_size(t)
-  local count = 0
-  for _ in pairs(t) do count = count + 1 end
-  return count
-end
-
 -- Source: https://teukka.tech/luanvim.html
 local function nvim_create_augroups(definitions)
   for group_name, definition in pairs(definitions) do
@@ -114,94 +111,13 @@ local function nvim_create_augroups(definitions)
   end
 end
 
-local function to_rgb(color)
-  local r = tonumber(string.sub(color, 2,3), 16)
-  local g = tonumber(string.sub(color, 4,5), 16)
-  local b = tonumber(string.sub(color, 6), 16)
-  return r, g, b
-end
-
--- SOURCE:
--- https://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
-function M.shade_color(color, percent)
-  local r, g, b = to_rgb(color)
-
-  -- If any of the colors are missing return "NONE" i.e. no highlight
-  if not r or not g or not b then return "NONE" end
-
-  r = math.floor(tonumber(r * (100 + percent) / 100))
-  g = math.floor(tonumber(g * (100 + percent) / 100))
-  b = math.floor(tonumber(b * (100 + percent) / 100))
-
-  r = r < 255 and r or 255
-  g = g < 255 and g or 255
-  b = b < 255 and b or 255
-
-  -- see:
-  -- https://stackoverflow.com/questions/37796287/convert-decimal-to-hex-in-lua-4
-  r = string.format("%x", r)
-  g = string.format("%x", g)
-  b = string.format("%x", b)
-
-  local rr = string.len(r) == 1 and "0" .. r or r
-  local gg = string.len(g) == 1 and "0" .. g or g
-  local bb = string.len(b) == 1 and "0" .. b or b
-
-  return "#"..rr..gg..bb
-end
-
---- Determine whether to use black or white text
--- Ref: https://stackoverflow.com/a/1855903/837964
--- https://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color
-local function color_is_bright(hex)
-  if not hex then
-    return false
-  end
-  local r, g, b = to_rgb(hex)
-  -- If any of the colors are missing return false
-  if not r or not g or not b then return false end
-  -- Counting the perceptive luminance - human eye favors green color
-  local luminance = (0.299*r + 0.587*g + 0.114*b)/255
-  if luminance > 0.5 then
-    return true -- Bright colors, black font
-  else
-    return false -- Dark colors, white font
-  end
-end
-
-local function get_hex(hl_name, part)
-  local id = vim.fn.hlID(hl_name)
-  return vim.fn.synIDattr(id, part)
-end
-
-local function set_highlight(name, hl)
-  if hl and table_size(hl) > 0 then
-    local cmd = "highlight! "..name
-    if hl.gui and hl.gui ~= "" then
-      cmd = cmd.." ".."gui="..hl.gui
-    end
-    if hl.guifg and hl.guifg ~= "" then
-      cmd = cmd.." ".."guifg="..hl.guifg
-    end
-    if hl.guibg and hl.guibg ~= "" then
-      cmd = cmd.." ".."guibg="..hl.guibg
-    end
-    -- TODO using api here as it warns of an error if setting highlight fails
-    local success, err = pcall(api.nvim_command, cmd)
-    if not success then
-      api.nvim_err_writeln(
-        "Failed setting "..name.." highlight, something isn't configured correctly".."\n"..err
-      )
-    end
-  end
-end
-
 --- @param mode string | nil
 --- @param item string
 --- @param buf_num number
 local function make_clickable(mode, item, buf_num)
   if not vim.fn.has('tablineat') then return item end
-  -- TODO once v:lua is in stable neovim deprecate the autoload function
+  -- v:lua does not support function references in vimscript so
+  -- the only way to implement this is using autoload viml functions
   if mode == "multiwindow" then
     return "%"..buf_num.."@nvim_bufferline#handle_win_click@"..item
   else
@@ -209,9 +125,18 @@ local function make_clickable(mode, item, buf_num)
   end
 end
 
+local function close_button(buf_id)
+  local symbol = "✕"..padding
+  local size = strwidth(symbol)
+  return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@".. symbol, size
+end
 ---------------------------------------------------------------------------//
 -- CORE
 ---------------------------------------------------------------------------//
+function M.handle_close_buffer(buf_id)
+  vim.cmd("bdelete ".. buf_id)
+end
+
 function M.handle_win_click(id)
   local win_id = vim.fn.bufwinid(id)
   vim.fn.win_gotoid(win_id)
@@ -300,6 +225,12 @@ local function render_buffer(options, buffer, diagnostic_count)
     local modified_section = modified_icon..padding
     component = component..modified_hl_to_use..modified_section.."%X"
     length = length + strwidth(modified_section) -- icon(1) + padding(1)
+  end
+
+  if options.show_buffer_close_icons then
+    local close_btn, size = close_button(buffer.id)
+    component = component .. buf_highlight ..close_btn
+    length = length + size
   end
 
   -- Use: https://en.wikipedia.org/wiki/Block_Elements
@@ -555,15 +486,15 @@ end
 -- be so nice it's what anyone using this plugin sticks with. It should ideally
 -- work across any well designed colorscheme deriving colors automagically.
 local function get_defaults()
-  local comment_fg = get_hex('Comment', 'fg')
-  local normal_fg = get_hex('Normal', 'fg')
-  local normal_bg = get_hex('Normal', 'bg')
-  local string_fg = get_hex('String', 'fg')
-  local tabline_sel_bg = get_hex('TabLineSel', 'bg')
+  local comment_fg = colors.get_hex('Comment', 'fg')
+  local normal_fg = colors.get_hex('Normal', 'fg')
+  local normal_bg = colors.get_hex('Normal', 'bg')
+  local string_fg = colors.get_hex('String', 'fg')
+  local tabline_sel_bg = colors.get_hex('TabLineSel', 'bg')
 
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
-  local is_bright_background = color_is_bright(normal_bg)
+  local is_bright_background = colors.color_is_bright(normal_bg)
   local separator_shading = is_bright_background and -35 or -65
   local background_shading = is_bright_background and -15 or -30
 
@@ -577,7 +508,8 @@ local function get_defaults()
       number_style = "superscript",
       mappings = false,
       close_icon = "",
-      max_name_length = 20
+      max_name_length = 20,
+      show_buffer_close_icons = true
     };
     highlights = {
       bufferline_tab = {
@@ -647,18 +579,18 @@ function M.setup(prefs)
 
     local highlights = preferences.highlights
 
-    set_highlight('BufferLine', highlights.bufferline_buffer)
-    set_highlight('BufferLineInactive', highlights.bufferline_buffer_inactive)
-    set_highlight('BufferLineBackground', highlights.bufferline_buffer)
-    set_highlight('BufferLineSelected', highlights.bufferline_selected)
-    set_highlight('BufferLineSelectedIndicator', highlights.bufferline_selected_indicator)
-    set_highlight('BufferLineModified', highlights.bufferline_modified)
-    set_highlight('BufferLineModifiedSelected', highlights.bufferline_modified_selected)
-    set_highlight('BufferLineModifiedInactive', highlights.bufferline_modified_inactive)
-    set_highlight('BufferLineTab', highlights.bufferline_tab)
-    set_highlight('BufferLineSeparator', highlights.bufferline_separator)
-    set_highlight('BufferLineTabSelected', highlights.bufferline_tab_selected)
-    set_highlight('BufferLineTabClose', highlights.bufferline_tab_close)
+    colors.set_highlight('BufferLine', highlights.bufferline_buffer)
+    colors.set_highlight('BufferLineInactive', highlights.bufferline_buffer_inactive)
+    colors.set_highlight('BufferLineBackground', highlights.bufferline_buffer)
+    colors.set_highlight('BufferLineSelected', highlights.bufferline_selected)
+    colors.set_highlight('BufferLineSelectedIndicator', highlights.bufferline_selected_indicator)
+    colors.set_highlight('BufferLineModified', highlights.bufferline_modified)
+    colors.set_highlight('BufferLineModifiedSelected', highlights.bufferline_modified_selected)
+    colors.set_highlight('BufferLineModifiedInactive', highlights.bufferline_modified_inactive)
+    colors.set_highlight('BufferLineTab', highlights.bufferline_tab)
+    colors.set_highlight('BufferLineSeparator', highlights.bufferline_separator)
+    colors.set_highlight('BufferLineTabSelected', highlights.bufferline_tab_selected)
+    colors.set_highlight('BufferLineTabClose', highlights.bufferline_tab_close)
   end
 
   nvim_create_augroups({
