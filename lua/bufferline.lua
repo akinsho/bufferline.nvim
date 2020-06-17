@@ -552,7 +552,6 @@ local function get_defaults()
   local normal_fg = get_hex('Normal', 'fg')
   local normal_bg = get_hex('Normal', 'bg')
   local string_fg = get_hex('String', 'fg')
-  local error_fg = get_hex('Error', 'fg')
   local tabline_sel_bg = get_hex('TabLineSel', 'bg')
 
   -- If the colorscheme is bright we shouldn't do as much shading
@@ -582,7 +581,7 @@ local function get_defaults()
         guibg = tabline_sel_bg,
       };
       bufferline_tab_close = {
-        guifg = error_fg,
+        guifg = comment_fg,
         guibg = background_color
       };
       bufferline_buffer = {
