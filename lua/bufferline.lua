@@ -239,6 +239,12 @@ local function get_number_prefix(buffer, mode, style)
   return num
 end
 
+local function truncate_filename(filename, word_limit)
+  local trunc_symbol = '…' -- '...'
+  local too_long = string.len(filename) > word_limit
+  return too_long and string.sub(filename, 0, word_limit) .. trunc_symbol or filename
+end
+
 --- @param options table
 --- @param buffer Buffer
 --- @param diagnostic_count number
@@ -248,7 +254,8 @@ local function render_buffer(options, buffer, diagnostic_count)
   local length
   local is_current = buffer:current()
 
-  local component = buffer.icon..padding..buffer.filename..padding
+  local filename = truncate_filename(buffer.filename, options.max_name_length)
+  local component = buffer.icon..padding..filename..padding
 
   if options.numbers ~= "none" then
     local number_prefix = get_number_prefix(
@@ -569,7 +576,8 @@ local function get_defaults()
       numbers = "none",
       number_style = "superscript",
       mappings = false,
-      close_icon = ""
+      close_icon = "",
+      max_name_length = 20
     };
     highlights = {
       bufferline_tab = {
