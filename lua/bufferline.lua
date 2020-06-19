@@ -240,9 +240,9 @@ local function render_buffer(options, buffer, diagnostic_count)
   -- TODO: investigate using a smaller block character (▍) at the start of the
   -- tab and end making sure to handle the empty space background highlight
   local separator_component = "░"
-  local separator = separator_highlight..separator_component.."%X"
+  local separator = separator_highlight..separator_component
   length = length + strwidth(separator_component)
-  return separator..component .."%X", length
+  return separator.."%("..component.."%)", length
 end
 
 local function tab_click_component(num)
