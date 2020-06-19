@@ -224,7 +224,7 @@ local function render_buffer(options, buffer, diagnostic_count)
   if buffer.modifiable and buffer.modified then
     local modified_icon = get_plugin_variable("modified_icon", "●")
     local modified_section = modified_icon..padding
-    component = component..modified_hl_to_use..modified_section.."%X"
+    component = component..modified_hl_to_use..modified_section
     length = length + strwidth(modified_section) -- icon(1) + padding(1)
   end
 
@@ -253,7 +253,7 @@ local function render_tab(num, is_active)
   local hl = is_active and tab_selected_highlight or tab_highlight
   local name = padding.. num ..padding
   local length = strwidth(name)
-  return hl .. tab_click_component(num) .. name .. "%X", length
+  return hl .. tab_click_component(num) .. name, length
 end
 
 local function get_tabs()
