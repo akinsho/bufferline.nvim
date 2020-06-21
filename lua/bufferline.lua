@@ -20,7 +20,7 @@ local modified_selected_highlight = '%#BufferLineModifiedSelected#'
 local diagnostic_highlight = '%#ErrorMsg#'
 local background = '%#BufferLineBackground#'
 local separator_highlight = '%#BufferLineSeparator#'
-local close = '%#BufferLineTabClose#%999X'
+local close_highlight = '%#BufferLineTabClose#%999X'
 
 ---------------------------------------------------------------------------//
 -- Constants
@@ -225,7 +225,7 @@ local function render_buffer(options, buffer, diagnostic_count)
     local modified_icon = get_plugin_variable("modified_icon", "●")
     local modified_section = modified_icon..padding
     component = component..modified_hl_to_use..modified_section
-    length = length + strwidth(modified_section) -- icon(1) + padding(1)
+    length = length + strwidth(modified_section)
   end
 
   if options.show_buffer_close_icons then
@@ -237,8 +237,6 @@ local function render_buffer(options, buffer, diagnostic_count)
   -- Use: https://en.wikipedia.org/wiki/Block_Elements
   -- separator is is "translucent" so coloring is more subtle
   -- a bit more like a real shadow
-  -- TODO: investigate using a smaller block character (▍) at the start of the
-  -- tab and end making sure to handle the empty space background highlight
   local separator_component = "░"
   local separator = separator_highlight..separator_component
   length = length + strwidth(separator_component)
@@ -340,14 +338,16 @@ local function truncate(before, current, after, available_width, marker)
   end
 end
 
-local function render(buffers, tabs, close_length)
+local function render(buffers, tabs, close_icon)
+  local right_align = "%="
   local tab_components = ""
-  local tabs_and_close_length = close_length
+  local close_component, close_length = render_close(close_icon)
+  local tabs_length = close_length
 
   -- Add the length of the tabs + close components to total length
   for _,t in pairs(tabs) do
-    if not vim.tbl_isempty(t) then
-      tabs_and_close_length = tabs_and_close_length + t.length
+    if table.getn(tabs) > 1 and not vim.tbl_isempty(t) then
+      tabs_length = tabs_length + t.length
       tab_components = tab_components .. t.component
     end
   end
@@ -359,7 +359,7 @@ local function render(buffers, tabs, close_length)
   local left_element_size = strwidth(padding..padding..left_trunc_icon..padding)
   local right_element_size = strwidth(padding..padding..right_trunc_icon..padding)
 
-  local available_width = api.nvim_get_option("columns") - tabs_and_close_length
+  local available_width = vim.o.columns - tabs_length - close_length
   local before, current, after = get_sections(buffers)
   local line, marker = truncate(
     before,
@@ -382,7 +382,7 @@ local function render(buffers, tabs, close_length)
     line = line .. suffix_highlight .. padding..marker.right_count..padding..right_trunc_icon..padding
   end
 
-  return tab_components..line
+  return line..background..right_align..tab_components..close_highlight..close_component
 end
 
 --- @param bufs table | nil
@@ -453,9 +453,7 @@ end
 --[[
 TODO
 ===========
- [ ] Investigate using guibg=none for modified symbol highlight instead of multiple
-     highlight groups per status
- [ ] Buffer label truncation
+ [ ] Investigate using guibg=none for modified symbol highlight instead of multiple highlight groups per status
  [ ] Highlight file type icons if possible see:
   https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
 --]]
@@ -476,13 +474,7 @@ local function bufferline(options)
       buffers[i] = buf
   end
 
-  local close_component, close_length = render_close(options.close_icon)
-  local buffer_line = render(buffers, tabs, close_length)
-
-  buffer_line = buffer_line..background
-  buffer_line = buffer_line..padding
-  buffer_line = buffer_line.."%="..close..close_component
-  return buffer_line
+  return render(buffers, tabs, options.close_icon)
 end
 
 -- Ideally this plugin should generate a beautiful statusline a little similar

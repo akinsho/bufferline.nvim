@@ -61,8 +61,8 @@ lua require'bufferline'.setup()
 ### Future Goals
 
 - [ ] Show LSP diagnostics in bufferline so it's clear which buffers have errors
-- [x] Show only the buffers relevant/open in a specific tab as a configurable setting
 - [ ] A _few_ different configuration options for file names
+- [x] Show only the buffers relevant/open in a specific tab as a configurable setting
 
 ## Non-goals
 
@@ -72,14 +72,9 @@ lua require'bufferline'.setup()
 
 ## Todo
 
-### Urgent
-
 - [x] Expose user configuration
 - [ ] Fix truncation happening too early i.e. available width reported incorrectly
 - [x] Fix modified highlight colouring
-
-### Long term
-
 - [x] Show tabs
 - [x] Handle keeping active buffer always in view
 - [x] Show remainder marker as <- or -> depending on where truncation occurred
