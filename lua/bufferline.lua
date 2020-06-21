@@ -127,7 +127,7 @@ end
 
 -- @param buf_id number
 local function close_button(buf_id)
-  local symbol = "✕"..padding
+  local symbol = ""..padding
   local size = strwidth(symbol)
   return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@".. symbol, size
 end
@@ -242,6 +242,9 @@ local function render_buffer(options, buffer, diagnostic_count)
   local separator_component = "░"
   local separator = separator_highlight..separator_component
   length = length + strwidth(separator_component)
+  -- NOTE: the component is wrapped in an item -> %(content) so
+  -- vim counts each item as one rather than all of its individual
+  -- sub-components
   return separator.."%("..component.."%)", length
 end
 
