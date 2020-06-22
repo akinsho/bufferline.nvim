@@ -262,10 +262,13 @@ local function get_tabs()
   local tabs = api.nvim_list_tabpages()
   local current_tab = api.nvim_get_current_tabpage()
 
-  for _,tab in ipairs(tabs) do
+  -- use ordinals to ensure a contiguous keys in the table i.e. an array
+  -- rather than an object
+  -- GOOD = {1: thing, 2: thing} BAD: {1: thing, [5]: thing}
+  for i,tab in ipairs(tabs) do
     local is_active_tab = current_tab == tab
     local component, length = render_tab(tab, is_active_tab)
-    all_tabs[tab] = {component = component, length = length}
+    all_tabs[i] = {component = component, length = length, id = tab}
   end
   return all_tabs
 end
@@ -345,10 +348,12 @@ local function render(buffers, tabs, close_icon)
   local tabs_length = close_length
 
   -- Add the length of the tabs + close components to total length
-  for _,t in pairs(tabs) do
-    if table.getn(tabs) > 1 and not vim.tbl_isempty(t) then
-      tabs_length = tabs_length + t.length
-      tab_components = tab_components .. t.component
+  if table.getn(tabs) > 1 then
+    for _,t in pairs(tabs) do
+      if not vim.tbl_isempty(t) then
+        tabs_length = tabs_length + t.length
+        tab_components = tab_components .. t.component
+      end
     end
   end
 
