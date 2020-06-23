@@ -2,7 +2,7 @@
 -- Highlights
 ---------------------------------------------------------------------------//
 local M = {
-  base = '%#BufferLine#',
+  fill = '%#BufferLineFill#',
   inactive = '%#BufferLineInactive#',
   tab = '%#BufferLineTab#',
   tab_selected = '%#BufferLineTabSelected#',

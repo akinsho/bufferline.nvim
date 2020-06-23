@@ -99,7 +99,7 @@ local function get_buffer_highlight(buffer)
   elseif buffer:visible() then
     return highlights.inactive, highlights.modified_inactive
   else
-    return highlights.base, highlights.modified
+    return highlights.background, highlights.modified
   end
 end
 
@@ -352,13 +352,13 @@ local function render(buffers, tabs, close_icon)
   )
 
   if marker.left_count > 0 then
-    line = highlights.suffix .. padding..marker.left_count..padding..left_trunc_icon..padding ..line
+    line = highlights.background..padding..marker.left_count..padding..left_trunc_icon..padding ..line
   end
   if marker.right_count > 0 then
-    line = line .. highlights.suffix .. padding..marker.right_count..padding..right_trunc_icon..padding
+    line = line .. highlights.background..padding..marker.right_count..padding..right_trunc_icon..padding
   end
 
-  return line..highlights.background..right_align..tab_components..highlights.close..close_component
+  return line..highlights.fill..right_align..tab_components..highlights.close..close_component
 end
 
 --- @param bufs table | nil
@@ -429,7 +429,6 @@ end
 --[[
 TODO
 ===========
- [ ] Add ability to render a separator by the final visible buffer
  [ ] Investigate using guibg=none for modified symbol highlight instead of multiple highlight groups per status
  [ ] Highlight file type icons if possible see:
   https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
@@ -470,9 +469,11 @@ local function get_defaults()
   local is_bright_background = colors.color_is_bright(normal_bg)
   local separator_shading = is_bright_background and -55 or -85
   local background_shading = is_bright_background and -12 or -25
+  local fill_shading = background_shading -3
 
   local separator_background_color = M.shade_color(normal_bg, separator_shading)
   local background_color = M.shade_color(normal_bg, background_shading)
+  local fill_color = M.shade_color(normal_bg, fill_shading)
 
   return {
     options = {
@@ -497,7 +498,10 @@ local function get_defaults()
         guifg = comment_fg,
         guibg = background_color
       };
-      bufferline_buffer = {
+      bufferline_fill = {
+        guibg = fill_color
+      };
+      bufferline_background = {
         guifg = comment_fg,
         guibg = background_color,
       };
@@ -552,9 +556,9 @@ function M.setup(prefs)
 
     local user_colors = preferences.highlights
 
-    colors.set_highlight('BufferLine', user_colors.bufferline_buffer)
+    colors.set_highlight('BufferLineFill', user_colors.bufferline_fill)
     colors.set_highlight('BufferLineInactive', user_colors.bufferline_buffer_inactive)
-    colors.set_highlight('BufferLineBackground', user_colors.bufferline_buffer)
+    colors.set_highlight('BufferLineBackground', user_colors.bufferline_background)
     colors.set_highlight('BufferLineSelected', user_colors.bufferline_selected)
     colors.set_highlight('BufferLineSelectedIndicator', user_colors.bufferline_selected_indicator)
     colors.set_highlight('BufferLineModified', user_colors.bufferline_modified)
