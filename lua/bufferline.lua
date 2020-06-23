@@ -174,8 +174,9 @@ end
 --- @param options table
 --- @param buffer Buffer
 --- @param diagnostic_count number
+--- @param last_buffer_num number
 --- @return string
-local function render_buffer(options, buffer, diagnostic_count)
+local function render_buffer(options, buffer, diagnostic_count, last_buffer_num)
   local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
   local length
   local is_current = buffer:current()
@@ -239,11 +240,24 @@ local function render_buffer(options, buffer, diagnostic_count)
   -- a bit more like a real shadow
   local separator_component = "░"
   local separator = separator_highlight..separator_component
-  length = length + strwidth(separator_component)
+
+  -- TODO figure out why putting the separator within the component crashes neovim
   -- NOTE: the component is wrapped in an item -> %(content) so
   -- vim counts each item as one rather than all of its individual
   -- sub-components
-  return separator.."%("..component.."%)", length
+  local buffer_component = "%("..component.."%)"
+
+  -- Append separator(s), if this is the last buffer
+  -- component add to the end as well
+  if buffer.ordinal == last_buffer_num then
+    length = length + (strwidth(separator_component)  * 2)
+    buffer_component = separator .. buffer_component ..separator
+  elseif buffer.ordinal > 1 then
+    length = length + strwidth(separator_component)
+    buffer_component = separator .. buffer_component
+  end
+
+  return buffer_component, length
 end
 
 local function tab_click_component(num)
@@ -473,7 +487,7 @@ local function bufferline(options)
   for i, buf_id in ipairs(buf_nums) do
       local name =  api.nvim_buf_get_name(buf_id)
       local buf = Buffer:new {path = name, id = buf_id, ordinal = i}
-      local component, length = render_buffer(options, buf, 0)
+      local component, length = render_buffer(options, buf, 0, #buf_nums)
       buf.length = length
       buf.component = component
       buffers[i] = buf
@@ -496,8 +510,8 @@ local function get_defaults()
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
   local is_bright_background = colors.color_is_bright(normal_bg)
-  local separator_shading = is_bright_background and -35 or -65
-  local background_shading = is_bright_background and -15 or -30
+  local separator_shading = is_bright_background and -55 or -85
+  local background_shading = is_bright_background and -12 or -25
 
   local separator_background_color = M.shade_color(normal_bg, separator_shading)
   local background_color = M.shade_color(normal_bg, background_shading)
