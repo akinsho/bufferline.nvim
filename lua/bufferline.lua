@@ -471,7 +471,7 @@ local function get_defaults()
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
   local is_bright_background = colors.color_is_bright(normal_bg)
-  local separator_shading = is_bright_background and -55 or -85
+  local separator_shading = is_bright_background and -30 or -60
   local background_shading = is_bright_background and -12 or -25
   local fill_shading = background_shading -3
 
