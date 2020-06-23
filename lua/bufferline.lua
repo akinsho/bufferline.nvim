@@ -1,26 +1,10 @@
 require 'buffers'
 local colors = require 'colors'
+local highlights = require 'highlights'
+local helpers = require 'helpers'
 
 local api = vim.api
 local strwidth = vim.fn.strwidth
-
----------------------------------------------------------------------------//
--- Highlights
----------------------------------------------------------------------------//
-local highlight = '%#BufferLine#'
-local inactive_highlight = '%#BufferLineInactive#'
-local tab_highlight = '%#BufferLineTab#'
-local tab_selected_highlight = '%#BufferLineTabSelected#'
-local suffix_highlight = '%#BufferLine#'
-local selected_highlight = '%#BufferLineSelected#'
-local indicator_highlight = '%#BufferLineSelectedIndicator#'
-local modified_highlight = '%#BufferLineModified#'
-local modified_inactive_highlight = '%#BufferLineModifiedInactive#'
-local modified_selected_highlight = '%#BufferLineModifiedSelected#'
-local diagnostic_highlight = '%#ErrorMsg#'
-local background = '%#BufferLineBackground#'
-local separator_highlight = '%#BufferLineSeparator#'
-local close_highlight = '%#BufferLineTabClose#%999X'
 
 ---------------------------------------------------------------------------//
 -- Constants
@@ -57,46 +41,6 @@ local superscript_numbers = {
 local M = {
   shade_color = colors.shade_color
 }
-
----------------------------------------------------------------------------//
--- HELPERS
----------------------------------------------------------------------------//
--- https://stackoverflow.com/questions/1283388/lua-merge-tables
-local function deep_merge(t1, t2)
-    for k, v in pairs(t2) do
-        if (type(v) == "table") and (type(t1[k] or false) == "table") then
-            deep_merge(t1[k], t2[k])
-        else
-            t1[k] = v
-        end
-    end
-    return t1
-end
--- return a new array containing the concatenation of all of its
--- parameters. Scaler parameters are included in place, and array
--- parameters have their values shallow-copied to the final array.
--- Note that userdata and function values are treated as scalar.
--- https://stackoverflow.com/questions/1410862/concatenation-of-tables-in-lua
-local function array_concat(...)
-    local t = {}
-    for n = 1,select("#",...) do
-        local arg = select(n,...)
-        if type(arg) == "table" then
-            for _,v in ipairs(arg) do
-                t[#t+1] = v
-            end
-        else
-            t[#t+1] = arg
-        end
-    end
-    return t
-end
-
-local function get_plugin_variable(var, default)
-  var = "bufferline_"..var
-  local user_var = vim.g[var]
-  return user_var or default
-end
 
 -- Source: https://teukka.tech/luanvim.html
 local function nvim_create_augroups(definitions)
@@ -151,11 +95,11 @@ end
 
 local function get_buffer_highlight(buffer)
   if buffer:current() then
-    return selected_highlight, modified_selected_highlight
+    return highlights.selected, highlights.modified_selected
   elseif buffer:visible() then
-    return inactive_highlight, modified_inactive_highlight
+    return highlights.inactive, highlights.modified_inactive
   else
-    return highlight, modified_highlight
+    return highlights.base, highlights.modified
   end
 end
 
@@ -205,7 +149,7 @@ local function render_buffer(options, buffer, diagnostic_count, last_buffer_num)
     -- background highlight doesn't appear in th middle
     -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
     local indicator_symbol = '▎'
-    local indicator = indicator_highlight .. indicator_symbol .. '%*'
+    local indicator = highlights.indicator .. indicator_symbol .. '%*'
 
     length = length + strwidth(indicator_symbol)
     component = indicator .. buf_highlight .. component
@@ -218,12 +162,12 @@ local function render_buffer(options, buffer, diagnostic_count, last_buffer_num)
 
   if diagnostic_count > 0 then
     local diagnostic_section = diagnostic_count..padding
-    component = component..diagnostic_highlight..diagnostic_section
+    component = component..highlights.diagnostic..diagnostic_section
     length = length + strwidth(diagnostic_section)
   end
 
   if buffer.modifiable and buffer.modified then
-    local modified_icon = get_plugin_variable("modified_icon", "●")
+    local modified_icon = helpers.get_plugin_variable("modified_icon", "●")
     local modified_section = modified_icon..padding
     component = component..modified_hl_to_use..modified_section
     length = length + strwidth(modified_section)
@@ -239,7 +183,7 @@ local function render_buffer(options, buffer, diagnostic_count, last_buffer_num)
   -- separator is is "translucent" so coloring is more subtle
   -- a bit more like a real shadow
   local separator_component = "░"
-  local separator = separator_highlight..separator_component
+  local separator = highlights.separator..separator_component
 
   -- TODO figure out why putting the separator within the component crashes neovim
   -- NOTE: the component is wrapped in an item -> %(content) so
@@ -265,7 +209,7 @@ local function tab_click_component(num)
 end
 
 local function render_tab(num, is_active)
-  local hl = is_active and tab_selected_highlight or tab_highlight
+  local hl = is_active and highlights.tab_selected or highlights.tab
   local name = padding.. num ..padding
   local length = strwidth(name)
   return hl .. tab_click_component(num) .. name, length
@@ -322,6 +266,14 @@ local function get_marker_size(count, element_size)
   return count > 0 and strwidth(count) + element_size or 0
 end
 
+-- Number the visible buffers
+local function assign_visible_number(buffers)
+  for index, buffer in ipairs(buffers) do
+    buffer.visible_number = index
+  end
+  return buffers
+end
+
 --[[
 PREREQUISITE: active buffer always remains in view
 1. Find amount of available space in the window
@@ -340,7 +292,8 @@ local function truncate(before, current, after, available_width, marker)
 
   if available_width >= total_length then
     -- Merge all the buffers and render the components
-    local buffers = array_concat(before.buffers, current.buffers, after.buffers)
+    local buffers = helpers.array_concat(before.buffers, current.buffers, after.buffers)
+    assign_visible_number(buffers)
     for _,buf in ipairs(buffers) do line = line .. buf.component end
     return line, marker
   else
@@ -372,8 +325,8 @@ local function render(buffers, tabs, close_icon)
   end
 
   -- Icons from https://fontawesome.com/cheatsheet
-  local left_trunc_icon = get_plugin_variable("left_trunc_marker", "")
-  local right_trunc_icon = get_plugin_variable("right_trunc_marker", "")
+  local left_trunc_icon = helpers.get_plugin_variable("left_trunc_marker", "")
+  local right_trunc_icon = helpers.get_plugin_variable("right_trunc_marker", "")
   -- measure the surrounding trunc items: padding + count + padding + icon + padding
   local left_element_size = strwidth(padding..padding..left_trunc_icon..padding)
   local right_element_size = strwidth(padding..padding..right_trunc_icon..padding)
@@ -393,15 +346,14 @@ local function render(buffers, tabs, close_icon)
     }
   )
 
-  -- TODO: Add a check to see if user wants fancy icons or not
   if marker.left_count > 0 then
-    line = suffix_highlight .. padding..marker.left_count..padding..left_trunc_icon..padding ..line
+    line = highlights.suffix .. padding..marker.left_count..padding..left_trunc_icon..padding ..line
   end
   if marker.right_count > 0 then
-    line = line .. suffix_highlight .. padding..marker.right_count..padding..right_trunc_icon..padding
+    line = line .. highlights.suffix .. padding..marker.right_count..padding..right_trunc_icon..padding
   end
 
-  return line..background..right_align..tab_components..close_highlight..close_component
+  return line..highlights.background..right_align..tab_components..highlights.close..close_component
 end
 
 --- @param bufs table | nil
@@ -589,23 +541,23 @@ function M.setup(prefs)
   function _G.__setup_bufferline_colors()
     -- Combine user preferences with defaults preferring the user's own settings
     if prefs and type(prefs) == "table" then
-      preferences = deep_merge(preferences, prefs)
+      preferences = helpers.deep_merge(preferences, prefs)
     end
 
-    local highlights = preferences.highlights
+    local user_colors = preferences.highlights
 
-    colors.set_highlight('BufferLine', highlights.bufferline_buffer)
-    colors.set_highlight('BufferLineInactive', highlights.bufferline_buffer_inactive)
-    colors.set_highlight('BufferLineBackground', highlights.bufferline_buffer)
-    colors.set_highlight('BufferLineSelected', highlights.bufferline_selected)
-    colors.set_highlight('BufferLineSelectedIndicator', highlights.bufferline_selected_indicator)
-    colors.set_highlight('BufferLineModified', highlights.bufferline_modified)
-    colors.set_highlight('BufferLineModifiedSelected', highlights.bufferline_modified_selected)
-    colors.set_highlight('BufferLineModifiedInactive', highlights.bufferline_modified_inactive)
-    colors.set_highlight('BufferLineTab', highlights.bufferline_tab)
-    colors.set_highlight('BufferLineSeparator', highlights.bufferline_separator)
-    colors.set_highlight('BufferLineTabSelected', highlights.bufferline_tab_selected)
-    colors.set_highlight('BufferLineTabClose', highlights.bufferline_tab_close)
+    colors.set_highlight('BufferLine', user_colors.bufferline_buffer)
+    colors.set_highlight('BufferLineInactive', user_colors.bufferline_buffer_inactive)
+    colors.set_highlight('BufferLineBackground', user_colors.bufferline_buffer)
+    colors.set_highlight('BufferLineSelected', user_colors.bufferline_selected)
+    colors.set_highlight('BufferLineSelectedIndicator', user_colors.bufferline_selected_indicator)
+    colors.set_highlight('BufferLineModified', user_colors.bufferline_modified)
+    colors.set_highlight('BufferLineModifiedSelected', user_colors.bufferline_modified_selected)
+    colors.set_highlight('BufferLineModifiedInactive', user_colors.bufferline_modified_inactive)
+    colors.set_highlight('BufferLineTab', user_colors.bufferline_tab)
+    colors.set_highlight('BufferLineSeparator', user_colors.bufferline_separator)
+    colors.set_highlight('BufferLineTabSelected', user_colors.bufferline_tab_selected)
+    colors.set_highlight('BufferLineTabClose', user_colors.bufferline_tab_close)
   end
 
   nvim_create_augroups({
