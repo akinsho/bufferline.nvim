@@ -292,7 +292,12 @@ local function truncate(before, current, after, available_width, marker)
 
   if available_width >= total_length then
     -- Merge all the buffers and render the components
-    local buffers = helpers.array_concat(before.buffers, current.buffers, after.buffers)
+    local buffers = helpers.array_concat(
+      before.buffers,
+      current.buffers,
+      after.buffers
+    )
+    -- Add the current visible number to the buffer class
     assign_visible_number(buffers)
     for _,buf in ipairs(buffers) do line = line .. buf.component end
     return line, marker
@@ -424,6 +429,7 @@ end
 --[[
 TODO
 ===========
+ [ ] Add ability to render a separator by the final visible buffer
  [ ] Investigate using guibg=none for modified symbol highlight instead of multiple highlight groups per status
  [ ] Highlight file type icons if possible see:
   https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
