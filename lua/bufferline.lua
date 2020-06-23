@@ -274,6 +274,10 @@ local function assign_visible_number(buffers)
   return buffers
 end
 
+local function render_trunc_marker(count, icon)
+  return highlights.fill..padding..count..padding..icon..padding
+end
+
 --[[
 PREREQUISITE: active buffer always remains in view
 1. Find amount of available space in the window
@@ -352,10 +356,10 @@ local function render(buffers, tabs, close_icon)
   )
 
   if marker.left_count > 0 then
-    line = highlights.background..padding..marker.left_count..padding..left_trunc_icon..padding ..line
+    line = highlights.background.. render_trunc_marker(marker.left_count, left_trunc_icon) ..line
   end
   if marker.right_count > 0 then
-    line = line .. highlights.background..padding..marker.right_count..padding..right_trunc_icon..padding
+    line = line .. highlights.background..render_trunc_marker(marker.right_count, right_trunc_icon)
   end
 
   return line..highlights.fill..right_align..tab_components..highlights.close..close_component
@@ -499,6 +503,7 @@ local function get_defaults()
         guibg = background_color
       };
       bufferline_fill = {
+        guifg = comment_fg,
         guibg = fill_color
       };
       bufferline_background = {
