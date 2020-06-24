@@ -39,4 +39,19 @@ function M.get_plugin_variable(var, default)
   return user_var or default
 end
 
+--- @param array table
+--- @return table
+function M.filter_duplicates(array)
+  local seen = {}
+  local res = {}
+
+  for _,v in ipairs(array) do
+    if (not seen[v]) then
+      res[#res+1] = v
+      seen[v] = true
+    end
+  end
+  return res
+end
+
 return M
