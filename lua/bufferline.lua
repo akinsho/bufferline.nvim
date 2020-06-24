@@ -216,9 +216,7 @@ end
 
 local function render_tab(tab, is_active)
   local hl = is_active and highlights.tab_selected or highlights.tab
-  local window_count = table.getn(tab.windows)
-  local window_indicator = window_count > 1 and padding.."("..window_count..")" or ""
-  local name = padding..tab.tabnr..window_indicator ..padding
+  local name = padding..tab.tabnr..padding
   local length = strwidth(name)
   return hl .. tab_click_component(tab.tabnr) .. name, length
 end
