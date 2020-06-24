@@ -497,7 +497,6 @@ local function get_defaults()
       };
       bufferline_modified = {
         guifg = string_fg,
-        guibg = background_color,
       };
       bufferline_modified_inactive = {
         guifg = string_fg,
