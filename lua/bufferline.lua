@@ -272,14 +272,6 @@ local function get_marker_size(count, element_size)
   return count > 0 and strwidth(count) + element_size or 0
 end
 
--- Number the visible buffers
-local function assign_visible_number(buffers)
-  for index, buffer in ipairs(buffers) do
-    buffer.visible_number = index
-  end
-  return buffers
-end
-
 local function render_trunc_marker(count, icon)
   return highlights.fill..padding..count..padding..icon..padding
 end
@@ -307,8 +299,6 @@ local function truncate(before, current, after, available_width, marker)
       current.buffers,
       after.buffers
     )
-    -- Add the current visible number to the buffer class
-    assign_visible_number(buffers)
     for index,buf in ipairs(buffers) do
       line = line .. buf.component(index, table.getn(buffers))
     end
