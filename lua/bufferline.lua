@@ -191,15 +191,8 @@ local function render_buffer(options, buffer, diagnostic_count, last_buffer_num)
   -- sub-components
   local buffer_component = "%("..component.."%)"
 
-  -- Append separator(s), if this is the last buffer
-  -- component add to the end as well
-  if buffer.ordinal == last_buffer_num then
-    length = length + (strwidth(separator_component)  * 2)
-    buffer_component = separator .. buffer_component ..separator
-  elseif buffer.ordinal > 1 then
-    length = length + strwidth(separator_component)
-    buffer_component = separator .. buffer_component
-  end
+  length = length + strwidth(separator_component)
+  buffer_component = buffer_component .. separator
 
   return buffer_component, length
 end
