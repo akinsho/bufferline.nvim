@@ -214,25 +214,32 @@ local function tab_click_component(num)
   return "%"..num.."T"
 end
 
-local function render_tab(num, is_active)
+local function render_tab(tab, is_active)
   local hl = is_active and highlights.tab_selected or highlights.tab
-  local name = padding.. num ..padding
+  local window_count = table.getn(tab.windows)
+  local window_indicator = window_count > 1 and padding.."("..window_count..")" or ""
+  local name = padding..tab.tabnr..window_indicator ..padding
   local length = strwidth(name)
-  return hl .. tab_click_component(num) .. name, length
+  return hl .. tab_click_component(tab.tabnr) .. name, length
 end
 
 local function get_tabs()
   local all_tabs = {}
-  local tabs = api.nvim_list_tabpages()
+  local tabs = vim.fn.gettabinfo()
   local current_tab = vim.fn.tabpagenr()
 
   -- use ordinals to ensure a contiguous keys in the table i.e. an array
   -- rather than an object
   -- GOOD = {1: thing, 2: thing} BAD: {1: thing, [5]: thing}
   for i,tab in ipairs(tabs) do
-    local is_active_tab = current_tab == tab
+    local is_active_tab = current_tab == tab.tabnr
     local component, length = render_tab(tab, is_active_tab)
-    all_tabs[i] = {component = component, length = length, id = tab}
+    all_tabs[i] = {
+      component = component,
+      length = length,
+      id = tab.tabnr,
+      windows = tab.windows,
+    }
   end
   return all_tabs
 end
