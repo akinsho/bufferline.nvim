@@ -245,7 +245,7 @@ end
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
 local function is_valid(buffer)
   if not buffer or buffer < 1 then return false end
-  local listed = api.nvim_buf_get_option(buffer, "buflisted")
+  local listed = vim.fn.getbufvar(buffer, "&buflisted")
   local exists = api.nvim_buf_is_valid(buffer)
   return listed and exists
 end
