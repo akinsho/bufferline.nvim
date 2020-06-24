@@ -196,7 +196,11 @@ local function render_buffer(options, buffer, diagnostic_count)
 
   -- We return a function from render buffer as we do not yet have access to
   -- information regarding which buffers will actually be rendered
-  local render_fn = function (index, num_of_bufs)
+
+  --- @param index number
+  --- @param num_of_bufs number
+  --- @returns string
+  local render_fn  = function (index, num_of_bufs)
     if index < num_of_bufs then
       buffer_component =  buffer_component .. separator
     end
