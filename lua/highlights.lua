@@ -6,7 +6,6 @@ local M = {
   inactive = '%#BufferLineInactive#',
   tab = '%#BufferLineTab#',
   tab_selected = '%#BufferLineTabSelected#',
-  suffix = '%#BufferLine#',
   selected = '%#BufferLineSelected#',
   indicator = '%#BufferLineSelectedIndicator#',
   modified = '%#BufferLineModified#',

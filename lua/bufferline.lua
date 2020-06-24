@@ -123,6 +123,7 @@ local function render_buffer(options, buffer, diagnostic_count)
   local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
   local length
   local is_current = buffer:current()
+  local is_visible = buffer:visible()
 
   local filename = truncate_filename(buffer.filename, options.max_name_length)
   local component = buffer.icon..padding..filename..padding
@@ -179,19 +180,17 @@ local function render_buffer(options, buffer, diagnostic_count)
   end
 
   -- Use: https://en.wikipedia.org/wiki/Block_Elements
-  -- separator is is "translucent" so coloring is more subtle
-  -- a bit more like a real shadow
-  local separator_component = "░"
+  local separator_component = (is_visible or is_current) and "▌" or "▐"-- "▍" "░"
   local separator = highlights.separator..separator_component
 
-  -- TODO figure out why putting the separator within the component crashes neovim
   -- NOTE: the component is wrapped in an item -> %(content) so
   -- vim counts each item as one rather than all of its individual
   -- sub-components
+  -- TODO figure out why putting the separator within the component crashes neovim
   local buffer_component = "%("..component.."%)"
 
   length = length + strwidth(separator_component)
-  buffer_component = buffer_component .. separator
+  buffer_component =  buffer_component .. separator
 
   return buffer_component, length
 end
@@ -463,7 +462,7 @@ local function get_defaults()
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
   local is_bright_background = colors.color_is_bright(normal_bg)
-  local separator_shading = is_bright_background and -30 or -60
+  local separator_shading = is_bright_background and -15 or -30
   local background_shading = is_bright_background and -12 or -25
   local fill_shading = background_shading -3
 
