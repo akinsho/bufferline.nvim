@@ -118,9 +118,8 @@ end
 --- @param options table
 --- @param buffer Buffer
 --- @param diagnostic_count number
---- @param last_buffer_num number
 --- @return string
-local function render_buffer(options, buffer, diagnostic_count, last_buffer_num)
+local function render_buffer(options, buffer, diagnostic_count)
   local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
   local length
   local is_current = buffer:current()
@@ -441,7 +440,7 @@ local function bufferline(options)
   for i, buf_id in ipairs(buf_nums) do
       local name =  api.nvim_buf_get_name(buf_id)
       local buf = Buffer:new {path = name, id = buf_id, ordinal = i}
-      local component, length = render_buffer(options, buf, 0, #buf_nums)
+      local component, length = render_buffer(options, buf, 0)
       buf.length = length
       buf.component = component
       buffers[i] = buf
