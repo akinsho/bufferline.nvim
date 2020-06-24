@@ -243,10 +243,10 @@ local function render_close(icon)
 end
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
-local function is_valid(buffer)
-  if not buffer or buffer < 1 then return false end
-  local listed = vim.fn.getbufvar(buffer, "&buflisted")
-  local exists = api.nvim_buf_is_valid(buffer)
+local function is_valid(buf_num)
+  if not buf_num or buf_num < 1 then return false end
+  local listed = vim.fn.getbufvar(buf_num, "&buflisted") > 0
+  local exists = api.nvim_buf_is_valid(buf_num)
   return listed and exists
 end
 
