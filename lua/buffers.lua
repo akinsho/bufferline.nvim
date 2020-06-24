@@ -1,4 +1,3 @@
-local api = vim.api
 --------------------------------
 -- Constants
 --------------------------------
@@ -48,9 +47,9 @@ end
 Buffer = {}
 
 function Buffer:new(buf)
-  buf.modifiable = api.nvim_buf_get_option(buf.id, 'modifiable')
-  buf.modified = api.nvim_buf_get_option(buf.id, 'modified')
-  buf.buftype = api.nvim_buf_get_option(buf.id, 'buftype')
+  buf.modifiable = vim.fn.getbufvar(buf.id, '&modifiable') == 1
+  buf.modified = vim.fn.getbufvar(buf.id, '&modified') == 1
+  buf.buftype = vim.fn.getbufvar(buf.id, '&buftype')
   if buf.path == "" then buf.path = "[No Name]" end
 
   -- Set icon

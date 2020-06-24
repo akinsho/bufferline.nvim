@@ -224,7 +224,7 @@ end
 local function get_tabs()
   local all_tabs = {}
   local tabs = api.nvim_list_tabpages()
-  local current_tab = api.nvim_get_current_tabpage()
+  local current_tab = vim.fn.tabpagenr()
 
   -- use ordinals to ensure a contiguous keys in the table i.e. an array
   -- rather than an object
@@ -245,7 +245,7 @@ end
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
 local function is_valid(buf_num)
   if not buf_num or buf_num < 1 then return false end
-  local listed = vim.fn.getbufvar(buf_num, "&buflisted") > 0
+  local listed = vim.fn.getbufvar(buf_num, "&buflisted") == 1
   local exists = api.nvim_buf_is_valid(buf_num)
   return listed and exists
 end
@@ -389,7 +389,7 @@ local function get_buffers_by_mode(mode)
     - In tabs with more than one window, only the buffers that are being displayed are listed.
 --]]
   if mode == "multiwindow" then
-    local current_tab = api.nvim_get_current_tabpage()
+    local current_tab = vim.fn.tabpagenr()
     local is_single_tab = vim.fn.tabpagenr('$') == 1
     local number_of_tab_wins = vim.fn.tabpagewinnr(current_tab, '$')
     local valid_wins = 0
@@ -429,7 +429,7 @@ local function bufferline(options)
   options.view = current_mode
 
   for i, buf_id in ipairs(buf_nums) do
-      local name =  api.nvim_buf_get_name(buf_id)
+      local name =  vim.fn.bufname(buf_id)
       local buf = Buffer:new {path = name, id = buf_id, ordinal = i}
       local render_fn, length = render_buffer(options, buf, 0)
       buf.length = length
