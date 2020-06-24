@@ -118,7 +118,7 @@ end
 --- @param options table
 --- @param buffer Buffer
 --- @param diagnostic_count number
---- @return string
+--- @return function | number @comment returns a render function and length
 local function render_buffer(options, buffer, diagnostic_count)
   local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
   local length
@@ -189,10 +189,21 @@ local function render_buffer(options, buffer, diagnostic_count)
   -- TODO figure out why putting the separator within the component crashes neovim
   local buffer_component = "%("..component.."%)"
 
-  length = length + strwidth(separator_component)
-  buffer_component =  buffer_component .. separator
 
-  return buffer_component, length
+  -- We increment the buffer length by the separator although the final
+  -- buffer will not have a separator so we are technically off by 1
+  length = length + strwidth(separator_component)
+
+  -- We return a function from render buffer as we do not yet have access to
+  -- information regarding which buffers will actually be rendered
+  local render_fn = function (index, num_of_bufs)
+    if index < num_of_bufs then
+      buffer_component =  buffer_component .. separator
+    end
+    return buffer_component
+  end
+
+  return render_fn, length
 end
 
 local function tab_click_component(num)
@@ -294,7 +305,9 @@ local function truncate(before, current, after, available_width, marker)
     )
     -- Add the current visible number to the buffer class
     assign_visible_number(buffers)
-    for _,buf in ipairs(buffers) do line = line .. buf.component end
+    for index,buf in ipairs(buffers) do
+      line = line .. buf.component(index, table.getn(buffers))
+    end
     return line, marker
   else
     if before.length >= after.length then
@@ -439,9 +452,9 @@ local function bufferline(options)
   for i, buf_id in ipairs(buf_nums) do
       local name =  api.nvim_buf_get_name(buf_id)
       local buf = Buffer:new {path = name, id = buf_id, ordinal = i}
-      local component, length = render_buffer(options, buf, 0)
+      local render_fn, length = render_buffer(options, buf, 0)
       buf.length = length
-      buf.component = component
+      buf.component = render_fn
       buffers[i] = buf
   end
 
@@ -464,11 +477,9 @@ local function get_defaults()
   local is_bright_background = colors.color_is_bright(normal_bg)
   local separator_shading = is_bright_background and -15 or -30
   local background_shading = is_bright_background and -12 or -25
-  local fill_shading = background_shading -3
 
   local separator_background_color = M.shade_color(normal_bg, separator_shading)
   local background_color = M.shade_color(normal_bg, background_shading)
-  local fill_color = M.shade_color(normal_bg, fill_shading)
 
   return {
     options = {
@@ -495,7 +506,7 @@ local function get_defaults()
       };
       bufferline_fill = {
         guifg = comment_fg,
-        guibg = fill_color
+        guibg = separator_background_color
       };
       bufferline_background = {
         guifg = comment_fg,
