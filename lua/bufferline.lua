@@ -359,10 +359,12 @@ local function render(buffers, tabs, close_icon)
   )
 
   if marker.left_count > 0 then
-    line = highlights.background.. render_trunc_marker(marker.left_count, left_trunc_icon) ..line
+    local icon = render_trunc_marker(marker.left_count, left_trunc_icon)
+    line = highlights.background..icon..line
   end
   if marker.right_count > 0 then
-    line = line .. highlights.background..render_trunc_marker(marker.right_count, right_trunc_icon)
+    local icon = render_trunc_marker(marker.right_count, right_trunc_icon)
+    line = line..highlights.background..icon
   end
 
   return line..highlights.fill..right_align..tab_components..highlights.close..close_component
@@ -502,6 +504,7 @@ local function get_defaults()
       };
       bufferline_modified = {
         guifg = string_fg,
+        guibg = background_color,
       };
       bufferline_modified_inactive = {
         guifg = string_fg,
