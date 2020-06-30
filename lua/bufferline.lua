@@ -340,7 +340,7 @@ local function render(buffers, tabs, close_icon)
   local left_trunc_icon = helpers.get_plugin_variable("left_trunc_marker", "")
   local right_trunc_icon = helpers.get_plugin_variable("right_trunc_marker", "")
   -- measure the surrounding trunc items: padding + count + padding + icon + padding
-  local left_element_size = strwidth(padding..padding..left_trunc_icon..padding)
+  local left_element_size = strwidth(padding..padding..left_trunc_icon..padding..padding)
   local right_element_size = strwidth(padding..padding..right_trunc_icon..padding)
 
   local available_width = vim.o.columns - tabs_length - close_length
@@ -360,7 +360,7 @@ local function render(buffers, tabs, close_icon)
 
   if marker.left_count > 0 then
     local icon = render_trunc_marker(marker.left_count, left_trunc_icon)
-    line = highlights.background..icon..line
+    line = highlights.background..icon..padding..line
   end
   if marker.right_count > 0 then
     local icon = render_trunc_marker(marker.right_count, right_trunc_icon)
