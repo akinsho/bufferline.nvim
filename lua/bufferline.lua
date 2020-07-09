@@ -191,7 +191,7 @@ local function render_buffer(options, buffer, diagnostic_count, buffer_length)
   if options.separator_style == 'thick' then
     separator_component = (is_visible or is_current) and "▌" or "▐"-- "▍" "░"
   else
-    separator_component = (is_visible or is_current) and "▏" or "▕"-- "▍" "░"
+    separator_component = (is_visible or is_current) and "▏" or "▕"
   end
 
   local separator = highlights.separator..separator_component
@@ -558,14 +558,15 @@ end
 -- TODO then validate user preferences and only set prefs that exists
 function M.setup(prefs)
   local preferences = get_defaults()
+  -- Combine user preferences with defaults preferring the user's own settings
+  -- NOTE this should happen outside any of these inner functions to prevent the
+  -- value being set within a closure
+  if prefs and type(prefs) == "table" then
+    helpers.deep_merge(preferences, prefs)
+  end
+
   function _G.__setup_bufferline_colors()
-    -- Combine user preferences with defaults preferring the user's own settings
-    if prefs and type(prefs) == "table" then
-      preferences = helpers.deep_merge(preferences, prefs)
-    end
-
     local user_colors = preferences.highlights
-
     colors.set_highlight('BufferLineFill', user_colors.bufferline_fill)
     colors.set_highlight('BufferLineInactive', user_colors.bufferline_buffer_inactive)
     colors.set_highlight('BufferLineBackground', user_colors.bufferline_background)
