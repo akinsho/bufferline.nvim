@@ -180,7 +180,13 @@ local function render_buffer(options, buffer, diagnostic_count)
   end
 
   -- Use: https://en.wikipedia.org/wiki/Block_Elements
-  local separator_component = (is_visible or is_current) and "▌" or "▐"-- "▍" "░"
+  local separator_component
+  if options.separator_style == 'thick' then
+    separator_component = (is_visible or is_current) and "▌" or "▐"-- "▍" "░"
+  else
+    separator_component = (is_visible or is_current) and "▏" or "▕"-- "▍" "░"
+  end
+
   local separator = highlights.separator..separator_component
 
   -- NOTE: the component is wrapped in an item -> %(content) so
@@ -461,9 +467,11 @@ local function get_defaults()
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
   local is_bright_background = colors.color_is_bright(normal_bg)
-  local separator_shading = is_bright_background and -15 or -30
+  local separator_shading = is_bright_background and -20 or -45
+  local tabline_fill_shading = is_bright_background and -15 or -30
   local background_shading = is_bright_background and -12 or -25
 
+  local tabline_fill_color = M.shade_color(normal_bg, tabline_fill_shading)
   local separator_background_color = M.shade_color(normal_bg, separator_shading)
   local background_color = M.shade_color(normal_bg, background_shading)
 
@@ -475,7 +483,8 @@ local function get_defaults()
       mappings = false,
       close_icon = "",
       max_name_length = 20,
-      show_buffer_close_icons = true
+      show_buffer_close_icons = true,
+      separator_style = 'thin'
     };
     highlights = {
       bufferline_tab = {
@@ -492,7 +501,7 @@ local function get_defaults()
       };
       bufferline_fill = {
         guifg = comment_fg,
-        guibg = separator_background_color
+        guibg = tabline_fill_color,
       };
       bufferline_background = {
         guifg = comment_fg,
