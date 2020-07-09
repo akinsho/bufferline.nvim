@@ -95,6 +95,7 @@ lua require'bufferline'.setup{
     close_icon = "x"
     max_name_length = 20,
     show_buffer_close_icons = true | false,
+    separator_style = "thick" | "thin"
   }
 }
 ```
