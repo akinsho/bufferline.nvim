@@ -118,8 +118,9 @@ end
 --- @param options table
 --- @param buffer Buffer
 --- @param diagnostic_count number
+--- @param buffer_length number
 --- @return function | number @comment returns a render function and length
-local function render_buffer(options, buffer, diagnostic_count)
+local function render_buffer(options, buffer, diagnostic_count, buffer_length)
   local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
   local length
   local is_current = buffer:current()
@@ -127,6 +128,12 @@ local function render_buffer(options, buffer, diagnostic_count)
 
   local filename = truncate_filename(buffer.filename, options.max_name_length)
   local component = buffer.icon..padding..filename..padding
+
+  if strwidth(component) < buffer_length then
+    local difference = buffer_length - string.len(component)
+    local pad = string.rep(" ", math.ceil((difference / 2)))
+    component = pad .. component .. pad
+  end
 
   if options.numbers ~= "none" then
     local number_prefix = get_number_prefix(
@@ -441,10 +448,11 @@ local function bufferline(options)
   local tabs = get_tabs()
   options.view = current_mode
 
+  local buffer_length = options.max_name_length
   for i, buf_id in ipairs(buf_nums) do
       local name =  vim.fn.bufname(buf_id)
       local buf = Buffer:new {path = name, id = buf_id, ordinal = i}
-      local render_fn, length = render_buffer(options, buf, 0)
+      local render_fn, length = render_buffer(options, buf, 0, buffer_length)
       buf.length = length
       buf.component = render_fn
       buffers[i] = buf
