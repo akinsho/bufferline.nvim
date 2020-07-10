@@ -4,6 +4,8 @@ local highlights = require 'highlights'
 local helpers = require 'helpers'
 
 local api = vim.api
+-- string.len counts number of bytes and so the unicode icons are counted
+-- larger than their display width. So we use nvim's strwidth
 local strwidth = vim.fn.strwidth
 
 ---------------------------------------------------------------------------//
@@ -115,6 +117,24 @@ local function truncate_filename(filename, word_limit)
   return too_long and string.sub(filename, 0, word_limit) .. trunc_symbol or filename
 end
 
+--[[
+ In order to get the accurate character width of a buffer tab
+ each buffer's length is manually calculated to avoid accidentally
+ incorporating highlight strings into the buffer tab count
+ e.g. %#HighlightName%filename.js should be 11 but strwidth will
+ include the highlight in the count
+ TODO
+ Workout a function either using vim's regex or lua's to remove
+ a highlight string. For example:
+ -----------------------------------
+  [WIP]
+ -----------------------------------
+ function get_actual_length(component)
+  local formatted = string.gsub(component, '%%#.*#', '')
+  print(formatted)
+  return strwidth(formatted)
+ end
+--]]
 --- @param options table
 --- @param buffer Buffer
 --- @param diagnostic_count number
@@ -128,23 +148,34 @@ local function render_buffer(options, buffer, diagnostic_count, buffer_length)
 
   local filename = truncate_filename(buffer.filename, options.max_name_length)
   local component = buffer.icon..padding..filename..padding
+  -- Initial component size without highlights
+  length = length + strwidth(component)
 
   local modified_icon = helpers.get_plugin_variable("modified_icon", "●")
   local modified_section = modified_icon..padding
   local m_size = strwidth(modified_section)
   local m_padding = string.rep(padding, m_size)
 
+  -- If the buffer is modifiable add an icon but even if it isn't pad
+  -- the buffer so it doesn't "jump" when it becomes modified i.e. due
+  -- to the sudden addition of a new character
   if buffer.modifiable and buffer.modified then
     component = m_padding..component..modified_hl_to_use..modified_section
   else
     component = m_padding..component.. m_padding
   end
+  -- Add the length of modified symbol and the associated padding
   length = length + (m_size * 2)
 
-  if strwidth(component) < buffer_length then
+  -- Check if the component is smaller than the max size if so
+  -- pad it so to make it's size consistent with the maximum
+  -- allowed size
+  if strwidth(length) < buffer_length then
     local difference = buffer_length - string.len(component)
     local pad = string.rep(padding, math.ceil((difference / 2)))
     component = pad .. component .. pad
+    -- Add the size of the padding to the length of the buffer
+    length = strwidth(pad) * 2
   end
 
   if options.numbers ~= "none" then
@@ -155,12 +186,9 @@ local function render_buffer(options, buffer, diagnostic_count, buffer_length)
     )
     local number_component = number_prefix .. padding
     component = number_component  .. component
+    length = length + strwidth(number_component)
   end
 
-  -- string.len counts number of bytes and so the unicode icons are counted
-  -- larger than their display width. So we use nvim's strwidth
-  -- also avoid including highlight strings in the buffer length
-  length = strwidth(component)
   component = make_clickable(options.mode, component, buffer.id)
 
   if is_current then
@@ -203,8 +231,8 @@ local function render_buffer(options, buffer, diagnostic_count, buffer_length)
 
   -- NOTE: the component is wrapped in an item -> %(content) so
   -- vim counts each item as one rather than all of its individual
-  -- sub-components
-  -- TODO figure out why putting the separator within the component crashes neovim
+  -- sub-components. Vim only allows a maximum of 80 items in a tabline
+  -- so it is important that these are correctly group as one
   local buffer_component = "%("..component.."%)"
 
 
