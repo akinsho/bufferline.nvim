@@ -175,7 +175,7 @@ local function render_buffer(options, buffer, diagnostic_count, buffer_length)
     local pad = string.rep(padding, math.ceil((difference / 2)))
     component = pad .. component .. pad
     -- Add the size of the padding to the length of the buffer
-    length = strwidth(pad) * 2
+    length = length + strwidth(pad) * 2
   end
 
   if options.numbers ~= "none" then
@@ -469,7 +469,6 @@ end
 --[[
 TODO
 ===========
- [ ] Investigate using guibg=none for modified symbol highlight instead of multiple highlight groups per status
  [ ] Highlight file type icons if possible see:
   https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
 --]]
