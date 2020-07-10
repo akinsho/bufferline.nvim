@@ -122,16 +122,28 @@ end
 --- @return function | number @comment returns a render function and length
 local function render_buffer(options, buffer, diagnostic_count, buffer_length)
   local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
-  local length
+  local length = 0
   local is_current = buffer:current()
   local is_visible = buffer:visible()
 
   local filename = truncate_filename(buffer.filename, options.max_name_length)
   local component = buffer.icon..padding..filename..padding
 
+  local modified_icon = helpers.get_plugin_variable("modified_icon", "●")
+  local modified_section = modified_icon..padding
+  local m_size = strwidth(modified_section)
+  local m_padding = string.rep(padding, m_size)
+
+  if buffer.modifiable and buffer.modified then
+    component = m_padding..component..modified_hl_to_use..modified_section
+  else
+    component = m_padding..component.. m_padding
+  end
+  length = length + (m_size * 2)
+
   if strwidth(component) < buffer_length then
     local difference = buffer_length - string.len(component)
-    local pad = string.rep(" ", math.ceil((difference / 2)))
+    local pad = string.rep(padding, math.ceil((difference / 2)))
     component = pad .. component .. pad
   end
 
@@ -171,13 +183,6 @@ local function render_buffer(options, buffer, diagnostic_count, buffer_length)
     local diagnostic_section = diagnostic_count..padding
     component = component..highlights.diagnostic..diagnostic_section
     length = length + strwidth(diagnostic_section)
-  end
-
-  if buffer.modifiable and buffer.modified then
-    local modified_icon = helpers.get_plugin_variable("modified_icon", "●")
-    local modified_section = modified_icon..padding
-    component = component..modified_hl_to_use..modified_section
-    length = length + strwidth(modified_section)
   end
 
   if options.show_buffer_close_icons then
@@ -494,7 +499,7 @@ local function get_defaults()
       number_style = "superscript",
       mappings = false,
       close_icon = "",
-      max_name_length = 20,
+      max_name_length = 15,
       show_buffer_close_icons = true,
       separator_style = 'thin'
     };
