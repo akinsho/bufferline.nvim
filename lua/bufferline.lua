@@ -631,6 +631,10 @@ function M.setup(prefs)
       return bufferline(preferences.options)
   end
 
+  -- TODO / idea: consider allowing these mappings to open buffers based on their
+  -- visual position i.e. <leader>1 maps to the first visible buffer regardless
+  -- of it actual ordinal number i.e. position in the full list or it's actual
+  -- buffer id
   if preferences.options.mappings then
     for i=1, 10 do
       api.nvim_set_keymap('n', '<leader>'..i, ':lua require"bufferline".go_to_buffer('..i..')<CR>', {
