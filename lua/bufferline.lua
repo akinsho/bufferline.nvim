@@ -114,7 +114,7 @@ end
 local function truncate_filename(filename, word_limit)
   local trunc_symbol = '…' -- '...'
   local too_long = string.len(filename) > word_limit
-  return too_long and string.sub(filename, 0, word_limit) .. trunc_symbol or filename
+  return too_long and string.sub(filename, 0, word_limit - 1) .. trunc_symbol or filename
 end
 
 --[[
@@ -138,45 +138,40 @@ end
 --- @param options table
 --- @param buffer Buffer
 --- @param diagnostic_count number
---- @param buffer_length number
---- @return function | number @comment returns a render function and length
-local function render_buffer(options, buffer, diagnostic_count, buffer_length)
-  local buf_highlight, modified_hl_to_use = get_buffer_highlight(buffer)
+--- @return function | number
+local function render_buffer(options, buffer, diagnostic_count)
+  local buf_highlight, m_highlight = get_buffer_highlight(buffer)
   local length = 0
   local is_current = buffer:current()
   local is_visible = buffer:visible()
-
-  local filename = truncate_filename(buffer.filename, options.max_name_length)
-  local component = buffer.icon..padding..filename..padding
-  -- Initial component size without highlights
-  length = length + strwidth(component)
 
   local modified_icon = helpers.get_plugin_variable("modified_icon", "●")
   local modified_section = modified_icon..padding
   local m_size = strwidth(modified_section)
   local m_padding = string.rep(padding, m_size)
 
-  -- If the buffer is modifiable add an icon but even if it isn't pad
+  -- estimate the maximum allowed size of a filename given that it will be
+  -- padded an prefixed with a file icon
+  local allowed_max =
+    options.tab_size - m_size - strwidth(buffer.icon) - (strwidth(padding) * 2)
+  local filename = truncate_filename(buffer.filename, allowed_max)
+  local component = buffer.icon..padding..filename..padding
+  length = length + strwidth(component)
+
+  -- If the buffer is modified add an icon, if it isn't pad
   -- the buffer so it doesn't "jump" when it becomes modified i.e. due
   -- to the sudden addition of a new character
-  if buffer.modifiable and buffer.modified then
-    component = m_padding..component..modified_hl_to_use..modified_section
-  else
-    component = m_padding..component.. m_padding
-  end
-  -- Add the length of modified symbol and the associated padding
+  local is_modified = buffer.modifiable and buffer.modified
+  local suffix = is_modified and m_highlight..modified_section or m_padding
+  component = m_padding..component..suffix
   length = length + (m_size * 2)
 
-  -- Check if the component is smaller than the max size if so
-  -- pad it so to make it's size consistent with the maximum
-  -- allowed size
-  if strwidth(length) < buffer_length then
-    local difference = buffer_length - string.len(component)
-    local pad = string.rep(padding, math.ceil((difference / 2)))
-    component = pad .. component .. pad
-    -- Add the size of the padding to the length of the buffer
-    length = length + strwidth(pad) * 2
-  end
+  -- All tabs should be smaller than the tab size so
+  -- pad each one to make it's size consistent with the maximum allowed size
+  local difference = options.tab_size - length
+  local pad = string.rep(padding, math.floor((difference / 2)))
+  component = pad .. component .. pad
+  length = length + strwidth(pad) * 2
 
   if options.numbers ~= "none" then
     local number_prefix = get_number_prefix(
@@ -480,11 +475,10 @@ local function bufferline(options)
   local tabs = get_tabs()
   options.view = current_mode
 
-  local buffer_length = options.max_name_length
   for i, buf_id in ipairs(buf_nums) do
       local name =  vim.fn.bufname(buf_id)
       local buf = Buffer:new {path = name, id = buf_id, ordinal = i}
-      local render_fn, length = render_buffer(options, buf, 0, buffer_length)
+      local render_fn, length = render_buffer(options, buf, 0)
       buf.length = length
       buf.component = render_fn
       buffers[i] = buf
@@ -526,7 +520,7 @@ local function get_defaults()
       number_style = "superscript",
       mappings = false,
       close_icon = "",
-      max_name_length = 15,
+      tab_size = 18,
       show_buffer_close_icons = true,
       separator_style = 'thin'
     };
