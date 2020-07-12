@@ -162,11 +162,17 @@ local function render_buffer(options, buffer, diagnostic_count)
 
   local icon_size = strwidth(buffer.icon)
   local padding_size = strwidth(padding) * 2
+  local max_file_size = options.max_name_length
+  -- if we are enforcing regular tab size then all tabs will try and fit
+  -- into the maximum tab size. If not we enforce a minimum tab size
+  -- and allow tabs to be larger then the max otherwise
+  if options.enforce_regular_tabs then
   -- estimate the maximum allowed size of a filename given that it will be
   -- padded an prefixed with a file icon
-  local allowed_max = options.tab_size - m_size - icon_size - padding_size
+    max_file_size = options.tab_size - m_size - icon_size - padding_size
+  end
 
-  local filename = truncate_filename(buffer.filename, allowed_max)
+  local filename = truncate_filename(buffer.filename, max_file_size)
   local component = buffer.icon..padding..filename..padding
   length = length + strwidth(component)
 
@@ -178,12 +184,13 @@ local function render_buffer(options, buffer, diagnostic_count)
   component = m_padding..component..suffix
   length = length + (m_size * 2)
 
-  -- All tabs should be smaller than the tab size so
-  -- pad each one to make it's size consistent with the maximum allowed size
+  -- pad each tab smaller than the max tab size to make it consistent
   local difference = options.tab_size - length
-  local pad = string.rep(padding, math.floor((difference / 2)))
-  component = pad .. component .. pad
-  length = length + strwidth(pad) * 2
+  if difference > 0 then
+    local pad = string.rep(padding, math.floor((difference / 2)))
+    component = pad .. component .. pad
+    length = length + strwidth(pad) * 2
+  end
 
   if options.numbers ~= "none" then
     local number_prefix = get_number_prefix(
@@ -530,11 +537,13 @@ local function get_defaults()
       view = "default",
       numbers = "none",
       number_style = "superscript",
-      mappings = false,
       close_icon = "",
+      separator_style = 'thin',
       tab_size = 18,
+      max_name_length = 18,
+      mappings = false,
       show_buffer_close_icons = true,
-      separator_style = 'thin'
+      enforce_regular_tabs = false,
     };
     highlights = {
       bufferline_tab = {

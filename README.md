@@ -103,12 +103,23 @@ lua require'bufferline'.setup{
     number_style = "superscript" | "",
     mappings = true | false,
     close_icon = "x"
-    max_name_length = 20,
+    max_name_length = 18,
+    tab_size = 18,
     show_buffer_close_icons = true | false,
     separator_style = "thick" | "thin"
+    enforce_regular_tabs = false | true
   }
 }
 ```
+
+### Regular tab sizes
+
+Generally this plugin enforces a minimum tab size so that the buffer line
+appears consistent. Where a tab is smaller than the tab size it is padded.
+If it is larger than the tab size it is allowed to grow up to the max name
+length specified (+ the other indicators).
+If you set `enforce_regular_tabs = true` tabs will be prevented from extending beyond
+the tab size and all tabs will be the same length
 
 ### Multiwindow mode (inspired by [`vem-tabline`](https://github.com/pacha/vem-tabline))
 
