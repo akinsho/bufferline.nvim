@@ -114,7 +114,17 @@ end
 local function truncate_filename(filename, word_limit)
   local trunc_symbol = '…' -- '...'
   local too_long = string.len(filename) > word_limit
-  return too_long and string.sub(filename, 0, word_limit - 1) .. trunc_symbol or filename
+  if not too_long then
+    return filename
+  end
+  -- truncate nicely by seeing if we can drop the extension first
+  -- to make things fit if not then truncate abruptly
+  local without_prefix = vim.fn.fnamemodify(filename, ":t:r")
+  if string.len(without_prefix) < word_limit then
+    return without_prefix .. trunc_symbol
+  else
+    return string.sub(filename, 0, word_limit - 1) .. trunc_symbol
+  end
 end
 
 --[[
@@ -150,10 +160,12 @@ local function render_buffer(options, buffer, diagnostic_count)
   local m_size = strwidth(modified_section)
   local m_padding = string.rep(padding, m_size)
 
+  local icon_size = strwidth(buffer.icon)
+  local padding_size = strwidth(padding) * 2
   -- estimate the maximum allowed size of a filename given that it will be
   -- padded an prefixed with a file icon
-  local allowed_max =
-    options.tab_size - m_size - strwidth(buffer.icon) - (strwidth(padding) * 2)
+  local allowed_max = options.tab_size - m_size - icon_size - padding_size
+
   local filename = truncate_filename(buffer.filename, allowed_max)
   local component = buffer.icon..padding..filename..padding
   length = length + strwidth(component)
