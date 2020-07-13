@@ -57,9 +57,12 @@ function M.color_is_bright(hex)
   end
 end
 
-function M.get_hex(hl_name, part)
+function M.get_hex(hl_name, part, fallback)
+  if fallback == nil then fallback = "none" end
   local id = vim.fn.hlID(hl_name)
-  return vim.fn.synIDattr(id, part)
+  local color = vim.fn.synIDattr(id, part)
+  -- if we can't find the color we default to none
+  if not color or color == "" then return fallback else return color end
 end
 
 local function table_size(t)

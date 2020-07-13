@@ -466,11 +466,15 @@ end
 -- be so nice it's what anyone using this plugin sticks with. It should ideally
 -- work across any well designed colorscheme deriving colors automagically.
 local function get_defaults()
+  -- TODO add a fallback argument for get_hex
   local comment_fg = colors.get_hex('Comment', 'fg')
   local normal_fg = colors.get_hex('Normal', 'fg')
   local normal_bg = colors.get_hex('Normal', 'bg')
   local string_fg = colors.get_hex('String', 'fg')
   local tabline_sel_bg = colors.get_hex('TabLineSel', 'bg')
+  if not tabline_sel_bg == "none" then
+    tabline_sel_bg = colors.get_hex('WildMenu', 'bg')
+  end
 
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
