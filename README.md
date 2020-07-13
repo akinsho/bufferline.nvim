@@ -41,6 +41,16 @@ Plug 'Akin909/nvim-bufferline.lua'
 lua require'bufferline'.setup()
 ```
 
+## Warning
+This plugin relies on some basic highlights being set by your colour scheme
+i.e. `Normal`, `String`, `TabLineSel` (`WildMenu` as fallback), `Comment`.
+It's unlikely to work with all colour schemes, which is not something I will fix tbh.
+You can either try manually overriding the colours or manually creating these highlight groups
+before loading this plugin.
+
+If the contrast in your colour scheme is too high, think all black colour scheme, this is
+plugin won't create a nice tabline.
+
 ## Why another buffer line plugin?
 
 1. I was looking for an excuse to play with **lua** and learn to create a plugin with it for Neovim.

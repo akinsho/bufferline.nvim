@@ -461,7 +461,7 @@ local function bufferline(options)
   return render(buffers, tabs, options.close_icon)
 end
 
--- Ideally this plugin should generate a beautiful statusline a little similar
+-- Ideally this plugin should generate a beautiful tabline a little similar
 -- to what you would get on other editors. The aim is that the default should
 -- be so nice it's what anyone using this plugin sticks with. It should ideally
 -- work across any well designed colorscheme deriving colors automagically.
