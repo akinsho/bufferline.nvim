@@ -154,6 +154,7 @@ local function render_buffer(options, buffer, diagnostic_count)
   local length = 0
   local is_current = buffer:current()
   local is_visible = buffer:visible()
+  local is_modified = buffer.modifiable and buffer.modified
 
   local modified_icon = helpers.get_plugin_variable("modified_icon", "●")
   local modified_section = modified_icon..padding
@@ -176,14 +177,14 @@ local function render_buffer(options, buffer, diagnostic_count)
   local component = buffer.icon..padding..filename..padding
   length = length + strwidth(component)
 
-  -- If the buffer is modified add an icon, if it isn't pad
-  -- the buffer so it doesn't "jump" when it becomes modified i.e. due
-  -- to the sudden addition of a new character
-  local is_modified = buffer.modifiable and buffer.modified
-  local suffix = is_modified and m_highlight..modified_section or m_padding
-  component = m_padding..component..suffix
-  length = length + (m_size * 2)
-
+  if not options.show_buffer_close_icons then
+    -- If the buffer is modified add an icon, if it isn't pad
+    -- the buffer so it doesn't "jump" when it becomes modified i.e. due
+    -- to the sudden addition of a new character
+    local suffix = is_modified and m_highlight..modified_section or m_padding
+    component = m_padding..component..suffix
+    length = length + (m_size * 2)
+  end
   -- pad each tab smaller than the max tab size to make it consistent
   local difference = options.tab_size - length
   if difference > 0 then
@@ -229,7 +230,8 @@ local function render_buffer(options, buffer, diagnostic_count)
 
   if options.show_buffer_close_icons then
     local close_btn, size = close_button(buffer.id)
-    component = component .. buf_highlight ..close_btn
+    local suffix = is_modified and m_highlight..modified_section or close_btn
+    component = component .. buf_highlight .. suffix
     length = length + size
   end
 
