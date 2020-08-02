@@ -1,4 +1,8 @@
 --------------------------------
+-- Export
+--------------------------------
+local M = {}
+--------------------------------
 -- Constants
 --------------------------------
 local terminal_icon = " "
@@ -83,3 +87,8 @@ end
 function Buffer:visible()
   return vim.fn.bufwinnr(self.id) > 0
 end
+
+M.Buffer = Buffer
+M.Buffers = Buffers
+
+return M
