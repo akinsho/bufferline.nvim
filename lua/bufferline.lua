@@ -1,8 +1,8 @@
-local Buffer = require'buffers'.Buffer
-local Buffers = require'buffers'.Buffers
-local colors = require 'colors'
-local highlights = require 'highlights'
-local helpers = require 'helpers'
+local Buffer = require'bufferline/buffers'.Buffer
+local Buffers = require'bufferline/buffers'.Buffers
+local colors = require'bufferline/colors'
+local highlights = require'bufferline/highlights'
+local helpers = require'bufferline/helpers'
 
 local api = vim.api
 -- string.len counts number of bytes and so the unicode icons are counted
