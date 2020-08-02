@@ -34,6 +34,15 @@ Plug 'ryanoasis/vim-devicons' " Optional but recommended
 Plug 'Akin909/nvim-bufferline.lua'
 ```
 
+If using native packages make sure to add this plugins in the `/pack/*/opt`
+directory. This is because plugins in the `/start` directory are not loaded until
+after your `init.vim` is processed which will be too late.
+
+```vim
+packadd! nvim-bufferline.lua
+" then call setup sometime after this
+```
+
 ## Usage
 
 ```vim
