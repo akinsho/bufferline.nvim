@@ -96,13 +96,16 @@ function M.handle_click(id)
   end
 end
 
-local function get_buffer_highlight(buffer)
+local function get_buffer_highlight(buffer, user_highlights)
+  local h = highlights
+  local c = user_highlights
+
   if buffer:current() then
-    return highlights.selected, highlights.modified_selected
+    return h.selected, h.modified_selected, c.bufferline_selected
   elseif buffer:visible() then
-    return highlights.inactive, highlights.modified_inactive
+    return h.inactive, h.modified_inactive, c.bufferline_buffer_inactive
   else
-    return highlights.background, highlights.modified
+    return h.background, h.modified, c.bufferline_background
   end
 end
 
@@ -128,6 +131,24 @@ local function truncate_filename(filename, word_limit)
   end
 end
 
+--- @param buffer Buffer
+--- @param background table
+--- @return string
+local function highlight_icon(buffer, background)
+  if not buffer.icon or buffer.icon == "" then return "" end
+  local hl = buffer.icon_highlight
+  if background then
+    if buffer:current() or buffer:visible() then
+      local fg = colors.get_hex(hl, 'fg')
+      hl = hl .. "Selected"
+      vim.cmd("highlight "..hl.." guibg="..background.guibg.." guifg="..fg)
+    else
+      vim.cmd("highlight "..hl.." guibg="..background.guibg)
+    end
+  end
+  return "%#"..hl.."#"..buffer.icon .. "%*"
+end
+
 --[[
  In order to get the accurate character width of a buffer tab
  each buffer's length is manually calculated to avoid accidentally
@@ -142,16 +163,19 @@ end
  -----------------------------------
  function get_actual_length(component)
   local formatted = string.gsub(component, '%%#.*#', '')
-  print(formatted)
   return strwidth(formatted)
  end
 --]]
---- @param options table
+--- @param preferences table
 --- @param buffer Buffer
 --- @param diagnostic_count number
 --- @return function | number
-local function render_buffer(options, buffer, diagnostic_count)
-  local buf_highlight, m_highlight = get_buffer_highlight(buffer)
+local function render_buffer(preferences, buffer, diagnostic_count)
+  local options = preferences.options
+  local buf_highlight, m_highlight, buffer_colors = get_buffer_highlight(
+    buffer,
+    preferences.highlights
+  )
   local length = 0
   local is_current = buffer:current()
   local is_visible = buffer:visible()
@@ -175,8 +199,9 @@ local function render_buffer(options, buffer, diagnostic_count)
   end
 
   local filename = truncate_filename(buffer.filename, max_file_size)
-  local component = buffer.icon..padding..filename..padding
-  length = length + strwidth(component)
+  local icon_highlight = highlight_icon(buffer, buffer_colors)
+  local component = icon_highlight..buf_highlight..padding..filename..padding
+  length = length + strwidth(buffer.icon..padding..filename..padding)
 
   if not options.show_buffer_close_icons then
     -- If the buffer is modified add an icon, if it isn't pad
@@ -489,24 +514,24 @@ TODO
  [ ] Highlight file type icons if possible see:
   https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
 --]]
---- @param options table<string, string>
+--- @param preferences table<string, string>
 --- @return string
-local function bufferline(options)
-  local buf_nums, current_mode = get_buffers_by_mode(options.view)
+local function bufferline(preferences)
+  local buf_nums, current_mode = get_buffers_by_mode(preferences.options.view)
   local buffers = {}
   local tabs = get_tabs()
-  options.view = current_mode
+  preferences.options.view = current_mode
 
   for i, buf_id in ipairs(buf_nums) do
       local name =  vim.fn.bufname(buf_id)
       local buf = Buffer:new {path = name, id = buf_id, ordinal = i}
-      local render_fn, length = render_buffer(options, buf, 0)
+      local render_fn, length = render_buffer(preferences, buf, 0)
       buf.length = length
       buf.component = render_fn
       buffers[i] = buf
   end
 
-  return render(buffers, tabs, options.close_icon)
+  return render(buffers, tabs, preferences.options.close_icon)
 end
 
 -- Ideally this plugin should generate a beautiful tabline a little similar
@@ -645,7 +670,7 @@ function M.setup(prefs)
   -- The user's preferences are passed inside of a closure so they are accessible
   -- inside the globally defined lua function which is passed to the tabline setting
   function _G.__bufferline_render()
-      return bufferline(preferences.options)
+      return bufferline(preferences)
   end
 
   -- TODO / idea: consider allowing these mappings to open buffers based on their

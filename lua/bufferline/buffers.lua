@@ -56,15 +56,22 @@ function Buffer:new(buf)
   buf.buftype = vim.fn.getbufvar(buf.id, '&buftype')
   if buf.path == "" then buf.path = "[No Name]" end
 
+  buf.extension = vim.fn.fnamemodify(buf.path, ":e")
   -- Set icon
   if buffer_is_terminal(buf) then
     buf.icon = terminal_icon
     buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
   else
   -- TODO: allow the format specifier to be configured
+    local success, webdev_icons = pcall(require, 'nvim-web-devicons')
+    if success then
+      webdev_icons.setup()
+      buf.icon, buf.icon_highlight = webdev_icons.get_icon(buf.path, buf.extension)
+    else
+      local devicons_loaded = vim.fn.exists('*WebDevIconsGetFileTypeSymbol') > 0
+      buf.icon = devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
+    end
     buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
-    local devicons_loaded = vim.fn.exists('*WebDevIconsGetFileTypeSymbol') > 0
-    buf.icon = devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
   end
 
   self.__index = self
