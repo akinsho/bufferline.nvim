@@ -30,7 +30,8 @@ Super early days there might be some breaking changes, if you use this
 without configuring it this shouldn't affect you too much.
 
 ```vim
-Plug 'ryanoasis/vim-devicons' " Optional but recommended
+Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
+" Plug 'ryanoasis/vim-devicons' Icons without colours
 Plug 'Akin909/nvim-bufferline.lua'
 ```
 
