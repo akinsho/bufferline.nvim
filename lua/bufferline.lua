@@ -145,10 +145,8 @@ local function highlight_icon(buffer, background)
     if buffer:current() or buffer:visible() then
       local fg = colors.get_hex(hl, 'fg')
       hl = hl .. "Selected"
-      vim.cmd("highlight "..hl.." guibg="..background.guibg.." guifg="..fg)
       colors.set_highlight(hl, { guibg = background.guibg, guifg = fg })
     else
-      vim.cmd("highlight "..hl.." guibg="..background.guibg)
       colors.set_highlight(hl, { guibg = background.guibg })
     end
   end
