@@ -146,8 +146,10 @@ local function highlight_icon(buffer, background)
       local fg = colors.get_hex(hl, 'fg')
       hl = hl .. "Selected"
       vim.cmd("highlight "..hl.." guibg="..background.guibg.." guifg="..fg)
+      colors.set_highlight(hl, { guibg = background.guibg, guifg = fg })
     else
       vim.cmd("highlight "..hl.." guibg="..background.guibg)
+      colors.set_highlight(hl, { guibg = background.guibg })
     end
   end
   return "%#"..hl.."#"..icon.."%*"
@@ -673,6 +675,7 @@ function M.setup(prefs)
       BufferlineColors = {
         {"VimEnter", "*", [[lua __setup_bufferline_colors()]]};
         {"ColorScheme", "*", [[lua __setup_bufferline_colors()]]};
+        {"ColorScheme", "*", [[lua require'nvim-web-devicons'.setup()]]}
       }
     })
 
