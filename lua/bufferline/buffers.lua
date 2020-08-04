@@ -1,3 +1,5 @@
+local lua_devicons_loaded, webdev_icons = pcall(require, 'nvim-web-devicons')
+if lua_devicons_loaded then webdev_icons.setup() end
 --------------------------------
 -- Export
 --------------------------------
@@ -62,15 +64,13 @@ function Buffer:new(buf)
     buf.icon = terminal_icon
     buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
   else
-  -- TODO: allow the format specifier to be configured
-    local success, webdev_icons = pcall(require, 'nvim-web-devicons')
-    if success then
-      webdev_icons.setup()
+    if lua_devicons_loaded then
       buf.icon, buf.icon_highlight = webdev_icons.get_icon(buf.path, buf.extension)
     else
       local devicons_loaded = vim.fn.exists('*WebDevIconsGetFileTypeSymbol') > 0
       buf.icon = devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
     end
+    -- TODO: allow the format specifier to be configured
     buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
   end
 

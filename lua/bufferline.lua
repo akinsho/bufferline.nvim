@@ -135,8 +135,12 @@ end
 --- @param background table
 --- @return string
 local function highlight_icon(buffer, background)
-  if not buffer.icon or buffer.icon == "" then return "" end
+  local icon = buffer.icon
   local hl = buffer.icon_highlight
+
+  if not icon or icon == "" then return "" end
+  if not hl or hl == "" then return icon end
+
   if background then
     if buffer:current() or buffer:visible() then
       local fg = colors.get_hex(hl, 'fg')
@@ -146,7 +150,7 @@ local function highlight_icon(buffer, background)
       vim.cmd("highlight "..hl.." guibg="..background.guibg)
     end
   end
-  return "%#"..hl.."#"..buffer.icon .. "%*"
+  return "%#"..hl.."#"..icon.."%*"
 end
 
 --[[
@@ -199,9 +203,14 @@ local function render_buffer(preferences, buffer, diagnostic_count)
   end
 
   local filename = truncate_filename(buffer.filename, max_file_size)
-  local icon_highlight = highlight_icon(buffer, buffer_colors)
-  local component = icon_highlight..buf_highlight..padding..filename..padding
-  length = length + strwidth(buffer.icon..padding..filename..padding)
+  local component = padding..filename..padding
+  length = length + strwidth(component)
+
+  if buffer.icon then
+    local icon_highlight = highlight_icon(buffer, buffer_colors)
+    component = icon_highlight..buf_highlight..component
+    length = length + strwidth(buffer.icon)
+  end
 
   if not options.show_buffer_close_icons then
     -- If the buffer is modified add an icon, if it isn't pad
