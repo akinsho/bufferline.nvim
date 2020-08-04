@@ -2,7 +2,7 @@
 
 A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built using **lua**.
 
-![Bufferline_with_close](./screenshots/bufferline.png "Bufferline with close icons")
+![Bufferline_with_close](./screenshots/bufferline.png "Bufferline")
 
 ![Bufferline screenshot](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
 
@@ -95,7 +95,7 @@ plugin won't create a nice tabline.
 
 ## Todo
 
-- [ ] Highlight file type icons if possible see [for example](https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2)
+- [x] Highlight file type icons [for example](https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2)
 - [x] Expose user configuration
 - [x] Fix truncation happening too early i.e. available width reported incorrectly
 - [x] Fix modified highlight colouring
@@ -134,7 +134,7 @@ length specified (+ the other indicators).
 If you set `enforce_regular_tabs = true` tabs will be prevented from extending beyond
 the tab size and all tabs will be the same length
 
-### Multiwindow mode (inspired by [`vem-tabline`](https://github.com/pacha/vem-tabline))
+### Multi-window mode (inspired by [`vem-tabline`](https://github.com/pacha/vem-tabline))
 
 When this mode is active, for layouts of multiple windows in the tabpage,
 only the buffers that are displayed in those windows are listed in the
