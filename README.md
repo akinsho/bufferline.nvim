@@ -46,7 +46,11 @@ packadd! nvim-bufferline.lua
 
 ## Usage
 
+You need to be using `termguicolors` for this plugin to work, as it reads the hex `gui` color values
+of various highlight groups.
+
 ```vim
+set termguicolors
 " In your init.vim AFTER loading plugins
 lua require'bufferline'.setup()
 ```
