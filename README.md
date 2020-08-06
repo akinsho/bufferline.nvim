@@ -148,7 +148,7 @@ window in the tabpage, all buffers are listed.
 
 ### Mappings
 
-If the `mappings` option is set to `true`. `<leader>`1-10 mappings will
+If the `mappings` option is set to `true`. `<leader>`1-9 mappings will
 be created to navigate the first to the tenth buffer in the bufferline.
 **This is false by default**. If you'd rather map these yourself, use:
 
