@@ -141,16 +141,16 @@ local function highlight_icon(buffer, background)
   if not icon or icon == "" then return "" end
   if not hl or hl == "" then return icon end
 
+  local hl_override = "Bufferline"..hl
+
   if background then
+    local fg = colors.get_hex(hl, 'fg')
     if buffer:current() or buffer:visible() then
-      local fg = colors.get_hex(hl, 'fg')
-      hl = hl .. "Selected"
-      colors.set_highlight(hl, { guibg = background.guibg, guifg = fg })
-    else
-      colors.set_highlight(hl, { guibg = background.guibg })
+      hl_override = hl_override .. "Selected"
     end
+    colors.set_highlight(hl_override, { guibg = background.guibg, guifg = fg })
   end
-  return "%#"..hl.."#"..icon.."%*"
+  return "%#"..hl_override.."#"..icon.."%*"
 end
 
 --[[
