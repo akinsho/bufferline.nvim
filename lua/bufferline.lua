@@ -1,8 +1,9 @@
-local Buffer = require'bufferline/buffers'.Buffer
-local Buffers = require'bufferline/buffers'.Buffers
 local colors = require'bufferline/colors'
 local highlights = require'bufferline/highlights'
 local helpers = require'bufferline/helpers'
+local Buffer = require'bufferline/buffers'.Buffer
+local Buffers = require'bufferline/buffers'.Buffers
+local devicons_loaded = require'bufferline/buffers'.devicons_loaded
 
 local api = vim.api
 -- string.len counts number of bytes and so the unicode icons are counted
@@ -669,13 +670,15 @@ function M.setup(prefs)
     colors.set_highlight('BufferLineTabClose', user_colors.bufferline_tab_close)
   end
 
-  nvim_create_augroups({
-      BufferlineColors = {
-        {"VimEnter", "*", [[lua __setup_bufferline_colors()]]};
-        {"ColorScheme", "*", [[lua __setup_bufferline_colors()]]};
-        {"ColorScheme", "*", [[lua require'nvim-web-devicons'.setup()]]}
-      }
-    })
+  local autocommands = {
+    {"VimEnter", "*", [[lua __setup_bufferline_colors()]]};
+    {"ColorScheme", "*", [[lua __setup_bufferline_colors()]]};
+  }
+  if devicons_loaded then
+    table.insert(autocommands, {"ColorScheme", "*", [[lua require'nvim-web-devicons'.setup()]]})
+  end
+
+  nvim_create_augroups({ BufferlineColors = autocommands })
 
   -- The user's preferences are passed inside of a closure so they are accessible
   -- inside the globally defined lua function which is passed to the tabline setting
