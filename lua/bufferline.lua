@@ -688,7 +688,7 @@ function M.setup(prefs)
   -- of it actual ordinal number i.e. position in the full list or it's actual
   -- buffer id
   if preferences.options.mappings then
-    for i=1, 10 do
+    for i=1, 9 do
       api.nvim_set_keymap('n', '<leader>'..i, ':lua require"bufferline".go_to_buffer('..i..')<CR>', {
           silent = true, nowait = true, noremap = true
         })
