@@ -65,7 +65,10 @@ function Buffer:new(buf)
     buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
   else
     if lua_devicons_loaded then
-      buf.icon, buf.icon_highlight = webdev_icons.get_icon(buf.path, buf.extension)
+      buf.icon, buf.icon_highlight = webdev_icons.get_icon(buf.path, buf.extension, {
+          default = true,
+        }
+      )
     else
       local devicons_loaded = vim.fn.exists('*WebDevIconsGetFileTypeSymbol') > 0
       buf.icon = devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
