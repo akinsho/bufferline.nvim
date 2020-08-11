@@ -287,7 +287,6 @@ local function render_buffer(preferences, buffer, diagnostic_count)
   -- so it is important that these are correctly group as one
   local buffer_component = "%("..component.."%)"
 
-
   -- We increment the buffer length by the separator although the final
   -- buffer will not have a separator so we are technically off by 1
   length = length + strwidth(separator_component)
@@ -406,6 +405,11 @@ local function truncate(before, current, after, available_width, marker)
       line = line .. buf.component(index, table.getn(buffers))
     end
     return line, marker
+  -- if we aren't even able to fit the current buffer into the
+  -- available space that means the window is really narrow
+  -- so don't show anything
+  elseif available_width < current.length then
+    return "", marker
   else
     if before.length >= after.length then
       before:drop(1)
@@ -413,6 +417,11 @@ local function truncate(before, current, after, available_width, marker)
     else
       after:drop(#after.buffers)
       marker.right_count = marker.right_count + 1
+    end
+    -- drop the markers if the window is too narrow
+    if before.length == 0 and after.length == 0 then
+      marker.left_count = 0
+      marker.right_count = 0
     end
     return truncate(before, current, after, available_width, marker), marker
   end
