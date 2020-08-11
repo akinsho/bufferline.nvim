@@ -419,7 +419,10 @@ local function truncate(before, current, after, available_width, marker)
       marker.right_count = marker.right_count + 1
     end
     -- drop the markers if the window is too narrow
-    if before.length == 0 and after.length == 0 then
+    -- this assumes we have dropped both before and after
+    -- sections since if the space available is this small
+    -- we have likely removed these
+    if (current.length + markers_length) > available_width then
       marker.left_count = 0
       marker.right_count = 0
     end
