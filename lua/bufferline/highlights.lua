@@ -14,6 +14,7 @@ local M = {
   diagnostic = '%#ErrorMsg#',
   background = '%#BufferLineBackground#',
   separator = '%#BufferLineSeparator#',
+  tab_selected_separator = '%#BufferLineTabSelectedSeparator#',
   close = '%#BufferLineTabClose#%999X',
 }
 
