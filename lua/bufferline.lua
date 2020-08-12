@@ -1,7 +1,9 @@
 local colors = require'bufferline/colors'
 local highlights = require'bufferline/highlights'
 local helpers = require'bufferline/helpers'
+--- @class Buffer
 local Buffer = require'bufferline/buffers'.Buffer
+--- @class Buffers
 local Buffers = require'bufferline/buffers'.Buffers
 local devicons_loaded = require'bufferline/buffers'.devicons_loaded
 
