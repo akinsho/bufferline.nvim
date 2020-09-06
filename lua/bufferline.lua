@@ -84,6 +84,7 @@ end
 ---------------------------------------------------------------------------//
 -- CORE
 ---------------------------------------------------------------------------//
+---@param buf_id number
 function M.handle_close_buffer(buf_id)
   vim.cmd("bdelete ".. buf_id)
 end
@@ -93,9 +94,16 @@ function M.handle_win_click(id)
   vim.fn.win_gotoid(win_id)
 end
 
-function M.handle_click(id)
+-- if a button is right clicked close the buffer
+---@param id number
+---@param button string
+function M.handle_click(id, button)
   if id then
-    vim.cmd('buffer '..id)
+    if button == "r" then
+      M.handle_close_buffer(id)
+    else
+      vim.cmd('buffer '..id)
+    end
   end
 end
 
@@ -536,12 +544,6 @@ local function get_buffers_by_mode(mode)
   return get_valid_buffers(), nil
 end
 
---[[
-TODO
-===========
- [ ] Highlight file type icons if possible see:
-  https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
---]]
 --- @param preferences table<string, string>
 --- @return string
 local function bufferline(preferences)
