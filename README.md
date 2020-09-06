@@ -34,7 +34,7 @@ without configuring it this shouldn't affect you too much.
 ```vim
 Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
 " Plug 'ryanoasis/vim-devicons' Icons without colours
-Plug 'Akin909/nvim-bufferline.lua'
+Plug 'akinsho/nvim-bufferline.lua'
 ```
 
 If using native packages make sure to add this plugins in the `/pack/*/opt`
@@ -56,6 +56,8 @@ set termguicolors
 " In your init.vim AFTER loading plugins
 lua require'bufferline'.setup()
 ```
+
+You can close buffers by clicking the close icon or by _right clicking_ the tab anywhere
 
 ## Warning
 
@@ -88,7 +90,6 @@ plugin won't create a nice tabline.
 ### Future Goals
 
 - [ ] Show LSP diagnostics in bufferline so it's clear which buffers have errors
-- [ ] A _few_ different configuration options for file names
 - [x] Show only the buffers relevant/open in a specific tab as a configurable setting
 
 ## Non-goals 🙏
@@ -102,6 +103,7 @@ plugin won't create a nice tabline.
 
 ## Todo
 
+- [ ] Write nvim help docs
 - [x] Highlight file type icons [for example](https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2)
 - [x] Expose user configuration
 - [x] Fix truncation happening too early i.e. available width reported incorrectly
@@ -141,7 +143,7 @@ length specified (+ the other indicators).
 If you set `enforce_regular_tabs = true` tabs will be prevented from extending beyond
 the tab size and all tabs will be the same length
 
-### Multi-window mode (inspired by [`vem-tabline`](https://github.com/pacha/vem-tabline))
+### [WIP] Multi-window mode (inspired by [`vem-tabline`](https://github.com/pacha/vem-tabline))
 
 When this mode is active, for layouts of multiple windows in the tabpage,
 only the buffers that are displayed in those windows are listed in the
