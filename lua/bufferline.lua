@@ -1,7 +1,9 @@
 local colors = require'bufferline/colors'
 local highlights = require'bufferline/highlights'
 local helpers = require'bufferline/helpers'
+--- @class Buffer
 local Buffer = require'bufferline/buffers'.Buffer
+--- @class Buffers
 local Buffers = require'bufferline/buffers'.Buffers
 local devicons_loaded = require'bufferline/buffers'.devicons_loaded
 
@@ -82,6 +84,7 @@ end
 ---------------------------------------------------------------------------//
 -- CORE
 ---------------------------------------------------------------------------//
+---@param buf_id number
 function M.handle_close_buffer(buf_id)
   vim.cmd("bdelete ".. buf_id)
 end
@@ -91,9 +94,16 @@ function M.handle_win_click(id)
   vim.fn.win_gotoid(win_id)
 end
 
-function M.handle_click(id)
+-- if a button is right clicked close the buffer
+---@param id number
+---@param button string
+function M.handle_click(id, button)
   if id then
-    vim.cmd('buffer '..id)
+    if button == "r" then
+      M.handle_close_buffer(id)
+    else
+      vim.cmd('buffer '..id)
+    end
   end
 end
 
@@ -311,14 +321,18 @@ local function tab_click_component(num)
   return "%"..num.."T"
 end
 
-local function render_tab(tab, is_active)
+local function render_tab(tab, is_active, style)
   local hl = is_active and highlights.tab_selected or highlights.tab
-  local name = padding..tab.tabnr..padding
-  local length = strwidth(name)
-  return hl .. tab_click_component(tab.tabnr) .. name, length
+  local separator_hl = is_active and highlights.tab_selected_separator or highlights.separator
+  local separator_component = style == 'thick' and "▐" or "▕"
+  local separator =  separator_hl .. separator_component
+  local name = padding..padding..tab.tabnr..padding
+  local length = strwidth(name) + strwidth(separator_component)
+  return hl .. tab_click_component(tab.tabnr) .. name .. separator, length
 end
 
-local function get_tabs()
+--- @param style string
+local function get_tabs(style)
   local all_tabs = {}
   local tabs = vim.fn.gettabinfo()
   local current_tab = vim.fn.tabpagenr()
@@ -328,7 +342,7 @@ local function get_tabs()
   -- GOOD = {1: thing, 2: thing} BAD: {1: thing, [5]: thing}
   for i,tab in ipairs(tabs) do
     local is_active_tab = current_tab == tab.tabnr
-    local component, length = render_tab(tab, is_active_tab)
+    local component, length = render_tab(tab, is_active_tab, style)
     all_tabs[i] = {
       component = component,
       length = length,
@@ -530,18 +544,12 @@ local function get_buffers_by_mode(mode)
   return get_valid_buffers(), nil
 end
 
---[[
-TODO
-===========
- [ ] Highlight file type icons if possible see:
-  https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2
---]]
 --- @param preferences table<string, string>
 --- @return string
 local function bufferline(preferences)
   local buf_nums, current_mode = get_buffers_by_mode(preferences.options.view)
   local buffers = {}
-  local tabs = get_tabs()
+  local tabs = get_tabs(preferences.options.separator_style)
   preferences.options.view = current_mode
   if not preferences.options.always_show_bufferline then
     if table.getn(buf_nums) == 1 then
@@ -605,11 +613,15 @@ local function get_defaults()
     highlights = {
       bufferline_tab = {
         guifg = comment_fg,
-        guibg = normal_bg,
+        guibg = background_color,
       };
       bufferline_tab_selected = {
-        guifg = comment_fg,
-        guibg = tabline_sel_bg,
+        guifg = tabline_sel_bg,
+        guibg = normal_bg,
+      };
+      bufferline_tab_selected_separator = {
+        guifg = separator_background_color,
+        guibg = normal_bg,
       };
       bufferline_tab_close = {
         guifg = comment_fg,
@@ -694,6 +706,7 @@ function M.setup(prefs)
     colors.set_highlight('BufferLineModifiedInactive', user_colors.bufferline_modified_inactive)
     colors.set_highlight('BufferLineTab', user_colors.bufferline_tab)
     colors.set_highlight('BufferLineSeparator', user_colors.bufferline_separator)
+    colors.set_highlight('BufferLineTabSelectedSeparator', user_colors.bufferline_tab_selected_separator)
     colors.set_highlight('BufferLineTabSelected', user_colors.bufferline_tab_selected)
     colors.set_highlight('BufferLineTabClose', user_colors.bufferline_tab_close)
   end
