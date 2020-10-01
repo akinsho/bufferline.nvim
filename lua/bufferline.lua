@@ -543,12 +543,8 @@ local function bufferline(preferences)
   local buffers = {}
   local tabs = get_tabs()
   preferences.options.view = current_mode
-  if preferences.options.always_show_tab == false then
-    numItem = 0
-    for k, v in pairs(buf_nums) do
-        numItem = numItem + 1
-    end
-    if numItem == 1 then
+  if preferences.options.always_show_bufferline == false then
+    if table.getn(buf_nums) == 1 then
         vim.o.showtabline = 0
         return
     end
@@ -604,7 +600,7 @@ local function get_defaults()
       mappings = false,
       show_buffer_close_icons = true,
       enforce_regular_tabs = false,
-      always_show_tab = true,
+      always_show_bufferline = true,
     };
     highlights = {
       bufferline_tab = {
@@ -697,9 +693,10 @@ function M.setup(prefs)
     {"VimEnter", "*", [[lua __setup_bufferline_colors()]]};
     {"ColorScheme", "*", [[lua __setup_bufferline_colors()]]};
   }
-  if preferences.options.always_show_tab == false then
+  if not preferences.options.always_show_bufferline then
     -- toggle tabline
-    table.insert(autocommands, {"VimEnter,BufAdd,TabEnter", "*", "if len(getbufinfo({'buflisted':1}))>1 | set showtabline=2 | else | set showtabline=0 | endif"})
+    table.insert(autocommands, {"VimEnter,BufAdd,TabEnter", "*",
+      "if len(getbufinfo({'buflisted':1}))>1 | set showtabline=2 | else | set showtabline=0 | endif"})
   end
 
   if devicons_loaded then
