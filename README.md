@@ -122,12 +122,13 @@ lua require'bufferline'.setup{
     numbers = "none" | "ordinal" | "buffer_id",
     number_style = "superscript" | "",
     mappings = true | false,
-    close_icon = "x"
+    close_icon = "x",
     max_name_length = 18,
     tab_size = 18,
     show_buffer_close_icons = true | false,
-    separator_style = "thick" | "thin"
-    enforce_regular_tabs = false | true
+    separator_style = "thick" | "thin",
+    enforce_regular_tabs = false | true,
+    always_show_bufferline = true | false,
   }
 }
 ```

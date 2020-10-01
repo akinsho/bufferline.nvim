@@ -543,6 +543,12 @@ local function bufferline(preferences)
   local buffers = {}
   local tabs = get_tabs()
   preferences.options.view = current_mode
+  if preferences.options.always_show_bufferline == false then
+    if table.getn(buf_nums) == 1 then
+        vim.o.showtabline = 0
+        return
+    end
+  end
 
   for i, buf_id in ipairs(buf_nums) do
       local name =  vim.fn.bufname(buf_id)
@@ -594,6 +600,7 @@ local function get_defaults()
       mappings = false,
       show_buffer_close_icons = true,
       enforce_regular_tabs = false,
+      always_show_bufferline = true,
     };
     highlights = {
       bufferline_tab = {
@@ -686,6 +693,12 @@ function M.setup(prefs)
     {"VimEnter", "*", [[lua __setup_bufferline_colors()]]};
     {"ColorScheme", "*", [[lua __setup_bufferline_colors()]]};
   }
+  if not preferences.options.always_show_bufferline then
+    -- toggle tabline
+    table.insert(autocommands, {"VimEnter,BufAdd,TabEnter", "*",
+      "if len(getbufinfo({'buflisted':1}))>1 | set showtabline=2 | else | set showtabline=0 | endif"})
+  end
+
   if devicons_loaded then
     table.insert(autocommands, {"ColorScheme", "*", [[lua require'nvim-web-devicons'.setup()]]})
   end
@@ -695,7 +708,7 @@ function M.setup(prefs)
   -- The user's preferences are passed inside of a closure so they are accessible
   -- inside the globally defined lua function which is passed to the tabline setting
   function _G.__bufferline_render()
-      return bufferline(preferences)
+    return bufferline(preferences)
   end
 
   -- TODO / idea: consider allowing these mappings to open buffers based on their
