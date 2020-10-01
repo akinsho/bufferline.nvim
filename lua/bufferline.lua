@@ -543,7 +543,7 @@ local function bufferline(preferences)
   local buffers = {}
   local tabs = get_tabs()
   preferences.options.view = current_mode
-  if preferences.options.always_show_bufferline == false then
+  if not preferences.options.always_show_bufferline then
     if table.getn(buf_nums) == 1 then
         vim.o.showtabline = 0
         return
@@ -663,6 +663,15 @@ function M.go_to_buffer(num)
   end
 end
 
+function M.toggle_bufferline()
+  local listed_bufs = vim.fn.getbufinfo({buflisted = 1 })
+  if table.getn(listed_bufs) > 1 then
+    vim.o.showtabline = 2
+  else
+    vim.o.showtabline = 0
+  end
+end
+
 -- TODO then validate user preferences and only set prefs that exists
 function M.setup(prefs)
   local preferences = get_defaults()
@@ -695,8 +704,11 @@ function M.setup(prefs)
   }
   if not preferences.options.always_show_bufferline then
     -- toggle tabline
-    table.insert(autocommands, {"VimEnter,BufAdd,TabEnter", "*",
-      "if len(getbufinfo({'buflisted':1}))>1 | set showtabline=2 | else | set showtabline=0 | endif"})
+    table.insert(autocommands, {
+        "VimEnter,BufAdd,TabEnter",
+        "*",
+        "lua require'bufferline'.toggle_bufferline()",
+      })
   end
 
   if devicons_loaded then
