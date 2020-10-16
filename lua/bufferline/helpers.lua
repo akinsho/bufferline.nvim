@@ -33,12 +33,6 @@ function M.array_concat(...)
     return t
 end
 
-function M.get_plugin_variable(var, default)
-  var = "bufferline_"..var
-  local user_var = vim.g[var]
-  return user_var or default
-end
-
 --- @param array table
 --- @return table
 function M.filter_duplicates(array)
