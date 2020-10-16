@@ -77,7 +77,8 @@ end
 
 -- @param buf_id number
 local function close_button(buf_id)
-  local symbol = ""..padding
+  local buffer_close_icon =  helper.get_plugin_variable('buffer_close_icon','')
+  local symbol = buffer_close_icon .. padding
   local size = strwidth(symbol)
   return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@".. symbol, size
 end
