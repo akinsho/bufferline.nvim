@@ -76,8 +76,9 @@ local function make_clickable(mode, item, buf_num)
 end
 
 -- @param buf_id number
-local function close_button(buf_id)
-  local symbol = ""..padding
+local function close_button(buf_id,options)
+  local buffer_close_icon = options.buffer_close_icon
+  local symbol = buffer_close_icon .. padding
   local size = strwidth(symbol)
   return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@".. symbol, size
 end
@@ -196,7 +197,7 @@ local function render_buffer(preferences, buffer, diagnostic_count)
   local is_visible = buffer:visible()
   local is_modified = buffer.modifiable and buffer.modified
 
-  local modified_icon = helpers.get_plugin_variable("modified_icon", "●")
+  local modified_icon = preferences.options.modified_icon
   local modified_section = modified_icon..padding
   local m_size = strwidth(modified_section)
   local m_padding = string.rep(padding, m_size)
@@ -275,7 +276,7 @@ local function render_buffer(preferences, buffer, diagnostic_count)
   end
 
   if options.show_buffer_close_icons then
-    local close_btn, size = close_button(buffer.id)
+    local close_btn, size = close_button(buffer.id,options)
     local suffix = is_modified and m_highlight..modified_section or close_btn
     component = component .. buf_highlight .. suffix
     length = length + size
@@ -444,10 +445,10 @@ local function truncate(before, current, after, available_width, marker)
   end
 end
 
-local function render(buffers, tabs, close_icon)
+local function render(buffers, tabs, options)
   local right_align = "%="
   local tab_components = ""
-  local close_component, close_length = render_close(close_icon)
+  local close_component, close_length = render_close(options.close_icon)
   local tabs_length = close_length
 
   -- Add the length of the tabs + close components to total length
@@ -461,8 +462,8 @@ local function render(buffers, tabs, close_icon)
   end
 
   -- Icons from https://fontawesome.com/cheatsheet
-  local left_trunc_icon = helpers.get_plugin_variable("left_trunc_marker", "")
-  local right_trunc_icon = helpers.get_plugin_variable("right_trunc_marker", "")
+  local left_trunc_icon = options.left_trunc_marker
+  local right_trunc_icon = options.right_trunc_marker
   -- measure the surrounding trunc items: padding + count + padding + icon + padding
   local left_element_size = strwidth(padding..padding..left_trunc_icon..padding..padding)
   local right_element_size = strwidth(padding..padding..right_trunc_icon..padding)
@@ -567,7 +568,7 @@ local function bufferline(preferences)
       buffers[i] = buf
   end
 
-  return render(buffers, tabs, preferences.options.close_icon)
+  return render(buffers, tabs, preferences.options)
 end
 
 -- Ideally this plugin should generate a beautiful tabline a little similar
@@ -601,7 +602,11 @@ local function get_defaults()
       view = "default",
       numbers = "none",
       number_style = "superscript",
-      close_icon = "",
+      buffer_close_icon= '',
+      modified_icon = '●',
+      close_icon = '',
+      left_trunc_marker = '',
+      right_trunc_marker = '',
       separator_style = 'thin',
       tab_size = 18,
       max_name_length = 18,
