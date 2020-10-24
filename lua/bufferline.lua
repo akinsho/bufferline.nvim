@@ -646,7 +646,7 @@ local function get_defaults()
   local normal_fg = colors.get_hex('Normal', 'fg')
   local normal_bg = colors.get_hex('Normal', 'bg')
   local string_fg = colors.get_hex('String', 'fg')
-  local error_fg = colors.get_hex('ErrorMsg', 'fg')
+  local error_fg = colors.get_hex('Error', 'fg')
 
   local tabline_sel_bg = colors.get_hex('TabLineSel', 'bg')
   if not tabline_sel_bg == "none" then
@@ -739,10 +739,12 @@ local function get_defaults()
       bufferline_pick = {
         guifg = error_fg,
         guibg = normal_bg,
+        gui = "bold,italic"
       };
       bufferline_pick_inactive = {
         guifg = error_fg,
         guibg = background_color,
+        gui = "bold,italic"
       }
     }
   }
