@@ -39,13 +39,15 @@ local superscript_numbers = {
   [20] = '²⁰'
 }
 
+local letters = 'abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ'
 -----------------------------------------------------------
 -- State
 -----------------------------------------------------------
-local is_picking = false
-local buffers = {}
-local letters = 'abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ'
-local current_letters = {}
+local state = {
+  is_picking = false,
+  buffers = {},
+  current_letters = {},
+}
 
 -------------------------------------------------------------------------//
 -- EXPORT
@@ -98,18 +100,18 @@ local function refresh()
 end
 
 function M.pick_buffer()
-  is_picking = true
+  state.is_picking = true
   refresh()
 
   local char = vim.fn.getchar()
   local letter = vim.fn.nr2char(char)
-  for _, buf in pairs(buffers) do
+  for _, buf in pairs(state.buffers) do
     if letter == buf.letter then
       vim.cmd('buffer '..buf.id)
     end
   end
 
-  is_picking = false
+  state.is_picking = false
   refresh()
 end
 
@@ -262,7 +264,7 @@ local function render_buffer(preferences, buffer, diagnostic_count)
   local component = padding..filename..padding
   length = length + strwidth(component)
 
-  if is_picking and buffer.letter then
+  if state.is_picking and buffer.letter then
     component = current_highlights.pick .. buffer.letter..'%*'..buf_highlight..component
     length = length + strwidth(buffer.letter)
   elseif buffer.icon then
@@ -492,10 +494,10 @@ local function truncate(before, current, after, available_width, marker)
   end
 end
 
-function get_letter(buf)
+local function get_letter(buf)
   for letter in letters:gmatch(".") do
-    if not current_letters[letter] then
-      current_letters[letter] = buf.id
+    if not state.current_letters[letter] then
+      state.current_letters[letter] = buf.id
       selected_letter = letter
       return letter
     end
@@ -615,8 +617,8 @@ local function bufferline(preferences)
     end
   end
 
-  buffers = {}
-  current_letters = {}
+  state.buffers = {}
+  state.current_letters = {}
 
   for i, buf_id in ipairs(buf_nums) do
     local name =  vim.fn.bufname(buf_id)
@@ -630,10 +632,10 @@ local function bufferline(preferences)
     local render_fn, length = render_buffer(preferences, buf, 0)
     buf.length = length
     buf.component = render_fn
-    buffers[i] = buf
+    state.buffers[i] = buf
   end
 
-  return render(buffers, tabs, preferences.options)
+  return render(state.buffers, tabs, preferences.options)
 end
 
 -- Ideally this plugin should generate a beautiful tabline a little similar
