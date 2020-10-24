@@ -150,8 +150,14 @@ the tab size and all tabs will be the same length
 
 ### Bufferline Pick functionality
 
-Using the `BufferLinePick` function will allow for easy selection of a buffer in view
-Trigger the command, then pick the a buffer by typing the character for that specific
+Using the `BufferLinePick` command will allow for easy selection of a buffer in view.
+Trigger the command, using `:BufferLinePick` or better still map this to a key, e.g.
+
+```vim
+nnoremap <silent> gb :BufferLinePick<CR>
+```
+
+then pick the a buffer by typing the character for that specific
 buffer that appears
 
 ![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
