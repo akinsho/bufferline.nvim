@@ -495,10 +495,14 @@ local function truncate(before, current, after, available_width, marker)
 end
 
 local function get_letter(buf)
+  local first_letter = buf.filename:sub(1,1)
+  if not state.current_letters[first_letter] then
+    state.current_letters[first_letter] = buf.id
+    return first_letter
+  end
   for letter in letters:gmatch(".") do
     if not state.current_letters[letter] then
       state.current_letters[letter] = buf.id
-      selected_letter = letter
       return letter
     end
   end
