@@ -496,7 +496,10 @@ end
 
 local function get_letter(buf)
   local first_letter = buf.filename:sub(1,1)
-  if not state.current_letters[first_letter] then
+  -- should only match alphanumeric characters
+  local invalid_char = first_letter:match('[^%w]')
+
+  if not state.current_letters[first_letter] and not invalid_char then
     state.current_letters[first_letter] = buf.id
     return first_letter
   end
