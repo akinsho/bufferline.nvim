@@ -40,6 +40,15 @@ local superscript_numbers = {
   [19] = '¹⁹',
   [20] = '²⁰'
 }
+
+-----------------------------------------------------------
+-- State
+-----------------------------------------------------------
+local is_picking = false
+local buffers = {}
+local letters = 'abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ'
+local current_letters = {}
+
 -------------------------------------------------------------------------//
 -- EXPORT
 ---------------------------------------------------------------------------//
@@ -85,9 +94,30 @@ end
 ---------------------------------------------------------------------------//
 -- CORE
 ---------------------------------------------------------------------------//
+local function refresh()
+  vim.cmd('redrawtabline')
+  vim.cmd('redraw')
+end
+
+function M.pick_buffer()
+  is_picking = true
+  refresh()
+
+  local char = vim.fn.getchar()
+  local letter = vim.fn.nr2char(char)
+  for _, buf in pairs(buffers) do
+    if letter == buf.letter then
+      vim.cmd('buffer '..buf.id)
+    end
+  end
+
+  is_picking = false
+  refresh()
+end
+
 ---@param buf_id number
 function M.handle_close_buffer(buf_id)
-  vim.cmd("bdelete ".. buf_id)
+  vim.cmd("bdelete! ".. buf_id)
 end
 
 function M.handle_win_click(id)
@@ -111,14 +141,29 @@ end
 local function get_buffer_highlight(buffer, user_highlights)
   local h = highlights
   local c = user_highlights
-
+  local current_highlights = {
+    background = nil,
+    modified = nil,
+    buffer = nil,
+    pick = nil,
+  }
   if buffer:current() then
-    return h.selected, h.modified_selected, c.bufferline_selected
+    current_highlights.background = h.selected
+    current_highlights.modified = h.modified_selected
+    current_highlights.buffer = c.bufferline_selected
+    current_highlights.pick = h.pick
   elseif buffer:visible() then
-    return h.inactive, h.modified_inactive, c.bufferline_buffer_inactive
+    current_highlights.background = h.inactive
+    current_highlights.modified = h.modified_inactive
+    current_highlights.buffer = c.bufferline_buffer_inactive
+    current_highlights.pick = h.pick
   else
-    return h.background, h.modified, c.bufferline_background
+    current_highlights.background = h.background
+    current_highlights.modified = h.modified
+    current_highlights.buffer = c.bufferline_background
+    current_highlights.pick = h.pick_inactive
   end
+  return current_highlights
 end
 
 local function get_number_prefix(buffer, mode, style)
@@ -188,10 +233,11 @@ end
 --- @return function | number
 local function render_buffer(preferences, buffer, diagnostic_count)
   local options = preferences.options
-  local buf_highlight, m_highlight, buffer_colors = get_buffer_highlight(
-    buffer,
-    preferences.highlights
-  )
+  local current_highlights = get_buffer_highlight(buffer, preferences.highlights)
+  local buf_highlight = current_highlights.background
+  local modified_hl = current_highlights.modified
+  local buffer_colors = current_highlights.buffer
+
   local length = 0
   local is_current = buffer:current()
   local is_visible = buffer:visible()
@@ -218,7 +264,10 @@ local function render_buffer(preferences, buffer, diagnostic_count)
   local component = padding..filename..padding
   length = length + strwidth(component)
 
-  if buffer.icon then
+  if is_picking and buffer.letter then
+    component = current_highlights.pick .. buffer.letter..'%*'..buf_highlight..component
+    length = length + strwidth(buffer.letter)
+  elseif buffer.icon then
     local icon_highlight = highlight_icon(buffer, buffer_colors)
     component = icon_highlight..buf_highlight..component
     length = length + strwidth(buffer.icon)
@@ -228,7 +277,7 @@ local function render_buffer(preferences, buffer, diagnostic_count)
     -- If the buffer is modified add an icon, if it isn't pad
     -- the buffer so it doesn't "jump" when it becomes modified i.e. due
     -- to the sudden addition of a new character
-    local suffix = is_modified and m_highlight..modified_section or m_padding
+    local suffix = is_modified and modified_hl..modified_section or m_padding
     component = m_padding..component..suffix
     length = length + (m_size * 2)
   end
@@ -277,7 +326,7 @@ local function render_buffer(preferences, buffer, diagnostic_count)
 
   if options.show_buffer_close_icons then
     local close_btn, size = close_button(buffer.id,options)
-    local suffix = is_modified and m_highlight..modified_section or close_btn
+    local suffix = is_modified and modified_hl..modified_section or close_btn
     component = component .. buf_highlight .. suffix
     length = length + size
   end
@@ -411,13 +460,13 @@ local function truncate(before, current, after, available_width, marker)
 
   if available_width >= total_length then
     -- Merge all the buffers and render the components
-    local buffers = helpers.array_concat(
+    local all_buffers = helpers.array_concat(
       before.buffers,
       current.buffers,
       after.buffers
     )
-    for index,buf in ipairs(buffers) do
-      line = line .. buf.component(index, table.getn(buffers))
+    for index,buf in ipairs(all_buffers) do
+      line = line .. buf.component(index, table.getn(all_buffers))
     end
     return line, marker
   -- if we aren't even able to fit the current buffer into the
@@ -442,6 +491,16 @@ local function truncate(before, current, after, available_width, marker)
       marker.right_count = 0
     end
     return truncate(before, current, after, available_width, marker), marker
+  end
+end
+
+function get_letter(buf)
+  for letter in letters:gmatch(".") do
+    if not current_letters[letter] then
+      current_letters[letter] = buf.id
+      selected_letter = letter
+      return letter
+    end
   end
 end
 
@@ -549,7 +608,6 @@ end
 --- @return string
 local function bufferline(preferences)
   local buf_nums, current_mode = get_buffers_by_mode(preferences.options.view)
-  local buffers = {}
   local tabs = get_tabs(preferences.options.separator_style)
   preferences.options.view = current_mode
   if not preferences.options.always_show_bufferline then
@@ -559,13 +617,22 @@ local function bufferline(preferences)
     end
   end
 
+  buffers = {}
+  current_letters = {}
+
   for i, buf_id in ipairs(buf_nums) do
-      local name =  vim.fn.bufname(buf_id)
-      local buf = Buffer:new {path = name, id = buf_id, ordinal = i}
-      local render_fn, length = render_buffer(preferences, buf, 0)
-      buf.length = length
-      buf.component = render_fn
-      buffers[i] = buf
+    local name =  vim.fn.bufname(buf_id)
+    local buf = Buffer:new {
+      path = name,
+      id = buf_id,
+      ordinal = i,
+    }
+    buf.letter = get_letter(buf)
+
+    local render_fn, length = render_buffer(preferences, buf, 0)
+    buf.length = length
+    buf.component = render_fn
+    buffers[i] = buf
   end
 
   return render(buffers, tabs, preferences.options)
@@ -581,6 +648,8 @@ local function get_defaults()
   local normal_fg = colors.get_hex('Normal', 'fg')
   local normal_bg = colors.get_hex('Normal', 'bg')
   local string_fg = colors.get_hex('String', 'fg')
+  local error_fg = colors.get_hex('ErrorMsg', 'fg')
+
   local tabline_sel_bg = colors.get_hex('TabLineSel', 'bg')
   if not tabline_sel_bg == "none" then
     tabline_sel_bg = colors.get_hex('WildMenu', 'bg')
@@ -669,6 +738,14 @@ local function get_defaults()
         guibg = normal_bg,
         gui = "bold,italic",
       };
+      bufferline_pick = {
+        guifg = error_fg,
+        guibg = normal_bg,
+      };
+      bufferline_pick_inactive = {
+        guifg = error_fg,
+        guibg = background_color,
+      }
     }
   }
 end
@@ -714,6 +791,8 @@ function M.setup(prefs)
     colors.set_highlight('BufferLineTabSelectedSeparator', user_colors.bufferline_tab_selected_separator)
     colors.set_highlight('BufferLineTabSelected', user_colors.bufferline_tab_selected)
     colors.set_highlight('BufferLineTabClose', user_colors.bufferline_tab_close)
+    colors.set_highlight('BufferLinePick', user_colors.bufferline_pick)
+    colors.set_highlight('BufferLinePickInactive', user_colors.bufferline_pick_inactive)
   end
 
   local autocommands = {
@@ -734,6 +813,8 @@ function M.setup(prefs)
   end
 
   nvim_create_augroups({ BufferlineColors = autocommands })
+
+  vim.cmd('command BufferLinePick lua require"bufferline".pick_buffer()')
 
   -- The user's preferences are passed inside of a closure so they are accessible
   -- inside the globally defined lua function which is passed to the tabline setting
