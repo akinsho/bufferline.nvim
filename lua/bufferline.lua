@@ -1,9 +1,7 @@
 local colors = require'bufferline/colors'
 local highlights = require'bufferline/highlights'
 local helpers = require'bufferline/helpers'
---- @class Buffer
 local Buffer = require'bufferline/buffers'.Buffer
---- @class Buffers
 local Buffers = require'bufferline/buffers'.Buffers
 local devicons_loaded = require'bufferline/buffers'.devicons_loaded
 
@@ -173,7 +171,7 @@ local function get_number_prefix(buffer, mode, style)
 end
 
 local function truncate_filename(filename, word_limit)
-  local trunc_symbol = '…' -- '...'
+  local trunc_symbol = '…'
   local too_long = string.len(filename) > word_limit
   if not too_long then
     return filename
@@ -584,11 +582,11 @@ local function get_buffers_by_mode(mode)
     local is_single_tab = vim.fn.tabpagenr('$') == 1
     local number_of_tab_wins = vim.fn.tabpagewinnr(current_tab, '$')
     local valid_wins = 0
-    -- Check that the window contains a listed buffer, if the buffre isn't
-    -- listed we shouldn't be hiding the remaining buffers because of it
-    -- FIXME this is sending an invalid buf_nr to is_valid buf
-    for i=1,number_of_tab_wins do
+    for i = 1, number_of_tab_wins do
       local buf_nr = vim.fn.winbufnr(i)
+      -- Check that the window contains a listed buffer, if the buffer isn't
+      -- listed we shouldn't be hiding the remaining buffers because of it
+      -- FIXME this is sending an invalid buf_nr to is_valid buf
       if is_valid(buf_nr) then
         valid_wins = valid_wins + 1
       end
@@ -671,7 +669,7 @@ local function get_defaults()
       view = "default",
       numbers = "none",
       number_style = "superscript",
-      buffer_close_icon= '',
+      buffer_close_icon = '',
       modified_icon = '●',
       close_icon = '',
       left_trunc_marker = '',
@@ -828,7 +826,8 @@ function M.setup(prefs)
   -- buffer id
   if preferences.options.mappings then
     for i=1, 9 do
-      api.nvim_set_keymap('n', '<leader>'..i, ':lua require"bufferline".go_to_buffer('..i..')<CR>', {
+      api.nvim_set_keymap(
+        'n', '<leader>'..i, ':lua require"bufferline".go_to_buffer('..i..')<CR>', {
           silent = true, nowait = true, noremap = true
         })
     end
