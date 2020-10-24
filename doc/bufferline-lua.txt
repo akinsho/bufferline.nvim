@@ -1,0 +1,52 @@
+nvim-*bufferline.lua* A snazzy bufferline for neovim written in lua
+
+Minimum version of neovim: 0.5+
+
+Author: Akin Sowemimo
+
+==============================================================================
+CONTENTS                                      *bufferline-lua* *bufferline-lua-contents*
+
+Installation...........................: |bufferline-lua-installation|
+Usage..................................: |bufferline-lua-usage|
+Settings...............................: |bufferline-lua-settings|
+Internals..............................: |bufferline-lua-internals|
+Issues.................................: |bufferline-lua-issues|
+
+
+==============================================================================
+INSTALLATION                                          *bufferline-lua-installation*
+
+There are several ways to install the plugin. The recommended one is by using
+vim plug (plug link). In
+that case, you can clone the plugin's git repository like so:
+>
+Plug 'akinsho/bufferline-lua'
+<
+
+
+		==============================================================================
+		USAGE                                                        *bufferline-lua-usage*
+
+		TODO
+
+
+		==============================================================================
+		SETTINGS                                                  *bufferline-lua-settings*
+
+		TODO
+
+
+		==============================================================================
+		INTERNALS                                                *bufferline-lua-internals*
+
+		TODO
+
+		==============================================================================
+		ISSUES                                                      *bufferline-lua-issues*
+
+		Any issues and suggestions are very welcome on the github bugtracker:
+		https://github.com/akinsho/bufferline-lua.vim/issues
+
+
+vim:tw=78:sw=4:ft=help:norl:
