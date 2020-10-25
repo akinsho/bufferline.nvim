@@ -91,6 +91,7 @@ end
 
 -- FIXME this does not work if the same buffer is open in multiple window
 -- maybe do something with win_findbuf(bufnr('%'))
+-- see is we can get the containing window id for a buffer
 function M.Buffer:current()
   return vim.fn.winbufnr(0) == self.id
 end

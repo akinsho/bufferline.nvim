@@ -481,7 +481,7 @@ section
 4. Re-check the size, if still too long truncate recursively till it fits
 5. Add the number of truncated buffers as an indicator
 --]]
-local function truncate(before, current, after, available_width, marker)
+local function truncate(before, current, after, direction, available_width, marker)
   local line = ""
   local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)
   local right_trunc_marker = get_marker_size(marker.right_count, marker.right_element_size)
@@ -505,12 +505,24 @@ local function truncate(before, current, after, available_width, marker)
   elseif available_width < current.length then
     return "", marker
   else
-    if before.length >= after.length then
-      before:drop(1)
-      marker.left_count = marker.left_count + 1
+    -- in order to maintain consistent buffer positioning rather than constantly
+    -- removing buffers from both before and after, we pick a direction
+    -- based on the its size and continue in that direction
+    direction = direction or (before.length >= after.length and 'before' or 'after')
+    if direction == 'before' then
+      if before.length > 0 then
+        before:drop(1)
+        marker.left_count = marker.left_count + 1
+      else
+        direction = 'after'
+      end
     else
-      after:drop(#after.buffers)
-      marker.right_count = marker.right_count + 1
+      if after.length > 0 then
+        after:drop(#after.buffers)
+        marker.right_count = marker.right_count + 1
+      else
+        direction = 'before'
+      end
     end
     -- drop the markers if the window is too narrow
     -- this assumes we have dropped both before and after
@@ -520,7 +532,14 @@ local function truncate(before, current, after, available_width, marker)
       marker.left_count = 0
       marker.right_count = 0
     end
-    return truncate(before, current, after, available_width, marker), marker
+    return truncate(
+      before,
+      current,
+      after,
+      direction,
+      available_width,
+      marker
+    ), marker
   end
 end
 
@@ -570,6 +589,7 @@ local function render(buffers, tabs, options)
     before,
     current,
     after,
+    nil,
     available_width,
     {
       left_count = 0,
