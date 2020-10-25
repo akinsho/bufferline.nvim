@@ -387,7 +387,7 @@ local function get_tabs(style)
   local tabs = vim.fn.gettabinfo()
   local current_tab = vim.fn.tabpagenr()
 
-  -- use ordinals to ensure a contiguous keys in the table i.e. an array
+  -- use ordinals to ensure contiguous keys in the table i.e. an array
   -- rather than an object
   -- GOOD = {1: thing, 2: thing} BAD: {1: thing, [5]: thing}
   for i,tab in ipairs(tabs) do
@@ -587,37 +587,38 @@ local function get_buffers_by_mode(mode)
     - In tabs with more than one window, only the buffers that are being displayed are listed.
 --]]
   if mode == "multiwindow" then
-    local current_tab = vim.fn.tabpagenr()
     local is_single_tab = vim.fn.tabpagenr('$') == 1
-    local number_of_tab_wins = vim.fn.tabpagewinnr(current_tab, '$')
+    if is_single_tab then return get_valid_buffers() end
+
+    local tab_wins = api.nvim_tabpage_list_wins(0)
+
     local valid_wins = 0
-    for i = 1, number_of_tab_wins do
-      local buf_nr = vim.fn.winbufnr(i)
+    for _, win_id in ipairs(tab_wins) do
       -- Check that the window contains a listed buffer, if the buffer isn't
       -- listed we shouldn't be hiding the remaining buffers because of it
-      -- FIXME this is sending an invalid buf_nr to is_valid buf
-      if is_valid(buf_nr) then
-        valid_wins = valid_wins + 1
-      end
+      -- note this is to stop temporary unlisted buffers like fzf from
+      -- triggering this mode
+      local buf_nr = vim.api.nvim_win_get_buf(win_id)
+      if is_valid(buf_nr) then valid_wins = valid_wins + 1 end
     end
-    if valid_wins > 1 and not is_single_tab then
-      -- TODO filter out duplicates because currently I don't know
-      -- how to make it clear which buffer relates to which window
-      -- buffers don't have an identifier to say which buffer they are in
+
+    if valid_wins > 1 then
       local unique = helpers.filter_duplicates(vim.fn.tabpagebuflist())
-      return get_valid_buffers(unique), mode
+      return get_valid_buffers(unique)
     end
   end
-  return get_valid_buffers(), nil
+  return get_valid_buffers()
 end
 
---- @param preferences table<string, string>
+--- @param preferences table
 --- @return string
 local function bufferline(preferences)
-  local buf_nums, current_mode = get_buffers_by_mode(preferences.options.view)
-  local tabs = get_tabs(preferences.options.separator_style)
-  preferences.options.view = current_mode
-  if not preferences.options.always_show_bufferline then
+  local options = preferences.options
+  local buf_nums = get_buffers_by_mode(options.view)
+
+  local tabs = get_tabs(options.separator_style)
+
+  if not options.always_show_bufferline then
     if table.getn(buf_nums) == 1 then
         vim.o.showtabline = 0
         return
@@ -642,7 +643,7 @@ local function bufferline(preferences)
     state.buffers[i] = buf
   end
 
-  return render(state.buffers, tabs, preferences.options)
+  return render(state.buffers, tabs, options)
 end
 
 -- Ideally this plugin should generate a beautiful tabline a little similar
@@ -650,7 +651,6 @@ end
 -- be so nice it's what anyone using this plugin sticks with. It should ideally
 -- work across any well designed colorscheme deriving colors automagically.
 local function get_defaults()
-  -- TODO add a fallback argument for get_hex
   local comment_fg = colors.get_hex('Comment', 'fg')
   local normal_fg = colors.get_hex('Normal', 'fg')
   local normal_bg = colors.get_hex('Normal', 'bg')
@@ -818,18 +818,16 @@ function M.setup(prefs)
   end
 
   if devicons_loaded then
-    table.insert(autocommands, {"ColorScheme", "*", [[lua require'nvim-web-devicons'.setup()]]})
+    table.insert(autocommands, {
+        "ColorScheme",
+        "*",
+        [[lua require'nvim-web-devicons'.setup()]],
+      })
   end
 
   nvim_create_augroups({ BufferlineColors = autocommands })
 
   vim.cmd('command BufferLinePick lua require"bufferline".pick_buffer()')
-
-  -- The user's preferences are passed inside of a closure so they are accessible
-  -- inside the globally defined lua function which is passed to the tabline setting
-  function _G.__bufferline_render()
-    return bufferline(preferences)
-  end
 
   -- TODO / idea: consider allowing these mappings to open buffers based on their
   -- visual position i.e. <leader>1 maps to the first visible buffer regardless
@@ -844,8 +842,12 @@ function M.setup(prefs)
     end
   end
 
+  function _G.nvim_bufferline()
+    return bufferline(preferences)
+  end
+
   vim.o.showtabline = 2
-  vim.o.tabline = "%!v:lua.__bufferline_render()"
+  vim.o.tabline = "%!v:lua.nvim_bufferline()"
 end
 
 return M

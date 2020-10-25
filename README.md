@@ -89,8 +89,8 @@ plugin won't create a nice tabline.
 
 ### Future Goals
 
-- [ ] Show LSP diagnostics in bufferline so it's clear which buffers have errors
 - [x] Show only the buffers relevant/open in a specific tab as a configurable setting
+- [ ] Show LSP diagnostics in bufferline so it's clear which buffers have errors
 
 ## Non-goals 🙏
 
@@ -162,7 +162,7 @@ buffer that appears
 
 ![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
 
-### [WIP] Multi-window mode (inspired by [`vem-tabline`](https://github.com/pacha/vem-tabline))
+### Multi-window mode (inspired by [`vem-tabline`](https://github.com/pacha/vem-tabline))
 
 When this mode is active, for layouts of multiple windows in the tabpage,
 only the buffers that are displayed in those windows are listed in the
