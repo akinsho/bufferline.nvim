@@ -597,9 +597,10 @@ local function get_buffers_by_mode(mode)
   return get_valid_buffers()
 end
 
+--- @param preferences table
 --- @return string
-function _G.nvim_bufferline()
-  local options = state.preferences.options
+local function bufferline(preferences)
+  local options = preferences.options
   local buf_nums = get_buffers_by_mode(options.view)
 
   local tabs = get_tabs(options.separator_style)
@@ -623,7 +624,7 @@ function _G.nvim_bufferline()
     }
     buf.letter = get_letter(buf)
 
-    local render_fn, length = render_buffer(state.preferences, buf, 0)
+    local render_fn, length = render_buffer(preferences, buf, 0)
     buf.length = length
     buf.component = render_fn
     state.buffers[i] = buf
@@ -771,8 +772,6 @@ function M.setup(prefs)
     helpers.deep_merge(preferences, prefs)
   end
 
-  state.preferences = preferences
-
   function _G.__setup_bufferline_colors()
     local user_colors = preferences.highlights
     colors.set_highlight('BufferLineFill', user_colors.bufferline_fill)
@@ -806,7 +805,11 @@ function M.setup(prefs)
   end
 
   if devicons_loaded then
-    table.insert(autocommands, {"ColorScheme", "*", [[lua require'nvim-web-devicons'.setup()]]})
+    table.insert(autocommands, {
+        "ColorScheme",
+        "*",
+        [[lua require'nvim-web-devicons'.setup()]],
+      })
   end
 
   nvim_create_augroups({ BufferlineColors = autocommands })
@@ -824,6 +827,10 @@ function M.setup(prefs)
           silent = true, nowait = true, noremap = true
         })
     end
+  end
+
+  function _G.nvim_bufferline()
+    return bufferline(preferences)
   end
 
   vim.o.showtabline = 2
