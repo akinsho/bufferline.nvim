@@ -596,15 +596,17 @@ local function get_buffers_by_mode(mode)
       return get_valid_buffers(unique), mode
     end
   end
-  return get_valid_buffers(), nil
+  return get_valid_buffers(), 'default'
 end
 
 --- @return string
 function _G.nvim_bufferline()
   local options = state.preferences.options
   local buf_nums, current_mode = get_buffers_by_mode(options.view)
+
   local tabs = get_tabs(options.separator_style)
   options.view = current_mode
+
   if not options.always_show_bufferline then
     if table.getn(buf_nums) == 1 then
         vim.o.showtabline = 0
