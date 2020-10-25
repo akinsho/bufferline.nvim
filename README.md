@@ -2,21 +2,28 @@
 
 A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built using **lua**.
 
-![Bufferline_with_close](./screenshots/bufferline.png "Bufferline")
-
-![Bufferline screenshot](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
+![Bufferline](./screenshots/bufferline.png "Bufferline")
 
 This plugin shamelessly attempts to emulate the aesthetics of GUI text editors/Doom Emacs.
 It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://github.com/ema2159/centaur-tabs). I don't intend to copy
 all of it's functionality though.
 
-**Status: 🚧 Alpha**
-
 ## Features
 
 - Colours derived from colorscheme where possible, should appear similar in most cases
+
 - Option to show buffer numbers
+
+  ![Bufferline with numbers ](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
+
+- Buffer pick functionality
+
+  ![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
+
+- Sort buffers by `extension`, `directory` or pass in a custom compare function
+
 - Close icons for closing individual buffers
+
 - Modified symbol
 
 <img src="./screenshots/bufferline_with_modified.png" alt="modified icon" width="350px" />
@@ -117,8 +124,8 @@ plugin won't create a nice tabline.
 
 ## Configuration
 
-```vim
-lua require'bufferline'.setup{
+```lua
+require'bufferline'.setup{
   options = {
     view = "multiwindow" | "default",
     numbers = "none" | "ordinal" | "buffer_id",
@@ -135,6 +142,10 @@ lua require'bufferline'.setup{
     separator_style = "thick" | "thin",
     enforce_regular_tabs = false | true,
     always_show_bufferline = true | false,
+    sort_by = 'extension' | 'directory' | function(buffer_a, buffer_b)
+      -- add custom logic
+      return buffer_a.modified > buffer_b.modified
+    end
   }
 }
 ```
@@ -148,7 +159,25 @@ length specified (+ the other indicators).
 If you set `enforce_regular_tabs = true` tabs will be prevented from extending beyond
 the tab size and all tabs will be the same length
 
-### Bufferline Pick functionality
+### Sort by `...`
+
+Bufferline allows you to sort the visible buffers by `extension` or `directory`, or for more
+advanced usage you can provide a custom compare function which will receive two buffers to compare.
+You can see what fields are available to use using
+
+```lua
+sort_by = function(buffer_a, buffer_b)
+  print(vim.inspect(buffer_a))
+-- add custom logic
+  return buffer_a.modified > buffer_b.modified
+end
+```
+
+When using a sorted bufferline it's advisable that you use the `BufferLineCycleNext` and `BufferLineCyclePrev`
+commands since these will traverse the bufferline bufferlist in order whereas. `bnext` and `bprev` will cycle
+buffers according to the buffer numbers given by vim
+
+### Bufferline Pick functionality (inspired by [`barbar.nvim`](https://github.com/romgrk/barbar.nvim))
 
 Using the `BufferLinePick` command will allow for easy selection of a buffer in view.
 Trigger the command, using `:BufferLinePick` or better still map this to a key, e.g.

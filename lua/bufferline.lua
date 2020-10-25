@@ -91,6 +91,36 @@ local function close_button(buf_id,options)
   local size = strwidth(symbol)
   return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@".. symbol, size
 end
+
+---------------------------------------------------------------------------//
+-- Sorters
+---------------------------------------------------------------------------//
+local fnamemodify = vim.fn.fnamemodify
+
+--- @param buf_a Buffer
+--- @param buf_b Buffer
+local function sort_by_extension(buf_a, buf_b)
+  return fnamemodify(buf_a.filename, ':e') < fnamemodify(buf_b.filename, ':e')
+end
+
+--- @param buf_a Buffer
+--- @param buf_b Buffer
+local function sort_by_directory(buf_a, buf_b)
+  return fnamemodify(buf_a.path, ':h') < fnamemodify(buf_b.filename, ':h')
+end
+
+--- sorts a list of buffers in place
+--- @param sort_by string|function
+--- @param buffers table<Buffer>
+local function sort_buffers(sort_by, buffers)
+  if sort_by == 'extension' then
+    table.sort(buffers, sort_by_extension)
+  elseif sort_by == 'directory' then
+    table.sort(buffers, sort_by_directory)
+  elseif type(sort_by) == 'function' then
+    table.sort(buffers, sort_by)
+  end
+end
 ---------------------------------------------------------------------------//
 -- CORE
 ---------------------------------------------------------------------------//
@@ -643,6 +673,8 @@ local function bufferline(preferences)
     state.buffers[i] = buf
   end
 
+  sort_buffers(preferences.options.sort_by, state.buffers)
+
   return render(state.buffers, tabs, options)
 end
 
@@ -690,6 +722,7 @@ local function get_defaults()
       show_buffer_close_icons = true,
       enforce_regular_tabs = false,
       always_show_bufferline = true,
+      sort_by = 'default'
     };
     highlights = {
       bufferline_tab = {
@@ -766,6 +799,38 @@ function M.go_to_buffer(num)
   end
 end
 
+function M.cycle(direction)
+  local current = api.nvim_get_current_buf()
+  local index
+
+  for i, buf in ipairs(state.buffers) do
+    if buf.id == current then
+      index = i
+      break
+    end
+  end
+
+  local length = table.getn(state.buffers)
+  local next_index = index + direction
+
+  if next_index <=length and next_index >= 1 then
+    next_index = index + direction
+  elseif index + direction <= 0 then
+    next_index = length
+  else
+    next_index = 1
+  end
+
+  local next = state.buffers[next_index]
+
+  if not next then
+    vim.cmd('echoerr "This buffer does not exist"')
+    return
+  end
+
+  vim.cmd('buffer '..next.id)
+end
+
 function M.toggle_bufferline()
   local listed_bufs = vim.fn.getbufinfo({buflisted = 1 })
   if table.getn(listed_bufs) > 1 then
@@ -827,7 +892,12 @@ function M.setup(prefs)
 
   nvim_create_augroups({ BufferlineColors = autocommands })
 
+  -----------------------------------------------------------
+  -- Commands
+  -----------------------------------------------------------
   vim.cmd('command BufferLinePick lua require"bufferline".pick_buffer()')
+  vim.cmd('command BufferLineCycleNext lua require"bufferline".cycle(1)')
+  vim.cmd('command BufferLineCyclePrev lua require"bufferline".cycle(-1)')
 
   -- TODO / idea: consider allowing these mappings to open buffers based on their
   -- visual position i.e. <leader>1 maps to the first visible buffer regardless
