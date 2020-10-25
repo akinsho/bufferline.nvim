@@ -588,6 +588,8 @@ local function get_buffers_by_mode(mode)
 --]]
   if mode == "multiwindow" then
     local is_single_tab = vim.fn.tabpagenr('$') == 1
+    if is_single_tab then return get_valid_buffers() end
+
     local tab_wins = api.nvim_tabpage_list_wins(0)
 
     local valid_wins = 0
@@ -600,7 +602,7 @@ local function get_buffers_by_mode(mode)
       if is_valid(buf_nr) then valid_wins = valid_wins + 1 end
     end
 
-    if not is_single_tab and valid_wins > 1 then
+    if valid_wins > 1 then
       local unique = helpers.filter_duplicates(vim.fn.tabpagebuflist())
       return get_valid_buffers(unique)
     end
