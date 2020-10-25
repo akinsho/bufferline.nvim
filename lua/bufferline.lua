@@ -588,24 +588,21 @@ local function get_buffers_by_mode(mode)
 --]]
   if mode == "multiwindow" then
     local is_single_tab = vim.fn.tabpagenr('$') == 1
-    if not is_single_tab then
-      -- TODO filter out duplicates because currently I don't know
-      -- how to make it clear which buffer relates to which window
-      -- buffers don't have an identifier to say which buffer they are in
+    local number_of_tab_wins = api.nvim_tabpage_list_wins(0)
+    if not is_single_tab and table.getn(number_of_tab_wins) > 1 then
       local unique = helpers.filter_duplicates(vim.fn.tabpagebuflist())
-      return get_valid_buffers(unique), mode
+      return get_valid_buffers(unique)
     end
   end
-  return get_valid_buffers(), 'default'
+  return get_valid_buffers()
 end
 
 --- @return string
 function _G.nvim_bufferline()
   local options = state.preferences.options
-  local buf_nums, current_mode = get_buffers_by_mode(options.view)
+  local buf_nums = get_buffers_by_mode(options.view)
 
   local tabs = get_tabs(options.separator_style)
-  options.view = current_mode
 
   if not options.always_show_bufferline then
     if table.getn(buf_nums) == 1 then
