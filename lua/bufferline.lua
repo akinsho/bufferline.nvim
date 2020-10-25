@@ -673,7 +673,7 @@ local function bufferline(preferences)
     state.buffers[i] = buf
   end
 
-  local sorted = sort_buffers(preferences.options.sort_by, state.buffers)
+  sort_buffers(preferences.options.sort_by, state.buffers)
 
   return render(state.buffers, tabs, options)
 end
