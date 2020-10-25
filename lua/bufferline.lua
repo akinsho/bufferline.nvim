@@ -588,8 +588,19 @@ local function get_buffers_by_mode(mode)
 --]]
   if mode == "multiwindow" then
     local is_single_tab = vim.fn.tabpagenr('$') == 1
-    local number_of_tab_wins = api.nvim_tabpage_list_wins(0)
-    if not is_single_tab and table.getn(number_of_tab_wins) > 1 then
+    local tab_wins = api.nvim_tabpage_list_wins(0)
+
+    local valid_wins = 0
+    for _, win_id in ipairs(tab_wins) do
+      -- Check that the window contains a listed buffer, if the buffer isn't
+      -- listed we shouldn't be hiding the remaining buffers because of it
+      -- note this is to stop temporary unlisted buffers like fzf from
+      -- triggering this mode
+      local buf_nr = vim.api.nvim_win_get_buf(win_id)
+      if is_valid(buf_nr) then valid_wins = valid_wins + 1 end
+    end
+
+    if not is_single_tab and valid_wins > 1 then
       local unique = helpers.filter_duplicates(vim.fn.tabpagebuflist())
       return get_valid_buffers(unique)
     end
