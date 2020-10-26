@@ -139,7 +139,7 @@ require'bufferline'.setup{
     max_name_length = 18,
     tab_size = 18,
     show_buffer_close_icons = true | false,
-    -- can also be a table containing 2 custom separator
+    -- can also be a table containing 2 custom separators
     -- [focused and unfocused]. eg: { '|', '|' }
     separator_style = "thick" | "thin" | { 'any', 'any' },
     enforce_regular_tabs = false | true,
