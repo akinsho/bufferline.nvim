@@ -363,7 +363,9 @@ local function render_buffer(preferences, buffer, diagnostic_count)
 
   -- Use: https://en.wikipedia.org/wiki/Block_Elements
   local separator_component
-  if options.separator_style == 'thick' then
+  if type(options.separator_style) == 'table' then
+    separator_component = (is_visible or is_current) and options.separator_style[1] or options.separator_style[2]
+  elseif options.separator_style == 'thick' then
     separator_component = (is_visible or is_current) and "▌" or "▐"-- "▍" "░"
   else
     separator_component = (is_visible or is_current) and "▏" or "▕"
