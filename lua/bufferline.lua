@@ -106,8 +106,21 @@ end
 --- @param buf_a Buffer
 --- @param buf_b Buffer
 local function sort_by_directory(buf_a, buf_b)
+  local ra = is_relative_path(buf_a)
+  local rb = is_relative_path(buf_b)
+  if ra and not rb then
+    return -1
+  end
+  if rb and not ra then
+    return +1
+  end
   return buf_a.path < buf_b.path
 end
+
+local function is_relative_path(path)
+   return fnamemodify(path, ':p') ~= path
+end
+
 
 --- sorts a list of buffers in place
 --- @param sort_by string|function
