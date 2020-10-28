@@ -106,7 +106,7 @@ end
 --- @param buf_a Buffer
 --- @param buf_b Buffer
 local function sort_by_directory(buf_a, buf_b)
-  return fnamemodify(buf_a.filename, ':h') < fnamemodify(buf_b.filename, ':h')
+  return buf_a.path < buf_b.path
 end
 
 --- sorts a list of buffers in place
