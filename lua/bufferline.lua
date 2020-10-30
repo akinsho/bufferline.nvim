@@ -97,6 +97,11 @@ end
 ---------------------------------------------------------------------------//
 local fnamemodify = vim.fn.fnamemodify
 
+-- @param path string
+local function is_relative_path(path)
+   return fnamemodify(path, ':p') ~= path
+end
+
 --- @param buf_a Buffer
 --- @param buf_b Buffer
 local function sort_by_extension(buf_a, buf_b)
@@ -106,8 +111,17 @@ end
 --- @param buf_a Buffer
 --- @param buf_b Buffer
 local function sort_by_directory(buf_a, buf_b)
-  return fnamemodify(buf_a.path, ':h') < fnamemodify(buf_b.filename, ':h')
+  local ra = is_relative_path(buf_a.path)
+  local rb = is_relative_path(buf_b.path)
+  if ra and not rb then
+    return false
+  end
+  if rb and not ra then
+    return true
+  end
+  return buf_a.path < buf_b.path
 end
+
 
 --- sorts a list of buffers in place
 --- @param sort_by string|function
