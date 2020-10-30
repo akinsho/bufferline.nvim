@@ -113,11 +113,11 @@ end
 local function sort_by_directory(buf_a, buf_b)
   local ra = is_relative_path(buf_a.path)
   local rb = is_relative_path(buf_b.path)
-  if ra == true and rb == false then
-    return -1
+  if ra and not rb then
+    return false
   end
-  if rb == true and ra == false then
-    return 1
+  if rb and not ra then
+    return true
   end
   return buf_a.path < buf_b.path
 end
