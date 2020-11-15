@@ -269,7 +269,7 @@ local function get_separator(focused, style)
   elseif style == "thick" then
     return focused and "▌" or "▐"
   elseif style == "diagonal" then
-    return focused and "" or ""
+    return "", ""
   else
     return focused and "▏" or "▕"
   end
@@ -367,7 +367,7 @@ local function render_buffer(preferences, buffer, diagnostic_count)
 
   component = make_clickable(options.mode, component, buffer.id)
 
-  if is_current then
+  if is_current and options.separator_style ~= "diagonal" then
     -- U+2590 ▐ Right half block, this character is right aligned so the
     -- background highlight doesn't appear in th middle
     -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
@@ -397,8 +397,9 @@ local function render_buffer(preferences, buffer, diagnostic_count)
   end
 
   local focused = (is_visible or is_current)
-  local separator_component = get_separator(focused, options.separator_style)
-  local separator = highlights.separator .. separator_component
+  local left_sep, right_sep = get_separator(focused, options.separator_style)
+  local right_separator = highlights.separator .. right_sep
+  local left_separator = left_sep and (highlights.separator .. left_sep) or nil
 
   -- NOTE: the component is wrapped in an item -> %(content) so
   -- vim counts each item as one rather than all of its individual
@@ -408,7 +409,10 @@ local function render_buffer(preferences, buffer, diagnostic_count)
 
   -- We increment the buffer length by the separator although the final
   -- buffer will not have a separator so we are technically off by 1
-  length = length + strwidth(separator_component)
+  length = length + strwidth(right_sep)
+  if left_sep then
+    length = length + strwidth(left_sep)
+  end
 
   -- We return a function from render buffer as we do not yet have access to
   -- information regarding which buffers will actually be rendered
@@ -417,8 +421,10 @@ local function render_buffer(preferences, buffer, diagnostic_count)
   --- @param num_of_bufs number
   --- @returns string
   local render_fn = function(index, num_of_bufs)
-    if index < num_of_bufs then
-      buffer_component = buffer_component .. separator
+    if left_separator then
+      buffer_component = left_separator .. buffer_component .. right_separator
+    elseif index < num_of_bufs then
+      buffer_component = buffer_component .. right_separator
     end
     return buffer_component
   end
