@@ -12,6 +12,9 @@ all of it's functionality though.
 
 - Colours derived from colorscheme where possible, should appear similar in most cases
 
+- Alternate option for tab styling
+  ![slanted tabs](./screenshots/diagonal.png "slanted tabs")
+
 - Option to show buffer numbers
 
   ![Bufferline with numbers ](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
@@ -141,7 +144,7 @@ require'bufferline'.setup{
     show_buffer_close_icons = true | false,
     -- can also be a table containing 2 custom separators
     -- [focused and unfocused]. eg: { '|', '|' }
-    separator_style = "thick" | "thin" | { 'any', 'any' },
+    separator_style = "slant" | "thick" | "thin" | { 'any', 'any' },
     enforce_regular_tabs = false | true,
     always_show_bufferline = true | false,
     sort_by = 'extension' | 'directory' | function(buffer_a, buffer_b)
