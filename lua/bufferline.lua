@@ -5,6 +5,12 @@ local Buffer = require "bufferline/buffers".Buffer
 local Buffers = require "bufferline/buffers".Buffers
 local devicons_loaded = require "bufferline/buffers".devicons_loaded
 
+local style_names = {
+  slant = "slant",
+  thick = "thick",
+  thin = "thin"
+}
+
 local api = vim.api
 -- string.len counts number of bytes and so the unicode icons are counted
 -- larger than their display width. So we use nvim's strwidth
@@ -262,7 +268,7 @@ end
 local function get_indicator(style)
   local indicator = " "
   local indicator_symbol = indicator
-  if style ~= "diagonal" then
+  if style ~= style_names.slant then
     -- U+2590 ▐ Right half block, this character is right aligned so the
     -- background highlight doesn't appear in th middle
     -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
@@ -279,9 +285,9 @@ end
 local function get_separator(focused, style)
   if type(style) == "table" then
     return focused and style[1] or style[2]
-  elseif style == "thick" then
+  elseif style == style_names.thick then
     return focused and "▌" or "▐"
-  elseif style == "diagonal" then
+  elseif style == style_names.slant then
     return "", ""
   else
     return focused and "▏" or "▕"
@@ -291,7 +297,7 @@ end
 --- @param focused boolean
 --- @param style table | string
 local function get_separator_highlight(focused, style)
-  if focused and style == "diagonal" then
+  if focused and style == style_names.slant then
     return highlights.selected_separator
   else
     return highlights.separator
