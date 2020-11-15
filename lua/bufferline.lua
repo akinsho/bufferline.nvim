@@ -259,6 +259,22 @@ local function highlight_icon(buffer, background)
   return "%#" .. hl_override .. "#" .. icon .. "%*"
 end
 
+--- "▍" "░"
+--- Reference: https://en.wikipedia.org/wiki/Block_Elements
+--- @param focused boolean
+--- @param style table | string
+local function get_separator(focused, style)
+  if type(style) == "table" then
+    return focused and style[1] or style[2]
+  elseif style == "thick" then
+    return focused and "▌" or "▐"
+  elseif style == "diagonal" then
+    return focused and "" or ""
+  else
+    return focused and "▏" or "▕"
+  end
+end
+
 --[[
  In order to get the accurate character width of a buffer tab
  each buffer's length is manually calculated to avoid accidentally
@@ -380,19 +396,8 @@ local function render_buffer(preferences, buffer, diagnostic_count)
     length = length + size
   end
 
-  -- Use: https://en.wikipedia.org/wiki/Block_Elements
-  local separator_component
-  if type(options.separator_style) == "table" then
-    separator_component =
-      (is_visible or is_current) and options.separator_style[1] or
-      options.separator_style[2]
-  elseif options.separator_style == "thick" then
-    -- "▍" "░"
-    separator_component = (is_visible or is_current) and "▌" or "▐"
-  else
-    separator_component = (is_visible or is_current) and "▏" or "▕"
-  end
-
+  local focused = (is_visible or is_current)
+  local separator_component = get_separator(focused, options.separator_style)
   local separator = highlights.separator .. separator_component
 
   -- NOTE: the component is wrapped in an item -> %(content) so
