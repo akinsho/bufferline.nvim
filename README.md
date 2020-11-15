@@ -12,6 +12,9 @@ all of it's functionality though.
 
 - Colours derived from colorscheme where possible, should appear similar in most cases
 
+- Alternate option for tab styling
+  ![diagonal tabs](./screenshots/diagonal.png "diagonal tabs")
+
 - Option to show buffer numbers
 
   ![Bufferline with numbers ](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
