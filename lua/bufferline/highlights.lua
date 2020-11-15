@@ -1,23 +1,27 @@
 ---------------------------------------------------------------------------//
 -- Highlights
 ---------------------------------------------------------------------------//
+local function hl(item)
+  return "%#" .. item .. "#"
+end
+
 local M = {
-  fill = '%#BufferLineFill#',
-  inactive = '%#BufferLineInactive#',
-  tab = '%#BufferLineTab#',
-  tab_selected = '%#BufferLineTabSelected#',
-  selected = '%#BufferLineSelected#',
-  indicator = '%#BufferLineSelectedIndicator#',
-  modified = '%#BufferLineModified#',
-  modified_inactive = '%#BufferLineModifiedInactive#',
-  modified_selected = '%#BufferLineModifiedSelected#',
-  pick = '%#BufferLinePick#',
-  pick_inactive = '%#BufferLinePickInactive#',
-  diagnostic = '%#ErrorMsg#',
-  background = '%#BufferLineBackground#',
-  separator = '%#BufferLineSeparator#',
-  tab_selected_separator = '%#BufferLineTabSelectedSeparator#',
-  close = '%#BufferLineTabClose#%999X',
+  fill = hl("BufferLineFill"),
+  inactive = hl("BufferLineInactive"),
+  tab = hl("BufferLineTab"),
+  tab_selected = hl("BufferLineTabSelected"),
+  selected = hl("BufferLineSelected"),
+  indicator = hl("BufferLineSelectedIndicator"),
+  modified = hl("BufferLineModified"),
+  modified_inactive = hl("BufferLineModifiedInactive"),
+  modified_selected = hl("BufferLineModifiedSelected"),
+  pick = hl("BufferLinePick"),
+  pick_inactive = hl("BufferLinePickInactive"),
+  diagnostic = hl("ErrorMsg"),
+  background = hl("BufferLineBackground"),
+  separator = hl("BufferLineSeparator"),
+  selected_separator = hl("BufferLineSelectedSeparator"),
+  close = hl("BufferLineTabClose") .. "%999X"
 }
 
 return M

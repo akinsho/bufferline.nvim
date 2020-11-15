@@ -259,6 +259,19 @@ local function highlight_icon(buffer, background)
   return "%#" .. hl_override .. "#" .. icon .. "%*"
 end
 
+local function get_indicator(style)
+  local indicator = " "
+  local indicator_symbol = indicator
+  if style ~= "diagonal" then
+    -- U+2590 ▐ Right half block, this character is right aligned so the
+    -- background highlight doesn't appear in th middle
+    -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
+    indicator_symbol = "▎"
+    indicator = highlights.indicator .. indicator_symbol .. "%*"
+  end
+  return indicator, strwidth(indicator_symbol)
+end
+
 --- "▍" "░"
 --- Reference: https://en.wikipedia.org/wiki/Block_Elements
 --- @param focused boolean
@@ -269,9 +282,19 @@ local function get_separator(focused, style)
   elseif style == "thick" then
     return focused and "▌" or "▐"
   elseif style == "diagonal" then
-    return "", ""
+    return "", ""
   else
     return focused and "▏" or "▕"
+  end
+end
+
+--- @param focused boolean
+--- @param style table | string
+local function get_separator_highlight(focused, style)
+  if focused and style == "diagonal" then
+    return highlights.selected_separator
+  else
+    return highlights.separator
   end
 end
 
@@ -294,9 +317,8 @@ end
 --]]
 --- @param preferences table
 --- @param buffer Buffer
---- @param diagnostic_count number
 --- @return function | number
-local function render_buffer(preferences, buffer, diagnostic_count)
+local function render_buffer(preferences, buffer)
   local options = preferences.options
   local current_highlights =
     get_buffer_highlight(buffer, preferences.highlights)
@@ -367,26 +389,17 @@ local function render_buffer(preferences, buffer, diagnostic_count)
 
   component = make_clickable(options.mode, component, buffer.id)
 
-  if is_current and options.separator_style ~= "diagonal" then
-    -- U+2590 ▐ Right half block, this character is right aligned so the
-    -- background highlight doesn't appear in th middle
-    -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
-    local indicator_symbol = "▎"
-    local indicator = highlights.indicator .. indicator_symbol .. "%*"
+  local style = options.separator_style
 
-    length = length + strwidth(indicator_symbol)
+  if is_current then
+    local indicator, indicator_size = get_indicator(style)
+    length = length + strwidth(indicator_size)
     component = indicator .. buf_highlight .. component
   else
     -- since all non-current buffers do not have an indicator they need
     -- to be padded to make up the difference in size
     length = length + strwidth(padding)
     component = buf_highlight .. padding .. component
-  end
-
-  if diagnostic_count > 0 then
-    local diagnostic_section = diagnostic_count .. padding
-    component = component .. highlights.diagnostic .. diagnostic_section
-    length = length + strwidth(diagnostic_section)
   end
 
   if options.show_buffer_close_icons then
@@ -396,15 +409,15 @@ local function render_buffer(preferences, buffer, diagnostic_count)
     length = length + size
   end
 
-  local focused = (is_visible or is_current)
-  local left_sep, right_sep = get_separator(focused, options.separator_style)
-  local right_separator = highlights.separator .. right_sep
-  local left_separator = left_sep and (highlights.separator .. left_sep) or nil
+  local focused = is_visible or is_current
+  local right_sep, left_sep = get_separator(focused, style)
+  local sep_hl = get_separator_highlight(focused, style)
+  local right_separator = sep_hl .. right_sep
+  local left_separator = left_sep and (sep_hl .. left_sep) or nil
 
   -- NOTE: the component is wrapped in an item -> %(content) so
   -- vim counts each item as one rather than all of its individual
-  -- sub-components. Vim only allows a maximum of 80 items in a tabline
-  -- so it is important that these are correctly group as one
+  -- sub-components.
   local buffer_component = "%(" .. component .. "%)"
 
   -- We increment the buffer length by the separator although the final
@@ -414,22 +427,19 @@ local function render_buffer(preferences, buffer, diagnostic_count)
     length = length + strwidth(left_sep)
   end
 
-  -- We return a function from render buffer as we do not yet have access to
-  -- information regarding which buffers will actually be rendered
-
+  --- We return a function from render buffer as we do not yet have access to
+  --- information regarding which buffers will actually be rendered
   --- @param index number
   --- @param num_of_bufs number
   --- @returns string
-  local render_fn = function(index, num_of_bufs)
+  return function(index, num_of_bufs)
     if left_separator then
       buffer_component = left_separator .. buffer_component .. right_separator
     elseif index < num_of_bufs then
       buffer_component = buffer_component .. right_separator
     end
     return buffer_component
-  end
-
-  return render_fn, length
+  end, length
 end
 
 local function tab_click_component(num)
@@ -439,7 +449,7 @@ end
 local function render_tab(tab, is_active, style)
   local hl = is_active and highlights.tab_selected or highlights.tab
   local separator_hl =
-    is_active and highlights.tab_selected_separator or highlights.separator
+    is_active and highlights.selected_separator or highlights.separator
   local separator_component = style == "thick" and "▐" or "▕"
   local separator = separator_hl .. separator_component
   local name = padding .. padding .. tab.tabnr .. padding
@@ -715,7 +725,7 @@ local function bufferline(preferences)
     }
     buf.letter = get_letter(buf)
 
-    local render_fn, length = render_buffer(preferences, buf, 0)
+    local render_fn, length = render_buffer(preferences, buf)
     buf.length = length
     buf.component = render_fn
     state.buffers[i] = buf
@@ -746,10 +756,8 @@ local function get_defaults()
   -- as this makes light color schemes harder to read
   local is_bright_background = colors.color_is_bright(normal_bg)
   local separator_shading = is_bright_background and -20 or -45
-  local tabline_fill_shading = is_bright_background and -15 or -30
   local background_shading = is_bright_background and -12 or -25
 
-  local tabline_fill_color = M.shade_color(normal_bg, tabline_fill_shading)
   local separator_background_color = M.shade_color(normal_bg, separator_shading)
   local background_color = M.shade_color(normal_bg, background_shading)
 
@@ -781,7 +789,7 @@ local function get_defaults()
         guifg = tabline_sel_bg,
         guibg = normal_bg
       },
-      bufferline_tab_selected_separator = {
+      bufferline_selected_separator = {
         guifg = separator_background_color,
         guibg = normal_bg
       },
@@ -791,7 +799,7 @@ local function get_defaults()
       },
       bufferline_fill = {
         guifg = comment_fg,
-        guibg = tabline_fill_color
+        guibg = separator_background_color
       },
       bufferline_background = {
         guifg = comment_fg,
@@ -929,8 +937,8 @@ function M.setup(prefs)
       user_colors.bufferline_separator
     )
     colors.set_highlight(
-      "BufferLineTabSelectedSeparator",
-      user_colors.bufferline_tab_selected_separator
+      "BufferLineSelectedSeparator",
+      user_colors.bufferline_selected_separator
     )
     colors.set_highlight(
       "BufferLineTabSelected",
