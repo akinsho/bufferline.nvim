@@ -147,13 +147,20 @@ require'bufferline'.setup{
     separator_style = "slant" | "thick" | "thin" | { 'any', 'any' },
     enforce_regular_tabs = false | true,
     always_show_bufferline = true | false,
-    sort_by = 'extension' | 'directory' | function(buffer_a, buffer_b)
+    sort_by = 'extension' | 'relative_directory' | 'directory' | function(buffer_a, buffer_b)
       -- add custom logic
       return buffer_a.modified > buffer_b.modified
     end
   }
 }
 ```
+
+#### NOTE:
+
+If using a plugin such as `vim-rooter` and you want to sort by path, prefer using `directory` rather than
+`relative_directory`. Relative directory works by ordering relative paths first, however if you move from
+project to project and vim switches its directory, the bufferline will re-order itself as a different set of
+buffers will now be relative.
 
 ### Regular tab sizes
 
