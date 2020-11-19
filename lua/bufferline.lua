@@ -549,7 +549,7 @@ local function get_marker_size(count, element_size)
 end
 
 local function render_trunc_marker(count, icon)
-  return highlights.fill .. padding .. count .. padding .. icon .. padding
+  return table.concat({highlights.fill, padding, count, padding, icon, padding})
 end
 
 --[[
@@ -645,9 +645,11 @@ local function render(buffers, tabs, options)
   local right_trunc_icon = options.right_trunc_marker
   -- measure the surrounding trunc items: padding + count + padding + icon + padding
   local left_element_size =
-    strwidth(padding .. padding .. left_trunc_icon .. padding .. padding)
+    strwidth(
+    table.concat({padding, padding, left_trunc_icon, padding, padding})
+  )
   local right_element_size =
-    strwidth(padding .. padding .. right_trunc_icon .. padding)
+    strwidth(table.concat({padding, padding, right_trunc_icon, padding}))
 
   local available_width = vim.o.columns - tabs_length - close_length
   local before, current, after = get_sections(buffers)
@@ -667,16 +669,23 @@ local function render(buffers, tabs, options)
 
   if marker.left_count > 0 then
     local icon = render_trunc_marker(marker.left_count, left_trunc_icon)
-    line = highlights.background .. icon .. padding .. line
+    line = table.concat({highlights.background, icon, padding, line})
   end
   if marker.right_count > 0 then
     local icon = render_trunc_marker(marker.right_count, right_trunc_icon)
-    line = line .. highlights.background .. icon
+    line = table.concat({line, highlights.background, icon})
   end
 
-  return line ..
-    highlights.fill ..
-      right_align .. tab_components .. highlights.close .. close_component
+  return table.concat(
+    {
+      line,
+      highlights.fill,
+      right_align,
+      tab_components,
+      highlights.close,
+      close_component
+    }
+  )
 end
 
 --- @param bufs table | nil
@@ -873,12 +882,12 @@ local function get_defaults()
       bufferline_duplicate = {
         guifg = duplicate_color,
         gui = "italic",
-        guibg = normal_bg,
+        guibg = normal_bg
       },
       bufferline_duplicate_inactive = {
         guifg = duplicate_color,
         gui = "italic",
-        guibg = background_color,
+        guibg = background_color
       },
       bufferline_modified_inactive = {
         guifg = string_fg,
