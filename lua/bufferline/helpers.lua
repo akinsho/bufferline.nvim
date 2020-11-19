@@ -48,4 +48,8 @@ function M.filter_duplicates(array)
   return res
 end
 
+
+M.path_sep = vim.loop.os_uname().sysname == "Windows" and "\\" or "/"
+
+
 return M

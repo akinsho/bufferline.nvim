@@ -720,7 +720,7 @@ end
 --- @returns string
 local function deduplicate_filename(buf)
   local dir = fnamemodify(buf.path, ":p:h:t")
-  return dir .. '/' .. buf.filename
+  return dir .. helpers.path_sep .. buf.filename
 end
 
 --- @param duplicates table
