@@ -12,22 +12,27 @@ all of it's functionality though.
 
 - Colours derived from colorscheme where possible, should appear similar in most cases
 
-- Alternate option for tab styling
-  ![slanted tabs](./screenshots/diagonal.png "slanted tabs")
+#### Alternate option for tab styling
 
-- Option to show buffer numbers
+![slanted tabs](./screenshots/diagonal.png "slanted tabs")
 
-  ![Bufferline with numbers ](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
+#### Option to show buffer numbers
 
-- Buffer pick functionality
+![Bufferline with numbers ](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
 
-  ![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
+#### Buffer pick functionality
 
-- Sort buffers by `extension`, `directory` or pass in a custom compare function
+![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
 
-- Close icons for closing individual buffers
+#### Make buffer names unique if there are duplicates
 
-- Modified symbol
+![Deduplicated buffers](./screenshots/unique_names.png "deduplicated buffer names")
+
+#### Sort buffers by `extension`, `directory` or pass in a custom compare function
+
+#### Close icons for closing individual buffers
+
+#### Modified symbol
 
 <img src="./screenshots/bufferline_with_modified.png" alt="modified icon" width="350px" />
 
