@@ -1,5 +1,9 @@
-local lua_devicons_loaded, webdev_icons = pcall(require, 'nvim-web-devicons')
-if lua_devicons_loaded then webdev_icons.setup() end
+local lua_devicons_loaded, webdev_icons = pcall(require, "nvim-web-devicons")
+if lua_devicons_loaded then
+  webdev_icons.setup()
+end
+
+local utils = require "bufferline/helpers"
 --------------------------------
 -- Export
 --------------------------------
@@ -43,7 +47,7 @@ function M.Buffers:add(buf)
 end
 
 local function buffer_is_terminal(buf)
-  return string.find(buf.path, 'term://') or buf.buftype == terminal_buftype
+  return string.find(buf.path, "term://") or buf.buftype == terminal_buftype
 end
 
 --------------------------------
@@ -53,10 +57,12 @@ end
 M.Buffer = {}
 
 function M.Buffer:new(buf)
-  buf.modifiable = vim.fn.getbufvar(buf.id, '&modifiable') == 1
-  buf.modified = vim.fn.getbufvar(buf.id, '&modified') == 1
-  buf.buftype = vim.fn.getbufvar(buf.id, '&buftype')
-  if buf.path == "" then buf.path = "[No Name]" end
+  buf.modifiable = vim.fn.getbufvar(buf.id, "&modifiable") == 1
+  buf.modified = vim.fn.getbufvar(buf.id, "&modified") == 1
+  buf.buftype = vim.fn.getbufvar(buf.id, "&buftype")
+  if buf.path == "" then
+    buf.path = "[No Name]"
+  end
 
   buf.extension = vim.fn.fnamemodify(buf.path, ":e")
   -- Set icon
@@ -65,14 +71,12 @@ function M.Buffer:new(buf)
     buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
   else
     if lua_devicons_loaded then
-      buf.icon, buf.icon_highlight = webdev_icons.get_icon(
-        buf.path,
-        buf.extension,
-        { default = true }
-      )
+      buf.icon, buf.icon_highlight =
+        webdev_icons.get_icon(buf.path, buf.extension, {default = true})
     else
-      local devicons_loaded = vim.fn.exists('*WebDevIconsGetFileTypeSymbol') > 0
-      buf.icon = devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
+      local devicons_loaded = vim.fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
+      buf.icon =
+        devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
     end
     -- TODO: allow the format specifier to be configured
     buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
@@ -97,6 +101,12 @@ end
 
 function M.Buffer:visible()
   return vim.fn.bufwinnr(self.id) > 0
+end
+
+--- @returns string
+function M.Buffer:parent_dir()
+  local dir = vim.fn.fnamemodify(self.path, ":p:h:t")
+  return dir .. utils.path_sep
 end
 
 M.lua_devicons_loaded = lua_devicons_loaded

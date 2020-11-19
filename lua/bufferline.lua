@@ -1,6 +1,6 @@
 local colors = require "bufferline/colors"
 local highlights = require "bufferline/highlights"
-local helpers = require "bufferline/helpers"
+local utils = require "bufferline/helpers"
 local Buffer = require "bufferline/buffers".Buffer
 local Buffers = require "bufferline/buffers".Buffers
 local devicons_loaded = require "bufferline/buffers".devicons_loaded
@@ -209,23 +209,27 @@ local function get_buffer_highlight(buffer, user_highlights)
     background = nil,
     modified = nil,
     buffer = nil,
-    pick = nil
+    pick = nil,
+    duplicate = nil
   }
   if buffer:current() then
     current_highlights.background = h.selected
     current_highlights.modified = h.modified_selected
     current_highlights.buffer = c.bufferline_selected
     current_highlights.pick = h.pick
+    current_highlights.duplicate = h.duplicate
   elseif buffer:visible() then
     current_highlights.background = h.inactive
     current_highlights.modified = h.modified_inactive
     current_highlights.buffer = c.bufferline_buffer_inactive
     current_highlights.pick = h.pick
+    current_highlights.duplicate = h.duplicate
   else
     current_highlights.background = h.background
     current_highlights.modified = h.modified
     current_highlights.buffer = c.bufferline_background
     current_highlights.pick = h.pick_inactive
+    current_highlights.duplicate = h.duplicate_inactive
   end
   return current_highlights
 end
@@ -357,24 +361,33 @@ local function render_buffer(preferences, buffer)
 
   local icon_size = strwidth(buffer.icon)
   local padding_size = strwidth(padding) * 2
-  local max_file_size = options.max_name_length
+  local max_length = options.max_name_length
   -- if we are enforcing regular tab size then all tabs will try and fit
   -- into the maximum tab size. If not we enforce a minimum tab size
   -- and allow tabs to be larger then the max otherwise
   if options.enforce_regular_tabs then
     -- estimate the maximum allowed size of a filename given that it will be
     -- padded an prefixed with a file icon
-    max_file_size = options.tab_size - m_size - icon_size - padding_size
+    max_length = options.tab_size - m_size - icon_size - padding_size
   end
 
-  local filename = truncate_filename(buffer.filename, max_file_size)
-  local component = padding .. filename .. padding
+  local filename = truncate_filename(buffer.filename, max_length)
+  local component = filename .. padding
   length = length + strwidth(component)
+  if buffer.duplicated then
+    local dir = buffer:parent_dir()
+    component =
+      padding ..
+      current_highlights.duplicate .. dir .. buf_highlight .. component
+    length = length + strwidth(padding .. dir)
+  else
+    component = padding .. component
+    length = length + strwidth(padding)
+  end
 
   if state.is_picking and buffer.letter then
     component =
-      current_highlights.pick ..
-      buffer.letter .. "%*" .. buf_highlight .. component
+      current_highlights.pick .. buffer.letter .. buf_highlight .. component
     length = length + strwidth(buffer.letter)
   elseif buffer.icon then
     local icon_highlight = highlight_icon(buffer, buffer_colors)
@@ -550,11 +563,14 @@ section
 --]]
 local function truncate(before, current, after, available_width, marker)
   local line = ""
+
   local left_trunc_marker =
     get_marker_size(marker.left_count, marker.left_element_size)
   local right_trunc_marker =
     get_marker_size(marker.right_count, marker.right_element_size)
+
   local markers_length = left_trunc_marker + right_trunc_marker
+
   local total_length =
     before.length + current.length + after.length + markers_length
 
@@ -563,10 +579,10 @@ local function truncate(before, current, after, available_width, marker)
     -- available space that means the window is really narrow
     -- so don't show anything
     -- Merge all the buffers and render the components
-    local all_buffers =
-      helpers.array_concat(before.buffers, current.buffers, after.buffers)
-    for index, buf in ipairs(all_buffers) do
-      line = line .. buf.component(index, table.getn(all_buffers))
+    local buffers =
+      utils.array_concat(before.buffers, current.buffers, after.buffers)
+    for index, buf in ipairs(buffers) do
+      line = line .. buf.component(index, table.getn(buffers))
     end
     return line, marker
   elseif available_width < current.length then
@@ -709,36 +725,29 @@ local function get_buffers_by_mode(mode)
     end
 
     if valid_wins > 1 then
-      local unique = helpers.filter_duplicates(vim.fn.tabpagebuflist())
+      local unique = utils.filter_duplicates(vim.fn.tabpagebuflist())
       return get_valid_buffers(unique)
     end
   end
   return get_valid_buffers()
 end
 
---- @param buf Buffer
---- @returns string
-local function deduplicate_filename(buf)
-  local dir = fnamemodify(buf.path, ":p:h:t")
-  return dir .. helpers.path_sep .. buf.filename
-end
-
 --- @param duplicates table
 --- @param current Buffer
 --- @buffers buffers table<Buffer>
 --- @param prefs table
-local function deduplicate(duplicates, current, buffers, prefs)
+local function mark_duplicates(duplicates, current, buffers, prefs)
   local duplicate = duplicates[current.filename]
   if not duplicate then
     duplicates[current.filename] = {current}
   else
     for _, buf in ipairs(duplicate) do
       -- if the buffer is a duplicate we have to redraw it with the new name
-      buf.filename = deduplicate_filename(buf)
+      buf.duplicated = true
       buf.component, buf.length = render_buffer(prefs, buf)
       buffers[buf.ordinal] = buf
     end
-    current.filename = deduplicate_filename(current)
+    current.duplicated = true
     table.insert(duplicate, current)
   end
 end
@@ -771,14 +780,10 @@ local function bufferline(preferences)
       ordinal = i
     }
 
-    -- TODO consider passing is duplicate to the render_buffer
-    -- function so we can tweak the highlighting is deduplicated
-    deduplicate(duplicates, buf, state.buffers, preferences)
+    mark_duplicates(duplicates, buf, state.buffers, preferences)
     buf.letter = get_letter(buf)
 
-    local render_fn, length = render_buffer(preferences, buf)
-    buf.length = length
-    buf.component = render_fn
+    buf.component, buf.length = render_buffer(preferences, buf)
     state.buffers[i] = buf
   end
 
@@ -809,6 +814,7 @@ local function get_defaults()
   local separator_shading = is_bright_background and -20 or -45
   local background_shading = is_bright_background and -12 or -25
 
+  local duplicate_color = M.shade_color(comment_fg, -5)
   local separator_background_color = M.shade_color(normal_bg, separator_shading)
   local background_color = M.shade_color(normal_bg, background_shading)
 
@@ -864,6 +870,16 @@ local function get_defaults()
         guifg = string_fg,
         guibg = background_color
       },
+      bufferline_duplicate = {
+        guifg = duplicate_color,
+        gui = "italic",
+        guibg = normal_bg,
+      },
+      bufferline_duplicate_inactive = {
+        guifg = duplicate_color,
+        gui = "italic",
+        guibg = background_color,
+      },
       bufferline_modified_inactive = {
         guifg = string_fg,
         guibg = normal_bg
@@ -917,7 +933,9 @@ function M.cycle(direction)
     end
   end
 
-  if not index then return end
+  if not index then
+    return
+  end
   local length = table.getn(state.buffers)
   local next_index = index + direction
 
@@ -955,7 +973,7 @@ function M.setup(prefs)
   -- NOTE this should happen outside any of these inner functions to prevent the
   -- value being set within a closure
   if prefs and type(prefs) == "table" then
-    helpers.deep_merge(preferences, prefs)
+    utils.deep_merge(preferences, prefs)
   end
 
   function _G.__setup_bufferline_colors()
@@ -973,6 +991,14 @@ function M.setup(prefs)
     colors.set_highlight(
       "BufferLineSelectedIndicator",
       user_colors.bufferline_selected_indicator
+    )
+    colors.set_highlight(
+      "BufferLineDuplicate",
+      user_colors.bufferline_duplicate
+    )
+    colors.set_highlight(
+      "BufferLineDuplicateInactive",
+      user_colors.bufferline_duplicate_inactive
     )
     colors.set_highlight("BufferLineModified", user_colors.bufferline_modified)
     colors.set_highlight(
