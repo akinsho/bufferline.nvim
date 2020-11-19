@@ -336,7 +336,7 @@ end
 --]]
 --- @param preferences table
 --- @param buffer Buffer
---- @return function | number
+--- @return function,number
 local function render_buffer(preferences, buffer)
   local options = preferences.options
   local current_highlights =
@@ -716,6 +716,33 @@ local function get_buffers_by_mode(mode)
   return get_valid_buffers()
 end
 
+--- @param buf Buffer
+--- @returns string
+local function deduplicate_filename(buf)
+  local dir = fnamemodify(buf.path, ":p:h:t")
+  return dir .. '/' .. buf.filename
+end
+
+--- @param duplicates table
+--- @param current Buffer
+--- @buffers buffers table<Buffer>
+--- @param prefs table
+local function deduplicate(duplicates, current, buffers, prefs)
+  local duplicate = duplicates[current.filename]
+  if not duplicate then
+    duplicates[current.filename] = {current}
+  else
+    for _, buf in ipairs(duplicate) do
+      -- if the buffer is a duplicate we have to redraw it with the new name
+      buf.filename = deduplicate_filename(buf)
+      buf.component, buf.length = render_buffer(prefs, buf)
+      buffers[buf.ordinal] = buf
+    end
+    current.filename = deduplicate_filename(current)
+    table.insert(duplicate, current)
+  end
+end
+
 --- @param preferences table
 --- @return string
 local function bufferline(preferences)
@@ -733,6 +760,7 @@ local function bufferline(preferences)
 
   state.buffers = {}
   state.current_letters = {}
+  local duplicates = {}
 
   for i, buf_id in ipairs(buf_nums) do
     local name = vim.fn.bufname(buf_id)
@@ -742,6 +770,10 @@ local function bufferline(preferences)
       id = buf_id,
       ordinal = i
     }
+
+    -- TODO consider passing is duplicate to the render_buffer
+    -- function so we can tweak the highlighting is deduplicated
+    deduplicate(duplicates, buf, state.buffers, preferences)
     buf.letter = get_letter(buf)
 
     local render_fn, length = render_buffer(preferences, buf)
@@ -885,6 +917,7 @@ function M.cycle(direction)
     end
   end
 
+  if not index then return end
   local length = table.getn(state.buffers)
   local next_index = index + direction
 
