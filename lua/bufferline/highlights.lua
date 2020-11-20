@@ -41,6 +41,18 @@ function M.set_all(user_colors)
     M.set_one(name, tbl)
     tbl.name = hl(name)
   end
+  setmetatable(
+    user_colors,
+    {
+      __index = function(table, key)
+        local value = table["bufferline_" .. key]
+        if value then
+          return value
+        end
+        return nil
+      end
+    }
+  )
   -- print("user_colors:" .. vim.inspect(user_colors))
   return user_colors
 end

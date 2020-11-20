@@ -88,30 +88,51 @@ function M.handle_click(id, button)
   end
 end
 
+local function get_hl(selected, visible, selected_hl, visible_hl, hl)
+  return selected and selected_hl or visible and visible_hl or hl
+end
+
 local function get_buffer_highlight(buffer, highlights)
   local h = highlights
-  local current_highlights = {
-    background = buffer:current() and h.bufferline_selected.name or
-      buffer:visible() and h.bufferline_buffer_inactive.name or
-      h.bufferline_background.name,
-
-    modified = buffer:current() and h.bufferline_modified_selected.name or
-      buffer:visible() and h.bufferline_modified_inactive.name or
-      h.bufferline_modified.name,
-
-    buffer = buffer:current() and h.bufferline_selected.name or
-      buffer:visible() and h.bufferline_buffer_inactive.name or
-      h.bufferline_background.name,
-
-    pick = buffer:current() and h.bufferline_pick.name or
-      buffer:visible() and h.bufferline_pick.name or
-      h.bufferline_pick_inactive.name,
-
-    duplicate = buffer:current() and h.bufferline_duplicate.name or
-      buffer:visible() and h.bufferline_duplicate.name or
-      h.bufferline_duplicate_inactive.name
+  local visible = buffer:visible()
+  local current = buffer:current()
+  return {
+    background = get_hl(
+      current,
+      visible,
+      h.selected.name,
+      h.buffer_inactive.name,
+      h.background.name
+    ),
+    modified = get_hl(
+      current,
+      visible,
+      h.modified_selected.name,
+      h.modified_inactive.name,
+      h.modified.name
+    ),
+    buffer = get_hl(
+      current,
+      visible,
+      h.selected.name,
+      h.buffer_inactive.name,
+      h.background.name
+    ),
+    pick = get_hl(
+      current,
+      visible,
+      h.pick.name,
+      h.pick.name,
+      h.pick_inactive.name
+    ),
+    duplicate = get_hl(
+      current,
+      visible,
+      h.duplicate.name,
+      h.duplicate.name,
+      h.duplicate_inactive.name
+    )
   }
-  return current_highlights
 end
 
 local function get_number_prefix(buffer, mode, style)
@@ -196,9 +217,9 @@ end
 --- @param highlights table
 local function get_separator_highlight(focused, style, highlights)
   if focused and style == style_names.slant then
-    return highlights.bufferline_selected_separator.name
+    return highlights.selected_separator.name
   else
-    return highlights.bufferline_separator.name
+    return highlights.separator.name
   end
 end
 
@@ -535,20 +556,20 @@ local function render(buffers, tabs, prefs)
 
   if marker.left_count > 0 then
     local icon = render_trunc_marker(marker.left_count, left_trunc_icon)
-    line = table.concat({hl.bufferline_background.name, icon, padding, line})
+    line = table.concat({hl.background.name, icon, padding, line})
   end
   if marker.right_count > 0 then
     local icon = render_trunc_marker(marker.right_count, right_trunc_icon)
-    line = table.concat({line, hl.bufferline_background.name, icon})
+    line = table.concat({line, hl.background.name, icon})
   end
 
   return table.concat(
     {
       line,
-      hl.bufferline_fill.name,
+      hl.fill.name,
       right_align,
       tab_components,
-      hl.bufferline_tab_close.name,
+      hl.tab_close.name,
       close_component
     }
   )
