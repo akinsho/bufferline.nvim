@@ -11,12 +11,12 @@ end
 
 local function render(tab, is_active, style, highlights)
   local hl =
-    is_active and highlights.bufferline_tab_selected.name or
-    highlights.bufferline_tab.name
+    is_active and highlights.bufferline_tab_selected.hlgroup or
+    highlights.bufferline_tab.hlgroup
 
   local separator_hl =
-    is_active and highlights.bufferline_selected_separator.name or
-    highlights.bufferline_separator.name
+    is_active and highlights.bufferline_selected_separator.hlgroup or
+    highlights.bufferline_separator.hlgroup
 
   local separator_component = style == "thick" and "▐" or "▕"
   local separator = separator_hl .. separator_component
@@ -33,7 +33,7 @@ function M.get(style, prefs)
   local current_tab = vim.fn.tabpagenr()
   local highlights = prefs.highlights
 
-  -- use ordinals to ensure contiguous keys in the table i.e. an array
+  -- use contiguous numbers to ensure contiguous keys in the table i.e. an array
   -- rather than an object
   -- GOOD = {1: thing, 2: thing} BAD: {1: thing, [5]: thing}
   for i, tab in ipairs(tabs) do

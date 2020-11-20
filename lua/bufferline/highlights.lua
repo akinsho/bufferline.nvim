@@ -4,6 +4,8 @@ local api = vim.api
 ---------------------------------------------------------------------------//
 local M = {}
 
+local prefix = "bufferline_"
+
 local function hl(item)
   return "%#" .. item .. "#"
 end
@@ -39,13 +41,13 @@ function M.set_all(user_colors)
   for name, tbl in pairs(user_colors) do
     name = name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
     M.set_one(name, tbl)
-    tbl.name = hl(name)
+    tbl.hlgroup = hl(name)
   end
   setmetatable(
     user_colors,
     {
       __index = function(table, key)
-        local value = table["bufferline_" .. key]
+        local value = table[prefix .. key]
         if value then
           return value
         end

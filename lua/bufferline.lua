@@ -100,19 +100,19 @@ local function get_buffer_highlight(buffer, highlights)
     background = get_hl(
       current,
       visible,
-      h.selected.name,
-      h.buffer_inactive.name,
-      h.background.name
+      h.selected.hlgroup,
+      h.buffer_inactive.hlgroup,
+      h.background.hlgroup
     ),
     modified = get_hl(
       current,
       visible,
-      h.modified_selected.name,
-      h.modified_inactive.name,
-      h.modified.name
+      h.modified_selected.hlgroup,
+      h.modified_inactive.hlgroup,
+      h.modified.hlgroup
     ),
-  -- for this component we need to return the full
-  -- details of the colors
+    -- for this component we need to return the full
+    -- details of the colors
     buffer = get_hl(
       current,
       visible,
@@ -123,16 +123,16 @@ local function get_buffer_highlight(buffer, highlights)
     pick = get_hl(
       current,
       visible,
-      h.pick.name,
-      h.pick.name,
-      h.pick_inactive.name
+      h.pick.hlgroup,
+      h.pick.hlgroup,
+      h.pick_inactive.hlgroup
     ),
     duplicate = get_hl(
       current,
       visible,
-      h.duplicate.name,
-      h.duplicate.name,
-      h.duplicate_inactive.name
+      h.duplicate.hlgroup,
+      h.duplicate.hlgroup,
+      h.duplicate_inactive.hlgroup
     )
   }
 end
@@ -219,9 +219,9 @@ end
 --- @param highlights table
 local function get_separator_highlight(focused, style, highlights)
   if focused and style == style_names.slant then
-    return highlights.selected_separator.name
+    return highlights.selected_separator.hlgroup
   else
-    return highlights.separator.name
+    return highlights.separator.hlgroup
   end
 end
 
@@ -430,7 +430,7 @@ end
 local function render_trunc_marker(count, icon, highlights)
   return table.concat(
     {
-      highlights.fill.name,
+      highlights.fill.hlgroup,
       padding,
       count,
       padding,
@@ -559,20 +559,20 @@ local function render(buffers, tabs, prefs)
 
   if marker.left_count > 0 then
     local icon = render_trunc_marker(marker.left_count, left_trunc_icon, hl)
-    line = table.concat({hl.background.name, icon, padding, line})
+    line = table.concat({hl.background.hlgroup, icon, padding, line})
   end
   if marker.right_count > 0 then
     local icon = render_trunc_marker(marker.right_count, right_trunc_icon, hl)
-    line = table.concat({line, hl.background.name, icon})
+    line = table.concat({line, hl.background.hlgroup, icon})
   end
 
   return table.concat(
     {
       line,
-      hl.fill.name,
+      hl.fill.hlgroup,
       right_align,
       tab_components,
-      hl.tab_close.name,
+      hl.tab_close.hlgroup,
       close_component
     }
   )
