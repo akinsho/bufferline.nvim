@@ -427,9 +427,10 @@ local function get_marker_size(count, element_size)
   return count > 0 and strwidth(count) + element_size or 0
 end
 
-local function render_trunc_marker(count, icon)
+local function render_trunc_marker(count, icon, highlights)
   return table.concat(
     {
+      highlights.fill.name,
       padding,
       count,
       padding,
@@ -557,11 +558,11 @@ local function render(buffers, tabs, prefs)
   )
 
   if marker.left_count > 0 then
-    local icon = render_trunc_marker(marker.left_count, left_trunc_icon)
+    local icon = render_trunc_marker(marker.left_count, left_trunc_icon, hl)
     line = table.concat({hl.background.name, icon, padding, line})
   end
   if marker.right_count > 0 then
-    local icon = render_trunc_marker(marker.right_count, right_trunc_icon)
+    local icon = render_trunc_marker(marker.right_count, right_trunc_icon, hl)
     line = table.concat({line, hl.background.name, icon})
   end
 
