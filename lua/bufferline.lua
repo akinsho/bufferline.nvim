@@ -1,6 +1,10 @@
 local colors = require "bufferline/colors"
 local highlights = require "bufferline/highlights"
-local utils = require "bufferline/helpers"
+local utils = require "bufferline/utils"
+local sorters = require "bufferline/sorters"
+local constants = require "bufferline/constants"
+local config = require "bufferline/config"
+local tabs = require "bufferline/tabs"
 local Buffer = require "bufferline/buffers".Buffer
 local Buffers = require "bufferline/buffers".Buffers
 local devicons_loaded = require "bufferline/buffers".devicons_loaded
@@ -16,36 +20,10 @@ local api = vim.api
 -- larger than their display width. So we use nvim's strwidth
 local strwidth = vim.fn.strwidth
 
----------------------------------------------------------------------------//
--- Constants
----------------------------------------------------------------------------//
-local padding = " "
+local padding = constants.padding
+local letters = constants.letters
+local superscript_numbers = constants.superscript_numbers
 
-local superscript_numbers = {
-  [0] = "⁰",
-  [1] = "¹",
-  [2] = "²",
-  [3] = "³",
-  [4] = "⁴",
-  [5] = "⁵",
-  [6] = "⁶",
-  [7] = "⁷",
-  [8] = "⁸",
-  [9] = "⁹",
-  [10] = "¹⁰",
-  [11] = "¹¹",
-  [12] = "¹²",
-  [13] = "¹³",
-  [14] = "¹⁴",
-  [15] = "¹⁵",
-  [16] = "¹⁶",
-  [17] = "¹⁷",
-  [18] = "¹⁸",
-  [19] = "¹⁹",
-  [20] = "²⁰"
-}
-
-local letters = "abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ"
 -----------------------------------------------------------
 -- State
 -----------------------------------------------------------
@@ -63,98 +41,6 @@ local M = {
   shade_color = colors.shade_color
 }
 
--- Source: https://teukka.tech/luanvim.html
-local function nvim_create_augroups(definitions)
-  for group_name, definition in pairs(definitions) do
-    vim.cmd("augroup " .. group_name)
-    vim.cmd("autocmd!")
-    for _, def in pairs(definition) do
-      local command = table.concat(vim.tbl_flatten {"autocmd", def}, " ")
-      vim.cmd(command)
-    end
-    vim.cmd("augroup END")
-  end
-end
-
---- @param mode string | nil
---- @param item string
---- @param buf_num number
-local function make_clickable(mode, item, buf_num)
-  if not vim.fn.has("tablineat") then
-    return item
-  end
-  -- v:lua does not support function references in vimscript so
-  -- the only way to implement this is using autoload viml functions
-  if mode == "multiwindow" then
-    return "%" .. buf_num .. "@nvim_bufferline#handle_win_click@" .. item
-  else
-    return "%" .. buf_num .. "@nvim_bufferline#handle_click@" .. item
-  end
-end
-
--- @param buf_id number
-local function close_button(buf_id, options)
-  local buffer_close_icon = options.buffer_close_icon
-  local symbol = buffer_close_icon .. padding
-  local size = strwidth(symbol)
-  return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@" .. symbol, size
-end
-
----------------------------------------------------------------------------//
--- Sorters
----------------------------------------------------------------------------//
-local fnamemodify = vim.fn.fnamemodify
-
--- @param path string
-local function full_path(path)
-  return fnamemodify(path, ":p")
-end
-
--- @param path string
-local function is_relative_path(path)
-  return full_path(path) ~= path
-end
-
---- @param buf_a Buffer
---- @param buf_b Buffer
-local function sort_by_extension(buf_a, buf_b)
-  return fnamemodify(buf_a.filename, ":e") < fnamemodify(buf_b.filename, ":e")
-end
-
---- @param buf_a Buffer
---- @param buf_b Buffer
-local function sort_by_relative_directory(buf_a, buf_b)
-  local ra = is_relative_path(buf_a.path)
-  local rb = is_relative_path(buf_b.path)
-  if ra and not rb then
-    return false
-  end
-  if rb and not ra then
-    return true
-  end
-  return buf_a.path < buf_b.path
-end
-
---- @param buf_a Buffer
---- @param buf_b Buffer
-local function sort_by_directory(buf_a, buf_b)
-  return full_path(buf_a.path) < full_path(buf_b.path)
-end
-
---- sorts a list of buffers in place
---- @param sort_by string|function
---- @param buffers table<Buffer>
-local function sort_buffers(sort_by, buffers)
-  if sort_by == "extension" then
-    table.sort(buffers, sort_by_extension)
-  elseif sort_by == "directory" then
-    table.sort(buffers, sort_by_directory)
-  elseif sort_by == "relative_directory" then
-    table.sort(buffers, sort_by_relative_directory)
-  elseif type(sort_by) == "function" then
-    table.sort(buffers, sort_by)
-  end
-end
 ---------------------------------------------------------------------------//
 -- CORE
 ---------------------------------------------------------------------------//
@@ -321,6 +207,15 @@ local function get_separator_highlight(focused, style)
   end
 end
 
+-- @param buf_id number
+local function close_button(buf_id, options)
+  local buffer_close_icon = options.buffer_close_icon
+  local symbol = buffer_close_icon .. padding
+  local size = strwidth(symbol)
+  return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@" .. symbol, size
+end
+
+
 --[[
  In order to get the accurate character width of a buffer tab
  each buffer's length is manually calculated to avoid accidentally
@@ -356,8 +251,8 @@ local function render_buffer(preferences, buffer)
 
   local modified_icon = preferences.options.modified_icon
   local modified_section = modified_icon .. padding
-  local m_size = strwidth(modified_section)
-  local m_padding = string.rep(padding, m_size)
+  local modified_size = strwidth(modified_section)
+  local modified_padding = string.rep(padding, modified_size)
 
   local icon_size = strwidth(buffer.icon)
   local padding_size = strwidth(padding) * 2
@@ -368,17 +263,28 @@ local function render_buffer(preferences, buffer)
   if options.enforce_regular_tabs then
     -- estimate the maximum allowed size of a filename given that it will be
     -- padded an prefixed with a file icon
-    max_length = options.tab_size - m_size - icon_size - padding_size
+    max_length = options.tab_size - modified_size - icon_size - padding_size
   end
 
   local filename = truncate_filename(buffer.filename, max_length)
   local component = filename .. padding
   length = length + strwidth(component)
-  if buffer.duplicated then
+
+  -- there is no way to enforce a regular tab size as specified by the
+  -- user if we are going to potentially increase the tab length by
+  -- prefixing it with the parent dir(s)
+  if buffer.duplicated and not options.enforce_regular_tabs then
     local dir = buffer:parent_dir()
     component =
-      padding ..
-      current_highlights.duplicate .. dir .. buf_highlight .. component
+      table.concat(
+      {
+        padding,
+        current_highlights.duplicate,
+        dir,
+        buf_highlight,
+        component
+      }
+    )
     length = length + strwidth(padding .. dir)
   else
     component = padding .. component
@@ -387,7 +293,9 @@ local function render_buffer(preferences, buffer)
 
   if state.is_picking and buffer.letter then
     component =
-      current_highlights.pick .. buffer.letter .. buf_highlight .. component
+      table.concat(
+      {current_highlights.pick, buffer.letter, buf_highlight, component}
+    )
     length = length + strwidth(buffer.letter)
   elseif buffer.icon then
     local icon_highlight = highlight_icon(buffer, buffer_colors)
@@ -399,9 +307,10 @@ local function render_buffer(preferences, buffer)
     -- If the buffer is modified add an icon, if it isn't pad
     -- the buffer so it doesn't "jump" when it becomes modified i.e. due
     -- to the sudden addition of a new character
-    local suffix = is_modified and modified_hl .. modified_section or m_padding
-    component = m_padding .. component .. suffix
-    length = length + (m_size * 2)
+    local suffix =
+      is_modified and modified_hl .. modified_section or modified_padding
+    component = modified_padding .. component .. suffix
+    length = length + (modified_size * 2)
   end
   -- pad each tab smaller than the max tab size to make it consistent
   local difference = options.tab_size - length
@@ -419,7 +328,7 @@ local function render_buffer(preferences, buffer)
     length = length + strwidth(number_component)
   end
 
-  component = make_clickable(options.mode, component, buffer.id)
+  component = utils.make_clickable(options.mode, component, buffer.id)
 
   local style = options.separator_style
 
@@ -474,56 +383,9 @@ local function render_buffer(preferences, buffer)
   end, length
 end
 
-local function tab_click_component(num)
-  return "%" .. num .. "T"
-end
-
-local function render_tab(tab, is_active, style)
-  local hl = is_active and highlights.tab_selected or highlights.tab
-  local separator_hl =
-    is_active and highlights.selected_separator or highlights.separator
-  local separator_component = style == "thick" and "▐" or "▕"
-  local separator = separator_hl .. separator_component
-  local name = padding .. padding .. tab.tabnr .. padding
-  local length = strwidth(name) + strwidth(separator_component)
-  return hl .. tab_click_component(tab.tabnr) .. name .. separator, length
-end
-
---- @param style string
-local function get_tabs(style)
-  local all_tabs = {}
-  local tabs = vim.fn.gettabinfo()
-  local current_tab = vim.fn.tabpagenr()
-
-  -- use ordinals to ensure contiguous keys in the table i.e. an array
-  -- rather than an object
-  -- GOOD = {1: thing, 2: thing} BAD: {1: thing, [5]: thing}
-  for i, tab in ipairs(tabs) do
-    local is_active_tab = current_tab == tab.tabnr
-    local component, length = render_tab(tab, is_active_tab, style)
-    all_tabs[i] = {
-      component = component,
-      length = length,
-      id = tab.tabnr,
-      windows = tab.windows
-    }
-  end
-  return all_tabs
-end
-
 local function render_close(icon)
   local component = padding .. icon .. padding
   return component, strwidth(component)
-end
-
--- The provided api nvim_is_buf_loaded filters out all hidden buffers
-local function is_valid(buf_num)
-  if not buf_num or buf_num < 1 then
-    return false
-  end
-  local listed = vim.fn.getbufvar(buf_num, "&buflisted") == 1
-  local exists = api.nvim_buf_is_valid(buf_num)
-  return listed and exists
 end
 
 local function get_sections(buffers)
@@ -549,7 +411,16 @@ local function get_marker_size(count, element_size)
 end
 
 local function render_trunc_marker(count, icon)
-  return table.concat({highlights.fill, padding, count, padding, icon, padding})
+  return table.concat(
+    {
+      highlights.fill,
+      padding,
+      count,
+      padding,
+      icon,
+      padding
+    }
+  )
 end
 
 --[[
@@ -688,24 +559,6 @@ local function render(buffers, tabs, options)
   )
 end
 
---- @param bufs table | nil
-local function get_valid_buffers(bufs)
-  local buf_nums = bufs or api.nvim_list_bufs()
-  local valid_bufs = {}
-
-  -- NOTE: In lua in order to iterate an array, indices should
-  -- not contain gaps otherwise "ipairs" will stop at the first gap
-  -- i.e the indices should be contiguous
-  local count = 0
-  for _, buf in ipairs(buf_nums) do
-    if is_valid(buf) then
-      count = count + 1
-      valid_bufs[count] = buf
-    end
-  end
-  return valid_bufs
-end
-
 --- @param mode string | nil
 local function get_buffers_by_mode(mode)
   --[[
@@ -716,7 +569,7 @@ local function get_buffers_by_mode(mode)
   if mode == "multiwindow" then
     local is_single_tab = vim.fn.tabpagenr("$") == 1
     if is_single_tab then
-      return get_valid_buffers()
+      return utils.get_valid_buffers()
     end
 
     local tab_wins = api.nvim_tabpage_list_wins(0)
@@ -728,17 +581,17 @@ local function get_buffers_by_mode(mode)
       -- note this is to stop temporary unlisted buffers like fzf from
       -- triggering this mode
       local buf_nr = vim.api.nvim_win_get_buf(win_id)
-      if is_valid(buf_nr) then
+      if utils.is_valid(buf_nr) then
         valid_wins = valid_wins + 1
       end
     end
 
     if valid_wins > 1 then
       local unique = utils.filter_duplicates(vim.fn.tabpagebuflist())
-      return get_valid_buffers(unique)
+      return utils.get_valid_buffers(unique)
     end
   end
-  return get_valid_buffers()
+  return utils.get_valid_buffers()
 end
 
 --- @param duplicates table
@@ -767,7 +620,7 @@ local function bufferline(preferences)
   local options = preferences.options
   local buf_nums = get_buffers_by_mode(options.view)
 
-  local tabs = get_tabs(options.separator_style)
+  local all_tabs = tabs.get(options.separator_style)
 
   if not options.always_show_bufferline then
     if table.getn(buf_nums) == 1 then
@@ -796,132 +649,9 @@ local function bufferline(preferences)
     state.buffers[i] = buf
   end
 
-  sort_buffers(preferences.options.sort_by, state.buffers)
+  sorters.sort_buffers(preferences.options.sort_by, state.buffers)
 
-  return render(state.buffers, tabs, options)
-end
-
--- Ideally this plugin should generate a beautiful tabline a little similar
--- to what you would get on other editors. The aim is that the default should
--- be so nice it's what anyone using this plugin sticks with. It should ideally
--- work across any well designed colorscheme deriving colors automagically.
-local function get_defaults()
-  local comment_fg = colors.get_hex("Comment", "fg")
-  local normal_fg = colors.get_hex("Normal", "fg")
-  local normal_bg = colors.get_hex("Normal", "bg")
-  local string_fg = colors.get_hex("String", "fg")
-  local error_fg = colors.get_hex("Error", "fg")
-
-  local tabline_sel_bg = colors.get_hex("TabLineSel", "bg")
-  if not tabline_sel_bg == "none" then
-    tabline_sel_bg = colors.get_hex("WildMenu", "bg")
-  end
-
-  -- If the colorscheme is bright we shouldn't do as much shading
-  -- as this makes light color schemes harder to read
-  local is_bright_background = colors.color_is_bright(normal_bg)
-  local separator_shading = is_bright_background and -20 or -45
-  local background_shading = is_bright_background and -12 or -25
-
-  local duplicate_color = M.shade_color(comment_fg, -5)
-  local separator_background_color = M.shade_color(normal_bg, separator_shading)
-  local background_color = M.shade_color(normal_bg, background_shading)
-
-  return {
-    options = {
-      view = "default",
-      numbers = "none",
-      number_style = "superscript",
-      buffer_close_icon = "",
-      modified_icon = "●",
-      close_icon = "",
-      left_trunc_marker = "",
-      right_trunc_marker = "",
-      separator_style = "thin",
-      tab_size = 18,
-      max_name_length = 18,
-      mappings = false,
-      show_buffer_close_icons = true,
-      enforce_regular_tabs = false,
-      always_show_bufferline = true,
-      sort_by = "default"
-    },
-    highlights = {
-      bufferline_tab = {
-        guifg = comment_fg,
-        guibg = background_color
-      },
-      bufferline_tab_selected = {
-        guifg = tabline_sel_bg,
-        guibg = normal_bg
-      },
-      bufferline_selected_separator = {
-        guifg = separator_background_color,
-        guibg = normal_bg
-      },
-      bufferline_tab_close = {
-        guifg = comment_fg,
-        guibg = background_color
-      },
-      bufferline_fill = {
-        guifg = comment_fg,
-        guibg = separator_background_color
-      },
-      bufferline_background = {
-        guifg = comment_fg,
-        guibg = background_color
-      },
-      bufferline_buffer_inactive = {
-        guifg = comment_fg,
-        guibg = normal_bg
-      },
-      bufferline_modified = {
-        guifg = string_fg,
-        guibg = background_color
-      },
-      bufferline_duplicate = {
-        guifg = duplicate_color,
-        gui = "italic",
-        guibg = normal_bg
-      },
-      bufferline_duplicate_inactive = {
-        guifg = duplicate_color,
-        gui = "italic",
-        guibg = background_color
-      },
-      bufferline_modified_inactive = {
-        guifg = string_fg,
-        guibg = normal_bg
-      },
-      bufferline_modified_selected = {
-        guifg = string_fg,
-        guibg = normal_bg
-      },
-      bufferline_separator = {
-        guifg = separator_background_color,
-        guibg = background_color
-      },
-      bufferline_selected_indicator = {
-        guifg = tabline_sel_bg,
-        guibg = normal_bg
-      },
-      bufferline_selected = {
-        guifg = normal_fg,
-        guibg = normal_bg,
-        gui = "bold,italic"
-      },
-      bufferline_pick = {
-        guifg = error_fg,
-        guibg = normal_bg,
-        gui = "bold,italic"
-      },
-      bufferline_pick_inactive = {
-        guifg = error_fg,
-        guibg = background_color,
-        gui = "bold,italic"
-      }
-    }
-  }
+  return render(state.buffers, all_tabs, options)
 end
 
 function M.go_to_buffer(num)
@@ -977,7 +707,7 @@ end
 
 -- TODO then validate user preferences and only set prefs that exists
 function M.setup(prefs)
-  local preferences = get_defaults()
+  local preferences = config.get_defaults()
   -- Combine user preferences with defaults preferring the user's own settings
   -- NOTE this should happen outside any of these inner functions to prevent the
   -- value being set within a closure
@@ -1066,7 +796,7 @@ function M.setup(prefs)
     )
   end
 
-  nvim_create_augroups({BufferlineColors = autocommands})
+  utils.nvim_create_augroups({BufferlineColors = autocommands})
 
   -----------------------------------------------------------
   -- Commands

@@ -3,7 +3,7 @@ if lua_devicons_loaded then
   webdev_icons.setup()
 end
 
-local utils = require "bufferline/helpers"
+local utils = require "bufferline/utils"
 --------------------------------
 -- Export
 --------------------------------
