@@ -1,4 +1,3 @@
-local highlights = require "bufferline/highlights"
 local constants = require "bufferline/constants"
 
 local M = {}
@@ -10,10 +9,15 @@ local function tab_click_component(num)
   return "%" .. num .. "T"
 end
 
-local function render(tab, is_active, style)
-  local hl = is_active and highlights.tab_selected or highlights.tab
+local function render(tab, is_active, style, highlights)
+  local hl =
+    is_active and highlights.bufferline_tab_selected.name or
+    highlights.bufferline_tab.name
+
   local separator_hl =
-    is_active and highlights.selected_separator or highlights.separator
+    is_active and highlights.bufferline_selected_separator.name or
+    highlights.bufferline_separator.name
+
   local separator_component = style == "thick" and "▐" or "▕"
   local separator = separator_hl .. separator_component
   local name = padding .. padding .. tab.tabnr .. padding
@@ -22,17 +26,20 @@ local function render(tab, is_active, style)
 end
 
 --- @param style string
-function M.get(style)
+--- @param prefs table
+function M.get(style, prefs)
   local all_tabs = {}
   local tabs = vim.fn.gettabinfo()
   local current_tab = vim.fn.tabpagenr()
+  local highlights = prefs.highlights
 
   -- use ordinals to ensure contiguous keys in the table i.e. an array
   -- rather than an object
   -- GOOD = {1: thing, 2: thing} BAD: {1: thing, [5]: thing}
   for i, tab in ipairs(tabs) do
     local is_active_tab = current_tab == tab.tabnr
-    local component, length = render(tab, is_active_tab, style)
+    local component, length = render(tab, is_active_tab, style, highlights)
+
     all_tabs[i] = {
       component = component,
       length = length,

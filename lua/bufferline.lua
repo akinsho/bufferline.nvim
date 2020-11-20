@@ -88,35 +88,29 @@ function M.handle_click(id, button)
   end
 end
 
-local function get_buffer_highlight(buffer, user_highlights)
+local function get_buffer_highlight(buffer, highlights)
   local h = highlights
-  local c = user_highlights
   local current_highlights = {
-    background = nil,
-    modified = nil,
-    buffer = nil,
-    pick = nil,
-    duplicate = nil
+    background = buffer:current() and h.bufferline_selected.name or
+      buffer:visible() and h.bufferline_buffer_inactive.name or
+      h.bufferline_background.name,
+
+    modified = buffer:current() and h.bufferline_modified_selected.name or
+      buffer:visible() and h.bufferline_modified_inactive.name or
+      h.bufferline_modified.name,
+
+    buffer = buffer:current() and h.bufferline_selected.name or
+      buffer:visible() and h.bufferline_buffer_inactive.name or
+      h.bufferline_background.name,
+
+    pick = buffer:current() and h.bufferline_pick.name or
+      buffer:visible() and h.bufferline_pick.name or
+      h.bufferline_pick_inactive.name,
+
+    duplicate = buffer:current() and h.bufferline_duplicate.name or
+      buffer:visible() and h.bufferline_duplicate.name or
+      h.bufferline_duplicate_inactive.name
   }
-  if buffer:current() then
-    current_highlights.background = h.selected
-    current_highlights.modified = h.modified_selected
-    current_highlights.buffer = c.bufferline_selected
-    current_highlights.pick = h.pick
-    current_highlights.duplicate = h.duplicate
-  elseif buffer:visible() then
-    current_highlights.background = h.inactive
-    current_highlights.modified = h.modified_inactive
-    current_highlights.buffer = c.bufferline_buffer_inactive
-    current_highlights.pick = h.pick
-    current_highlights.duplicate = h.duplicate
-  else
-    current_highlights.background = h.background
-    current_highlights.modified = h.modified
-    current_highlights.buffer = c.bufferline_background
-    current_highlights.pick = h.pick_inactive
-    current_highlights.duplicate = h.duplicate_inactive
-  end
   return current_highlights
 end
 
@@ -163,12 +157,12 @@ local function highlight_icon(buffer, background)
     if buffer:current() or buffer:visible() then
       hl_override = hl_override .. "Selected"
     end
-    colors.set_highlight(hl_override, {guibg = background.guibg, guifg = fg})
+    highlights.set_one(hl_override, {guibg = background.guibg, guifg = fg})
   end
   return "%#" .. hl_override .. "#" .. icon .. "%*"
 end
 
-local function get_indicator(style)
+local function get_indicator(style, highlights)
   local indicator = " "
   local indicator_symbol = indicator
   if style ~= style_names.slant then
@@ -199,11 +193,12 @@ end
 
 --- @param focused boolean
 --- @param style table | string
-local function get_separator_highlight(focused, style)
+--- @param highlights table
+local function get_separator_highlight(focused, style, highlights)
   if focused and style == style_names.slant then
-    return highlights.selected_separator
+    return highlights.bufferline_selected_separator.name
   else
-    return highlights.separator
+    return highlights.bufferline_separator.name
   end
 end
 
@@ -214,7 +209,6 @@ local function close_button(buf_id, options)
   local size = strwidth(symbol)
   return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@" .. symbol, size
 end
-
 
 --[[
  In order to get the accurate character width of a buffer tab
@@ -352,7 +346,7 @@ local function render_buffer(preferences, buffer)
 
   local focused = is_visible or is_current
   local right_sep, left_sep = get_separator(focused, style)
-  local sep_hl = get_separator_highlight(focused, style)
+  local sep_hl = get_separator_highlight(focused, style, preferences.highlights)
   local right_separator = sep_hl .. right_sep
   local left_separator = left_sep and (sep_hl .. left_sep) or nil
 
@@ -413,7 +407,6 @@ end
 local function render_trunc_marker(count, icon)
   return table.concat(
     {
-      highlights.fill,
       padding,
       count,
       padding,
@@ -495,7 +488,9 @@ local function get_letter(buf)
   end
 end
 
-local function render(buffers, tabs, options)
+local function render(buffers, tabs, prefs)
+  local options = prefs.options
+  local hl = prefs.highlights
   local right_align = "%="
   local tab_components = ""
   local close_component, close_length = render_close(options.close_icon)
@@ -540,20 +535,20 @@ local function render(buffers, tabs, options)
 
   if marker.left_count > 0 then
     local icon = render_trunc_marker(marker.left_count, left_trunc_icon)
-    line = table.concat({highlights.background, icon, padding, line})
+    line = table.concat({hl.bufferline_background.name, icon, padding, line})
   end
   if marker.right_count > 0 then
     local icon = render_trunc_marker(marker.right_count, right_trunc_icon)
-    line = table.concat({line, highlights.background, icon})
+    line = table.concat({line, hl.bufferline_background.name, icon})
   end
 
   return table.concat(
     {
       line,
-      highlights.fill,
+      hl.bufferline_fill.name,
       right_align,
       tab_components,
-      highlights.close,
+      hl.bufferline_tab_close.name,
       close_component
     }
   )
@@ -620,7 +615,7 @@ local function bufferline(preferences)
   local options = preferences.options
   local buf_nums = get_buffers_by_mode(options.view)
 
-  local all_tabs = tabs.get(options.separator_style)
+  local all_tabs = tabs.get(options.separator_style, preferences)
 
   if not options.always_show_bufferline then
     if table.getn(buf_nums) == 1 then
@@ -651,7 +646,7 @@ local function bufferline(preferences)
 
   sorters.sort_buffers(preferences.options.sort_by, state.buffers)
 
-  return render(state.buffers, all_tabs, options)
+  return render(state.buffers, all_tabs, preferences)
 end
 
 function M.go_to_buffer(num)
@@ -716,57 +711,7 @@ function M.setup(prefs)
   end
 
   function _G.__setup_bufferline_colors()
-    local user_colors = preferences.highlights
-    colors.set_highlight("BufferLineFill", user_colors.bufferline_fill)
-    colors.set_highlight(
-      "BufferLineInactive",
-      user_colors.bufferline_buffer_inactive
-    )
-    colors.set_highlight(
-      "BufferLineBackground",
-      user_colors.bufferline_background
-    )
-    colors.set_highlight("BufferLineSelected", user_colors.bufferline_selected)
-    colors.set_highlight(
-      "BufferLineSelectedIndicator",
-      user_colors.bufferline_selected_indicator
-    )
-    colors.set_highlight(
-      "BufferLineDuplicate",
-      user_colors.bufferline_duplicate
-    )
-    colors.set_highlight(
-      "BufferLineDuplicateInactive",
-      user_colors.bufferline_duplicate_inactive
-    )
-    colors.set_highlight("BufferLineModified", user_colors.bufferline_modified)
-    colors.set_highlight(
-      "BufferLineModifiedSelected",
-      user_colors.bufferline_modified_selected
-    )
-    colors.set_highlight(
-      "BufferLineModifiedInactive",
-      user_colors.bufferline_modified_inactive
-    )
-    colors.set_highlight("BufferLineTab", user_colors.bufferline_tab)
-    colors.set_highlight(
-      "BufferLineSeparator",
-      user_colors.bufferline_separator
-    )
-    colors.set_highlight(
-      "BufferLineSelectedSeparator",
-      user_colors.bufferline_selected_separator
-    )
-    colors.set_highlight(
-      "BufferLineTabSelected",
-      user_colors.bufferline_tab_selected
-    )
-    colors.set_highlight("BufferLineTabClose", user_colors.bufferline_tab_close)
-    colors.set_highlight("BufferLinePick", user_colors.bufferline_pick)
-    colors.set_highlight(
-      "BufferLinePickInactive",
-      user_colors.bufferline_pick_inactive
-    )
+    highlights.set_all(preferences.highlights)
   end
 
   local autocommands = {

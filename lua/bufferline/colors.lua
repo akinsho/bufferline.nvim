@@ -65,32 +65,4 @@ function M.get_hex(hl_name, part, fallback)
   if not color or color == "" then return fallback else return color end
 end
 
-local function table_size(t)
-  local count = 0
-  for _ in pairs(t) do count = count + 1 end
-  return count
-end
-
-function M.set_highlight(name, hl)
-  if hl and table_size(hl) > 0 then
-    local cmd = "highlight! "..name
-    if hl.gui and hl.gui ~= "" then
-      cmd = cmd.." ".."gui="..hl.gui
-    end
-    if hl.guifg and hl.guifg ~= "" then
-      cmd = cmd.." ".."guifg="..hl.guifg
-    end
-    if hl.guibg and hl.guibg ~= "" then
-      cmd = cmd.." ".."guibg="..hl.guibg
-    end
-    -- TODO using api here as it warns of an error if setting highlight fails
-    local success, err = pcall(api.nvim_command, cmd)
-    if not success then
-      api.nvim_err_writeln(
-        "Failed setting "..name.." highlight, something isn't configured correctly".."\n"..err
-      )
-    end
-  end
-end
-
 return M
