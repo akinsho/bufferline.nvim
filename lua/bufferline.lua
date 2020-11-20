@@ -1,6 +1,7 @@
 local colors = require "bufferline/colors"
 local highlights = require "bufferline/highlights"
 local utils = require "bufferline/utils"
+local letters = require "bufferline/letters"
 local sorters = require "bufferline/sorters"
 local constants = require "bufferline/constants"
 local config = require "bufferline/config"
@@ -21,7 +22,6 @@ local api = vim.api
 local strwidth = vim.fn.strwidth
 
 local padding = constants.padding
-local letters = constants.letters
 local superscript_numbers = constants.superscript_numbers
 
 -----------------------------------------------------------
@@ -495,23 +495,6 @@ local function truncate(before, current, after, available_width, marker)
   end
 end
 
-local function get_letter(buf)
-  local first_letter = buf.filename:sub(1, 1)
-  -- should only match alphanumeric characters
-  local invalid_char = first_letter:match("[^%w]")
-
-  if not state.current_letters[first_letter] and not invalid_char then
-    state.current_letters[first_letter] = buf.id
-    return first_letter
-  end
-  for letter in letters:gmatch(".") do
-    if not state.current_letters[letter] then
-      state.current_letters[letter] = buf.id
-      return letter
-    end
-  end
-end
-
 local function render(buffers, tabs, prefs)
   local options = prefs.options
   local hl = prefs.highlights
@@ -649,7 +632,7 @@ local function bufferline(preferences)
   end
 
   state.buffers = {}
-  state.current_letters = {}
+  letters.reset()
   local duplicates = {}
 
   for i, buf_id in ipairs(buf_nums) do
@@ -662,7 +645,7 @@ local function bufferline(preferences)
     }
 
     mark_duplicates(duplicates, buf, state.buffers, preferences)
-    buf.letter = get_letter(buf)
+    buf.letter = letters.get(buf)
 
     buf.component, buf.length = render_buffer(preferences, buf)
     state.buffers[i] = buf

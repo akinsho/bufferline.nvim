@@ -28,6 +28,4 @@ M.superscript_numbers = {
   [20] = "²⁰"
 }
 
-M.letters = "abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ"
-
 return M
