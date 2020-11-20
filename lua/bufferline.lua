@@ -163,7 +163,6 @@ local function highlight_icon(buffer, background)
     return icon
   end
   local new_hl = "Bufferline" .. hl
-
   if background then
     if buffer:current() or buffer:visible() then
       new_hl = new_hl .. "Selected"
@@ -174,19 +173,6 @@ local function highlight_icon(buffer, background)
     )
   end
   return "%#" .. new_hl .. "#" .. icon .. "%*"
-end
-
-local function get_indicator(style, highlights)
-  local indicator = " "
-  local indicator_symbol = indicator
-  if style ~= style_names.slant then
-    -- U+2590 ▐ Right half block, this character is right aligned so the
-    -- background highlight doesn't appear in th middle
-    -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
-    indicator_symbol = "▎"
-    indicator = highlights.indicator .. indicator_symbol .. "%*"
-  end
-  return indicator, strwidth(indicator_symbol)
 end
 
 --- "▍" "░"
@@ -229,8 +215,16 @@ local function indicator_component(context)
   local style = context.preferences.options.separator_style
 
   if buffer:current() then
-    local indicator, indicator_size = get_indicator(style)
-    length = length + strwidth(indicator_size)
+    local indicator = " "
+    local symbol = indicator
+    if style ~= style_names.slant then
+      -- U+2590 ▐ Right half block, this character is right aligned so the
+      -- background highlight doesn't appear in th middle
+      -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
+      symbol = "▎"
+      indicator = hl.indicator .. symbol .. "%*"
+    end
+    length = length + strwidth(symbol)
     component = indicator .. hl.background .. component
   else
     -- since all non-current buffers do not have an indicator they need
@@ -309,13 +303,14 @@ end
 
 --- TODO We increment the buffer length by the separator although the final
 --- buffer will not have a separator so we are technically off by 1
---- @param length number
---- @param visible boolean
---- @param current boolean
---- @param style table
---- @param hl table
-local function get_separators(length, visible, current, style, hl)
-  local focused = visible or current
+--- @param context table
+local function separator_components(context)
+  local buffer = context.buffer
+  local length = context.length
+  local hl = context.preferences.highlights
+  local style = context.preferences.options.separator_style
+  local focused = buffer:current() or buffer:visible()
+
   local right_sep, left_sep = get_separator(focused, style)
   local sep_hl
   if focused and style == style_names.slant then
@@ -384,42 +379,30 @@ end
 --- @param buffer Buffer
 --- @return function,number
 local function render_buffer(preferences, buffer)
-  local options = preferences.options
   local hl = get_buffer_highlight(buffer, preferences.highlights)
-
-  local is_current = buffer:current()
-  local is_visible = buffer:visible()
-
   local context = {
-    component = "",
     length = 0,
+    component = "",
     preferences = preferences,
     current_highlights = hl,
     buffer = buffer
   }
 
+  -- Order matter here as this is the sequence which builds up the tab component
   local max_length = enforce_regular_tabs(context)
   local filename = truncate_filename(buffer.filename, max_length)
   context.component = filename .. padding
   context.length = context.length + strwidth(context.component)
   context.component, context.length = deduplicate(context)
   context.component, context.length = add_prefix(context)
-
   context.component, context.length = pad_buffer(context)
   context.component, context.length = numbers.get(context)
   context.component = utils.make_clickable(context)
   context.component, context.length = indicator_component(context)
   context.component, context.length = add_suffix(context)
 
-  local left_separator, right_separator
-  context.length, left_separator, right_separator =
-    get_separators(
-    context.length,
-    is_visible,
-    is_current,
-    options.separator_style,
-    preferences.highlights
-  )
+  local length, left_separator, right_separator = separator_components(context)
+  context.length = length
 
   -- NOTE: the component is wrapped in an item -> %(content) so
   -- vim counts each item as one rather than all of its individual
