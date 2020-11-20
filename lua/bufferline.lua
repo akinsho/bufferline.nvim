@@ -111,12 +111,14 @@ local function get_buffer_highlight(buffer, highlights)
       h.modified_inactive.name,
       h.modified.name
     ),
+  -- for this component we need to return the full
+  -- details of the colors
     buffer = get_hl(
       current,
       visible,
-      h.selected.name,
-      h.buffer_inactive.name,
-      h.background.name
+      h.selected,
+      h.buffer_inactive,
+      h.background
     ),
     pick = get_hl(
       current,
