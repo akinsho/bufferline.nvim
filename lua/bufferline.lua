@@ -1,20 +1,17 @@
 local colors = require "bufferline/colors"
 local highlights = require "bufferline/highlights"
 local utils = require "bufferline/utils"
+local numbers = require "bufferline/numbers"
 local letters = require "bufferline/letters"
 local sorters = require "bufferline/sorters"
 local constants = require "bufferline/constants"
 local config = require "bufferline/config"
 local tabs = require "bufferline/tabs"
-local Buffer = require "bufferline/buffers".Buffer
-local Buffers = require "bufferline/buffers".Buffers
+local buffers = require "bufferline/buffers"
 local devicons_loaded = require "bufferline/buffers".devicons_loaded
 
-local style_names = {
-  slant = "slant",
-  thick = "thick",
-  thin = "thin"
-}
+local Buffer = buffers.Buffer
+local Buffers = buffers.Buffers
 
 local api = vim.api
 -- string.len counts number of bytes and so the unicode icons are counted
@@ -22,7 +19,7 @@ local api = vim.api
 local strwidth = vim.fn.strwidth
 
 local padding = constants.padding
-local superscript_numbers = constants.superscript_numbers
+local style_names = constants.style_names
 
 -----------------------------------------------------------
 -- State
@@ -137,12 +134,6 @@ local function get_buffer_highlight(buffer, highlights)
   }
 end
 
-local function get_number_prefix(buffer, mode, style)
-  local n = mode == "ordinal" and buffer.ordinal or buffer.id
-  local num = style == "superscript" and superscript_numbers[n] or n .. "."
-  return num
-end
-
 local function truncate_filename(filename, word_limit)
   local trunc_symbol = "…"
   local too_long = string.len(filename) > word_limit
@@ -168,21 +159,21 @@ local function highlight_icon(buffer, background)
 
   if not icon or icon == "" then
     return ""
-  end
-  if not hl or hl == "" then
+  elseif not hl or hl == "" then
     return icon
   end
-
-  local hl_override = "Bufferline" .. hl
+  local new_hl = "Bufferline" .. hl
 
   if background then
-    local fg = colors.get_hex(hl, "fg")
     if buffer:current() or buffer:visible() then
-      hl_override = hl_override .. "Selected"
+      new_hl = new_hl .. "Selected"
     end
-    highlights.set_one(hl_override, {guibg = background.guibg, guifg = fg})
+    highlights.set_one(
+      new_hl,
+      {guibg = background.guibg, guifg = colors.get_hex(hl, "fg")}
+    )
   end
-  return "%#" .. hl_override .. "#" .. icon .. "%*"
+  return "%#" .. new_hl .. "#" .. icon .. "%*"
 end
 
 local function get_indicator(style, highlights)
@@ -214,18 +205,7 @@ local function get_separator(focused, style)
   end
 end
 
---- @param focused boolean
---- @param style table | string
---- @param highlights table
-local function get_separator_highlight(focused, style, highlights)
-  if focused and style == style_names.slant then
-    return highlights.selected_separator.hlgroup
-  else
-    return highlights.separator.hlgroup
-  end
-end
-
--- @param buf_id number
+--- @param buf_id number
 local function close_button(buf_id, options)
   local buffer_close_icon = options.buffer_close_icon
   local symbol = buffer_close_icon .. padding
@@ -233,60 +213,41 @@ local function close_button(buf_id, options)
   return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@" .. symbol, size
 end
 
---[[
- In order to get the accurate character width of a buffer tab
- each buffer's length is manually calculated to avoid accidentally
- incorporating highlight strings into the buffer tab count
- e.g. %#HighlightName%filename.js should be 11 but strwidth will
- include the highlight in the count
- TODO
- Workout a function either using vim's regex or lua's to remove
- a highlight string. For example:
- -----------------------------------
-  [WIP]
- -----------------------------------
- function get_actual_length(component)
-  local formatted = string.gsub(component, '%%#.*#', '')
-  return strwidth(formatted)
- end
---]]
---- @param preferences table
---- @param buffer Buffer
---- @return function,number
-local function render_buffer(preferences, buffer)
-  local options = preferences.options
-  local current_highlights =
-    get_buffer_highlight(buffer, preferences.highlights)
-  local buf_highlight = current_highlights.background
-  local modified_hl = current_highlights.modified
-  local buffer_colors = current_highlights.buffer
-
-  local length = 0
-  local is_current = buffer:current()
-  local is_visible = buffer:visible()
-  local is_modified = buffer.modifiable and buffer.modified
-
-  local modified_icon = preferences.options.modified_icon
+--- @param context table
+local function modified_component(context)
+  local modified_icon = context.preferences.options.modified_icon
   local modified_section = modified_icon .. padding
-  local modified_size = strwidth(modified_section)
-  local modified_padding = string.rep(padding, modified_size)
+  return modified_section, strwidth(modified_section)
+end
 
-  local icon_size = strwidth(buffer.icon)
-  local padding_size = strwidth(padding) * 2
-  local max_length = options.max_name_length
-  -- if we are enforcing regular tab size then all tabs will try and fit
-  -- into the maximum tab size. If not we enforce a minimum tab size
-  -- and allow tabs to be larger then the max otherwise
-  if options.enforce_regular_tabs then
-    -- estimate the maximum allowed size of a filename given that it will be
-    -- padded an prefixed with a file icon
-    max_length = options.tab_size - modified_size - icon_size - padding_size
+--- @param context table
+local function indicator_component(context)
+  local buffer = context.buffer
+  local length = context.length
+  local component = context.component
+  local hl = context.current_highlights
+  local style = context.preferences.options.separator_style
+
+  if buffer:current() then
+    local indicator, indicator_size = get_indicator(style)
+    length = length + strwidth(indicator_size)
+    component = indicator .. hl.background .. component
+  else
+    -- since all non-current buffers do not have an indicator they need
+    -- to be padded to make up the difference in size
+    length = length + strwidth(padding)
+    component = hl.background .. padding .. component
   end
+  return component, length
+end
 
-  local filename = truncate_filename(buffer.filename, max_length)
-  local component = filename .. padding
-  length = length + strwidth(component)
-
+--- @param context table
+local function deduplicate(context)
+  local buffer = context.buffer
+  local component = context.component
+  local options = context.preferences.options
+  local hl = context.current_highlights
+  local length = context.length
   -- there is no way to enforce a regular tab size as specified by the
   -- user if we are going to potentially increase the tab length by
   -- prefixing it with the parent dir(s)
@@ -296,9 +257,9 @@ local function render_buffer(preferences, buffer)
       table.concat(
       {
         padding,
-        current_highlights.duplicate,
+        hl.duplicate,
         dir,
-        buf_highlight,
+        hl.background,
         component
       }
     )
@@ -307,27 +268,107 @@ local function render_buffer(preferences, buffer)
     component = padding .. component
     length = length + strwidth(padding)
   end
+  return component, length
+end
+
+--- @param context table
+local function add_prefix(context)
+  local component = context.component
+  local buffer = context.buffer
+  local hl = context.current_highlights
+  local length = context.length
 
   if state.is_picking and buffer.letter then
-    component =
-      table.concat(
-      {current_highlights.pick, buffer.letter, buf_highlight, component}
-    )
+    component = table.concat({hl.pick, buffer.letter, hl.background, component})
     length = length + strwidth(buffer.letter)
   elseif buffer.icon then
-    local icon_highlight = highlight_icon(buffer, buffer_colors)
-    component = icon_highlight .. buf_highlight .. component
+    local icon_highlight = highlight_icon(buffer, hl.buffer)
+    component = icon_highlight .. hl.background .. component
     length = length + strwidth(buffer.icon)
   end
+  return component, length
+end
+
+--- @param context table
+local function add_suffix(context)
+  local component = context.component
+  local buffer = context.buffer
+  local hl = context.current_highlights
+  local length = context.length
+  local options = context.preferences.options
+  local modified, modified_size = modified_component(context)
+
+  if options.show_buffer_close_icons then
+    local close_btn, size = close_button(buffer.id, options)
+    local suffix = buffer.modified and hl.modified .. modified or close_btn
+    component = component .. hl.background .. suffix
+    length = length + (buffer.modified and modified_size or size)
+  end
+  return component, length
+end
+
+--- TODO We increment the buffer length by the separator although the final
+--- buffer will not have a separator so we are technically off by 1
+--- @param length number
+--- @param visible boolean
+--- @param current boolean
+--- @param style table
+--- @param hl table
+local function get_separators(length, visible, current, style, hl)
+  local focused = visible or current
+  local right_sep, left_sep = get_separator(focused, style)
+  local sep_hl
+  if focused and style == style_names.slant then
+    sep_hl = hl.selected_separator.hlgroup
+  else
+    sep_hl = hl.separator.hlgroup
+  end
+  local right_separator = sep_hl .. right_sep
+  local left_separator = left_sep and (sep_hl .. left_sep) or nil
+  length = length + strwidth(right_sep)
+  if left_sep then
+    length = length + strwidth(left_sep)
+  end
+  return length, left_separator, right_separator
+end
+
+local function enforce_regular_tabs(context)
+  local _, modified_size = modified_component(context)
+  local options = context.preferences.options
+  local buffer = context.buffer
+  local icon_size = strwidth(buffer.icon)
+  local padding_size = strwidth(padding) * 2
+  local max_length = options.max_name_length
+
+  -- if we are enforcing regular tab size then all tabs will try and fit
+  -- into the maximum tab size. If not we enforce a minimum tab size
+  -- and allow tabs to be larger then the max otherwise
+  if options.enforce_regular_tabs then
+    -- estimate the maximum allowed size of a filename given that it will be
+    -- padded an prefixed with a file icon
+    max_length = options.tab_size - modified_size - icon_size - padding_size
+  end
+  return max_length
+end
+
+--- @param context table
+local function pad_buffer(context)
+  local component = context.component
+  local options = context.preferences.options
+  local length = context.length
+  local buffer = context.buffer
+  local hl = context.current_highlights
+  local modified, size = modified_component(context)
+  local modified_padding = string.rep(padding, size)
 
   if not options.show_buffer_close_icons then
     -- If the buffer is modified add an icon, if it isn't pad
     -- the buffer so it doesn't "jump" when it becomes modified i.e. due
     -- to the sudden addition of a new character
     local suffix =
-      is_modified and modified_hl .. modified_section or modified_padding
-    component = modified_padding .. component .. suffix
-    length = length + (modified_size * 2)
+      buffer.modified and hl.modified .. modified or modified_padding
+    component = modified_padding .. context.component .. suffix
+    length = context.length + (size * 2)
   end
   -- pad each tab smaller than the max tab size to make it consistent
   local difference = options.tab_size - length
@@ -336,68 +377,70 @@ local function render_buffer(preferences, buffer)
     component = pad .. component .. pad
     length = length + strwidth(pad) * 2
   end
+  return component, length
+end
 
-  if options.numbers ~= "none" then
-    local number_prefix =
-      get_number_prefix(buffer, options.numbers, options.number_style)
-    local number_component = number_prefix .. padding
-    component = number_component .. component
-    length = length + strwidth(number_component)
-  end
+--- @param preferences table
+--- @param buffer Buffer
+--- @return function,number
+local function render_buffer(preferences, buffer)
+  local options = preferences.options
+  local hl = get_buffer_highlight(buffer, preferences.highlights)
 
-  component = utils.make_clickable(options.mode, component, buffer.id)
+  local is_current = buffer:current()
+  local is_visible = buffer:visible()
 
-  local style = options.separator_style
+  local context = {
+    component = "",
+    length = 0,
+    preferences = preferences,
+    current_highlights = hl,
+    buffer = buffer
+  }
 
-  if is_current then
-    local indicator, indicator_size = get_indicator(style)
-    length = length + strwidth(indicator_size)
-    component = indicator .. buf_highlight .. component
-  else
-    -- since all non-current buffers do not have an indicator they need
-    -- to be padded to make up the difference in size
-    length = length + strwidth(padding)
-    component = buf_highlight .. padding .. component
-  end
+  local max_length = enforce_regular_tabs(context)
+  local filename = truncate_filename(buffer.filename, max_length)
+  context.component = filename .. padding
+  context.length = context.length + strwidth(context.component)
+  context.component, context.length = deduplicate(context)
+  context.component, context.length = add_prefix(context)
 
-  if options.show_buffer_close_icons then
-    local close_btn, size = close_button(buffer.id, options)
-    local suffix = is_modified and modified_hl .. modified_section or close_btn
-    component = component .. buf_highlight .. suffix
-    length = length + size
-  end
+  context.component, context.length = pad_buffer(context)
+  context.component, context.length = numbers.get(context)
+  context.component = utils.make_clickable(context)
+  context.component, context.length = indicator_component(context)
+  context.component, context.length = add_suffix(context)
 
-  local focused = is_visible or is_current
-  local right_sep, left_sep = get_separator(focused, style)
-  local sep_hl = get_separator_highlight(focused, style, preferences.highlights)
-  local right_separator = sep_hl .. right_sep
-  local left_separator = left_sep and (sep_hl .. left_sep) or nil
+  local left_separator, right_separator
+  context.length, left_separator, right_separator =
+    get_separators(
+    context.length,
+    is_visible,
+    is_current,
+    options.separator_style,
+    preferences.highlights
+  )
 
   -- NOTE: the component is wrapped in an item -> %(content) so
   -- vim counts each item as one rather than all of its individual
   -- sub-components.
-  local buffer_component = "%(" .. component .. "%)"
-
-  -- We increment the buffer length by the separator although the final
-  -- buffer will not have a separator so we are technically off by 1
-  length = length + strwidth(right_sep)
-  if left_sep then
-    length = length + strwidth(left_sep)
-  end
+  local buffer_component = "%(" .. context.component .. "%)"
 
   --- We return a function from render buffer as we do not yet have access to
   --- information regarding which buffers will actually be rendered
   --- @param index number
   --- @param num_of_bufs number
   --- @returns string
-  return function(index, num_of_bufs)
+  local fn = function(index, num_of_bufs)
     if left_separator then
       buffer_component = left_separator .. buffer_component .. right_separator
     elseif index < num_of_bufs then
       buffer_component = buffer_component .. right_separator
     end
     return buffer_component
-  end, length
+  end
+
+  return fn, context.length
 end
 
 local function render_close(icon)
@@ -467,10 +510,10 @@ local function truncate(before, current, after, available_width, marker)
     -- available space that means the window is really narrow
     -- so don't show anything
     -- Merge all the buffers and render the components
-    local buffers =
+    local bufs =
       utils.array_concat(before.buffers, current.buffers, after.buffers)
-    for index, buf in ipairs(buffers) do
-      line = line .. buf.component(index, table.getn(buffers))
+    for index, buf in ipairs(bufs) do
+      line = line .. buf.component(index, table.getn(bufs))
     end
     return line, marker
   elseif available_width < current.length then
