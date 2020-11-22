@@ -211,7 +211,8 @@ local function indicator_component(context)
   local buffer = context.buffer
   local length = context.length
   local component = context.component
-  local hl = context.current_highlights
+  local hl = context.preferences.highlights
+  local curr_hl = context.current_highlights
   local style = context.preferences.options.separator_style
 
   if buffer:current() then
@@ -222,15 +223,15 @@ local function indicator_component(context)
       -- background highlight doesn't appear in th middle
       -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
       symbol = "▎"
-      indicator = hl.indicator .. symbol .. "%*"
+      indicator = hl.selected_indicator.hlgroup .. symbol .. "%*"
     end
     length = length + strwidth(symbol)
-    component = indicator .. hl.background .. component
+    component = indicator .. hl.background.hlgroup .. component
   else
     -- since all non-current buffers do not have an indicator they need
     -- to be padded to make up the difference in size
     length = length + strwidth(padding)
-    component = hl.background .. padding .. component
+    component = curr_hl.background .. padding .. component
   end
   return component, length
 end

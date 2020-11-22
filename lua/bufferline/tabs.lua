@@ -11,12 +11,11 @@ end
 
 local function render(tab, is_active, style, highlights)
   local hl =
-    is_active and highlights.bufferline_tab_selected.hlgroup or
-    highlights.bufferline_tab.hlgroup
+    is_active and highlights.tab_selected.hlgroup or highlights.tab.hlgroup
 
   local separator_hl =
-    is_active and highlights.bufferline_selected_separator.hlgroup or
-    highlights.bufferline_separator.hlgroup
+    is_active and highlights.selected_separator.hlgroup or
+    highlights.separator.hlgroup
 
   local separator_component = style == "thick" and "▐" or "▕"
   local separator = separator_hl .. separator_component
