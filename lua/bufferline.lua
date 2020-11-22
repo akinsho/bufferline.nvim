@@ -226,7 +226,7 @@ local function indicator_component(context)
       indicator = hl.selected_indicator.hlgroup .. symbol .. "%*"
     end
     length = length + strwidth(symbol)
-    component = indicator .. hl.background.hlgroup .. component
+    component = indicator .. curr_hl.background .. component
   else
     -- since all non-current buffers do not have an indicator they need
     -- to be padded to make up the difference in size
