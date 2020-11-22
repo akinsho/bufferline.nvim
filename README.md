@@ -12,22 +12,29 @@ all of it's functionality though.
 
 - Colours derived from colorscheme where possible, should appear similar in most cases
 
-- Alternate option for tab styling
-  ![slanted tabs](./screenshots/diagonal.png "slanted tabs")
-
-- Option to show buffer numbers
-
-  ![Bufferline with numbers ](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
-
-- Buffer pick functionality
-
-  ![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
-
 - Sort buffers by `extension`, `directory` or pass in a custom compare function
 
-- Close icons for closing individual buffers
+#### Alternate option for tab styling
 
-- Modified symbol
+![slanted tabs](./screenshots/diagonal.png "slanted tabs")
+
+#### Option to show buffer numbers
+
+![Bufferline with numbers ](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
+
+#### Buffer pick functionality
+
+![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
+
+#### Make buffer names unique if there are duplicates
+
+![Deduplicated buffers](./screenshots/duplicate_names.png "deduplicated buffer names")
+
+#### Close icons for closing individual buffers
+
+![close buffer with mouse click](./screenshots/close_button.gif)
+
+#### Modified symbol
 
 <img src="./screenshots/bufferline_with_modified.png" alt="modified icon" width="350px" />
 
@@ -92,10 +99,7 @@ plugin won't create a nice tabline.
 ## Goals
 
 - [x] Make it snazzy
-- [x] Maintain general appearance across various colour schemes. Tested with:
-  - `one.vim`
-  - `night-owl.vim`
-  - `vim-monokai-tasty`
+- [x] Maintain general appearance across various colour schemes
 
 ### Future Goals
 
@@ -114,16 +118,6 @@ plugin won't create a nice tabline.
 ## Todo
 
 - [ ] Write nvim help docs
-- [x] Highlight file type icons [for example](https://github.com/weirongxu/coc-explorer/blob/59bd41f8fffdc871fbd77ac443548426bd31d2c3/src/icons.nerdfont.json#L2)
-- [x] Expose user configuration
-- [x] Fix truncation happening too early i.e. available width reported incorrectly
-- [x] Fix modified highlight colouring
-- [x] Show tabs
-- [x] Handle keeping active buffer always in view
-- [x] Show remainder marker as <- or -> depending on where truncation occurred
-- [x] Fix current buffer highlight disappearing when inside ignored buffer
-- [x] Dynamically set styling to appear consistent across colour schemes
-- [x] Buffer label truncation
 
 ## Configuration
 
@@ -228,30 +222,30 @@ but if you must...
 ```vim
 lua require'bufferline'.setup{
   highlights = {
-    bufferline_tab = {
+    tab = {
       guifg = comment_fg,
       guibg = normal_bg,
     };
-    bufferline_tab_selected = {
+    tab_selected = {
       guifg = comment_fg,
       guibg = tabline_sel_bg,
     };
-    bufferline_buffer = {
+    buffer = {
       guifg = comment_fg,
       guibg = custom_bg,
     };
-    bufferline_buffer_inactive = {
+    buffer_inactive = {
       guifg = comment_fg,
       guibg = normal_bg,
     };
-    bufferline_modified = {
+    modified = {
       guifg = diff_add_fg,
       guibg = "none"
     };
-    bufferline_separator = {
+    separator = {
       guibg = custom_bg,
     };
-    bufferline_selected = {
+    selected = {
       guifg = normal_fg,
       guibg = normal_bg,
       gui = "bold,italic",

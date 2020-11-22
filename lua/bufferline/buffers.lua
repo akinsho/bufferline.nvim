@@ -1,5 +1,9 @@
-local lua_devicons_loaded, webdev_icons = pcall(require, 'nvim-web-devicons')
-if lua_devicons_loaded then webdev_icons.setup() end
+local lua_devicons_loaded, webdev_icons = pcall(require, "nvim-web-devicons")
+if lua_devicons_loaded then
+  webdev_icons.setup()
+end
+
+local utils = require "bufferline/utils"
 --------------------------------
 -- Export
 --------------------------------
@@ -14,22 +18,22 @@ local terminal_buftype = "terminal"
 -- A collection of buffers
 --------------------------------
 ---@class Buffers @parent class
-M.Buffers = {}
+Buffers = {}
 
-function M.Buffers:new(n)
+function Buffers:new(n)
   local t = n or {length = 0, buffers = {}}
   self.__index = self
   return setmetatable(t, self)
 end
 
-function M.Buffers.__add(a, b)
+function Buffers.__add(a, b)
   return a.length + b.length
 end
 
 -- Take a section and remove a buffer arbitrarily
 -- reducing the length is very important as otherwise we don't know
 -- a section is actually smaller now
-function M.Buffers:drop(index)
+function Buffers:drop(index)
   if self.buffers[index] ~= nil then
     self.length = self.length - self.buffers[index].length
     table.remove(self.buffers, index)
@@ -37,26 +41,28 @@ function M.Buffers:drop(index)
   end
 end
 
-function M.Buffers:add(buf)
+function Buffers:add(buf)
   table.insert(self.buffers, buf)
   self.length = self.length + buf.length
 end
 
 local function buffer_is_terminal(buf)
-  return string.find(buf.path, 'term://') or buf.buftype == terminal_buftype
+  return string.find(buf.path, "term://") or buf.buftype == terminal_buftype
 end
 
 --------------------------------
 -- A single buffer
 --------------------------------
 ---@class Buffer @parent class
-M.Buffer = {}
+Buffer = {}
 
-function M.Buffer:new(buf)
-  buf.modifiable = vim.fn.getbufvar(buf.id, '&modifiable') == 1
-  buf.modified = vim.fn.getbufvar(buf.id, '&modified') == 1
-  buf.buftype = vim.fn.getbufvar(buf.id, '&buftype')
-  if buf.path == "" then buf.path = "[No Name]" end
+function Buffer:new(buf)
+  buf.modifiable = vim.fn.getbufvar(buf.id, "&modifiable") == 1
+  buf.modified = vim.fn.getbufvar(buf.id, "&modified") == 1
+  buf.buftype = vim.fn.getbufvar(buf.id, "&buftype")
+  if buf.path == "" then
+    buf.path = "[No Name]"
+  end
 
   buf.extension = vim.fn.fnamemodify(buf.path, ":e")
   -- Set icon
@@ -65,14 +71,12 @@ function M.Buffer:new(buf)
     buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
   else
     if lua_devicons_loaded then
-      buf.icon, buf.icon_highlight = webdev_icons.get_icon(
-        buf.path,
-        buf.extension,
-        { default = true }
-      )
+      buf.icon, buf.icon_highlight =
+        webdev_icons.get_icon(buf.path, buf.extension, {default = true})
     else
-      local devicons_loaded = vim.fn.exists('*WebDevIconsGetFileTypeSymbol') > 0
-      buf.icon = devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
+      local devicons_loaded = vim.fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
+      buf.icon =
+        devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
     end
     -- TODO: allow the format specifier to be configured
     buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
@@ -91,14 +95,32 @@ end
 
 -- FIXME this does not work if the same buffer is open in multiple window
 -- maybe do something with win_findbuf(bufnr('%'))
-function M.Buffer:current()
+function Buffer:current()
   return vim.fn.winbufnr(0) == self.id
 end
 
-function M.Buffer:visible()
+function Buffer:visible()
   return vim.fn.bufwinnr(self.id) > 0
 end
 
+--- @param depth number
+--- @returns string
+function Buffer:ancestor(depth)
+  depth = (depth and depth > 1) and depth or 1
+  local ancestor = ""
+  for index = 1, depth do
+    local modifier = string.rep(":h", index)
+    local dir = vim.fn.fnamemodify(self.path, ":p" .. modifier .. ":t")
+    if dir == "" then
+      break
+    end
+    ancestor = dir .. utils.path_sep .. ancestor
+  end
+  return ancestor
+end
+
 M.lua_devicons_loaded = lua_devicons_loaded
+M.Buffer = Buffer
+M.Buffers = Buffers
 
 return M

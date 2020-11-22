@@ -1,5 +1,3 @@
-local api = vim.api
-
 local M = {}
 
 function M.to_rgb(color)
@@ -9,8 +7,7 @@ function M.to_rgb(color)
   return r, g, b
 end
 
--- SOURCE:
--- https://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
+--- SOURCE: https://stackoverflow.com/q/5560248
 function M.shade_color(color, percent)
   local r, g, b = M.to_rgb(color)
 
@@ -26,7 +23,7 @@ function M.shade_color(color, percent)
   b = b < 255 and b or 255
 
   -- see:
-  -- https://stackoverflow.com/questions/37796287/convert-decimal-to-hex-in-lua-4
+  -- https://stackoverflow.com/a/37797380
   r = string.format("%x", r)
   g = string.format("%x", g)
   b = string.format("%x", b)
@@ -39,8 +36,9 @@ function M.shade_color(color, percent)
 end
 
 --- Determine whether to use black or white text
--- Ref: https://stackoverflow.com/a/1855903/837964
--- https://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color
+--- Ref:
+--- 1. https://stackoverflow.com/a/1855903/837964
+--- 2. https://stackoverflow.com/a/596243
 function M.color_is_bright(hex)
   if not hex then
     return false
@@ -63,34 +61,6 @@ function M.get_hex(hl_name, part, fallback)
   local color = vim.fn.synIDattr(id, part)
   -- if we can't find the color we default to none
   if not color or color == "" then return fallback else return color end
-end
-
-local function table_size(t)
-  local count = 0
-  for _ in pairs(t) do count = count + 1 end
-  return count
-end
-
-function M.set_highlight(name, hl)
-  if hl and table_size(hl) > 0 then
-    local cmd = "highlight! "..name
-    if hl.gui and hl.gui ~= "" then
-      cmd = cmd.." ".."gui="..hl.gui
-    end
-    if hl.guifg and hl.guifg ~= "" then
-      cmd = cmd.." ".."guifg="..hl.guifg
-    end
-    if hl.guibg and hl.guibg ~= "" then
-      cmd = cmd.." ".."guibg="..hl.guibg
-    end
-    -- TODO using api here as it warns of an error if setting highlight fails
-    local success, err = pcall(api.nvim_command, cmd)
-    if not success then
-      api.nvim_err_writeln(
-        "Failed setting "..name.." highlight, something isn't configured correctly".."\n"..err
-      )
-    end
-  end
 end
 
 return M
