@@ -76,53 +76,26 @@ function M.handle_click(id, button)
   end
 end
 
-local function get_hl(selected, visible, selected_hl, visible_hl, hl)
-  return selected and selected_hl or visible and visible_hl or hl
-end
-
 local function get_buffer_highlight(buffer, highlights)
+  local hl = {}
   local h = highlights
-  local visible = buffer:visible()
-  local current = buffer:current()
-  return {
-    background = get_hl(
-      current,
-      visible,
-      h.selected.hl,
-      h.buffer_inactive.hl,
-      h.background.hl
-    ),
-    modified = get_hl(
-      current,
-      visible,
-      h.modified_selected.hl,
-      h.modified_inactive.hl,
-      h.modified.hl
-    ),
-    -- for this component we need to return the full
-    -- details of the colors
-    buffer = get_hl(
-      current,
-      visible,
-      h.selected,
-      h.buffer_inactive,
-      h.background
-    ),
-    pick = get_hl(
-      current,
-      visible,
-      h.pick.hl,
-      h.pick.hl,
-      h.pick_inactive.hl
-    ),
-    duplicate = get_hl(
-      current,
-      visible,
-      h.duplicate.hl,
-      h.duplicate.hl,
-      h.duplicate_inactive.hl
-    )
-  }
+  if buffer:current() then
+    hl.background = h.selected.hl
+    hl.modified = h.modified_selected.hl
+    hl.buffer = h.selected
+    hl.duplicate = h.duplicate.hl
+  elseif buffer:visible() then
+    hl.background = h.buffer_inactive.hl
+    hl.modified = h.modified_inactive.hl
+    hl.buffer = h.buffer_inactive
+    hl.duplicate = h.duplicate.hl
+  else
+    hl.background = h.background.hl
+    hl.modified = h.modified.hl
+    hl.buffer = h.background
+    hl.duplicate = h.duplicate_inactive.hl
+  end
+  return hl
 end
 
 --- @param mode string | nil
