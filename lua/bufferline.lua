@@ -63,16 +63,6 @@ function M.pick_buffer()
   refresh()
 end
 
----@param buf_id number
-function M.handle_close_buffer(buf_id)
-  vim.cmd("bdelete! " .. buf_id)
-end
-
-function M.handle_win_click(id)
-  local win_id = vim.fn.bufwinid(id)
-  vim.fn.win_gotoid(win_id)
-end
-
 -- if a button is right clicked close the buffer
 ---@param id number
 ---@param button string
@@ -133,6 +123,41 @@ local function get_buffer_highlight(buffer, highlights)
       h.duplicate_inactive.hlgroup
     )
   }
+end
+
+--- @param mode string | nil
+local function get_buffers_by_mode(mode)
+  --[[
+  show only relevant buffers depending on the layout of the current tabpage:
+  - In tabs with only one window all buffers are listed.
+  - In tabs with more than one window, only the buffers that are being displayed are listed.
+  --]]
+  if mode == "multiwindow" then
+    local is_single_tab = vim.fn.tabpagenr("$") == 1
+    if is_single_tab then
+      return utils.get_valid_buffers()
+    end
+
+    local tab_wins = api.nvim_tabpage_list_wins(0)
+
+    local valid_wins = 0
+    for _, win_id in ipairs(tab_wins) do
+      -- Check that the window contains a listed buffer, if the buffer isn't
+      -- listed we shouldn't be hiding the remaining buffers because of it
+      -- note this is to stop temporary unlisted buffers like fzf from
+      -- triggering this mode
+      local buf_nr = vim.api.nvim_win_get_buf(win_id)
+      if utils.is_valid(buf_nr) then
+        valid_wins = valid_wins + 1
+      end
+    end
+
+    if valid_wins > 1 then
+      local unique = utils.filter_duplicates(vim.fn.tabpagebuflist())
+      return utils.get_valid_buffers(unique)
+    end
+  end
+  return utils.get_valid_buffers()
 end
 
 local function truncate_filename(filename, word_limit)
@@ -446,15 +471,28 @@ local function get_marker_size(count, element_size)
   return count > 0 and strwidth(count) + element_size or 0
 end
 
-local function render_trunc_marker(count, icon, highlights)
-  return join(
-    highlights.fill.hlgroup,
-    padding,
-    count,
-    padding,
-    icon,
-    padding
-  )
+local function truncation_component(count, icon, highlights)
+  return join(highlights.fill.hlgroup, padding, count, padding, icon, padding)
+end
+
+--- @param duplicates table
+--- @param current Buffer
+--- @buffers buffers table<Buffer>
+--- @param prefs table
+local function mark_duplicates(duplicates, current, buffers, prefs)
+  local duplicate = duplicates[current.filename]
+  if not duplicate then
+    duplicates[current.filename] = {current}
+  else
+    for _, buf in ipairs(duplicate) do
+      -- if the buffer is a duplicate we have to redraw it with the new name
+      buf.duplicated = true
+      buf.component, buf.length = render_buffer(prefs, buf)
+      buffers[buf.ordinal] = buf
+    end
+    current.duplicated = true
+    table.insert(duplicate, current)
+  end
 end
 
 --[[
@@ -512,6 +550,9 @@ local function truncate(before, current, after, available_width, marker)
   end
 end
 
+--- @param buffers table<Buffer>
+--- @param tabs table<number>
+--- @param prefs table
 local function render(buffers, tabs, prefs)
   local options = prefs.options
   local hl = prefs.highlights
@@ -521,7 +562,7 @@ local function render(buffers, tabs, prefs)
   local tabs_length = close_length
 
   -- Add the length of the tabs + close components to total length
-  if table.getn(tabs) > 1 then
+  if #tabs > 1 then
     for _, t in pairs(tabs) do
       if not vim.tbl_isempty(t) then
         tabs_length = tabs_length + t.length
@@ -556,11 +597,11 @@ local function render(buffers, tabs, prefs)
   )
 
   if marker.left_count > 0 then
-    local icon = render_trunc_marker(marker.left_count, left_trunc_icon, hl)
+    local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
     line = join(hl.background.hlgroup, icon, padding, line)
   end
   if marker.right_count > 0 then
-    local icon = render_trunc_marker(marker.right_count, right_trunc_icon, hl)
+    local icon = truncation_component(marker.right_count, right_trunc_icon, hl)
     line = join(line, hl.background.hlgroup, icon)
   end
 
@@ -572,61 +613,6 @@ local function render(buffers, tabs, prefs)
     hl.tab_close.hlgroup,
     close_component
   )
-end
-
---- @param mode string | nil
-local function get_buffers_by_mode(mode)
-  --[[
-  show only relevant buffers depending on the layout of the current tabpage:
-    - In tabs with only one window all buffers are listed.
-    - In tabs with more than one window, only the buffers that are being displayed are listed.
---]]
-  if mode == "multiwindow" then
-    local is_single_tab = vim.fn.tabpagenr("$") == 1
-    if is_single_tab then
-      return utils.get_valid_buffers()
-    end
-
-    local tab_wins = api.nvim_tabpage_list_wins(0)
-
-    local valid_wins = 0
-    for _, win_id in ipairs(tab_wins) do
-      -- Check that the window contains a listed buffer, if the buffer isn't
-      -- listed we shouldn't be hiding the remaining buffers because of it
-      -- note this is to stop temporary unlisted buffers like fzf from
-      -- triggering this mode
-      local buf_nr = vim.api.nvim_win_get_buf(win_id)
-      if utils.is_valid(buf_nr) then
-        valid_wins = valid_wins + 1
-      end
-    end
-
-    if valid_wins > 1 then
-      local unique = utils.filter_duplicates(vim.fn.tabpagebuflist())
-      return utils.get_valid_buffers(unique)
-    end
-  end
-  return utils.get_valid_buffers()
-end
-
---- @param duplicates table
---- @param current Buffer
---- @buffers buffers table<Buffer>
---- @param prefs table
-local function mark_duplicates(duplicates, current, buffers, prefs)
-  local duplicate = duplicates[current.filename]
-  if not duplicate then
-    duplicates[current.filename] = {current}
-  else
-    for _, buf in ipairs(duplicate) do
-      -- if the buffer is a duplicate we have to redraw it with the new name
-      buf.duplicated = true
-      buf.component, buf.length = render_buffer(prefs, buf)
-      buffers[buf.ordinal] = buf
-    end
-    current.duplicated = true
-    table.insert(duplicate, current)
-  end
 end
 
 --- @param preferences table
@@ -644,8 +630,8 @@ local function bufferline(preferences)
     end
   end
 
-  state.buffers = {}
   letters.reset()
+  state.buffers = {}
   local duplicates = {}
 
   for i, buf_id in ipairs(buf_nums) do
@@ -669,6 +655,18 @@ local function bufferline(preferences)
   return render(state.buffers, all_tabs, preferences)
 end
 
+---@param buf_id number
+function M.handle_close_buffer(buf_id)
+  vim.cmd("bdelete! " .. buf_id)
+end
+
+---@param id number
+function M.handle_win_click(id)
+  local win_id = vim.fn.bufwinid(id)
+  vim.fn.win_gotoid(win_id)
+end
+
+---@param num number
 function M.go_to_buffer(num)
   local buf_nums = get_buffers_by_mode()
   if num <= table.getn(buf_nums) then
