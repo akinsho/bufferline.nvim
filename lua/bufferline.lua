@@ -357,7 +357,7 @@ local function pad_buffer(context)
   -- pad each tab smaller than the max tab size to make it consistent
   local difference = options.tab_size - length
   if difference > 0 then
-    local pad = string.rep(padding, math.floor((difference / 2)))
+    local pad = string.rep(padding, math.floor(difference / 2))
     component = pad .. component .. pad
     length = length + strwidth(pad) * 2
   end
