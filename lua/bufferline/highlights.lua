@@ -37,9 +37,10 @@ end
 --- @param user_colors table
 function M.set_all(user_colors)
   for name, tbl in pairs(user_colors) do
+    -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
     name = name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
     M.set_one(name, tbl)
-    tbl.hlgroup = hl(name)
+    tbl.hl = hl(name)
   end
   return user_colors
 end

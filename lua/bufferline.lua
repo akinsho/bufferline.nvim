@@ -35,9 +35,9 @@ local state = {
 -- EXPORT
 ---------------------------------------------------------------------------//
 
-local M = {
-  shade_color = colors.shade_color
-}
+local M = {}
+
+M.shade_color = colors.shade_color
 
 ---------------------------------------------------------------------------//
 -- CORE
@@ -88,16 +88,16 @@ local function get_buffer_highlight(buffer, highlights)
     background = get_hl(
       current,
       visible,
-      h.selected.hlgroup,
-      h.buffer_inactive.hlgroup,
-      h.background.hlgroup
+      h.selected.hl,
+      h.buffer_inactive.hl,
+      h.background.hl
     ),
     modified = get_hl(
       current,
       visible,
-      h.modified_selected.hlgroup,
-      h.modified_inactive.hlgroup,
-      h.modified.hlgroup
+      h.modified_selected.hl,
+      h.modified_inactive.hl,
+      h.modified.hl
     ),
     -- for this component we need to return the full
     -- details of the colors
@@ -111,16 +111,16 @@ local function get_buffer_highlight(buffer, highlights)
     pick = get_hl(
       current,
       visible,
-      h.pick.hlgroup,
-      h.pick.hlgroup,
-      h.pick_inactive.hlgroup
+      h.pick.hl,
+      h.pick.hl,
+      h.pick_inactive.hl
     ),
     duplicate = get_hl(
       current,
       visible,
-      h.duplicate.hlgroup,
-      h.duplicate.hlgroup,
-      h.duplicate_inactive.hlgroup
+      h.duplicate.hl,
+      h.duplicate.hl,
+      h.duplicate_inactive.hl
     )
   }
 end
@@ -193,10 +193,8 @@ local function highlight_icon(buffer, background)
     if buffer:current() or buffer:visible() then
       new_hl = new_hl .. "Selected"
     end
-    highlights.set_one(
-      new_hl,
-      {guibg = background.guibg, guifg = colors.get_hex(hl, "fg")}
-    )
+    local guifg = colors.get_hex(hl, "fg")
+    highlights.set_one(new_hl, {guibg = background.guibg, guifg = guifg})
   end
   return "%#" .. new_hl .. "#" .. icon .. "%*"
 end
@@ -249,7 +247,7 @@ local function indicator_component(context)
       -- background highlight doesn't appear in th middle
       -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
       symbol = "▎"
-      indicator = hl.selected_indicator.hlgroup .. symbol .. "%*"
+      indicator = hl.selected_indicator.hl .. symbol .. "%*"
     end
     length = length + strwidth(symbol)
     component = indicator .. curr_hl.background .. component
@@ -332,16 +330,18 @@ local function separator_components(context)
   local right_sep, left_sep = get_separator(focused, style)
   local sep_hl
   if focused and style == style_names.slant then
-    sep_hl = hl.selected_separator.hlgroup
+    sep_hl = hl.selected_separator.hl
   else
-    sep_hl = hl.separator.hlgroup
+    sep_hl = hl.separator.hl
   end
   local right_separator = sep_hl .. right_sep
   local left_separator = left_sep and (sep_hl .. left_sep) or nil
   length = length + strwidth(right_sep)
+
   if left_sep then
     length = length + strwidth(left_sep)
   end
+
   return length, left_separator, right_separator
 end
 
@@ -472,7 +472,7 @@ local function get_marker_size(count, element_size)
 end
 
 local function truncation_component(count, icon, highlights)
-  return join(highlights.fill.hlgroup, padding, count, padding, icon, padding)
+  return join(highlights.fill.hl, padding, count, padding, icon, padding)
 end
 
 --- @param duplicates table
@@ -598,19 +598,19 @@ local function render(buffers, tabs, prefs)
 
   if marker.left_count > 0 then
     local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
-    line = join(hl.background.hlgroup, icon, padding, line)
+    line = join(hl.background.hl, icon, padding, line)
   end
   if marker.right_count > 0 then
     local icon = truncation_component(marker.right_count, right_trunc_icon, hl)
-    line = join(line, hl.background.hlgroup, icon)
+    line = join(line, hl.background.hl, icon)
   end
 
   return join(
     line,
-    hl.fill.hlgroup,
+    hl.fill.hl,
     right_align,
     tab_components,
-    hl.tab_close.hlgroup,
+    hl.tab_close.hl,
     close_component
   )
 end
