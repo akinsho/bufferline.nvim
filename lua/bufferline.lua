@@ -697,6 +697,9 @@ function M.setup(prefs)
     utils.deep_merge(preferences, prefs)
   end
 
+  -- on reloading the plugin's config reset all the highlights
+  highlights.set_all(preferences.highlights)
+
   function _G.__setup_bufferline_colors()
     highlights.set_all(preferences.highlights)
   end
