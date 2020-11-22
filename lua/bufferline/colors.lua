@@ -1,5 +1,3 @@
-local api = vim.api
-
 local M = {}
 
 function M.to_rgb(color)
@@ -9,8 +7,7 @@ function M.to_rgb(color)
   return r, g, b
 end
 
--- SOURCE:
--- https://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
+--- SOURCE: https://stackoverflow.com/q/5560248
 function M.shade_color(color, percent)
   local r, g, b = M.to_rgb(color)
 
@@ -26,7 +23,7 @@ function M.shade_color(color, percent)
   b = b < 255 and b or 255
 
   -- see:
-  -- https://stackoverflow.com/questions/37796287/convert-decimal-to-hex-in-lua-4
+  -- https://stackoverflow.com/a/37797380
   r = string.format("%x", r)
   g = string.format("%x", g)
   b = string.format("%x", b)
@@ -39,8 +36,9 @@ function M.shade_color(color, percent)
 end
 
 --- Determine whether to use black or white text
--- Ref: https://stackoverflow.com/a/1855903/837964
--- https://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color
+--- Ref:
+--- 1. https://stackoverflow.com/a/1855903/837964
+--- 2. https://stackoverflow.com/a/596243
 function M.color_is_bright(hex)
   if not hex then
     return false
