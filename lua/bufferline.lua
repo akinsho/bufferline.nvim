@@ -245,7 +245,7 @@ local function deduplicate(context)
   -- prefixing it with the parent dir(s)
   if buffer.duplicated and not options.enforce_regular_tabs then
     local dir = buffer:parent_dir()
-    component = join(padding, hl.duplicate, dir, hl.background, component)
+    component = padding .. hl.duplicate .. dir .. hl.background .. component
     length = length + strwidth(padding .. dir)
   else
     component = padding .. component
@@ -262,7 +262,7 @@ local function add_prefix(context)
   local length = context.length
 
   if state.is_picking and buffer.letter then
-    component = join(hl.pick, buffer.letter, hl.background, component)
+    component = hl.pick .. buffer.letter .. hl.background .. component
     length = length + strwidth(buffer.letter)
   elseif buffer.icon then
     local icon_highlight = highlight_icon(buffer, hl.buffer)
