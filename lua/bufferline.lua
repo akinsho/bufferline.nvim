@@ -329,7 +329,7 @@ local function enforce_regular_tabs(context)
   -- and allow tabs to be larger then the max otherwise
   if options.enforce_regular_tabs then
     -- estimate the maximum allowed size of a filename given that it will be
-    -- padded an prefixed with a file icon
+    -- padded and prefixed with a file icon
     max_length = options.tab_size - modified_size - icon_size - padding_size
   end
   return max_length
