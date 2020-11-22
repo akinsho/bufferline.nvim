@@ -14,8 +14,6 @@ all of it's functionality though.
 
 - Sort buffers by `extension`, `directory` or pass in a custom compare function
 
-- Close icons for closing individual buffers
-
 #### Alternate option for tab styling
 
 ![slanted tabs](./screenshots/diagonal.png "slanted tabs")
@@ -30,7 +28,11 @@ all of it's functionality though.
 
 #### Make buffer names unique if there are duplicates
 
-![Deduplicated buffers](./screenshots/unique_names.png "deduplicated buffer names")
+![Deduplicated buffers](./screenshots/duplicate_names.png "deduplicated buffer names")
+
+#### Close icons for closing individual buffers
+
+![close buffer with mouse click](./screenshots/close_button.gif)
 
 #### Modified symbol
 
