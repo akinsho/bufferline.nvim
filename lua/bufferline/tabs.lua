@@ -10,12 +10,12 @@ local function tab_click_component(num)
 end
 
 local function render(tab, is_active, style, highlights)
-  local hl =
-    is_active and highlights.tab_selected.hlgroup or highlights.tab.hlgroup
+  local h = highlights
+
+  local hl = is_active and h.tab_selected.hlgroup or h.tab.hlgroup
 
   local separator_hl =
-    is_active and highlights.selected_separator.hlgroup or
-    highlights.separator.hlgroup
+    is_active and h.selected_separator.hlgroup or h.separator.hlgroup
 
   local separator_component = style == "thick" and "▐" or "▕"
   local separator = separator_hl .. separator_component
