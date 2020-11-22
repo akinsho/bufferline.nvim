@@ -14,6 +14,7 @@ local Buffer = buffers.Buffer
 local Buffers = buffers.Buffers
 
 local api = vim.api
+local join = utils.join
 -- string.len counts number of bytes and so the unicode icons are counted
 -- larger than their display width. So we use nvim's strwidth
 local strwidth = vim.fn.strwidth
@@ -248,16 +249,7 @@ local function deduplicate(context)
   -- prefixing it with the parent dir(s)
   if buffer.duplicated and not options.enforce_regular_tabs then
     local dir = buffer:parent_dir()
-    component =
-      table.concat(
-      {
-        padding,
-        hl.duplicate,
-        dir,
-        hl.background,
-        component
-      }
-    )
+    component = join(padding, hl.duplicate, dir, hl.background, component)
     length = length + strwidth(padding .. dir)
   else
     component = padding .. component
@@ -274,7 +266,7 @@ local function add_prefix(context)
   local length = context.length
 
   if state.is_picking and buffer.letter then
-    component = table.concat({hl.pick, buffer.letter, hl.background, component})
+    component = join(hl.pick, buffer.letter, hl.background, component)
     length = length + strwidth(buffer.letter)
   elseif buffer.icon then
     local icon_highlight = highlight_icon(buffer, hl.buffer)
@@ -455,15 +447,13 @@ local function get_marker_size(count, element_size)
 end
 
 local function render_trunc_marker(count, icon, highlights)
-  return table.concat(
-    {
-      highlights.fill.hlgroup,
-      padding,
-      count,
-      padding,
-      icon,
-      padding
-    }
+  return join(
+    highlights.fill.hlgroup,
+    padding,
+    count,
+    padding,
+    icon,
+    padding
   )
 end
 
@@ -497,7 +487,7 @@ local function truncate(before, current, after, available_width, marker)
     local bufs =
       utils.array_concat(before.buffers, current.buffers, after.buffers)
     for index, buf in ipairs(bufs) do
-      line = line .. buf.component(index, table.getn(bufs))
+      line = line .. buf.component(index, #bufs)
     end
     return line, marker
   elseif available_width < current.length then
@@ -545,11 +535,9 @@ local function render(buffers, tabs, prefs)
   local right_trunc_icon = options.right_trunc_marker
   -- measure the surrounding trunc items: padding + count + padding + icon + padding
   local left_element_size =
-    strwidth(
-    table.concat({padding, padding, left_trunc_icon, padding, padding})
-  )
+    strwidth(join(padding, padding, left_trunc_icon, padding, padding))
   local right_element_size =
-    strwidth(table.concat({padding, padding, right_trunc_icon, padding}))
+    strwidth(join(padding, padding, right_trunc_icon, padding))
 
   local available_width = vim.o.columns - tabs_length - close_length
   local before, current, after = get_sections(buffers)
@@ -569,22 +557,20 @@ local function render(buffers, tabs, prefs)
 
   if marker.left_count > 0 then
     local icon = render_trunc_marker(marker.left_count, left_trunc_icon, hl)
-    line = table.concat({hl.background.hlgroup, icon, padding, line})
+    line = join(hl.background.hlgroup, icon, padding, line)
   end
   if marker.right_count > 0 then
     local icon = render_trunc_marker(marker.right_count, right_trunc_icon, hl)
-    line = table.concat({line, hl.background.hlgroup, icon})
+    line = join(line, hl.background.hlgroup, icon)
   end
 
-  return table.concat(
-    {
-      line,
-      hl.fill.hlgroup,
-      right_align,
-      tab_components,
-      hl.tab_close.hlgroup,
-      close_component
-    }
+  return join(
+    line,
+    hl.fill.hlgroup,
+    right_align,
+    tab_components,
+    hl.tab_close.hlgroup,
+    close_component
   )
 end
 
@@ -738,8 +724,6 @@ end
 function M.setup(prefs)
   local preferences = config.get_defaults()
   -- Combine user preferences with defaults preferring the user's own settings
-  -- NOTE this should happen outside any of these inner functions to prevent the
-  -- value being set within a closure
   if prefs and type(prefs) == "table" then
     utils.deep_merge(preferences, prefs)
   end
