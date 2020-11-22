@@ -20,7 +20,7 @@ local join = utils.join
 local strwidth = vim.fn.strwidth
 
 local padding = constants.padding
-local style_names = constants.style_names
+local separator_styles = constants.separator_styles
 
 -----------------------------------------------------------
 -- State
@@ -206,9 +206,9 @@ end
 local function get_separator(focused, style)
   if type(style) == "table" then
     return focused and style[1] or style[2]
-  elseif style == style_names.thick then
+  elseif style == separator_styles.thick then
     return focused and "▌" or "▐"
-  elseif style == style_names.slant then
+  elseif style == separator_styles.slant then
     return "", ""
   else
     return focused and "▏" or "▕"
@@ -242,7 +242,7 @@ local function indicator_component(context)
   if buffer:current() then
     local indicator = " "
     local symbol = indicator
-    if style ~= style_names.slant then
+    if style ~= separator_styles.slant then
       -- U+2590 ▐ Right half block, this character is right aligned so the
       -- background highlight doesn't appear in th middle
       -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
@@ -328,12 +328,10 @@ local function separator_components(context)
   local focused = buffer:current() or buffer:visible()
 
   local right_sep, left_sep = get_separator(focused, style)
-  local sep_hl
-  if focused and style == style_names.slant then
-    sep_hl = hl.selected_separator.hl
-  else
-    sep_hl = hl.separator.hl
-  end
+  local sep_hl =
+    focused and style == separator_styles.slant and hl.selected_separator.hl or
+    hl.separator.hl
+
   local right_separator = sep_hl .. right_sep
   local left_separator = left_sep and (sep_hl .. left_sep) or nil
   length = length + strwidth(right_sep)

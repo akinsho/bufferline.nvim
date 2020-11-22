@@ -4,7 +4,7 @@ local M = {}
 ---------------------------------------------------------------------------//
 M.padding = " "
 
-M.style_names = {
+M.separator_styles = {
   slant = "slant",
   thick = "thick",
   thin = "thin"
