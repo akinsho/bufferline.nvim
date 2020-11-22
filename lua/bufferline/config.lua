@@ -49,75 +49,75 @@ function M.get_defaults()
       sort_by = "default"
     },
     highlights = {
-      bufferline_tab = {
+      tab = {
         guifg = comment_fg,
         guibg = background_color
       },
-      bufferline_tab_selected = {
+      tab_selected = {
         guifg = tabline_sel_bg,
         guibg = normal_bg
       },
-      bufferline_selected_separator = {
+      selected_separator = {
         guifg = separator_background_color,
         guibg = normal_bg
       },
-      bufferline_tab_close = {
+      tab_close = {
         guifg = comment_fg,
         guibg = background_color
       },
-      bufferline_fill = {
+      fill = {
         guifg = comment_fg,
         guibg = separator_background_color
       },
-      bufferline_background = {
+      background = {
         guifg = comment_fg,
         guibg = background_color
       },
-      bufferline_buffer_inactive = {
+      buffer_inactive = {
         guifg = comment_fg,
         guibg = normal_bg
       },
-      bufferline_modified = {
+      modified = {
         guifg = string_fg,
         guibg = background_color
       },
-      bufferline_duplicate = {
+      duplicate = {
         guifg = duplicate_color,
         gui = "italic",
         guibg = normal_bg
       },
-      bufferline_duplicate_inactive = {
+      duplicate_inactive = {
         guifg = duplicate_color,
         gui = "italic",
         guibg = background_color
       },
-      bufferline_modified_inactive = {
+      modified_inactive = {
         guifg = string_fg,
         guibg = normal_bg
       },
-      bufferline_modified_selected = {
+      modified_selected = {
         guifg = string_fg,
         guibg = normal_bg
       },
-      bufferline_separator = {
+      separator = {
         guifg = separator_background_color,
         guibg = background_color
       },
-      bufferline_selected_indicator = {
+      selected_indicator = {
         guifg = tabline_sel_bg,
         guibg = normal_bg
       },
-      bufferline_selected = {
+      selected = {
         guifg = normal_fg,
         guibg = normal_bg,
         gui = "bold,italic"
       },
-      bufferline_pick = {
+      pick = {
         guifg = error_fg,
         guibg = normal_bg,
         gui = "bold,italic"
       },
-      bufferline_pick_inactive = {
+      pick_inactive = {
         guifg = error_fg,
         guibg = background_color,
         gui = "bold,italic"

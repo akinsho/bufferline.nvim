@@ -4,8 +4,6 @@ local api = vim.api
 ---------------------------------------------------------------------------//
 local M = {}
 
-local prefix = "bufferline_"
-
 local function hl(item)
   return "%#" .. item .. "#"
 end
@@ -34,7 +32,7 @@ function M.set_one(name, hl)
   end
 end
 
---- TODO map through user colors and convert the keys to highlight names
+--- Map through user colors and convert the keys to highlight names
 --- by changing the strings to pascal case and using those for highlight name
 --- @param user_colors table
 function M.set_all(user_colors)
@@ -43,19 +41,6 @@ function M.set_all(user_colors)
     M.set_one(name, tbl)
     tbl.hlgroup = hl(name)
   end
-  setmetatable(
-    user_colors,
-    {
-      __index = function(table, key)
-        local value = table[prefix .. key]
-        if value then
-          return value
-        end
-        return nil
-      end
-    }
-  )
-  -- print("user_colors:" .. vim.inspect(user_colors))
   return user_colors
 end
 
