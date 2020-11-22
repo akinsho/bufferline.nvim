@@ -238,27 +238,6 @@ local function indicator_component(context)
 end
 
 --- @param context table
-local function deduplicate(context)
-  local buffer = context.buffer
-  local component = context.component
-  local options = context.preferences.options
-  local hl = context.current_highlights
-  local length = context.length
-  -- there is no way to enforce a regular tab size as specified by the
-  -- user if we are going to potentially increase the tab length by
-  -- prefixing it with the parent dir(s)
-  if buffer.duplicated and not options.enforce_regular_tabs then
-    local dir = buffer:ancestor(buffer.duplicated)
-    component = padding .. hl.duplicate .. dir .. hl.background .. component
-    length = length + strwidth(padding .. dir)
-  else
-    component = padding .. component
-    length = length + strwidth(padding)
-  end
-  return component, length
-end
-
---- @param context table
 local function add_prefix(context)
   local component = context.component
   local buffer = context.buffer
@@ -386,14 +365,13 @@ local function render_buffer(preferences, buffer)
   local filename = truncate_filename(buffer.filename, max_length)
   context.component = filename .. padding
   context.length = context.length + strwidth(context.component)
-  context.component, context.length = deduplicate(context)
+  context.component, context.length = duplicates.deduplicate(context)
   context.component, context.length = add_prefix(context)
   context.component, context.length = pad_buffer(context)
   context.component, context.length = numbers.get(context)
   context.component = utils.make_clickable(context)
   context.component, context.length = indicator_component(context)
   context.component, context.length = add_suffix(context)
-
   local length, left_separator, right_separator = separator_components(context)
   context.length = length
 

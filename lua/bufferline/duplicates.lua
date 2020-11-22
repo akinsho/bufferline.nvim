@@ -1,4 +1,10 @@
+require'bufferline/buffers'
+local constants = require'bufferline/constants'
+
 local M = {}
+
+local strwidth = vim.fn.strwidth
+local padding = constants.padding
 
 local duplicates = {}
 
@@ -57,6 +63,27 @@ function M.mark(buffers, ...)
   else
     mark_duplicates(buffers, ...)
   end
+end
+
+--- @param context table
+function M.deduplicate(context)
+  local buffer = context.buffer
+  local component = context.component
+  local options = context.preferences.options
+  local hl = context.current_highlights
+  local length = context.length
+  -- there is no way to enforce a regular tab size as specified by the
+  -- user if we are going to potentially increase the tab length by
+  -- prefixing it with the parent dir(s)
+  if buffer.duplicated and not options.enforce_regular_tabs then
+    local dir = buffer:ancestor(buffer.duplicated)
+    component = padding .. hl.duplicate .. dir .. hl.background .. component
+    length = length + strwidth(padding .. dir)
+  else
+    component = padding .. component
+    length = length + strwidth(padding)
+  end
+  return component, length
 end
 
 return M
