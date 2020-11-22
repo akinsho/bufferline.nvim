@@ -3,7 +3,8 @@ local highlights = require "bufferline/highlights"
 local utils = require "bufferline/utils"
 local numbers = require "bufferline/numbers"
 local letters = require "bufferline/letters"
-local sorters = require "bufferline/sorters"
+local sort = require "bufferline/sorters"
+local duplicates = require "bufferline/duplicates"
 local constants = require "bufferline/constants"
 local config = require "bufferline/config"
 local tabs = require "bufferline/tabs"
@@ -84,16 +85,19 @@ local function get_buffer_highlight(buffer, highlights)
     hl.modified = h.modified_selected.hl
     hl.buffer = h.selected
     hl.duplicate = h.duplicate.hl
+    hl.pick = h.pick.hl
   elseif buffer:visible() then
     hl.background = h.buffer_inactive.hl
     hl.modified = h.modified_inactive.hl
     hl.buffer = h.buffer_inactive
     hl.duplicate = h.duplicate.hl
+    hl.pick = h.pick_inactive.hl
   else
     hl.background = h.background.hl
     hl.modified = h.modified.hl
     hl.buffer = h.background
     hl.duplicate = h.duplicate_inactive.hl
+    hl.pick = h.pick_inactive.hl
   end
   return hl
 end
@@ -189,7 +193,7 @@ local function get_separator(focused, style)
 end
 
 --- @param buf_id number
-local function close_button(buf_id, options)
+local function close_icon(buf_id, options)
   local buffer_close_icon = options.buffer_close_icon
   local symbol = buffer_close_icon .. padding
   local size = strwidth(symbol)
@@ -244,7 +248,7 @@ local function deduplicate(context)
   -- user if we are going to potentially increase the tab length by
   -- prefixing it with the parent dir(s)
   if buffer.duplicated and not options.enforce_regular_tabs then
-    local dir = buffer:parent_dir()
+    local dir = buffer:ancestor(buffer.duplicated)
     component = padding .. hl.duplicate .. dir .. hl.background .. component
     length = length + strwidth(padding .. dir)
   else
@@ -282,8 +286,8 @@ local function add_suffix(context)
   local modified, modified_size = modified_component(context)
 
   if options.show_buffer_close_icons then
-    local close_btn, size = close_button(buffer.id, options)
-    local suffix = buffer.modified and hl.modified .. modified or close_btn
+    local close, size = close_icon(buffer.id, options)
+    local suffix = buffer.modified and hl.modified .. modified or close
     component = component .. hl.background .. suffix
     length = length + (buffer.modified and modified_size or size)
   end
@@ -446,26 +450,6 @@ local function truncation_component(count, icon, highlights)
   return join(highlights.fill.hl, padding, count, padding, icon, padding)
 end
 
---- @param duplicates table
---- @param current Buffer
---- @buffers buffers table<Buffer>
---- @param prefs table
-local function mark_duplicates(duplicates, current, buffers, prefs)
-  local duplicate = duplicates[current.filename]
-  if not duplicate then
-    duplicates[current.filename] = {current}
-  else
-    for _, buf in ipairs(duplicate) do
-      -- if the buffer is a duplicate we have to redraw it with the new name
-      buf.duplicated = true
-      buf.component, buf.length = render_buffer(prefs, buf)
-      buffers[buf.ordinal] = buf
-    end
-    current.duplicated = true
-    table.insert(duplicate, current)
-  end
-end
-
 --[[
 PREREQUISITE: active buffer always remains in view
 1. Find amount of available space in the window
@@ -529,7 +513,7 @@ local function render(buffers, tabs, prefs)
   local hl = prefs.highlights
   local right_align = "%="
   local tab_components = ""
-  local close_component, close_length = render_close(options.close_icon)
+  local close, close_length = render_close(options.close_icon)
   local tabs_length = close_length
 
   -- Add the length of the tabs + close components to total length
@@ -582,7 +566,7 @@ local function render(buffers, tabs, prefs)
     right_align,
     tab_components,
     hl.tab_close.hl,
-    close_component
+    close
   )
 end
 
@@ -602,8 +586,8 @@ local function bufferline(preferences)
   end
 
   letters.reset()
+  duplicates.reset()
   state.buffers = {}
-  local duplicates = {}
 
   for i, buf_id in ipairs(buf_nums) do
     local name = vim.fn.bufname(buf_id)
@@ -613,15 +597,15 @@ local function bufferline(preferences)
       id = buf_id,
       ordinal = i
     }
-
-    mark_duplicates(duplicates, buf, state.buffers, preferences)
+    duplicates.mark(state.buffers, buf, function(b)
+      b.component, b.length = render_buffer(preferences, b)
+    end)
     buf.letter = letters.get(buf)
-
     buf.component, buf.length = render_buffer(preferences, buf)
     state.buffers[i] = buf
   end
 
-  sorters.sort_buffers(preferences.options.sort_by, state.buffers)
+  sort.sort_buffers(preferences.options.sort_by, state.buffers)
 
   return render(state.buffers, all_tabs, preferences)
 end
@@ -697,7 +681,7 @@ function M.setup(prefs)
     utils.deep_merge(preferences, prefs)
   end
 
-  -- on reloading the plugin's config reset all the highlights
+  -- on loading (and reloading) the plugin's config reset all the highlights
   highlights.set_all(preferences.highlights)
 
   function _G.__setup_bufferline_colors()
@@ -705,7 +689,6 @@ function M.setup(prefs)
   end
 
   local autocommands = {
-    {"VimEnter", "*", [[lua __setup_bufferline_colors()]]},
     {"ColorScheme", "*", [[lua __setup_bufferline_colors()]]}
   }
   if not preferences.options.always_show_bufferline then
