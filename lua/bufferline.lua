@@ -557,7 +557,7 @@ local function bufferline(preferences)
   local all_tabs = tabs.get(options.separator_style, preferences)
 
   if not options.always_show_bufferline then
-    if table.getn(buf_nums) == 1 then
+    if #buf_nums == 1 then
       vim.o.showtabline = 0
       return
     end
@@ -602,7 +602,7 @@ end
 ---@param num number
 function M.go_to_buffer(num)
   local buf_nums = get_buffers_by_mode()
-  if num <= table.getn(buf_nums) then
+  if num <= #buf_nums then
     vim.cmd("buffer " .. buf_nums[num])
   end
 end
@@ -621,7 +621,7 @@ function M.cycle(direction)
   if not index then
     return
   end
-  local length = table.getn(state.buffers)
+  local length = #state.buffers
   local next_index = index + direction
 
   if next_index <= length and next_index >= 1 then
@@ -644,7 +644,7 @@ end
 
 function M.toggle_bufferline()
   local listed_bufs = vim.fn.getbufinfo({buflisted = 1})
-  if table.getn(listed_bufs) > 1 then
+  if #listed_bufs > 1 then
     vim.o.showtabline = 2
   else
     vim.o.showtabline = 0
