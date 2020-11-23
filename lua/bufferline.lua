@@ -656,7 +656,7 @@ end
 function M.move(direction)
   local index = get_current_buf_index()
   local next_index = index + direction
-  if next_index >= 1 and next_index < #state.buffers then
+  if next_index >= 1 and next_index <= #state.buffers then
     local cur_buf = state.buffers[index]
     local destination_buf = state.buffers[next_index]
     state.buffers[next_index] = cur_buf
