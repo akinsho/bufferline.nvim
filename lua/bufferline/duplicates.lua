@@ -32,12 +32,14 @@ local function mark_duplicates(buffers, current, callback)
       if buf_depth > depth then
         depth = buf_depth
       end
-      buf.duplicated = buf_depth
+      buf.duplicated = true
+      buf.prefix_count = buf_depth
       -- if the buffer is a duplicate we have to redraw it with the new name
       callback(buf)
       buffers[buf.ordinal] = buf
     end
-    current.duplicated = depth
+    current.duplicated = true
+    current.prefix_count = depth
     table.insert(duplicate, current)
   end
 end
@@ -65,6 +67,21 @@ function M.mark(buffers, ...)
   end
 end
 
+--- @param dir string
+--- @param depth number
+--- @param max_size number
+local function truncate(dir, depth, max_size)
+    if #dir <= max_size then
+      return dir
+    end
+    local marker = "…"
+    -- we truncate any section of the ancestor which is too long
+    -- by dividing the alloted space for each section by the depth i.e.
+    -- the amount of ancestors which will be prefixed
+    local allowed_size = math.ceil(max_size / depth)
+    return dir:sub(0, allowed_size  - strwidth(marker)) .. marker
+end
+
 --- @param context table
 function M.deduplicate(context)
   local buffer = context.buffer
@@ -76,7 +93,9 @@ function M.deduplicate(context)
   -- user if we are going to potentially increase the tab length by
   -- prefixing it with the parent dir(s)
   if buffer.duplicated and not options.enforce_regular_tabs then
-    local dir = buffer:ancestor(buffer.duplicated)
+    local dir = buffer:ancestor(buffer.prefix_count, function(dir, depth)
+      return truncate(dir, depth, options.max_prefix_length)
+    end)
     component = padding .. hl.duplicate .. dir .. hl.background .. component
     length = length + strwidth(padding .. dir)
   else

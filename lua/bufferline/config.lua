@@ -46,6 +46,7 @@ function M.get_defaults()
       show_buffer_close_icons = true,
       enforce_regular_tabs = false,
       always_show_bufferline = true,
+      max_prefix_length = 15,
       sort_by = "default"
     },
     highlights = {

@@ -151,6 +151,7 @@ require'bufferline'.setup{
     left_trunc_marker = '',
     right_trunc_marker = '',
     max_name_length = 18,
+    max_prefix_length = 15, -- prefix used when a buffer is deduplicated
     tab_size = 18,
     show_buffer_close_icons = true | false,
     -- can also be a table containing 2 custom separators

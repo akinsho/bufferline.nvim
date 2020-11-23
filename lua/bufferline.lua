@@ -354,7 +354,7 @@ end
 --- @return function,number
 local function render_buffer(preferences, buffer)
   local hl = get_buffer_highlight(buffer, preferences.highlights)
-  local context = {
+  local ctx = {
     length = 0,
     component = "",
     preferences = preferences,
@@ -363,24 +363,26 @@ local function render_buffer(preferences, buffer)
   }
 
   -- Order matter here as this is the sequence which builds up the tab component
-  local max_length = enforce_regular_tabs(context)
+  local max_length = enforce_regular_tabs(ctx)
   local filename = truncate_filename(buffer.filename, max_length)
-  context.component = filename .. padding
-  context.length = context.length + strwidth(context.component)
-  context.component, context.length = duplicates.deduplicate(context)
-  context.component, context.length = add_prefix(context)
-  context.component, context.length = pad_buffer(context)
-  context.component, context.length = numbers.get(context)
-  context.component = utils.make_clickable(context)
-  context.component, context.length = indicator_component(context)
-  context.component, context.length = add_suffix(context)
-  local length, left_separator, right_separator = separator_components(context)
-  context.length = length
+  ctx.component = filename .. padding
+
+  ctx.length = ctx.length + strwidth(ctx.component)
+  ctx.component, ctx.length = duplicates.deduplicate(ctx)
+  ctx.component, ctx.length = add_prefix(ctx)
+  ctx.component, ctx.length = pad_buffer(ctx)
+  ctx.component, ctx.length = numbers.get(ctx)
+  ctx.component = utils.make_clickable(ctx)
+  ctx.component, ctx.length = indicator_component(ctx)
+  ctx.component, ctx.length = add_suffix(ctx)
+
+  local length, left_sep, right_sep = separator_components(ctx)
+  ctx.length = length
 
   -- NOTE: the component is wrapped in an item -> %(content) so
   -- vim counts each item as one rather than all of its individual
   -- sub-components.
-  local buffer_component = "%(" .. context.component .. "%)"
+  local buffer_component = "%(" .. ctx.component .. "%)"
 
   --- We return a function from render buffer as we do not yet have access to
   --- information regarding which buffers will actually be rendered
@@ -388,15 +390,15 @@ local function render_buffer(preferences, buffer)
   --- @param num_of_bufs number
   --- @returns string
   local fn = function(index, num_of_bufs)
-    if left_separator then
-      buffer_component = left_separator .. buffer_component .. right_separator
+    if left_sep then
+      buffer_component = left_sep .. buffer_component .. right_sep
     elseif index < num_of_bufs then
-      buffer_component = buffer_component .. right_separator
+      buffer_component = buffer_component .. right_sep
     end
     return buffer_component
   end
 
-  return fn, context.length
+  return fn, ctx.length
 end
 
 local function render_close(icon)
