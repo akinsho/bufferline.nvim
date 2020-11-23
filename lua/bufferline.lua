@@ -559,7 +559,7 @@ local function get_updated_buffers(buf_nums, sorted)
   end
   local updated = {}
   -- add only buffers from our sort that are (still) in the
-  -- canonical buffer list, maintaing the order
+  -- canonical buffer list, maintaining the order
   for _, b in ipairs(sorted) do
     if vim.tbl_contains(buf_nums, b) then
       table.insert(updated, b)
