@@ -34,6 +34,10 @@ all of it's functionality though.
 
 ![close buffer with mouse click](./screenshots/close_button.gif)
 
+#### Re-order current buffer
+
+![move current buffer](./screenshots/re-order.gif "Move current buffer")
+
 #### Modified symbol
 
 <img src="./screenshots/bufferline_with_modified.png" alt="modified icon" width="350px" />
