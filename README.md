@@ -80,6 +80,19 @@ lua require'bufferline'.setup()
 
 You can close buffers by clicking the close icon or by _right clicking_ the tab anywhere
 
+A few of this plugins commands can be mapped for ease of use.
+
+```vim
+" These commands will navigate through buffers in order regardless of which mode you are using
+" e.g. if you change the order of buffers :bnext and :bprevious will not respect the custom ordering
+nnoremap <silent>[b :BufferLineCycleNext<CR>
+nnoremap <silent>b] :BufferLineCyclePrev<CR>
+
+" These commands will move the current buffer backwards or forwards in the bufferline
+nnoremap <silent><mymap> :BufferLineMoveNext<CR>
+nnoremap <silent><mymap> :BufferLineMovePrev<CR>
+```
+
 ## Warning
 
 This plugin relies on some basic highlights being set by your colour scheme
