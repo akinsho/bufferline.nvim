@@ -666,6 +666,9 @@ end
 --- @param direction number
 function M.move(direction)
   local index = get_current_buf_index()
+  if not index then
+    return utils.echoerr("Unable to find buffer to move, sorry")
+  end
   local next_index = index + direction
   if next_index >= 1 and next_index <= #state.buffers then
     local cur_buf = state.buffers[index]
@@ -696,8 +699,7 @@ function M.cycle(direction)
   local next = state.buffers[next_index]
 
   if not next then
-    vim.cmd('echoerr "This buffer does not exist"')
-    return
+    return utils.echoerr("This buffer does not exist")
   end
 
   vim.cmd("buffer " .. next.id)
