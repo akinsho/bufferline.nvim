@@ -653,8 +653,9 @@ local function get_current_buf_index()
   return index
 end
 
+--- @param buffers table<Buffer>
 local function get_buf_ids(buffers)
-  vim.tbl_map(
+  return vim.tbl_map(
     function(buf)
       return buf.id
     end,
@@ -662,6 +663,7 @@ local function get_buf_ids(buffers)
   )
 end
 
+--- @param direction number
 function M.move(direction)
   local index = get_current_buf_index()
   local next_index = index + direction
