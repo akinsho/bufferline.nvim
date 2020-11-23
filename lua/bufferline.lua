@@ -653,6 +653,15 @@ local function get_current_buf_index()
   return index
 end
 
+local function get_buf_ids(buffers)
+  vim.tbl_map(
+    function(buf)
+      return buf.id
+    end,
+    buffers
+  )
+end
+
 function M.move(direction)
   local index = get_current_buf_index()
   local next_index = index + direction
@@ -661,13 +670,7 @@ function M.move(direction)
     local destination_buf = state.buffers[next_index]
     state.buffers[next_index] = cur_buf
     state.buffers[index] = destination_buf
-    state.custom_sort =
-      vim.tbl_map(
-      function(buf)
-        return buf.id
-      end,
-      state.buffers
-    )
+    state.custom_sort = get_buf_ids(state.buffers)
     refresh()
   end
 end
