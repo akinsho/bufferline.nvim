@@ -29,7 +29,9 @@ local separator_styles = constants.separator_styles
 local state = {
   is_picking = false,
   buffers = {},
-  current_letters = {}
+  current_letters = {},
+  custom_sort = nil,
+  preferences = {}
 }
 
 -------------------------------------------------------------------------//
@@ -105,9 +107,9 @@ end
 --- @param mode string | nil
 local function get_buffers_by_mode(mode)
   --[[
-  show only relevant buffers depending on the layout of the current tabpage:
-  - In tabs with only one window all buffers are listed.
-  - In tabs with more than one window, only the buffers that are being displayed are listed.
+      show only relevant buffers depending on the layout of the current tabpage:
+      - In tabs with only one window all buffers are listed.
+      - In tabs with more than one window, only the buffers that are being displayed are listed.
   --]]
   if mode == "multiwindow" then
     local is_single_tab = vim.fn.tabpagenr("$") == 1
@@ -548,12 +550,36 @@ local function render(buffers, tabs, prefs)
   )
 end
 
+--- TODO can this be done more efficiently in one loop?
+--- @param buf_nums table<number>
+--- @param sorted table<number>
+local function get_updated_buffers(buf_nums, sorted)
+  if not state.custom_sort then
+    return buf_nums
+  end
+  local updated = {}
+  -- add only buffers from our sort that are (still) in the
+  -- canonical buffer list, maintaining the order
+  for _, b in ipairs(sorted) do
+    if vim.tbl_contains(buf_nums, b) then
+      table.insert(updated, b)
+    end
+  end
+  -- add any buffers from the buffer list that aren't in our sort
+  for _, b in ipairs(buf_nums) do
+    if not vim.tbl_contains(sorted, b) then
+      table.insert(updated, b)
+    end
+  end
+  return updated
+end
+
 --- @param preferences table
 --- @return string
 local function bufferline(preferences)
   local options = preferences.options
   local buf_nums = get_buffers_by_mode(options.view)
-
+  buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
   local all_tabs = tabs.get(options.separator_style, preferences)
 
   if not options.always_show_bufferline then
@@ -575,15 +601,22 @@ local function bufferline(preferences)
       id = buf_id,
       ordinal = i
     }
-    duplicates.mark(state.buffers, buf, function(b)
-      b.component, b.length = render_buffer(preferences, b)
-    end)
+    duplicates.mark(
+      state.buffers,
+      buf,
+      function(b)
+        b.component, b.length = render_buffer(preferences, b)
+      end
+    )
     buf.letter = letters.get(buf)
     buf.component, buf.length = render_buffer(preferences, buf)
     state.buffers[i] = buf
   end
 
-  sort.sort_buffers(preferences.options.sort_by, state.buffers)
+  -- if the user has reschuffled the buffers manually don't try and sort them
+  if not state.custom_sort then
+    sort.sort_buffers(preferences.options.sort_by, state.buffers)
+  end
 
   return render(state.buffers, all_tabs, preferences)
 end
@@ -607,7 +640,7 @@ function M.go_to_buffer(num)
   end
 end
 
-function M.cycle(direction)
+local function get_current_buf_index()
   local current = api.nvim_get_current_buf()
   local index
 
@@ -617,7 +650,38 @@ function M.cycle(direction)
       break
     end
   end
+  return index
+end
 
+--- @param buffers table<Buffer>
+local function get_buf_ids(buffers)
+  return vim.tbl_map(
+    function(buf)
+      return buf.id
+    end,
+    buffers
+  )
+end
+
+--- @param direction number
+function M.move(direction)
+  local index = get_current_buf_index()
+  if not index then
+    return utils.echoerr("Unable to find buffer to move, sorry")
+  end
+  local next_index = index + direction
+  if next_index >= 1 and next_index <= #state.buffers then
+    local cur_buf = state.buffers[index]
+    local destination_buf = state.buffers[next_index]
+    state.buffers[next_index] = cur_buf
+    state.buffers[index] = destination_buf
+    state.custom_sort = get_buf_ids(state.buffers)
+    refresh()
+  end
+end
+
+function M.cycle(direction)
+  local index = get_current_buf_index()
   if not index then
     return
   end
@@ -635,8 +699,7 @@ function M.cycle(direction)
   local next = state.buffers[next_index]
 
   if not next then
-    vim.cmd('echoerr "This buffer does not exist"')
-    return
+    return utils.echoerr("This buffer does not exist")
   end
 
   vim.cmd("buffer " .. next.id)
@@ -700,6 +763,8 @@ function M.setup(prefs)
   vim.cmd('command BufferLinePick lua require"bufferline".pick_buffer()')
   vim.cmd('command BufferLineCycleNext lua require"bufferline".cycle(1)')
   vim.cmd('command BufferLineCyclePrev lua require"bufferline".cycle(-1)')
+  vim.cmd('command BufferLineMovePrev lua require"bufferline".move(-1)')
+  vim.cmd('command BufferLineMoveNext lua require"bufferline".move(1)')
 
   -- TODO / idea: consider allowing these mappings to open buffers based on their
   -- visual position i.e. <leader>1 maps to the first visible buffer regardless

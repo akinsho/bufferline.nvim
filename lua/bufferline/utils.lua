@@ -121,4 +121,8 @@ function M.get_valid_buffers(bufs)
   return valid_bufs
 end
 
+function M.echoerr(msg)
+  vim.cmd(string.format([[echoerr "%s"]], msg))
+end
+
 return M
