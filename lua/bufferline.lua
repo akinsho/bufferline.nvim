@@ -23,6 +23,16 @@ local strwidth = vim.fn.strwidth
 local padding = constants.padding
 local separator_styles = constants.separator_styles
 
+
+local function save_positions(buffers)
+  return table.concat(buffers, ',')
+end
+
+local function restore_positions()
+  local str = vim.g.Bufferline_positions
+  if not str then return str end
+  return vim.split(str, ',')
+end
 -----------------------------------------------------------
 -- State
 -----------------------------------------------------------
@@ -554,9 +564,9 @@ end
 
 --- TODO can this be done more efficiently in one loop?
 --- @param buf_nums table<number>
---- @param sorted table<number>
-local function get_updated_buffers(buf_nums, sorted)
-  if not state.custom_sort then
+local function get_updated_buffers(buf_nums)
+  local sorted = state.custom_sort or restore_positions()
+  if not sorted then
     return buf_nums
   end
   local updated = {}
@@ -581,7 +591,7 @@ end
 local function bufferline(preferences)
   local options = preferences.options
   local buf_nums = get_buffers_by_mode(options.view)
-  buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
+  buf_nums = get_updated_buffers(buf_nums)
   local all_tabs = tabs.get(options.separator_style, preferences)
 
   if not options.always_show_bufferline then
