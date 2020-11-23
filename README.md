@@ -180,8 +180,8 @@ end
 ```
 
 When using a sorted bufferline it's advisable that you use the `BufferLineCycleNext` and `BufferLineCyclePrev`
-commands since these will traverse the bufferline bufferlist in order whereas. `bnext` and `bprev` will cycle
-buffers according to the buffer numbers given by vim
+commands since these will traverse the bufferline bufferlist in order whereas `bnext` and `bprev` will cycle
+buffers according to the buffer numbers given by vim.
 
 ### Bufferline Pick functionality (inspired by [`barbar.nvim`](https://github.com/romgrk/barbar.nvim))
 
@@ -192,7 +192,7 @@ Trigger the command, using `:BufferLinePick` or better still map this to a key, 
 nnoremap <silent> gb :BufferLinePick<CR>
 ```
 
-then pick the a buffer by typing the character for that specific
+then pick a buffer by typing the character for that specific
 buffer that appears
 
 ![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
