@@ -10,4 +10,6 @@ M.separator_styles = {
   thin = "thin"
 }
 
+M.positions_key = 'BufferlinePositions'
+
 return M
