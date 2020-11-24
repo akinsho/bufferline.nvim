@@ -86,11 +86,8 @@ function M.make_clickable(context)
   end
   -- v:lua does not support function references in vimscript so
   -- the only way to implement this is using autoload viml functions
-  if mode == "multiwindow" then
-    return "%" .. buf_num .. "@nvim_bufferline#handle_win_click@" .. component
-  else
-    return "%" .. buf_num .. "@nvim_bufferline#handle_click@" .. component
-  end
+  local fn =  mode == "multiwindow" and "handle_win_click" or "handle_click"
+  return "%" .. buf_num .. "@nvim_bufferline#"..fn.."@" .. component
 end
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
