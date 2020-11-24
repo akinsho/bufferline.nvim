@@ -38,6 +38,8 @@ all of it's functionality though.
 
 ![move current buffer](./screenshots/re-order.gif "Move current buffer")
 
+This order can be persisted between sessions (enabled by default).
+
 #### Modified symbol
 
 <img src="./screenshots/bufferline_with_modified.png" alt="modified icon" width="350px" />
@@ -92,6 +94,10 @@ nnoremap <silent>b] :BufferLineCyclePrev<CR>
 nnoremap <silent><mymap> :BufferLineMoveNext<CR>
 nnoremap <silent><mymap> :BufferLineMovePrev<CR>
 ```
+
+If you manually arrange your buffers using `:BufferLineMove{Prev/Next}` during an nvim session this can be persisted for the session.
+This is enabled by default but you need to ensure that your `sessionopts+=globals` otherwise the session file will
+not track global variables which is the mechanism used to store your sort order.
 
 ## Warning
 
@@ -154,6 +160,7 @@ require'bufferline'.setup{
     max_prefix_length = 15, -- prefix used when a buffer is deduplicated
     tab_size = 18,
     show_buffer_close_icons = true | false,
+    persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
     -- can also be a table containing 2 custom separators
     -- [focused and unfocused]. eg: { '|', '|' }
     separator_style = "slant" | "thick" | "thin" | { 'any', 'any' },
