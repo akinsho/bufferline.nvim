@@ -2,17 +2,6 @@
 -- HELPERS
 ---------------------------------------------------------------------------//
 local M = {}
--- https://stackoverflow.com/questions/1283388/lua-merge-tables
-function M.deep_merge(t1, t2)
-  for k, v in pairs(t2) do
-    if (type(v) == "table") and (type(t1[k] or false) == "table") then
-      M.deep_merge(t1[k], t2[k])
-    else
-      t1[k] = v
-    end
-  end
-  return t1
-end
 
 function M.join(...)
   local t = ""
@@ -27,7 +16,7 @@ function M.join(...)
 end
 
 -- return a new array containing the concatenation of all of its
--- parameters. Scaler parameters are included in place, and array
+-- parameters. Scalar parameters are included in place, and array
 -- parameters have their values shallow-copied to the final array.
 -- Note that userdata and function values are treated as scalar.
 -- https://stackoverflow.com/questions/1410862/concatenation-of-tables-in-lua

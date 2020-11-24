@@ -782,7 +782,7 @@ function M.setup(prefs)
   local preferences = config.get_defaults()
   -- Combine user preferences with defaults preferring the user's own settings
   if prefs and type(prefs) == "table" then
-    utils.deep_merge(preferences, prefs)
+    preferences = vim.tbl_deep_extend("force", preferences, prefs)
   end
 
   state.preferences = preferences
