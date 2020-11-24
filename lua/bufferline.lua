@@ -22,17 +22,8 @@ local strwidth = vim.fn.strwidth
 
 local padding = constants.padding
 local separator_styles = constants.separator_styles
+local positions_key = constants.positions_key
 
-
-local function save_positions(buffers)
-  return table.concat(buffers, ',')
-end
-
-local function restore_positions()
-  local str = vim.g.Bufferline_positions
-  if not str then return str end
-  return vim.split(str, ',')
-end
 -----------------------------------------------------------
 -- State
 -----------------------------------------------------------
@@ -58,6 +49,24 @@ M.shade_color = colors.shade_color
 local function refresh()
   vim.cmd("redrawtabline")
   vim.cmd("redraw")
+end
+
+local function save_positions(buffers)
+  local positions = table.concat(buffers, ",")
+  vim.g[positions_key] = positions
+end
+
+function M.restore_positions()
+  local str = vim.g[positions_key]
+  if not str then
+    return str
+  end
+  local buf_ids = vim.split(str, ",")
+  if buf_ids and #buf_ids > 0 then
+    -- these are converted to strings when stored
+    -- so have to be converted back before usage
+    state.custom_sort = vim.tbl_map(tonumber, buf_ids)
+  end
 end
 
 function M.pick_buffer()
@@ -564,8 +573,8 @@ end
 
 --- TODO can this be done more efficiently in one loop?
 --- @param buf_nums table<number>
-local function get_updated_buffers(buf_nums)
-  local sorted = state.custom_sort or restore_positions()
+--- @param sorted table<number>
+local function get_updated_buffers(buf_nums, sorted)
   if not sorted then
     return buf_nums
   end
@@ -591,7 +600,7 @@ end
 local function bufferline(preferences)
   local options = preferences.options
   local buf_nums = get_buffers_by_mode(options.view)
-  buf_nums = get_updated_buffers(buf_nums)
+  buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
   local all_tabs = tabs.get(options.separator_style, preferences)
 
   if not options.always_show_bufferline then
@@ -688,6 +697,9 @@ function M.move(direction)
     state.buffers[next_index] = cur_buf
     state.buffers[index] = destination_buf
     state.custom_sort = get_buf_ids(state.buffers)
+    if state.preferences.options.persist_buffer_sort then
+      save_positions(state.custom_sort)
+    end
     refresh()
   end
 end
@@ -726,24 +738,20 @@ function M.toggle_bufferline()
   end
 end
 
--- TODO then validate user preferences and only set prefs that exists
-function M.setup(prefs)
-  local preferences = config.get_defaults()
-  -- Combine user preferences with defaults preferring the user's own settings
-  if prefs and type(prefs) == "table" then
-    utils.deep_merge(preferences, prefs)
-  end
-
-  -- on loading (and reloading) the plugin's config reset all the highlights
-  highlights.set_all(preferences.highlights)
-
-  function _G.__setup_bufferline_colors()
-    highlights.set_all(preferences.highlights)
-  end
-
+local function setup_autocommands(preferences)
   local autocommands = {
     {"ColorScheme", "*", [[lua __setup_bufferline_colors()]]}
   }
+  if preferences.options.persist_buffer_sort then
+    table.insert(
+      autocommands,
+      {
+        "SessionLoadPost",
+        "*",
+        [[lua require'bufferline'.restore_positions()]]
+      }
+    )
+  end
   if not preferences.options.always_show_bufferline then
     -- toggle tabline
     table.insert(
@@ -755,7 +763,6 @@ function M.setup(prefs)
       }
     )
   end
-
   if devicons_loaded then
     table.insert(
       autocommands,
@@ -768,7 +775,26 @@ function M.setup(prefs)
   end
 
   utils.nvim_create_augroups({BufferlineColors = autocommands})
+end
 
+-- TODO then validate user preferences and only set prefs that exists
+function M.setup(prefs)
+  local preferences = config.get_defaults()
+  -- Combine user preferences with defaults preferring the user's own settings
+  if prefs and type(prefs) == "table" then
+    utils.deep_merge(preferences, prefs)
+  end
+
+  state.preferences = preferences
+
+  -- on loading (and reloading) the plugin's config reset all the highlights
+  highlights.set_all(preferences.highlights)
+
+  function _G.__setup_bufferline_colors()
+    highlights.set_all(preferences.highlights)
+  end
+
+  setup_autocommands(preferences)
   -----------------------------------------------------------
   -- Commands
   -----------------------------------------------------------
