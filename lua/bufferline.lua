@@ -107,7 +107,6 @@ local function get_buffer_highlight(buffer, highlights)
     hl.duplicate = h.duplicate.hl
     hl.pick = h.pick.hl
     hl.separator = h.selected_separator.hl
-    hl.buffer = h.selected
   elseif buffer:visible() then
     hl.background = h.buffer_inactive.hl
     hl.modified = h.modified_inactive.hl
@@ -121,7 +120,6 @@ local function get_buffer_highlight(buffer, highlights)
     hl.duplicate = h.duplicate_inactive.hl
     hl.pick = h.pick_inactive.hl
     hl.separator = h.separator.hl
-    hl.buffer = h.background
   end
   return hl
 end
