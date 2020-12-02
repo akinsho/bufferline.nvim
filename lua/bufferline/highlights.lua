@@ -8,7 +8,14 @@ local function hl(item)
   return "%#" .. item .. "#"
 end
 
+local function hl_exists(name)
+  return vim.fn.hlexists(name) > 0
+end
+
 function M.set_one(name, hl)
+  if hl_exists(name) then
+    return
+  end
   if hl and vim.tbl_count(hl) > 0 then
     local cmd = "highlight! " .. name
     if hl.gui and hl.gui ~= "" then

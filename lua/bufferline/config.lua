@@ -24,6 +24,7 @@ function M.get_defaults()
   local separator_shading = is_bright_background and -20 or -45
   local background_shading = is_bright_background and -12 or -25
 
+  local inactive_bg = colors.shade_color(normal_bg, -8)
   local duplicate_color = colors.shade_color(comment_fg, -5)
   local separator_background_color =
     colors.shade_color(normal_bg, separator_shading)
@@ -59,10 +60,6 @@ function M.get_defaults()
         guifg = tabline_sel_bg,
         guibg = normal_bg
       },
-      selected_separator = {
-        guifg = separator_background_color,
-        guibg = normal_bg
-      },
       tab_close = {
         guifg = comment_fg,
         guibg = background_color
@@ -77,7 +74,7 @@ function M.get_defaults()
       },
       buffer_inactive = {
         guifg = comment_fg,
-        guibg = normal_bg
+        guibg = inactive_bg
       },
       modified = {
         guifg = string_fg,
@@ -95,7 +92,7 @@ function M.get_defaults()
       },
       modified_inactive = {
         guifg = string_fg,
-        guibg = normal_bg
+        guibg = inactive_bg
       },
       modified_selected = {
         guifg = string_fg,
@@ -104,6 +101,14 @@ function M.get_defaults()
       separator = {
         guifg = separator_background_color,
         guibg = background_color
+      },
+      separator_inactive = {
+        guifg = separator_background_color,
+        guibg = inactive_bg
+      },
+      selected_separator = {
+        guifg = separator_background_color,
+        guibg = normal_bg
       },
       selected_indicator = {
         guifg = tabline_sel_bg,

@@ -104,21 +104,24 @@ local function get_buffer_highlight(buffer, highlights)
   if buffer:current() then
     hl.background = h.selected.hl
     hl.modified = h.modified_selected.hl
-    hl.buffer = h.selected
     hl.duplicate = h.duplicate.hl
     hl.pick = h.pick.hl
+    hl.separator = h.selected_separator.hl
+    hl.buffer = h.selected
   elseif buffer:visible() then
     hl.background = h.buffer_inactive.hl
     hl.modified = h.modified_inactive.hl
-    hl.buffer = h.buffer_inactive
     hl.duplicate = h.duplicate.hl
     hl.pick = h.pick_inactive.hl
+    hl.separator = h.separator_inactive.hl
+    hl.buffer = h.buffer_inactive
   else
     hl.background = h.background.hl
     hl.modified = h.modified.hl
-    hl.buffer = h.background
     hl.duplicate = h.duplicate_inactive.hl
     hl.pick = h.pick_inactive.hl
+    hl.separator = h.separator.hl
+    hl.buffer = h.background
   end
   return hl
 end
@@ -188,8 +191,10 @@ local function highlight_icon(buffer, background)
   end
   local new_hl = "Bufferline" .. hl
   if background then
-    if buffer:current() or buffer:visible() then
+    if buffer:current() then
       new_hl = new_hl .. "Selected"
+    elseif buffer:visible() then
+      new_hl = new_hl .. "Inactive"
     end
     local guifg = colors.get_hex(hl, "fg")
     highlights.set_one(new_hl, {guibg = background.guibg, guifg = guifg})
@@ -302,12 +307,14 @@ local function separator_components(context)
   local length = context.length
   local hl = context.preferences.highlights
   local style = context.preferences.options.separator_style
+  local curr_hl = context.current_highlights
   local focused = buffer:current() or buffer:visible()
 
   local right_sep, left_sep = get_separator(focused, style)
-  local sep_hl =
-    focused and style == separator_styles.slant and hl.selected_separator.hl or
-    hl.separator.hl
+  local sep_hl = hl.separator.hl
+  if style == separator_styles.slant then
+    sep_hl = curr_hl.separator
+  end
 
   local right_separator = sep_hl .. right_sep
   local left_separator = left_sep and (sep_hl .. left_sep) or nil
