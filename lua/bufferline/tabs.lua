@@ -12,7 +12,7 @@ end
 local function render(tab, is_active, style, highlights)
   local h = highlights
   local hl = is_active and h.tab_selected.hl or h.tab.hl
-  local separator_hl = is_active and h.selected_separator.hl or h.separator.hl
+  local separator_hl = is_active and h.separator_selected.hl or h.separator.hl
   local separator_component = style == "thick" and "▐" or "▕"
   local separator = separator_hl .. separator_component
   local name = padding .. padding .. tab.tabnr .. padding

@@ -24,7 +24,7 @@ function M.get_defaults()
   local separator_shading = is_bright_background and -20 or -45
   local background_shading = is_bright_background and -12 or -25
 
-  local inactive_bg = colors.shade_color(normal_bg, -8)
+  local visible_bg = colors.shade_color(normal_bg, -8)
   local duplicate_color = colors.shade_color(comment_fg, -5)
   local separator_background_color =
     colors.shade_color(normal_bg, separator_shading)
@@ -52,6 +52,14 @@ function M.get_defaults()
       sort_by = "default"
     },
     highlights = {
+      fill = {
+        guifg = comment_fg,
+        guibg = separator_background_color
+      },
+      background = {
+        guifg = comment_fg,
+        guibg = background_color
+      },
       tab = {
         guifg = comment_fg,
         guibg = background_color
@@ -64,67 +72,69 @@ function M.get_defaults()
         guifg = comment_fg,
         guibg = background_color
       },
-      fill = {
+      buffer_visible = {
         guifg = comment_fg,
-        guibg = separator_background_color
+        guibg = visible_bg
       },
-      background = {
-        guifg = comment_fg,
-        guibg = background_color
-      },
-      buffer_inactive = {
-        guifg = comment_fg,
-        guibg = inactive_bg
+      buffer_selected = {
+        guifg = normal_fg,
+        guibg = normal_bg,
+        gui = "bold,italic"
       },
       modified = {
         guifg = string_fg,
         guibg = background_color
       },
-      duplicate = {
-        guifg = duplicate_color,
-        gui = "italic",
-        guibg = normal_bg
-      },
-      duplicate_inactive = {
-        guifg = duplicate_color,
-        gui = "italic",
-        guibg = background_color
-      },
-      modified_inactive = {
+      modified_visible = {
         guifg = string_fg,
-        guibg = inactive_bg
+        guibg = visible_bg
       },
       modified_selected = {
         guifg = string_fg,
         guibg = normal_bg
       },
+      duplicate_selected = {
+        guifg = duplicate_color,
+        gui = "italic",
+        guibg = normal_bg
+      },
+      duplicate_visible = {
+        guifg = duplicate_color,
+        gui = "italic",
+        guibg = visible_bg
+      },
+      duplicate = {
+        guifg = duplicate_color,
+        gui = "italic",
+        guibg = background_color
+      },
+      separator_selected = {
+        guifg = separator_background_color,
+        guibg = normal_bg
+      },
+      separator_visible = {
+        guifg = separator_background_color,
+        guibg = visible_bg
+      },
       separator = {
         guifg = separator_background_color,
         guibg = background_color
       },
-      separator_inactive = {
-        guifg = separator_background_color,
-        guibg = inactive_bg
-      },
-      selected_separator = {
-        guifg = separator_background_color,
-        guibg = normal_bg
-      },
-      selected_indicator = {
+      indicator_selected = {
         guifg = tabline_sel_bg,
         guibg = normal_bg
       },
-      selected = {
-        guifg = normal_fg,
-        guibg = normal_bg,
-        gui = "bold,italic"
-      },
-      pick = {
+      pick_selected = {
         guifg = error_fg,
         guibg = normal_bg,
         gui = "bold,italic"
       },
-      pick_inactive = {
+      pick_visible = {
+        guifg = error_fg,
+        guibg = visible_bg,
+        gui = "bold,italic"
+      },
+      pick = {
         guifg = error_fg,
         guibg = background_color,
         gui = "bold,italic"

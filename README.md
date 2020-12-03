@@ -244,37 +244,101 @@ nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>
 This plugin is designed to work automatically, deriving colours from the user's theme,
 but if you must...
 
+Keep in mind that despite my best efforts not to change these they might require the occasional
+tweak (if you don't customise these too much you should be fine 🤞). If you do, you might need
+to tweak these occasionally, the plugin will emit a warning if any of the groups you specify don't
+exist
+
 ```vim
 lua require'bufferline'.setup{
   highlights = {
-    tab = {
-      guifg = comment_fg,
-      guibg = normal_bg,
+      fill = {
+        guifg = comment_fg,
+        guibg = separator_background_color
+      },
+      background = {
+        guifg = comment_fg,
+        guibg = background_color
+      },
+      tab = {
+        guifg = comment_fg,
+        guibg = background_color
+      },
+      tab_selected = {
+        guifg = tabline_sel_bg,
+        guibg = normal_bg
+      },
+      tab_close = {
+        guifg = comment_fg,
+        guibg = background_color
+      },
+      buffer_visible = {
+        guifg = comment_fg,
+        guibg = visible_bg
+      },
+      buffer_selected = {
+        guifg = normal_fg,
+        guibg = normal_bg,
+        gui = "bold,italic"
+      },
+      modified = {
+        guifg = string_fg,
+        guibg = background_color
+      },
+      modified_visible = {
+        guifg = string_fg,
+        guibg = visible_bg
+      },
+      modified_selected = {
+        guifg = string_fg,
+        guibg = normal_bg
+      },
+      duplicate_selected = {
+        guifg = duplicate_color,
+        gui = "italic",
+        guibg = normal_bg
+      },
+      duplicate_visible = {
+        guifg = duplicate_color,
+        gui = "italic",
+        guibg = visible_bg
+      },
+      duplicate = {
+        guifg = duplicate_color,
+        gui = "italic",
+        guibg = background_color
+      },
+      separator_selected = {
+        guifg = separator_background_color,
+        guibg = normal_bg
+      },
+      separator_visible = {
+        guifg = separator_background_color,
+        guibg = visible_bg
+      },
+      separator = {
+        guifg = separator_background_color,
+        guibg = background_color
+      },
+      indicator_selected = {
+        guifg = tabline_sel_bg,
+        guibg = normal_bg
+      },
+      pick_selected = {
+        guifg = error_fg,
+        guibg = normal_bg,
+        gui = "bold,italic"
+      },
+      pick_visible = {
+        guifg = error_fg,
+        guibg = visible_bg,
+        gui = "bold,italic"
+      },
+      pick = {
+        guifg = error_fg,
+        guibg = background_color,
+        gui = "bold,italic"
+      }
     };
-    tab_selected = {
-      guifg = comment_fg,
-      guibg = tabline_sel_bg,
-    };
-    buffer = {
-      guifg = comment_fg,
-      guibg = custom_bg,
-    };
-    buffer_inactive = {
-      guifg = comment_fg,
-      guibg = normal_bg,
-    };
-    modified = {
-      guifg = diff_add_fg,
-      guibg = "none"
-    };
-    separator = {
-      guibg = custom_bg,
-    };
-    selected = {
-      guifg = normal_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
-    };
-  };
 }
 ```
