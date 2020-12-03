@@ -52,6 +52,14 @@ function M.get_defaults()
       sort_by = "default"
     },
     highlights = {
+      fill = {
+        guifg = comment_fg,
+        guibg = separator_background_color
+      },
+      background = {
+        guifg = comment_fg,
+        guibg = background_color
+      },
       tab = {
         guifg = comment_fg,
         guibg = background_color
@@ -64,21 +72,26 @@ function M.get_defaults()
         guifg = comment_fg,
         guibg = background_color
       },
-      fill = {
-        guifg = comment_fg,
-        guibg = separator_background_color
-      },
-      background = {
-        guifg = comment_fg,
-        guibg = background_color
-      },
       buffer_visible = {
         guifg = comment_fg,
         guibg = visible_bg
       },
+      buffer_selected = {
+        guifg = normal_fg,
+        guibg = normal_bg,
+        gui = "bold,italic"
+      },
       modified = {
         guifg = string_fg,
         guibg = background_color
+      },
+      modified_visible = {
+        guifg = string_fg,
+        guibg = visible_bg
+      },
+      modified_selected = {
+        guifg = string_fg,
+        guibg = normal_bg
       },
       duplicate_selected = {
         guifg = duplicate_color,
@@ -95,39 +108,21 @@ function M.get_defaults()
         gui = "italic",
         guibg = background_color
       },
-      modified_visible = {
-        guifg = string_fg,
-        guibg = visible_bg
-      },
-      modified_selected = {
-        guifg = string_fg,
-        guibg = normal_bg
-      },
-      separator = {
+      separator_selected = {
         guifg = separator_background_color,
-        guibg = background_color
+        guibg = normal_bg
       },
       separator_visible = {
         guifg = separator_background_color,
         guibg = visible_bg
       },
-      separator_selected = {
+      separator = {
         guifg = separator_background_color,
-        guibg = normal_bg
+        guibg = background_color
       },
       indicator_selected = {
         guifg = tabline_sel_bg,
         guibg = normal_bg
-      },
-      buffer_selected = {
-        guifg = normal_fg,
-        guibg = normal_bg,
-        gui = "bold,italic"
-      },
-      pick = {
-        guifg = error_fg,
-        guibg = background_color,
-        gui = "bold,italic"
       },
       pick_selected = {
         guifg = error_fg,
@@ -137,6 +132,11 @@ function M.get_defaults()
       pick_visible = {
         guifg = error_fg,
         guibg = visible_bg,
+        gui = "bold,italic"
+      },
+      pick = {
+        guifg = error_fg,
+        guibg = background_color,
         gui = "bold,italic"
       }
     }
