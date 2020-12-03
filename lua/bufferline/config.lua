@@ -126,7 +126,7 @@ function M.get_defaults()
       },
       pick = {
         guifg = error_fg,
-        guibg = normal_bg,
+        guibg = background_color,
         gui = "bold,italic"
       },
       pick_selected = {
@@ -136,7 +136,7 @@ function M.get_defaults()
       },
       pick_visible = {
         guifg = error_fg,
-        guibg = background_color,
+        guibg = visible_bg,
         gui = "bold,italic"
       }
     }
