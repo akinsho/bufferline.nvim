@@ -784,9 +784,33 @@ local function setup_autocommands(preferences)
   utils.nvim_create_augroups({BufferlineColors = autocommands})
 end
 
+local function validate_prefs(prefs, defaults)
+  if prefs.highlights then
+    local incorrect = {}
+    for k, _ in pairs(prefs.highlights) do
+      if not defaults.highlights[k] then
+        table.insert(incorrect, k)
+      end
+    end
+    local is_plural = #incorrect > 1
+    local verb = is_plural and " are " or " is "
+    local article = is_plural and " " or " a "
+    local object = is_plural and " groups. " or " group. "
+    local msg =
+      table.concat(incorrect, ", ") ..
+      verb ..
+        "not" ..
+          article ..
+            "valid highlight" ..
+              object .. "Please check the README for all valid highlights"
+    utils.echomsg(msg, "WarningMsg")
+  end
+end
+
 -- TODO then validate user preferences and only set prefs that exists
 function M.setup(prefs)
   local preferences = config.get_defaults()
+  validate_prefs(prefs, preferences)
   -- Combine user preferences with defaults preferring the user's own settings
   if prefs and type(prefs) == "table" then
     preferences = vim.tbl_deep_extend("force", preferences, prefs)
