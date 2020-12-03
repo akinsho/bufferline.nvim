@@ -102,24 +102,24 @@ local function get_buffer_highlight(buffer, highlights)
   local hl = {}
   local h = highlights
   if buffer:current() then
-    hl.background = h.selected.hl
+    hl.background = h.buffer_selected.hl
     hl.modified = h.modified_selected.hl
-    hl.duplicate = h.duplicate.hl
-    hl.pick = h.pick.hl
-    hl.separator = h.selected_separator.hl
-    hl.buffer = h.selected
+    hl.duplicate = h.duplicate_selected.hl
+    hl.pick = h.pick_selected.hl
+    hl.separator = h.separator_selected.hl
+    hl.buffer = h.buffer_selected
   elseif buffer:visible() then
-    hl.background = h.buffer_inactive.hl
-    hl.modified = h.modified_inactive.hl
-    hl.duplicate = h.duplicate.hl
-    hl.pick = h.pick_inactive.hl
-    hl.separator = h.separator_inactive.hl
-    hl.buffer = h.buffer_inactive
+    hl.background = h.buffer_visible.hl
+    hl.modified = h.modified_visible.hl
+    hl.duplicate = h.duplicate_visible.hl
+    hl.pick = h.pick_visible.hl
+    hl.separator = h.separator_visible.hl
+    hl.buffer = h.buffer_visible
   else
     hl.background = h.background.hl
     hl.modified = h.modified.hl
-    hl.duplicate = h.duplicate_inactive.hl
-    hl.pick = h.pick_inactive.hl
+    hl.duplicate = h.duplicate.hl
+    hl.pick = h.pick.hl
     hl.separator = h.separator.hl
     hl.buffer = h.background
   end
@@ -250,7 +250,7 @@ local function indicator_component(context)
       -- background highlight doesn't appear in th middle
       -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
       symbol = "▎"
-      indicator = hl.selected_indicator.hl .. symbol .. "%*"
+      indicator = hl.indicator_selected.hl .. symbol .. "%*"
     end
     length = length + strwidth(symbol)
     component = indicator .. curr_hl.background .. component
