@@ -785,7 +785,7 @@ local function setup_autocommands(preferences)
 end
 
 local function validate_prefs(prefs, defaults)
-  if prefs ~= nil and prefs.highlights then
+  if prefs and prefs.highlights then
     local incorrect = {}
     for k, _ in pairs(prefs.highlights) do
       if not defaults.highlights[k] then
