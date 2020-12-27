@@ -792,6 +792,10 @@ local function validate_prefs(prefs, defaults)
         table.insert(incorrect, k)
       end
     end
+    -- Don't continue if there are no incorrect highlights
+    if vim.tbl_isempty(incorrect) then
+      return
+    end
     local is_plural = #incorrect > 1
     local verb = is_plural and " are " or " is "
     local article = is_plural and " " or " a "
