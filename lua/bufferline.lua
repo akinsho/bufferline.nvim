@@ -158,7 +158,7 @@ local function get_buffers_by_mode(mode)
       return utils.get_valid_buffers(unique)
     end
   end
-  return utils.get_valid_buffers()
+  return utils.get_valid_buffers(nil, state.preferences.options.filter)
 end
 
 local function truncate_filename(filename, word_limit)

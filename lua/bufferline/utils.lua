@@ -90,16 +90,21 @@ function M.is_valid(buf_num)
 end
 
 --- @param bufs table | nil
-function M.get_valid_buffers(bufs)
+function M.get_valid_buffers(bufs, filter)
   local buf_nums = bufs or vim.api.nvim_list_bufs()
   local valid_bufs = {}
+  filter = filter or M.is_valid
 
   -- NOTE: In lua in order to iterate an array, indices should
   -- not contain gaps otherwise "ipairs" will stop at the first gap
   -- i.e the indices should be contiguous
   local count = 0
   for _, buf in ipairs(buf_nums) do
-    if M.is_valid(buf) then
+    local is_valid = filter(buf)
+    if is_valid == nil then
+      is_valid = M.is_valid(buf)
+    end
+    if is_valid then
       count = count + 1
       valid_bufs[count] = buf
     end
