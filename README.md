@@ -169,6 +169,9 @@ require'bufferline'.setup{
     sort_by = 'extension' | 'relative_directory' | 'directory' | function(buffer_a, buffer_b)
       -- add custom logic
       return buffer_a.modified > buffer_b.modified
+    end,
+    filter = function(buffer_id)
+      -- add custom logic, or return `nil` to use the default
     end
   }
 }
@@ -207,6 +210,38 @@ end
 When using a sorted bufferline it's advisable that you use the `BufferLineCycleNext` and `BufferLineCyclePrev`
 commands since these will traverse the bufferline bufferlist in order whereas `bnext` and `bprev` will cycle
 buffers according to the buffer numbers given by vim.
+
+### Filtering Buffers
+
+Bufferline allows you to specify a function to filter what buffers are visible at any given time.
+This function is called for each buffer and can return 1 of three values:
+
+- `true` - Meaning the buffer should be shown
+- `false` - Meaning the buffer should be hidden
+- `nil` - Meaning the buffer should use it's default visibility
+
+In the following example, the filtering changes depending on if the current tab has the `t:is_help_tab`
+option set to a truthy value. If it is set to anything else or does not exist, it returns `nil`. Then, it gets
+the `buftype` of the given `buffer_id` and returns `true` if it is a help buffer. This allows for the ability to
+have a separate tab for showing open help buffers, and the ability to switch between them like other buffers.
+
+```lua
+filter = function(buffer_id)
+  -- add custom logic
+  if not vim.t.is_help_tab then
+    return nil -- Use the buffer's default visibility
+  end
+  local buftype = vim.api.nvim_buf_get_option(buf_num, "buftype")
+  return buftype == "help" -- Only show help buffers
+end
+```
+
+![Buffer filtering](./screenshots/filtering.gif "Buffer Filtering functionality")
+
+Another possibility for filtering is using tabs to separate buffers into projects by checking
+if the value of a given `t:` variable exists in each buffer's path, etc.
+
+> Side note: Currently this functionality is disabled when the `view` option is set to `multiwindow`.
 
 ### Bufferline Pick functionality (inspired by [`barbar.nvim`](https://github.com/romgrk/barbar.nvim))
 
