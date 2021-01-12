@@ -51,8 +51,8 @@ local function refresh()
   vim.cmd("redraw")
 end
 
-local function save_positions(buffers)
-  local positions = table.concat(buffers, ",")
+local function save_positions(bufs)
+  local positions = table.concat(bufs, ",")
   vim.g[positions_key] = positions
 end
 
@@ -98,9 +98,9 @@ function M.handle_click(id, button)
   end
 end
 
-local function get_buffer_highlight(buffer, highlights)
+local function get_buffer_highlight(buffer, hls)
   local hl = {}
-  local h = highlights
+  local h = hls
   if buffer:current() then
     hl.background = h.buffer_selected.hl
     hl.modified = h.modified_selected.hl
@@ -432,12 +432,12 @@ local function render_close(icon)
   return component, strwidth(component)
 end
 
-local function get_sections(buffers)
+local function get_sections(bufs)
   local current = Buffers:new()
   local before = Buffers:new()
   local after = Buffers:new()
 
-  for _, buf in ipairs(buffers) do
+  for _, buf in ipairs(bufs) do
     if buf:current() then
       -- We haven't reached the current buffer yet
       current:add(buf)
@@ -454,8 +454,8 @@ local function get_marker_size(count, element_size)
   return count > 0 and strwidth(count) + element_size or 0
 end
 
-local function truncation_component(count, icon, highlights)
-  return join(highlights.fill.hl, padding, count, padding, icon, padding)
+local function truncation_component(count, icon, hls)
+  return join(hls.fill.hl, padding, count, padding, icon, padding)
 end
 
 --[[
@@ -513,10 +513,10 @@ local function truncate(before, current, after, available_width, marker)
   end
 end
 
---- @param buffers table<Buffer>
---- @param tabs table<number>
+--- @param bufs table<number, Buffer>
+--- @param tbs table<number, number>
 --- @param prefs table
-local function render(buffers, tabs, prefs)
+local function render(bufs, tbs, prefs)
   local options = prefs.options
   local hl = prefs.highlights
   local right_align = "%="
@@ -525,8 +525,8 @@ local function render(buffers, tabs, prefs)
   local tabs_length = close_length
 
   -- Add the length of the tabs + close components to total length
-  if #tabs > 1 then
-    for _, t in pairs(tabs) do
+  if #tbs > 1 then
+    for _, t in pairs(tbs) do
       if not vim.tbl_isempty(t) then
         tabs_length = tabs_length + t.length
         tab_components = tab_components .. t.component
@@ -544,7 +544,7 @@ local function render(buffers, tabs, prefs)
     strwidth(join(padding, padding, right_trunc_icon, padding))
 
   local available_width = vim.o.columns - tabs_length - close_length
-  local before, current, after = get_sections(buffers)
+  local before, current, after = get_sections(bufs)
   local line, marker =
     truncate(
     before,
@@ -579,8 +579,8 @@ local function render(buffers, tabs, prefs)
 end
 
 --- TODO can this be done more efficiently in one loop?
---- @param buf_nums table<number>
---- @param sorted table<number>
+--- @param buf_nums table<number, number>
+--- @param sorted table<number, number>
 local function get_updated_buffers(buf_nums, sorted)
   if not sorted then
     return buf_nums
@@ -681,13 +681,13 @@ local function get_current_buf_index()
   return index
 end
 
---- @param buffers table<Buffer>
-local function get_buf_ids(buffers)
+--- @param bufs table<number, Buffer>
+local function get_buf_ids(bufs)
   return vim.tbl_map(
     function(buf)
       return buf.id
     end,
-    buffers
+    bufs
   )
 end
 
