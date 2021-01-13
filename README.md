@@ -18,6 +18,12 @@ all of it's functionality though.
 
 ![slanted tabs](./screenshots/diagonal.png "slanted tabs")
 
+#### (nvim) LSP error indicators
+
+- This is experimental and only works with nvim's native lsp for now
+
+![Bufferline with error indicator](./screenshots/lsp_error.png)
+
 #### Option to show buffer numbers
 
 ![Bufferline with numbers ](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
@@ -119,16 +125,6 @@ plugin won't create a nice tabline.
 
 🤷 figured someone else might like the aesthetic. Don't make me regret this...
 
-## Goals
-
-- [x] Make it snazzy
-- [x] Maintain general appearance across various colour schemes
-
-### Future Goals
-
-- [x] Show only the buffers relevant/open in a specific tab as a configurable setting
-- [ ] Show LSP diagnostics in bufferline so it's clear which buffers have errors
-
 ## Non-goals 🙏
 
 - Appeal to every single person's tastes. This plugin is opinionated about how the tabline
@@ -159,6 +155,7 @@ require'bufferline'.setup{
     max_name_length = 18,
     max_prefix_length = 15, -- prefix used when a buffer is deduplicated
     tab_size = 18,
+    diagnostics = false | "nvim_lsp"
     show_buffer_close_icons = true | false,
     persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
     -- can also be a table containing 2 custom separators
@@ -180,6 +177,13 @@ If using a plugin such as `vim-rooter` and you want to sort by path, prefer usin
 `relative_directory`. Relative directory works by ordering relative paths first, however if you move from
 project to project and vim switches its directory, the bufferline will re-order itself as a different set of
 buffers will now be relative.
+
+### LSP Error indicators (Experimental)
+
+By setting `diagnostics = "nvim_lsp"` you will get an indicator in the bufferline for a given tab if it has any errors
+This will allow you to tell at a glance if a particular buffer has errors. Currently only the native neovim lsp is
+supported, mainly because it has the easiest API for fetching all errors for all buffers (with an attached lsp client)
+This feature is _WIP_ so beware and report any issues if you find any.
 
 ### Regular tab sizes
 
