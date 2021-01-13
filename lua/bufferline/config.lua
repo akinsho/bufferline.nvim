@@ -49,7 +49,8 @@ function M.get_defaults()
       always_show_bufferline = true,
       persist_buffer_sort = true,
       max_prefix_length = 15,
-      sort_by = "default"
+      sort_by = "default",
+      diagnostics = "nvim_lsp",
     },
     highlights = {
       fill = {

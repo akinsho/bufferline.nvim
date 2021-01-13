@@ -2,6 +2,7 @@ local colors = require "bufferline/colors"
 local highlights = require "bufferline/highlights"
 local utils = require "bufferline/utils"
 local numbers = require "bufferline/numbers"
+local diagnostics = require "bufferline/diagnostics"
 local letters = require "bufferline/letters"
 local sort = require "bufferline/sorters"
 local duplicates = require "bufferline/duplicates"
@@ -377,14 +378,15 @@ end
 --- @param preferences table
 --- @param buffer Buffer
 --- @return function,number
-local function render_buffer(preferences, buffer)
+local function render_buffer(preferences, buffer, buf_diagnostics)
   local hl = get_buffer_highlight(buffer, preferences.highlights)
   local ctx = {
     length = 0,
     component = "",
     preferences = preferences,
     current_highlights = hl,
-    buffer = buffer
+    buffer = buffer,
+    diagnostics = buf_diagnostics
   }
 
   -- Order matter here as this is the sequence which builds up the tab component
@@ -400,6 +402,7 @@ local function render_buffer(preferences, buffer)
   ctx.component = utils.make_clickable(ctx)
   ctx.component, ctx.length = indicator_component(ctx)
   ctx.component, ctx.length = add_suffix(ctx)
+  ctx.component, ctx.length = diagnostics.component(ctx)
 
   local length, left_sep, right_sep = separator_components(ctx)
   ctx.length = length
@@ -607,9 +610,11 @@ local function bufferline(preferences)
   letters.reset()
   duplicates.reset()
   state.buffers = {}
+  local all_diagnostics = diagnostics.get(options)
 
   for i, buf_id in ipairs(buf_nums) do
     local name = vim.fn.bufname(buf_id)
+    local buf_diagnostics = all_diagnostics[buf_id]
     local buf =
       Buffer:new {
       path = name,
@@ -620,11 +625,11 @@ local function bufferline(preferences)
       state.buffers,
       buf,
       function(b)
-        b.component, b.length = render_buffer(preferences, b)
+        b.component, b.length = render_buffer(preferences, b, buf_diagnostics)
       end
     )
     buf.letter = letters.get(buf)
-    buf.component, buf.length = render_buffer(preferences, buf)
+    buf.component, buf.length = render_buffer(preferences, buf, buf_diagnostics)
     state.buffers[i] = buf
   end
 
