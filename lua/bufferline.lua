@@ -360,8 +360,7 @@ local function pad_buffer(context)
     -- If the buffer is modified add an icon, if it isn't pad
     -- the buffer so it doesn't "jump" when it becomes modified i.e. due
     -- to the sudden addition of a new character
-    local suffix =
-      buffer.modified and hl.modified .. modified or modified_padding
+    local suffix = buffer.modified and hl.modified .. modified or modified_padding
     component = modified_padding .. context.component .. suffix
     length = context.length + (size * 2)
   end
@@ -470,23 +469,19 @@ section
 local function truncate(before, current, after, available_width, marker)
   local line = ""
 
-  local left_trunc_marker =
-    get_marker_size(marker.left_count, marker.left_element_size)
-  local right_trunc_marker =
-    get_marker_size(marker.right_count, marker.right_element_size)
+  local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)
+  local right_trunc_marker = get_marker_size(marker.right_count, marker.right_element_size)
 
   local markers_length = left_trunc_marker + right_trunc_marker
 
-  local total_length =
-    before.length + current.length + after.length + markers_length
+  local total_length = before.length + current.length + after.length + markers_length
 
   if available_width >= total_length then
     -- if we aren't even able to fit the current buffer into the
     -- available space that means the window is really narrow
     -- so don't show anything
     -- Merge all the buffers and render the components
-    local bufs =
-      utils.array_concat(before.buffers, current.buffers, after.buffers)
+    local bufs = utils.array_concat(before.buffers, current.buffers, after.buffers)
     for index, buf in ipairs(bufs) do
       line = line .. buf.component(index, #bufs)
     end
@@ -513,8 +508,8 @@ local function truncate(before, current, after, available_width, marker)
   end
 end
 
---- @param bufs table<number, Buffer>
---- @param tbs table<number, number>
+--- @param bufs Buffer[]
+--- @param tbs number[]
 --- @param prefs table
 local function render(bufs, tbs, prefs)
   local options = prefs.options
@@ -538,10 +533,8 @@ local function render(bufs, tbs, prefs)
   local left_trunc_icon = options.left_trunc_marker
   local right_trunc_icon = options.right_trunc_marker
   -- measure the surrounding trunc items: padding + count + padding + icon + padding
-  local left_element_size =
-    strwidth(join(padding, padding, left_trunc_icon, padding, padding))
-  local right_element_size =
-    strwidth(join(padding, padding, right_trunc_icon, padding))
+  local left_element_size = strwidth(join(padding, padding, left_trunc_icon, padding, padding))
+  local right_element_size = strwidth(join(padding, padding, right_trunc_icon, padding))
 
   local available_width = vim.o.columns - tabs_length - close_length
   local before, current, after = get_sections(bufs)
@@ -568,19 +561,13 @@ local function render(bufs, tbs, prefs)
     line = join(line, hl.background.hl, icon)
   end
 
-  return join(
-    line,
-    hl.fill.hl,
-    right_align,
-    tab_components,
-    hl.tab_close.hl,
-    close
-  )
+  return join(line, hl.fill.hl, right_align, tab_components, hl.tab_close.hl, close)
 end
 
 --- TODO can this be done more efficiently in one loop?
---- @param buf_nums table<number, number>
---- @param sorted table<number, number>
+--- @param buf_nums number[]
+--- @param sorted number[]
+--- @return number[]
 local function get_updated_buffers(buf_nums, sorted)
   if not sorted then
     return buf_nums
@@ -681,7 +668,8 @@ local function get_current_buf_index()
   return index
 end
 
---- @param bufs table<number, Buffer>
+--- @param bufs Buffer[]
+--- @return number[]
 local function get_buf_ids(bufs)
   return vim.tbl_map(
     function(buf)
@@ -805,8 +793,7 @@ local function validate_prefs(prefs, defaults)
       verb ..
         "not" ..
           article ..
-            "valid highlight" ..
-              object .. "Please check the README for all valid highlights"
+            "valid highlight" .. object .. "Please check the README for all valid highlights"
     utils.echomsg(msg, "WarningMsg")
   end
 end

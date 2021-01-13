@@ -15,7 +15,7 @@ end
 local cache = {}
 setmetatable(cache, {__mode = "v"}) -- make values weak
 
----@param buffers table<Buffer>
+---@param buffers Buffer[]
 ---@param current Buffer
 ---@param callback function(Buffer)
 local function mark_duplicates(buffers, current, callback)

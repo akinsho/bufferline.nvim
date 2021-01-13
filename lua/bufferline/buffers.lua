@@ -17,7 +17,7 @@ local terminal_buftype = "terminal"
 --------------------------------
 -- A collection of buffers
 --------------------------------
----@class Buffers @parent class
+--- @class Buffers @parent class
 M.Buffers = {
   buffers = nil
 }
@@ -55,10 +55,10 @@ end
 --------------------------------
 -- A single buffer
 --------------------------------
----@class Buffer @parent class
+--- @class Buffer @parent class
 M.Buffer = {
-  path = nil,
   extension = nil,
+  path = nil,
   id = nil,
   filename = nil,
   icon = nil,
