@@ -20,9 +20,9 @@ local function is_disabled(diagnostics)
   return not diagnostics or diagnostics ~= "nvim_lsp" or not vim.lsp.diagnostic.get_all
 end
 
----@param prefs table
-function M.get(prefs)
-  if is_disabled(prefs.diagnostics) then
+---@param opts table
+function M.get(opts)
+  if is_disabled(opts.diagnostics) then
     return setmetatable({}, mt)
   end
   local diagnostics = vim.lsp.diagnostic.get_all()
@@ -38,8 +38,7 @@ end
 
 ---@param context table
 function M.component(context)
-  local prefs = context.preferences.options
-  if is_disabled(prefs.diagnostics) then
+  if is_disabled(context.preferences.options) then
     return context.component, context.length
   end
   local highlight = context.current_highlights.error
