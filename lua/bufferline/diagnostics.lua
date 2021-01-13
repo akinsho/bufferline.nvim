@@ -38,7 +38,8 @@ end
 
 ---@param context table
 function M.component(context)
-  if is_disabled(context.preferences.options) then
+  local opts = context.preferences.options
+  if is_disabled(opts.diagnostics) then
     return context.component, context.length
   end
   local highlight = context.current_highlights.error
