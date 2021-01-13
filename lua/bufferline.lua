@@ -109,6 +109,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.pick = h.pick_selected.hl
     hl.separator = h.separator_selected.hl
     hl.buffer = h.buffer_selected
+    hl.error = h.error_selected.hl
   elseif buffer:visible() then
     hl.background = h.buffer_visible.hl
     hl.modified = h.modified_visible.hl
@@ -116,6 +117,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.pick = h.pick_visible.hl
     hl.separator = h.separator_visible.hl
     hl.buffer = h.buffer_visible
+    hl.error = h.error_visible.hl
   else
     hl.background = h.background.hl
     hl.modified = h.modified.hl
@@ -123,6 +125,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.pick = h.pick.hl
     hl.separator = h.separator.hl
     hl.buffer = h.background
+    hl.error = h.error.hl
   end
   return hl
 end
@@ -401,8 +404,8 @@ local function render_buffer(preferences, buffer, buf_diagnostics)
   ctx.component, ctx.length = numbers.component(ctx)
   ctx.component = utils.make_clickable(ctx)
   ctx.component, ctx.length = indicator_component(ctx)
-  ctx.component, ctx.length = add_suffix(ctx)
   ctx.component, ctx.length = diagnostics.component(ctx)
+  ctx.component, ctx.length = add_suffix(ctx)
 
   local length, left_sep, right_sep = separator_components(ctx)
   ctx.length = length
