@@ -12,17 +12,17 @@ function M.hl_exists(name)
   return vim.fn.hlexists(name) > 0
 end
 
-function M.set_one(name, hl)
-  if hl and vim.tbl_count(hl) > 0 then
+function M.set_one(name, opts)
+  if opts and vim.tbl_count(opts) > 0 then
     local cmd = "highlight! " .. name
-    if hl.gui and hl.gui ~= "" then
-      cmd = cmd .. " " .. "gui=" .. hl.gui
+    if opts.gui and opts.gui ~= "" then
+      cmd = cmd .. " " .. "gui=" .. opts.gui
     end
-    if hl.guifg and hl.guifg ~= "" then
-      cmd = cmd .. " " .. "guifg=" .. hl.guifg
+    if opts.guifg and opts.guifg ~= "" then
+      cmd = cmd .. " " .. "guifg=" .. opts.guifg
     end
-    if hl.guibg and hl.guibg ~= "" then
-      cmd = cmd .. " " .. "guibg=" .. hl.guibg
+    if opts.guibg and opts.guibg ~= "" then
+      cmd = cmd .. " " .. "guibg=" .. opts.guibg
     end
     -- TODO using api here as it warns of an error if setting highlight fails
     local success, err = pcall(api.nvim_command, cmd)
@@ -42,7 +42,7 @@ end
 function M.set_all(user_colors)
   for name, tbl in pairs(user_colors) do
     -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
-    name = name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
+    name = 'BufferLine'.. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
     M.set_one(name, tbl)
     tbl.hl = hl(name)
   end
