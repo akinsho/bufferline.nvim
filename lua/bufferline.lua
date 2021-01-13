@@ -395,10 +395,10 @@ local function render_buffer(preferences, buffer, buf_diagnostics)
   ctx.component = filename .. padding
 
   ctx.length = ctx.length + strwidth(ctx.component)
-  ctx.component, ctx.length = duplicates.deduplicate(ctx)
+  ctx.component, ctx.length = duplicates.component(ctx)
   ctx.component, ctx.length = add_prefix(ctx)
   ctx.component, ctx.length = pad_buffer(ctx)
-  ctx.component, ctx.length = numbers.get(ctx)
+  ctx.component, ctx.length = numbers.component(ctx)
   ctx.component = utils.make_clickable(ctx)
   ctx.component, ctx.length = indicator_component(ctx)
   ctx.component, ctx.length = add_suffix(ctx)
