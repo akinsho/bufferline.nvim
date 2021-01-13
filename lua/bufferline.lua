@@ -2,6 +2,7 @@ local colors = require "bufferline/colors"
 local highlights = require "bufferline/highlights"
 local utils = require "bufferline/utils"
 local numbers = require "bufferline/numbers"
+local diagnostics = require "bufferline/diagnostics"
 local letters = require "bufferline/letters"
 local sort = require "bufferline/sorters"
 local duplicates = require "bufferline/duplicates"
@@ -108,6 +109,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.pick = h.pick_selected.hl
     hl.separator = h.separator_selected.hl
     hl.buffer = h.buffer_selected
+    hl.error = h.error_selected.hl
   elseif buffer:visible() then
     hl.background = h.buffer_visible.hl
     hl.modified = h.modified_visible.hl
@@ -115,6 +117,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.pick = h.pick_visible.hl
     hl.separator = h.separator_visible.hl
     hl.buffer = h.buffer_visible
+    hl.error = h.error_visible.hl
   else
     hl.background = h.background.hl
     hl.modified = h.modified.hl
@@ -122,6 +125,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.pick = h.pick.hl
     hl.separator = h.separator.hl
     hl.buffer = h.background
+    hl.error = h.error.hl
   end
   return hl
 end
@@ -377,14 +381,15 @@ end
 --- @param preferences table
 --- @param buffer Buffer
 --- @return function,number
-local function render_buffer(preferences, buffer)
+local function render_buffer(preferences, buffer, buf_diagnostics)
   local hl = get_buffer_highlight(buffer, preferences.highlights)
   local ctx = {
     length = 0,
     component = "",
     preferences = preferences,
     current_highlights = hl,
-    buffer = buffer
+    buffer = buffer,
+    diagnostics = buf_diagnostics
   }
 
   -- Order matter here as this is the sequence which builds up the tab component
@@ -393,12 +398,13 @@ local function render_buffer(preferences, buffer)
   ctx.component = filename .. padding
 
   ctx.length = ctx.length + strwidth(ctx.component)
-  ctx.component, ctx.length = duplicates.deduplicate(ctx)
+  ctx.component, ctx.length = duplicates.component(ctx)
   ctx.component, ctx.length = add_prefix(ctx)
   ctx.component, ctx.length = pad_buffer(ctx)
-  ctx.component, ctx.length = numbers.get(ctx)
+  ctx.component, ctx.length = numbers.component(ctx)
   ctx.component = utils.make_clickable(ctx)
   ctx.component, ctx.length = indicator_component(ctx)
+  ctx.component, ctx.length = diagnostics.component(ctx)
   ctx.component, ctx.length = add_suffix(ctx)
 
   local length, left_sep, right_sep = separator_components(ctx)
@@ -607,9 +613,11 @@ local function bufferline(preferences)
   letters.reset()
   duplicates.reset()
   state.buffers = {}
+  local all_diagnostics = diagnostics.get(options)
 
   for i, buf_id in ipairs(buf_nums) do
     local name = vim.fn.bufname(buf_id)
+    local buf_diagnostics = all_diagnostics[buf_id]
     local buf =
       Buffer:new {
       path = name,
@@ -620,11 +628,11 @@ local function bufferline(preferences)
       state.buffers,
       buf,
       function(b)
-        b.component, b.length = render_buffer(preferences, b)
+        b.component, b.length = render_buffer(preferences, b, buf_diagnostics)
       end
     )
     buf.letter = letters.get(buf)
-    buf.component, buf.length = render_buffer(preferences, buf)
+    buf.component, buf.length = render_buffer(preferences, buf, buf_diagnostics)
     state.buffers[i] = buf
   end
 

@@ -49,7 +49,8 @@ function M.get_defaults()
       always_show_bufferline = true,
       persist_buffer_sort = true,
       max_prefix_length = 15,
-      sort_by = "default"
+      sort_by = "default",
+      diagnostics = false,
     },
     highlights = {
       fill = {
@@ -80,6 +81,21 @@ function M.get_defaults()
         guifg = normal_fg,
         guibg = normal_bg,
         gui = "bold,italic"
+      },
+      error = {
+        guifg = error_fg,
+        guibg = background_color,
+        gui="bold"
+      },
+      error_visible = {
+        guifg = error_fg,
+        guibg = visible_bg,
+        gui="bold"
+      },
+      error_selected = {
+        guifg = error_fg,
+        guibg = normal_bg,
+        gui="bold"
       },
       modified = {
         guifg = string_fg,

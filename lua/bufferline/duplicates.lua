@@ -83,7 +83,7 @@ local function truncate(dir, depth, max_size)
 end
 
 --- @param context table
-function M.deduplicate(context)
+function M.component(context)
   local buffer = context.buffer
   local component = context.component
   local options = context.preferences.options
