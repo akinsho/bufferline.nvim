@@ -1,13 +1,13 @@
 local M = {}
 
+-- return the most severe level of diagnostic
 local function get_max_severity(errors)
   for _, err in ipairs(errors) do
     if err and err.severity == 1 then
       return "error"
-    else
-      return "warning"
     end
   end
+  return "warning"
 end
 
 local mt = {
