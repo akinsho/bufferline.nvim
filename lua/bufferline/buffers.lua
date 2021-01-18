@@ -69,9 +69,6 @@ function M.Buffer:new(buf)
   buf.modifiable = vim.fn.getbufvar(buf.id, "&modifiable") == 1
   buf.modified = vim.fn.getbufvar(buf.id, "&modified") == 1
   buf.buftype = vim.fn.getbufvar(buf.id, "&buftype")
-  if buf.path == "" then
-    buf.path = "[No Name]"
-  end
 
   buf.extension = vim.fn.fnamemodify(buf.path, ":e")
   -- Set icon
@@ -87,7 +84,7 @@ function M.Buffer:new(buf)
       buf.icon = devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
     end
     -- TODO: allow the format specifier to be configured
-    buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
+    buf.filename = (buf.path and #buf.path > 0) and fn.fnamemodify(buf.path, ":p:t") or "[No Name]"
   end
 
   self.__index = self

@@ -19,6 +19,10 @@ setmetatable(cache, {__mode = "v"}) -- make values weak
 ---@param current Buffer
 ---@param callback function(Buffer)
 local function mark_duplicates(buffers, current, callback)
+  -- Do not attempt to mark unnamed files
+  if current.path == "" then
+    return
+  end
   local duplicate = duplicates[current.filename]
   if not duplicate then
     duplicates[current.filename] = {current}
