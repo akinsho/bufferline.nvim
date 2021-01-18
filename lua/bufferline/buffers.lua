@@ -4,6 +4,7 @@ if lua_devicons_loaded then
 end
 
 local utils = require "bufferline/utils"
+local fn = vim.fn
 --------------------------------
 -- Export
 --------------------------------
@@ -66,22 +67,22 @@ M.Buffer = {
 }
 
 function M.Buffer:new(buf)
-  buf.modifiable = vim.fn.getbufvar(buf.id, "&modifiable") == 1
-  buf.modified = vim.fn.getbufvar(buf.id, "&modified") == 1
-  buf.buftype = vim.fn.getbufvar(buf.id, "&buftype")
+  buf.modifiable = fn.getbufvar(buf.id, "&modifiable") == 1
+  buf.modified = fn.getbufvar(buf.id, "&modified") == 1
+  buf.buftype = fn.getbufvar(buf.id, "&buftype")
 
-  buf.extension = vim.fn.fnamemodify(buf.path, ":e")
+  buf.extension = fn.fnamemodify(buf.path, ":e")
   -- Set icon
   if buffer_is_terminal(buf) then
     buf.icon = terminal_icon
-    buf.filename = vim.fn.fnamemodify(buf.path, ":p:t")
+    buf.filename = fn.fnamemodify(buf.path, ":p:t")
   else
     if lua_devicons_loaded then
       buf.icon, buf.icon_highlight =
         webdev_icons.get_icon(buf.path, buf.extension, {default = true})
     else
-      local devicons_loaded = vim.fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
-      buf.icon = devicons_loaded and vim.fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
+      local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
+      buf.icon = devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
     end
     -- TODO: allow the format specifier to be configured
     buf.filename = (buf.path and #buf.path > 0) and fn.fnamemodify(buf.path, ":p:t") or "[No Name]"
@@ -101,11 +102,11 @@ end
 -- FIXME this does not work if the same buffer is open in multiple window
 -- maybe do something with win_findbuf(bufnr('%'))
 function M.Buffer:current()
-  return vim.fn.winbufnr(0) == self.id
+  return fn.winbufnr(0) == self.id
 end
 
 function M.Buffer:visible()
-  return vim.fn.bufwinnr(self.id) > 0
+  return fn.bufwinnr(self.id) > 0
 end
 
 --- @param depth number
@@ -116,7 +117,7 @@ function M.Buffer:ancestor(depth, formatter)
   local ancestor = ""
   for index = 1, depth do
     local modifier = string.rep(":h", index)
-    local dir = vim.fn.fnamemodify(self.path, ":p" .. modifier .. ":t")
+    local dir = fn.fnamemodify(self.path, ":p" .. modifier .. ":t")
     if dir == "" then
       break
     end
