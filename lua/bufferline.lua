@@ -105,7 +105,6 @@ end
 local function get_buffer_highlight(buffer, hls)
   local hl = {}
   local h = hls
-  local has_error = buffer.diagnostics.count > 0
 
   if buffer:current() then
     hl.background = h.buffer_selected.hl
@@ -115,6 +114,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.separator = h.separator_selected.hl
     hl.buffer = h.buffer_selected
     hl.error = h.error_selected.hl
+    hl.warning = h.warning_selected.hl
   elseif buffer:visible() then
     hl.background = h.buffer_visible.hl
     hl.modified = h.modified_visible.hl
@@ -123,6 +123,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.separator = h.separator_visible.hl
     hl.buffer = h.buffer_visible
     hl.error = h.error_visible.hl
+    hl.warning = h.warning_visible.hl
   else
     hl.background = h.background.hl
     hl.modified = h.modified.hl
@@ -131,6 +132,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.separator = h.separator.hl
     hl.buffer = h.background
     hl.error = h.error.hl
+    hl.warning = h.warning.hl
   end
   return hl
 end

@@ -12,6 +12,7 @@ function M.get_defaults()
   local normal_bg = colors.get_hex("Normal", "bg")
   local string_fg = colors.get_hex("String", "fg")
   local error_fg = colors.get_hex("Error", "fg")
+  local warning_fg = "DarkOrange"
 
   local tabline_sel_bg = colors.get_hex("TabLineSel", "bg")
   if not tabline_sel_bg == "none" then
@@ -50,7 +51,7 @@ function M.get_defaults()
       max_prefix_length = 15,
       sort_by = "default",
       diagnostics = false,
-      diagnostic_indicator = nil,
+      diagnostic_indicator = nil
     },
     highlights = {
       fill = {
@@ -82,22 +83,40 @@ function M.get_defaults()
         guibg = normal_bg,
         gui = "bold,italic"
       },
+      warning = {
+        guifg = comment_fg,
+        gui = "underline",
+        guisp = warning_fg,
+        guibg = background_color
+      },
+      warning_visible = {
+        guifg = comment_fg,
+        guibg = visible_bg,
+        gui = "underline",
+        guisp = warning_fg
+      },
+      warning_selected = {
+        guifg = warning_fg,
+        guibg = normal_bg,
+        gui = "bold,italic,underline",
+        guisp = warning_fg
+      },
       error = {
-        guifg = error_fg,
+        guifg = comment_fg,
         guibg = background_color,
-        gui = "undercurl",
+        gui = "underline",
         guisp = error_fg
       },
       error_visible = {
-        guifg = error_fg,
+        guifg = comment_fg,
         guibg = visible_bg,
-        gui = "undercurl",
+        gui = "underline",
         guisp = error_fg
       },
       error_selected = {
         guifg = error_fg,
         guibg = normal_bg,
-        gui = "bold,italic,undercurl",
+        gui = "bold,italic,underline",
         guisp = error_fg
       },
       modified = {
