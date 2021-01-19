@@ -18,7 +18,7 @@ all of it's functionality though.
 
 ![slanted tabs](./screenshots/diagonal.png "slanted tabs")
 
-#### (nvim) LSP error indicators
+#### LSP error indicators
 
 - This is experimental and only works with nvim's native lsp for now
 
@@ -57,23 +57,29 @@ This order can be persisted between sessions (enabled by default).
 
 ## Installation
 
-Super early days there might be some breaking changes, if you use this
-without configuring it this shouldn't affect you too much.
-
 ```vim
 Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
 " Plug 'ryanoasis/vim-devicons' Icons without colours
 Plug 'akinsho/nvim-bufferline.lua'
 ```
 
-If using native packages make sure to add this plugins in the `/pack/*/opt`
-directory. This is because plugins in the `/start` directory are not loaded until
-after your `init.vim` is processed which will be too late.
+## Why another buffer line plugin?
 
-```vim
-packadd! nvim-bufferline.lua
-" then call setup sometime after this
-```
+1. I was looking for an excuse to play with **lua** and learn to create a plugin with it for Neovim and there was nothing else built in lua when I created this.
+2. I wanted to add some tweaks to my buffer line and didn't want to figure out a bunch of `vimscript` in some other plugin.
+
+### Why make it public rather than as part of your `init.vim`?
+
+:shrug: figured someone else might like the aesthetic. Don't make me regret this...
+
+## Non-goals 🙏
+
+- Appeal to every single person's tastes. This plugin is opinionated about how the tabline
+  looks, it's unlikely to please everyone, I don't want to try and support a bunch of different
+  appearances.
+- Supporting vim please don't ask. The whole point was to create a lua plugin. If vim ends up supporting lua in the _same_ way then maybe.
+- Add every possible feature under the sun ☀, to appease everybody.
+- Create and maintain a monolith 😓.
 
 ## Usage
 
@@ -82,8 +88,8 @@ of various highlight groups.
 
 ```vim
 set termguicolors
-" In your init.vim AFTER loading plugins
-lua require'bufferline'.setup()
+" In your init.{vim/lua}
+lua require'bufferline'.setup{}
 ```
 
 You can close buffers by clicking the close icon or by _right clicking_ the tab anywhere
@@ -116,24 +122,6 @@ before loading this plugin.
 If the contrast in your colour scheme is too high, think an all black colour scheme, this
 plugin won't create a nice tabline.
 
-## Why another buffer line plugin?
-
-1. I was looking for an excuse to play with **lua** and learn to create a plugin with it for Neovim.
-2. I wanted to add some tweaks to my buffer line and didn't want to figure out a bunch of `vimscript` in some other plugin.
-
-### Why make it public rather than as part of your `init.vim`?
-
-🤷 figured someone else might like the aesthetic. Don't make me regret this...
-
-## Non-goals 🙏
-
-- Appeal to every single person's tastes. This plugin is opinionated about how the tabline
-  looks, it's unlikely to please everyone, I don't want to try and support a bunch of different
-  appearances.
-- Supporting vim please don't ask. The whole point was to create a lua plugin. If vim ends up supporting lua in the _same_ way then maybe.
-- Add every possible feature under the sun ☀, to appease everybody.
-- Create and maintain a monolith 😓.
-
 ## Todo
 
 - [ ] Write nvim help docs
@@ -156,6 +144,9 @@ require'bufferline'.setup{
     max_prefix_length = 15, -- prefix used when a buffer is deduplicated
     tab_size = 18,
     diagnostics = false | "nvim_lsp"
+    diagnostics_indicator = function(count, level)
+      return "("..count..")"
+    end
     show_buffer_close_icons = true | false,
     persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
     -- can also be a table containing 2 custom separators
@@ -184,6 +175,28 @@ By setting `diagnostics = "nvim_lsp"` you will get an indicator in the bufferlin
 This will allow you to tell at a glance if a particular buffer has errors. Currently only the native neovim lsp is
 supported, mainly because it has the easiest API for fetching all errors for all buffers (with an attached lsp client)
 This feature is _WIP_ so beware and report any issues if you find any.
+
+In order to customise the appearance of the diagnostic count you can pass a custom function in your setup.
+
+```lua
+-- rest of config ...
+
+--- count is an integer representing total count of errors
+--- level is a string "error" | "warning"
+--- this should return a string
+--- Don't get too fancy as this function will be executed a lot
+diagnostics_indicator = function(count, level)
+  local icon = level:match("error") and " " or ""
+  return " " .. icon .. count
+end
+```
+
+#### Example custom indicator
+
+![custom indicator](./screenshots/custom_lsp_indicator.png)
+
+The highlighting for the filename if there is an error can be changed by replacing the highlights for
+`error`, `error_visible`, `error_selected`, `warning`, `warning_visible`, `warning_selected`.
 
 ### Regular tab sizes
 
@@ -284,6 +297,42 @@ lua require'bufferline'.setup{
         guifg = normal_fg,
         guibg = normal_bg,
         gui = "bold,italic"
+      },
+      warning = {
+        guifg = comment_fg,
+        gui = "underline",
+        guisp = warning_fg,
+        guibg = background_color
+      },
+      warning_visible = {
+        guifg = comment_fg,
+        guibg = visible_bg,
+        gui = "underline",
+        guisp = warning_fg
+      },
+      warning_selected = {
+        guifg = warning_fg,
+        guibg = normal_bg,
+        gui = "bold,italic,underline",
+        guisp = warning_fg
+      },
+      error = {
+        guifg = comment_fg,
+        guibg = background_color,
+        gui = "underline",
+        guisp = error_fg
+      },
+      error_visible = {
+        guifg = comment_fg,
+        guibg = visible_bg,
+        gui = "underline",
+        guisp = error_fg
+      },
+      error_selected = {
+        guifg = error_fg,
+        guibg = normal_bg,
+        gui = "bold,italic,underline",
+        guisp = error_fg
       },
       modified = {
         guifg = string_fg,
