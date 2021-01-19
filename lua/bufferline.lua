@@ -99,9 +99,14 @@ function M.handle_click(id, button)
   end
 end
 
+---@param buffer Buffer
+---@param hls table<string, table>
+---@return table
 local function get_buffer_highlight(buffer, hls)
   local hl = {}
   local h = hls
+  local has_error = buffer.diagnostics.count > 0
+
   if buffer:current() then
     hl.background = h.buffer_selected.hl
     hl.modified = h.modified_selected.hl
@@ -381,30 +386,36 @@ end
 --- @param preferences table
 --- @param buffer Buffer
 --- @return function,number
-local function render_buffer(preferences, buffer, buf_diagnostics)
+local function render_buffer(preferences, buffer)
   local hl = get_buffer_highlight(buffer, preferences.highlights)
   local ctx = {
     length = 0,
     component = "",
     preferences = preferences,
     current_highlights = hl,
-    buffer = buffer,
-    diagnostics = buf_diagnostics
+    buffer = buffer
   }
 
   -- Order matter here as this is the sequence which builds up the tab component
   local max_length = enforce_regular_tabs(ctx)
   local filename = truncate_filename(buffer.filename, max_length)
-  ctx.component = filename .. padding
 
+  ctx.component = filename
   ctx.length = ctx.length + strwidth(ctx.component)
+  --- apply diagnostics first since we want the highlight
+  --- to only apply to the filename
+  ctx.component, ctx.length = diagnostics.component(ctx)
+
+  ctx.component = ctx.component .. padding
+  ctx.length = ctx.length + strwidth(padding)
+
   ctx.component, ctx.length = duplicates.component(ctx)
   ctx.component, ctx.length = add_prefix(ctx)
   ctx.component, ctx.length = pad_buffer(ctx)
   ctx.component, ctx.length = numbers.component(ctx)
   ctx.component = utils.make_clickable(ctx)
   ctx.component, ctx.length = indicator_component(ctx)
-  ctx.component, ctx.length = diagnostics.component(ctx)
+
   ctx.component, ctx.length = add_suffix(ctx)
 
   local length, left_sep, right_sep = separator_components(ctx)
@@ -617,22 +628,22 @@ local function bufferline(preferences)
 
   for i, buf_id in ipairs(buf_nums) do
     local name = vim.fn.bufname(buf_id)
-    local buf_diagnostics = all_diagnostics[buf_id]
     local buf =
       Buffer:new {
       path = name,
       id = buf_id,
-      ordinal = i
+      ordinal = i,
+      diagnostics = all_diagnostics[buf_id]
     }
     duplicates.mark(
       state.buffers,
       buf,
       function(b)
-        b.component, b.length = render_buffer(preferences, b, buf_diagnostics)
+        b.component, b.length = render_buffer(preferences, b)
       end
     )
     buf.letter = letters.get(buf)
-    buf.component, buf.length = render_buffer(preferences, buf, buf_diagnostics)
+    buf.component, buf.length = render_buffer(preferences, buf)
     state.buffers[i] = buf
   end
 
