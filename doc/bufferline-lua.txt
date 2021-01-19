@@ -1,4 +1,4 @@
-*nvim-bufferline.lua*   For |Neovim version 0.5+|   Last change: 2021 January 19
+*nvim-bufferline.lua*   For Neovim version 0.5+   Last change: 2021 January 19
 
 A snazzy bufferline for neovim written in lua
 
@@ -161,10 +161,13 @@ tabpage, all buffers are listed.
 MAPPINGS                                               *bufferline-lua-mappings*
 
 If the `mappings` option is set to `true`. `<leader>`1-9 mappings will be
-created to navigate the first to the tenth buffer in the bufferline. **This is
-false by default**. If you'd rather map these yourself, use:
+created to navigate the first to the tenth buffer in the bufferline. 
 
-``vim nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>``
+NOTE This is `false` by default.
+
+If you'd rather map these yourself, use:
+
+`vim nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>`
 You can close buffers by clicking the close icon or by _right clicking_ the tab anywhere
 
 
