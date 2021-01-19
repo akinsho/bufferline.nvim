@@ -1,0 +1,331 @@
+*nvim-bufferline.lua*   For |Neovim version 0.5+|   Last change: 2021 January 19
+
+A snazzy bufferline for neovim written in lua
+
+Author: Akin Sowemimo
+
+==============================================================================
+CONTENTS                                      *bufferline-lua*
+*bufferline-lua-contents*
+
+Introduction...........................: |bufferline-lua-introduction|
+Usage..................................: |bufferline-lua-usage|
+Settings...............................: |bufferline-lua-settings|
+LSP Diagnostics........................: |bufferline-lua-diagnostics|
+Sorting................................: |bufferline-lua-sorting|
+Pick...................................: |bufferline-lua-pick|
+Multi-window...........................: |bufferline-lua-multiwindow|
+Mappings...............................: |bufferline-lua-mapping|
+Highlights.............................: |bufferline-lua-highlights|
+Issues.................................: |bufferline-lua-issues|
+
+
+==============================================================================
+INTRODUCTION				        *bufferline-lua-introduction*
+
+A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built
+using `lua`.
+
+This plugin shamelessly attempts to emulate the aesthetics of GUI text
+editors/Doom Emacs. It was inspired by a screenshot of DOOM Emacs using
+centaur tabs (https://github.com/ema2159/centaur-tabs). I don't intend to copy
+all of it's functionality though.
+
+==============================================================================
+USAGE						        *bufferline-lua-usage*
+You need to be using `termguicolors` for this plugin to work, as it reads the
+hex `gui` color values of various highlight groups. >
+
+    set termguicolors
+    " In your init.vim or init.lua
+    lua require"bufferline".setup{}
+<
+==============================================================================
+SETTINGS					     *bufferline-lua-settings*
+
+The default settings are: >
+
+    require"bufferline".setup{
+        options = {
+            view = "multiwindow" | "default",
+            numbers = "none" | "ordinal" | "buffer_id",
+            number_style = "superscript" | "",
+            mappings = true | false,
+            buffer_close_icon= "",
+            modified_icon = "●",
+            close_icon = "",
+            left_trunc_marker = "",
+            right_trunc_marker = "",
+            max_name_length = 18,
+            max_prefix_length = 15, -- prefix used when a buffer is deduplicated
+            tab_size = 18,
+            diagnostics = false | "nvim_lsp"
+            diagnostics_indicator = function(count, level)
+            return "("..count..")"
+            end
+            show_buffer_close_icons = true | false,
+            persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
+            -- can also be a table containing 2 custom separators
+            -- [focused and unfocused]. eg: { "|", "|" }
+            separator_style = "slant" | "thick" | "thin" | { "any", "any" },
+            enforce_regular_tabs = false | true,
+            always_show_bufferline = true | false,
+            sort_by = "extension" | "relative_directory" | "directory" | function(buffer_a, buffer_b)
+            -- add custom logic
+            return buffer_a.modified > buffer_b.modified
+            end
+        }
+    }
+<
+==============================================================================
+LSP DIAGNOSTICS					    *bufferline-lua-diagnostics*
+
+By setting `diagnostics = "nvim_lsp"` you will get an indicator in the
+bufferline for a given tab if it has any errors This will allow you to
+tell at a glance if a particular buffer has errors. Currently only the
+native neovim lsp is supported, mainly because it has the easiest API for
+fetching all errors for all buffers (with an attached lsp client) This
+feature is _WIP_ so beware and report any issues if you find any.
+
+In order to customise the appearance of the diagnostic count you can pass
+a custom function in your setup.
+
+>
+    -- rest of config ...
+
+    --- count is an integer representing total count of errors
+    --- level is a string "error" | "warning"
+    --- this should return a string
+    --- Don't get too fancy as this function will be executed a lot
+    diagnostics_indicator = function(count, level)
+        local icon = level:match("error") and " " or ""
+        return " " .. icon .. count
+    end
+<
+
+The highlighting for the filename if there is an error can be changed by
+replacing the highlights for `error`, `error_visible`, `error_selected`,
+`warning`, `warning_visible`, `warning_selected`.
+
+==============================================================================
+REGULAR TAB SIZES                                  *bufferline-lua-regular-tabs*
+
+Generally this plugin enforces a minimum tab size so that the buffer line
+appears consistent. Where a tab is smaller than the tab size it is padded.
+If it is larger than the tab size it is allowed to grow up to the max name
+length specified (+ the other indicators). If you set
+`enforce_regular_tabs = true` tabs will be prevented from extending beyond
+the tab size and all tabs will be the same length
+
+==============================================================================
+SORTING					               *bufferline-lua-sorting*
+
+Bufferline allows you to sort the visible buffers by `extension` or
+`directory`, or for more advanced usage you can provide a custom compare
+function which will receive two buffers to compare. You can see what fields
+are available to use using >
+
+    sort_by = function(buffer_a, buffer_b)
+        print(vim.inspect(buffer_a))
+        -- add custom logic
+        return buffer_a.modified > buffer_b.modified
+    end
+<
+
+When using a sorted bufferline it's advisable that you use the
+`BufferLineCycleNext` and `BufferLineCyclePrev` commands since these will
+traverse the bufferline bufferlist in order whereas `bnext` and `bprev` will
+cycle buffers according to the buffer numbers given by vim.
+
+==============================================================================
+BUFFERLINE PICK                                            *bufferline-lua-pick*
+
+Using the `BufferLinePick` command will allow for easy selection of a buffer
+in view. Trigger the command, using `:BufferLinePick` or better still map this
+to a key, e.g. >
+
+    nnoremap <silent> gb :BufferLinePick<CR>
+<
+then pick a buffer by typing the character for that specific buffer that
+appears
+
+==============================================================================
+MULTIWINDOW MODE                                    *bufferline-lua-multiwindow*
+
+When this mode is active, for layouts of multiple windows in the tabpage, only
+the buffers that are displayed in those windows are listed in the tabline.
+That only applies to multi-window layouts, if there is only one window in the
+tabpage, all buffers are listed.
+
+==============================================================================
+MAPPINGS                                               *bufferline-lua-mappings*
+
+If the `mappings` option is set to `true`. `<leader>`1-9 mappings will be
+created to navigate the first to the tenth buffer in the bufferline. **This is
+false by default**. If you'd rather map these yourself, use:
+
+``vim nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>``
+You can close buffers by clicking the close icon or by _right clicking_ the tab anywhere
+
+
+A few of this plugins commands can be mapped for ease of use. >
+
+    " These commands will navigate through buffers in order
+    " regardless of which mode you are using  e.g. if you change
+    " the order of buffers :bnext and :bprevious will not respect the custom ordering
+    nnoremap <silent>[b :BufferLineCycleNext<CR>
+    nnoremap <silent>b] :BufferLineCyclePrev<CR>
+
+    " These commands will move the current buffer backwards or forwards in the bufferline
+    nnoremap <silent><mymap> :BufferLineMoveNext<CR>
+    nnoremap <silent><mymap> :BufferLineMovePrev<CR>
+<
+==============================================================================
+HIGHLIGHTS                                           *bufferline-lua-highlights*
+
+This plugin is designed to work automatically, deriving colours from the
+user's theme, you can change highlight groups by overriding the section you'd
+like to change.
+
+Keep in mind that despite my best efforts not to change these they might
+require the occasional tweak (if you don't customise these too much you should
+be fine 🤞).
+
+    >
+    lua require'bufferline'.setup{
+        highlights = {
+            fill = {
+                guifg = comment_fg,
+                guibg = separator_background_color
+            },
+            background = {
+                guifg = comment_fg,
+                guibg = background_color
+            },
+            tab = {
+                guifg = comment_fg,
+                guibg = background_color
+            },
+            tab_selected = {
+                guifg = tabline_sel_bg,
+                guibg = normal_bg
+            },
+            tab_close = {
+                guifg = comment_fg,
+                guibg = background_color
+            },
+            buffer_visible = {
+                guifg = comment_fg,
+                guibg = visible_bg
+            },
+            buffer_selected = {
+                guifg = normal_fg,
+                guibg = normal_bg,
+                gui = "bold,italic"
+            },
+            warning = {
+                guifg = comment_fg,
+                gui = "underline",
+                guisp = warning_fg,
+                guibg = background_color
+            },
+            warning_visible = {
+                guifg = comment_fg,
+                guibg = visible_bg,
+                gui = "underline",
+                guisp = warning_fg
+            },
+            warning_selected = {
+                guifg = warning_fg,
+                guibg = normal_bg,
+                gui = "bold,italic,underline",
+                guisp = warning_fg
+            },
+            error = {
+                guifg = comment_fg,
+                guibg = background_color,
+                gui = "underline",
+                guisp = error_fg
+            },
+            error_visible = {
+                guifg = comment_fg,
+                guibg = visible_bg,
+                gui = "underline",
+                guisp = error_fg
+            },
+            error_selected = {
+                guifg = error_fg,
+                guibg = normal_bg,
+                gui = "bold,italic,underline",
+                guisp = error_fg
+            },
+            modified = {
+                guifg = string_fg,
+                guibg = background_color
+            },
+            modified_visible = {
+                guifg = string_fg,
+                guibg = visible_bg
+            },
+            modified_selected = {
+                guifg = string_fg,
+                guibg = normal_bg
+            },
+            duplicate_selected = {
+                guifg = duplicate_color,
+                gui = "italic",
+                guibg = normal_bg
+            },
+            duplicate_visible = {
+                guifg = duplicate_color,
+                gui = "italic",
+                guibg = visible_bg
+            },
+            duplicate = {
+                guifg = duplicate_color,
+                gui = "italic",
+                guibg = background_color
+            },
+            separator_selected = {
+                guifg = separator_background_color,
+                guibg = normal_bg
+            },
+            separator_visible = {
+                guifg = separator_background_color,
+                guibg = visible_bg
+            },
+            separator = {
+                guifg = separator_background_color,
+                guibg = background_color
+            },
+            indicator_selected = {
+                guifg = tabline_sel_bg,
+                guibg = normal_bg
+            },
+            pick_selected = {
+                guifg = error_fg,
+                guibg = normal_bg,
+                gui = "bold,italic"
+            },
+            pick_visible = {
+                guifg = error_fg,
+                guibg = visible_bg,
+                gui = "bold,italic"
+            },
+            pick = {
+                guifg = error_fg,
+                guibg = background_color,
+                gui = "bold,italic"
+            }
+        };
+    }
+<
+
+==============================================================================
+ISSUES							*bufferline-lua-issues*
+
+Please raise any issues you encounter whilst using this plugin at:
+https://github.com/akinsho/nvim-bufferline.lua/issues
+
+
+vim:tw=78:sw=4:ft=help:norl:
