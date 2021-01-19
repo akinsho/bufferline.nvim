@@ -1,13 +1,14 @@
-nvim-*bufferline.lua* A snazzy bufferline for neovim written in lua
+*nvim-bufferline.lua* A snazzy bufferline for neovim written in lua
 
 Minimum version of neovim: 0.5+
 
 Author: Akin Sowemimo
 
 ==============================================================================
-CONTENTS                                      *bufferline-lua* *bufferline-lua-contents*
+CONTENTS                                      *bufferline-lua*
+*bufferline-lua-contents*
 
-Installation...........................: |bufferline-lua-installation|
+Introduction...........................: |bufferline-lua-introduction|
 Usage..................................: |bufferline-lua-usage|
 Settings...............................: |bufferline-lua-settings|
 Internals..............................: |bufferline-lua-internals|
@@ -15,38 +16,71 @@ Issues.................................: |bufferline-lua-issues|
 
 
 ==============================================================================
-INSTALLATION                                          *bufferline-lua-installation*
+INTRODUCTION				       *bufferline-lua-introduction*
 
-There are several ways to install the plugin. The recommended one is by using
-vim plug (plug link). In
-that case, you can clone the plugin's git repository like so:
+
+
+==============================================================================
+USAGE						     *bufferline-lua-usage*
+You need to be using `termguicolors` for this plugin to work, as it reads the
+hex `gui` color values of various highlight groups.
+
 >
-Plug 'akinsho/bufferline-lua'
+set termguicolors
+" In your init.vim or init.lua
+lua require'bufferline'.setup{}
 <
 
 
-		==============================================================================
-		USAGE                                                        *bufferline-lua-usage*
+==============================================================================
+SETTINGS					     *bufferline-lua-settings*
 
-		TODO
+>
+require"bufferline".setup{
+  options = {
+    view = "multiwindow" | "default",
+    numbers = "none" | "ordinal" | "buffer_id",
+    number_style = "superscript" | "",
+    mappings = true | false,
+    buffer_close_icon= '',
+    modified_icon = '●',
+    close_icon = '',
+    left_trunc_marker = '',
+    right_trunc_marker = '',
+    max_name_length = 18,
+    max_prefix_length = 15, -- prefix used when a buffer is deduplicated
+    tab_size = 18,
+    diagnostics = false | "nvim_lsp"
+    diagnostics_indicator = function(count, level)
+      return "("..count..")"
+    end
+    show_buffer_close_icons = true | false,
+    persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
+    -- can also be a table containing 2 custom separators
+    -- [focused and unfocused]. eg: { '|', '|' }
+    separator_style = "slant" | "thick" | "thin" | { "any", "any" },
+    enforce_regular_tabs = false | true,
+    always_show_bufferline = true | false,
+    sort_by = "extension" | 'relative_directory' | "directory" | function(buffer_a, buffer_b)
+      -- add custom logic
+      return buffer_a.modified > buffer_b.modified
+    end
+  }
+}
+<
 
 
-		==============================================================================
-		SETTINGS                                                  *bufferline-lua-settings*
 
-		TODO
+==============================================================================
+INTERNALS					     *bufferline-lua-internals*
 
+TODO
 
-		==============================================================================
-		INTERNALS                                                *bufferline-lua-internals*
+==============================================================================
+ISSUES							*bufferline-lua-issues*
 
-		TODO
-
-		==============================================================================
-		ISSUES                                                      *bufferline-lua-issues*
-
-		Any issues and suggestions are very welcome on the github bugtracker:
-		https://github.com/akinsho/bufferline-lua.vim/issues
+Please raise any issues you encounter whilst using this plugin at:
+https://github.com/akinsho/nvim-bufferline.lua/issues
 
 
 vim:tw=78:sw=4:ft=help:norl:
