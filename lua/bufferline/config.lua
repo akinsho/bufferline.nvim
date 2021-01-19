@@ -12,6 +12,7 @@ function M.get_defaults()
   local normal_bg = colors.get_hex("Normal", "bg")
   local string_fg = colors.get_hex("String", "fg")
   local error_fg = colors.get_hex("Error", "fg")
+  local warning_fg = "DarkOrange"
 
   local tabline_sel_bg = colors.get_hex("TabLineSel", "bg")
   if not tabline_sel_bg == "none" then
@@ -26,8 +27,7 @@ function M.get_defaults()
 
   local visible_bg = colors.shade_color(normal_bg, -8)
   local duplicate_color = colors.shade_color(comment_fg, -5)
-  local separator_background_color =
-    colors.shade_color(normal_bg, separator_shading)
+  local separator_background_color = colors.shade_color(normal_bg, separator_shading)
   local background_color = colors.shade_color(normal_bg, background_shading)
 
   return {
@@ -51,15 +51,12 @@ function M.get_defaults()
       max_prefix_length = 15,
       sort_by = "default",
       diagnostics = false,
+      diagnostic_indicator = nil
     },
     highlights = {
       fill = {
         guifg = comment_fg,
         guibg = separator_background_color
-      },
-      background = {
-        guifg = comment_fg,
-        guibg = background_color
       },
       tab = {
         guifg = comment_fg,
@@ -73,6 +70,10 @@ function M.get_defaults()
         guifg = comment_fg,
         guibg = background_color
       },
+      background = {
+        guifg = comment_fg,
+        guibg = background_color
+      },
       buffer_visible = {
         guifg = comment_fg,
         guibg = visible_bg
@@ -82,20 +83,41 @@ function M.get_defaults()
         guibg = normal_bg,
         gui = "bold,italic"
       },
+      warning = {
+        guifg = comment_fg,
+        gui = "underline",
+        guisp = warning_fg,
+        guibg = background_color
+      },
+      warning_visible = {
+        guifg = comment_fg,
+        guibg = visible_bg,
+        gui = "underline",
+        guisp = warning_fg
+      },
+      warning_selected = {
+        guifg = warning_fg,
+        guibg = normal_bg,
+        gui = "bold,italic,underline",
+        guisp = warning_fg
+      },
       error = {
-        guifg = error_fg,
+        guifg = comment_fg,
         guibg = background_color,
-        gui="bold"
+        gui = "underline",
+        guisp = error_fg
       },
       error_visible = {
-        guifg = error_fg,
+        guifg = comment_fg,
         guibg = visible_bg,
-        gui="bold"
+        gui = "underline",
+        guisp = error_fg
       },
       error_selected = {
         guifg = error_fg,
         guibg = normal_bg,
-        gui="bold"
+        gui = "bold,italic,underline",
+        guisp = error_fg
       },
       modified = {
         guifg = string_fg,

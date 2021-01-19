@@ -63,13 +63,14 @@ M.Buffer = {
   id = nil,
   filename = nil,
   icon = nil,
-  icon_highlight = nil
+  icon_highlight = nil,
+  diagnostics = nil
 }
 
 function M.Buffer:new(buf)
-  buf.modifiable = fn.getbufvar(buf.id, "&modifiable") == 1
-  buf.modified = fn.getbufvar(buf.id, "&modified") == 1
-  buf.buftype = fn.getbufvar(buf.id, "&buftype")
+  buf.modifiable = vim.bo[buf.id].modifiable
+  buf.modified = vim.bo[buf.id].modified
+  buf.buftype = vim.bo[buf.id].buftype
 
   buf.extension = fn.fnamemodify(buf.path, ":e")
   -- Set icon

@@ -24,13 +24,15 @@ function M.set_one(name, opts)
     if opts.guibg and opts.guibg ~= "" then
       cmd = cmd .. " " .. "guibg=" .. opts.guibg
     end
+    if opts.guisp and opts.guisp ~= "" then
+      cmd = cmd .. " " .. "guisp=" .. opts.guisp
+    end
     -- TODO using api here as it warns of an error if setting highlight fails
     local success, err = pcall(api.nvim_command, cmd)
     if not success then
       api.nvim_err_writeln(
         "Failed setting " ..
-          name ..
-            " highlight, something isn't configured correctly" .. "\n" .. err
+          name .. " highlight, something isn't configured correctly" .. "\n" .. err
       )
     end
   end
@@ -42,7 +44,7 @@ end
 function M.set_all(user_colors)
   for name, tbl in pairs(user_colors) do
     -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
-    name = 'BufferLine'.. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
+    name = "BufferLine" .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
     M.set_one(name, tbl)
     tbl.hl = hl(name)
   end
