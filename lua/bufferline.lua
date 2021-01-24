@@ -282,8 +282,8 @@ local function add_prefix(context)
   local length = context.length
 
   if state.is_picking and buffer.letter then
-    component = hl.pick .. buffer.letter .. hl.background .. component
-    length = length + strwidth(buffer.letter)
+    component = hl.pick .. buffer.letter .. padding .. hl.background .. component
+    length = length + strwidth(buffer.letter) + strwidth(padding)
   elseif buffer.icon then
     local icon_highlight = highlight_icon(buffer, hl.buffer)
     component = icon_highlight .. hl.background .. component
