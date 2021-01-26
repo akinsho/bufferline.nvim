@@ -210,7 +210,7 @@ local function highlight_icon(buffer, background)
     local guifg = colors.get_hex(hl, "fg")
     highlights.set_one(new_hl, {guibg = background.guibg, guifg = guifg})
   end
-  return "%#" .. new_hl .. "#" .. icon .. "%*"
+  return "%#" .. new_hl .. "#" .. icon .. " %*"
 end
 
 --- "▍" "░"
@@ -280,7 +280,6 @@ local function add_prefix(context)
   local buffer = context.buffer
   local hl = context.current_highlights
   local length = context.length
-
   if state.is_picking and buffer.letter then
     component = hl.pick .. buffer.letter .. padding .. hl.background .. component
     length = length + strwidth(buffer.letter) + strwidth(padding)

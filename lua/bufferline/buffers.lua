@@ -81,11 +81,9 @@ function M.Buffer:new(buf)
     if lua_devicons_loaded then
       buf.icon, buf.icon_highlight =
         webdev_icons.get_icon(buf.path, buf.extension, {default = true})
-      buf.icon = buf.icon .. ' '
     else
       local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
       buf.icon = devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
-      buf.icon = buf.icon .. ' '
     end
     -- TODO: allow the format specifier to be configured
     buf.filename = (buf.path and #buf.path > 0) and fn.fnamemodify(buf.path, ":p:t") or "[No Name]"
