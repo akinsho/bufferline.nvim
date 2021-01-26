@@ -112,11 +112,8 @@ function M.component(context)
         return truncate(dir, depth, options.max_prefix_length)
       end
     )
-    component = padding .. hl.duplicate .. dir .. hl.background .. component
-    length = length + strwidth(padding .. dir)
-  else
-    component = padding .. component
-    length = length + strwidth(padding)
+    component = hl.duplicate .. dir .. hl.background .. component
+    length = length + strwidth(dir)
   end
   return component, length
 end
