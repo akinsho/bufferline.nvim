@@ -210,7 +210,7 @@ local function highlight_icon(buffer, background)
     local guifg = colors.get_hex(hl, "fg")
     highlights.set_one(new_hl, {guibg = background.guibg, guifg = guifg})
   end
-  return "%#" .. new_hl .. "#" .. icon .. " %*"
+  return "%#" .. new_hl .. "#" .. icon .. padding .. "%*"
 end
 
 --- "▍" "░"
