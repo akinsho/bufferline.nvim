@@ -401,6 +401,8 @@ local function render_buffer(preferences, buffer)
   -- Order matter here as this is the sequence which builds up the tab component
   local max_length = enforce_regular_tabs(ctx)
   local filename = truncate_filename(buffer.filename, max_length)
+  -- escape filenames that contain "%" as this breaks in statusline patterns
+  filename = filename:gsub("%%", "%%%1")
 
   ctx.component = filename
   ctx.length = ctx.length + strwidth(ctx.component)
