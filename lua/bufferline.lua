@@ -821,22 +821,27 @@ local function validate_prefs(prefs, defaults)
   end
 end
 
--- TODO then validate user preferences and only set prefs that exists
-function M.setup(prefs)
+local function merge_preferences(prefs)
   local preferences = config.get_defaults()
   validate_prefs(prefs, preferences)
   -- Combine user preferences with defaults preferring the user's own settings
   if prefs and type(prefs) == "table" then
     preferences = vim.tbl_deep_extend("force", preferences, prefs)
   end
+  return preferences
+end
 
+function M.setup(prefs)
+  local preferences = merge_preferences(prefs)
   state.preferences = preferences
 
   -- on loading (and reloading) the plugin's config reset all the highlights
-  highlights.set_all(preferences.highlights)
+  local updated_highlights = highlights.set_all(preferences.highlights)
 
   function _G.__setup_bufferline_colors()
-    highlights.set_all(preferences.highlights)
+    local current_prefs = merge_preferences(prefs)
+    state.preferences = current_prefs
+    highlights.set_all(current_prefs.highlights)
   end
 
   setup_autocommands(preferences)
@@ -869,6 +874,7 @@ function M.setup(prefs)
   end
 
   function _G.nvim_bufferline()
+    preferences.highlights = updated_highlights
     return bufferline(preferences)
   end
 

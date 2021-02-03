@@ -38,17 +38,28 @@ function M.set_one(name, opts)
   end
 end
 
+local function shallow_copy(tbl)
+  local copy = {}
+  for k, v in pairs(tbl) do
+    copy[k] = v
+  end
+  return copy
+end
+
 --- Map through user colors and convert the keys to highlight names
 --- by changing the strings to pascal case and using those for highlight name
 --- @param user_colors table
 function M.set_all(user_colors)
+  local result = {}
   for name, tbl in pairs(user_colors) do
     -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
-    name = "BufferLine" .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
-    M.set_one(name, tbl)
-    tbl.hl = hl(name)
+    local formatted = "BufferLine" .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
+    M.set_one(formatted, tbl)
+    local copy = shallow_copy(tbl)
+    copy.hl = hl(formatted)
+    result[name] = copy
   end
-  return user_colors
+  return result
 end
 
 return M
