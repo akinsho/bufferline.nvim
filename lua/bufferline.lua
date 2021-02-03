@@ -10,7 +10,6 @@ local constants = require "bufferline/constants"
 local config = require "bufferline/config"
 local tabs = require "bufferline/tabs"
 local buffers = require "bufferline/buffers"
-local devicons_loaded = require "bufferline/buffers".devicons_loaded
 
 local Buffer = buffers.Buffer
 local Buffers = buffers.Buffers
@@ -781,7 +780,8 @@ local function setup_autocommands(preferences)
       }
     )
   end
-  if devicons_loaded then
+  local loaded = pcall(require, "nvim-web-devicons")
+  if loaded then
     table.insert(
       autocommands,
       {

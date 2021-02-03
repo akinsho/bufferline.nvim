@@ -1,5 +1,4 @@
 local lua_devicons_loaded, webdev_icons = pcall(require, "nvim-web-devicons")
-
 local utils = require "bufferline/utils"
 local fn = vim.fn
 --------------------------------
@@ -126,7 +125,5 @@ function M.Buffer:ancestor(depth, formatter)
   end
   return ancestor
 end
-
-M.lua_devicons_loaded = lua_devicons_loaded
 
 return M
