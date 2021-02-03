@@ -1,7 +1,4 @@
 local lua_devicons_loaded, webdev_icons = pcall(require, "nvim-web-devicons")
-if lua_devicons_loaded then
-  webdev_icons.setup()
-end
 
 local utils = require "bufferline/utils"
 local fn = vim.fn
