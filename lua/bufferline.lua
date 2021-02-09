@@ -188,9 +188,8 @@ local function truncate_filename(filename, word_limit)
 end
 
 --- @param buffer Buffer
---- @param background table
 --- @return string
-local function highlight_icon(buffer, background)
+local function highlight_icon(buffer)
   local icon = buffer.icon
   local hl = buffer.icon_highlight
 
@@ -199,16 +198,21 @@ local function highlight_icon(buffer, background)
   elseif not hl or hl == "" then
     return icon
   end
-  local new_hl = "Bufferline" .. hl
-  if background then
-    if buffer:current() then
-      new_hl = new_hl .. "Selected"
-    elseif buffer:visible() then
-      new_hl = new_hl .. "Inactive"
-    end
-    local guifg = colors.get_hex(hl, "fg")
-    highlights.set_one(new_hl, {guibg = background.guibg, guifg = guifg})
+
+  local prefix = "Bufferline"
+  local new_hl = prefix .. hl
+  local bg_hl = prefix .. "Background"
+  -- TODO do not depend directly on style names
+  if buffer:current() then
+    new_hl = new_hl .. "Selected"
+    bg_hl = prefix .. "BufferSelected"
+  elseif buffer:visible() then
+    new_hl = new_hl .. "Inactive"
+    bg_hl = prefix .. "BufferVisible"
   end
+  local guifg = colors.get_hex(hl, "fg")
+  local guibg = colors.get_hex(bg_hl, "bg")
+  highlights.set_one(new_hl, {guibg = guibg, guifg = guifg})
   return "%#" .. new_hl .. "#" .. icon .. padding .. "%*"
 end
 
@@ -284,7 +288,7 @@ local function add_prefix(context)
     component = hl.pick .. buffer.letter .. padding .. hl.background .. component
     length = length + strwidth(buffer.letter) + strwidth(padding)
   elseif buffer.icon then
-    local icon_highlight = highlight_icon(buffer, hl.buffer)
+    local icon_highlight = highlight_icon(buffer)
     component = icon_highlight .. hl.background .. component
     length = length + strwidth(buffer.icon .. padding)
   end
