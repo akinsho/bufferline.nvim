@@ -85,38 +85,32 @@ function M.get_defaults()
       },
       warning = {
         guifg = comment_fg,
-        gui = "underline",
         guisp = warning_fg,
         guibg = background_color
       },
       warning_visible = {
         guifg = comment_fg,
-        guibg = visible_bg,
-        gui = "underline",
-        guisp = warning_fg
+        guibg = visible_bg
       },
       warning_selected = {
         guifg = warning_fg,
         guibg = normal_bg,
-        gui = "bold,italic,underline",
+        gui = "bold,italic",
         guisp = warning_fg
       },
       error = {
         guifg = comment_fg,
         guibg = background_color,
-        gui = "underline",
         guisp = error_fg
       },
       error_visible = {
         guifg = comment_fg,
-        guibg = visible_bg,
-        gui = "underline",
-        guisp = error_fg
+        guibg = visible_bg
       },
       error_selected = {
         guifg = error_fg,
         guibg = normal_bg,
-        gui = "bold,italic,underline",
+        gui = "bold,italic",
         guisp = error_fg
       },
       modified = {
