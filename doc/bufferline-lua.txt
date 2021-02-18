@@ -194,6 +194,25 @@ Keep in mind that despite my best efforts not to change these they might
 require the occasional tweak (if you don't customise these too much you should
 be fine 🤞).
 
+Highlight values can also be specified as tables with a key of the highlight
+name e.g. `Normal` and the attribute which is one of `fg`, `bg`. See the
+`{what}` argument of `:h synIDAttr` for details, but only these 2 have been
+tested
+
+for example: >
+    highlights = {
+        fill = {
+            guibg = {
+                attribute = "fg",
+                highlight = "Pmenu"
+            }
+        }
+    }
+<
+This will automatically pull the value of `Pmenu` fg color and use it
+Any improperly specified tables will be set to `nil` and overriden with the
+default value for that key. 
+
 NOTE: you can specify colors the same way you specify `gui` colors for the
 highlight command. See `:h highlight` .
     >
