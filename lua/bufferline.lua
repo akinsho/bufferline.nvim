@@ -834,8 +834,7 @@ end
 --- Convert highlights specified as tables to the correct existing colours
 ---@param prefs table
 local function convert_hl_tables(prefs)
-  prefs = prefs or {}
-  if not prefs.highlights or vim.tbl_isempty(prefs.highlights) then
+  if not prefs or not prefs.highlights or vim.tbl_isempty(prefs.highlights) then
     return
   end
   for hl, attributes in pairs(prefs.highlights) do
