@@ -816,18 +816,45 @@ local function validate_prefs(prefs, defaults)
     local article = is_plural and " " or " a "
     local object = is_plural and " groups. " or " group. "
     local msg =
-      table.concat(incorrect, ", ") ..
-      verb ..
-        "not" ..
-          article ..
-            "valid highlight" .. object .. "Please check the README for all valid highlights"
+      table.concat(
+      {
+        table.concat(incorrect, ", "),
+        verb,
+        "not",
+        article,
+        "valid highlight",
+        object,
+        "Please check the README for all valid highlights"
+      }
+    )
     utils.echomsg(msg, "WarningMsg")
+  end
+end
+
+--- Convert highlights specified as tables to the correct existing colours
+---@param prefs table
+local function convert_hl_tables(prefs)
+  if not prefs.highlights or vim.tbl_isempty(prefs.highlights) then
+    return
+  end
+  for hl, attributes in pairs(prefs.highlights) do
+    for attribute, value in pairs(attributes) do
+      if type(value) == "table" then
+        if value.highlight and value.attribute then
+          prefs.highlights[hl][attribute] = colors.get_hex(value.highlight, value.attribute)
+        else
+          prefs.highlights[hl][attribute] = nil
+          print(string.format("removing %s as it is not formatted correctly", hl))
+        end
+      end
+    end
   end
 end
 
 local function merge_preferences(prefs)
   local preferences = config.get_defaults()
   validate_prefs(prefs, preferences)
+  convert_hl_tables(prefs)
   -- Combine user preferences with defaults preferring the user's own settings
   if prefs and type(prefs) == "table" then
     preferences = vim.tbl_deep_extend("force", preferences, prefs)
