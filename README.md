@@ -18,6 +18,8 @@ all of it's functionality though.
 
 ![slanted tabs](./screenshots/diagonal.png "slanted tabs")
 
+see: `:h bufferline-styling`
+
 #### LSP error indicators
 
 - This is experimental and only works with nvim's native lsp for now
@@ -123,7 +125,6 @@ before loading this plugin.
 
 If the contrast in your colour scheme is too high, think an all black colour scheme, this
 plugin won't create a nice tabline.
-
 
 ## Configuration
 

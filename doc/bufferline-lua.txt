@@ -78,6 +78,18 @@ The default settings are: >
     }
 <
 ==============================================================================
+STYLING                                             *bufferline-styling*
+
+You can change the appearance of the bufferline separators by setting the
+`separator_style`. The available options are:
+* ``slant`` - Use slanted/triangular separators
+* `thick` - Increase the thickness of the separator characters
+* `think` - (default) Use thin separator characters
+* finally you can pass in a custom list containing 2 characters which will be
+  used as the separators e.g. `{"|", "|"}`, the first is the left and the
+  second is the right separator
+
+==============================================================================
 LSP DIAGNOSTICS					    *bufferline-lua-diagnostics*
 
 By setting `diagnostics = "nvim_lsp"` you will get an indicator in the
