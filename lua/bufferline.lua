@@ -759,6 +759,21 @@ function M.toggle_bufferline()
   end
 end
 
+--- sorts all buffers
+--- @param sort_by string|function
+function M.sort_buffers_by(sort_by)
+    if next(state.buffers) == nil then
+        return utils.echoerr("Unable to find buffers to sort, sorry")
+    end
+
+    sort.sort_buffers(sort_by, state.buffers)
+    state.custom_sort = get_buf_ids(state.buffers)
+    if state.preferences.options.persist_buffer_sort then
+      save_positions(state.custom_sort)
+    end
+    refresh()
+end
+
 local function setup_autocommands(preferences)
   local autocommands = {
     {"ColorScheme", "*", [[lua __setup_bufferline_colors()]]}
