@@ -18,6 +18,8 @@ all of it's functionality though.
 
 ![slanted tabs](./screenshots/diagonal.png "slanted tabs")
 
+NOTE: tested with [`kitty`](https://github.com/kovidgoyal/kitty), results may vary depending on your terminal emulator of choice
+
 see: `:h bufferline-styling`
 
 #### LSP error indicators
