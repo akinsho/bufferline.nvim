@@ -676,6 +676,7 @@ end
 ---@param num number
 function M.go_to_buffer(num)
   local buf_nums = get_buffers_by_mode()
+  buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
   if num <= #buf_nums then
     vim.cmd("buffer " .. buf_nums[num])
   end
