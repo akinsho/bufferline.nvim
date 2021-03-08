@@ -133,8 +133,9 @@ the tab size and all tabs will be the same length
 SORTING					               *bufferline-lua-sorting*
 
 Bufferline allows you to sort the visible buffers by `extension` or
-`directory`, or for more advanced usage you can provide a custom compare
-function which will receive two buffers to compare. You can see what fields
+`directory` using i.e: `:lua require'bufferline'.sort_buffers_by('directory')`,
+Or for more advanced usage you can provide a custom compare function which
+will receive two buffers to compare. You can see what fields
 are available to use using >
 
     sort_by = function(buffer_a, buffer_b)
@@ -173,7 +174,7 @@ tabpage, all buffers are listed.
 MAPPINGS                                               *bufferline-lua-mappings*
 
 If the `mappings` option is set to `true`. `<leader>`1-9 mappings will be
-created to navigate the first to the tenth buffer in the bufferline. 
+created to navigate the first to the tenth buffer in the bufferline.
 
 NOTE This is `false` by default.
 
@@ -194,6 +195,15 @@ A few of this plugins commands can be mapped for ease of use. >
     " These commands will move the current buffer backwards or forwards in the bufferline
     nnoremap <silent><mymap> :BufferLineMoveNext<CR>
     nnoremap <silent><mymap> :BufferLineMovePrev<CR>
+
+    " These commands will sort buffers by directory, language, or a custom criteria
+    nnoremap <silent><mymap> :lua require'bufferline'.sort_buffers_by('directory')<CR>
+    nnoremap <silent><mymap> :lua require'bufferline'.sort_buffers_by('extension')<CR>
+    nnoremap <silent><mymap> :lua require'bufferline'.sort_buffers_by(function (buf_a, buf_b) return buf_a.id < buf_b.id end)<CR>
+<
+==============================================================================
+HIGHLIGHTS                                           *bufferline-lua-highlights*
+
 <
 ==============================================================================
 HIGHLIGHTS                                           *bufferline-lua-highlights*
@@ -223,7 +233,7 @@ for example: >
 <
 This will automatically pull the value of `Pmenu` fg color and use it
 Any improperly specified tables will be set to `nil` and overriden with the
-default value for that key. 
+default value for that key.
 
 NOTE: you can specify colors the same way you specify `gui` colors for the
 highlight command. See `:h highlight` .
