@@ -114,6 +114,11 @@ nnoremap <silent>b] :BufferLineCyclePrev<CR>
 " These commands will move the current buffer backwards or forwards in the bufferline
 nnoremap <silent><mymap> :BufferLineMoveNext<CR>
 nnoremap <silent><mymap> :BufferLineMovePrev<CR>
+
+" These commands will sort buffers by directory, language, or a custom criteria
+nnoremap <silent>be :BufferLineSortByExtension<CR>
+nnoremap <silent>bd :BufferLineSortByDirectory<CR>
+nnoremap <silent><mymap> :lua require'bufferline'.sort_buffers_by(function (buf_a, buf_b) return buf_a.id < buf_b.id end)<CR>
 ```
 
 If you manually arrange your buffers using `:BufferLineMove{Prev|Next}` during an nvim session this can be persisted for the session.
@@ -213,9 +218,19 @@ the tab size and all tabs will be the same length
 
 ### Sort by `...`
 
-Bufferline allows you to sort the visible buffers by `extension` or `directory`, or for more
-advanced usage you can provide a custom compare function which will receive two buffers to compare.
-You can see what fields are available to use using
+Bufferline allows you to sort the visible buffers by `extension` or `directory`:
+```vim
+" Using vim commands
+:BufferLineSortByExtension
+:BufferLineSortByDirectory
+```
+```lua
+-- Or using lua functions
+:lua require'bufferline'.sort_buffers_by('extension')`
+:lua require'bufferline'.sort_buffers_by('directory')`
+```
+For more advanced usage you can provide a custom compare function which will
+receive two buffers to compare.  You can see what fields are available to use using
 
 ```lua
 sort_by = function(buffer_a, buffer_b)
