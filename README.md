@@ -61,6 +61,11 @@ This order can be persisted between sessions (enabled by default).
 
 ## Installation
 
+```lua
+-- using packer.nvim
+use {'akinsho/nvim-bufferline.lua', requires = 'kyazdani42/nvim-web-devicons'}
+```
+
 ```vim
 Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
 " Plug 'ryanoasis/vim-devicons' Icons without colours
@@ -69,21 +74,19 @@ Plug 'akinsho/nvim-bufferline.lua'
 
 ## Why another buffer line plugin?
 
-1. I was looking for an excuse to play with **lua** and learn to create a plugin with it for Neovim and there was nothing else built in lua when I created this.
+1. I was looking for an excuse to play with lua and learn to create a plugin with it for Neovim and there was nothing else built in lua when I created this.
 2. I wanted to add some tweaks to my buffer line and didn't want to figure out a bunch of `vimscript` in some other plugin.
 
 ### Why make it public rather than as part of your `init.vim`?
 
-:shrug: figured someone else might like the aesthetic. Don't make me regret this...
+:shrug: figured someone else might like the aesthetic.
 
-## Non-goals 🙏
+## Caveats 🙏
 
-- Appeal to every single person's tastes. This plugin is opinionated about how the tabline
+- This won't appeal to everyone's tastes. This plugin is opinionated about how the tabline
   looks, it's unlikely to please everyone, I don't want to try and support a bunch of different
   appearances.
-- Supporting vim please don't ask. The whole point was to create a lua plugin. If vim ends up supporting lua in the _same_ way then maybe.
-- Add every possible feature under the sun ☀, to appease everybody.
-- Create and maintain a monolith 😓.
+- I want to prevent this becoming a pain to maintain so I'll be conservative about what I add.
 
 ## Usage
 
@@ -113,7 +116,7 @@ nnoremap <silent><mymap> :BufferLineMoveNext<CR>
 nnoremap <silent><mymap> :BufferLineMovePrev<CR>
 ```
 
-If you manually arrange your buffers using `:BufferLineMove{Prev/Next}` during an nvim session this can be persisted for the session.
+If you manually arrange your buffers using `:BufferLineMove{Prev|Next}` during an nvim session this can be persisted for the session.
 This is enabled by default but you need to ensure that your `sessionopts+=globals` otherwise the session file will
 not track global variables which is the mechanism used to store your sort order.
 
@@ -125,8 +128,8 @@ It's unlikely to work with all colour schemes, which is not something I will fix
 You can either try manually overriding the colours or manually creating these highlight groups
 before loading this plugin.
 
-If the contrast in your colour scheme is too high, think an all black colour scheme, this
-plugin won't create a nice tabline.
+If the contrast in your colour scheme isn't very high, think an all black colour scheme, some of the highlights of
+this plugin won't really work as intended since it depends on darkening things.
 
 ## Configuration
 
@@ -171,12 +174,11 @@ If using a plugin such as `vim-rooter` and you want to sort by path, prefer usin
 project to project and vim switches its directory, the bufferline will re-order itself as a different set of
 buffers will now be relative.
 
-### LSP Error indicators (Experimental)
+### LSP Error indicators
 
 By setting `diagnostics = "nvim_lsp"` you will get an indicator in the bufferline for a given tab if it has any errors
 This will allow you to tell at a glance if a particular buffer has errors. Currently only the native neovim lsp is
-supported, mainly because it has the easiest API for fetching all errors for all buffers (with an attached lsp client)
-This feature is _WIP_ so beware and report any issues if you find any.
+supported, mainly because it has the easiest API for fetching all errors for all buffers (with an attached lsp client).
 
 In order to customise the appearance of the diagnostic count you can pass a custom function in your setup.
 
@@ -227,7 +229,7 @@ When using a sorted bufferline it's advisable that you use the `BufferLineCycleN
 commands since these will traverse the bufferline bufferlist in order whereas `bnext` and `bprev` will cycle
 buffers according to the buffer numbers given by vim.
 
-### Bufferline Pick functionality (inspired by [`barbar.nvim`](https://github.com/romgrk/barbar.nvim))
+### Bufferline Pick functionality
 
 Using the `BufferLinePick` command will allow for easy selection of a buffer in view.
 Trigger the command, using `:BufferLinePick` or better still map this to a key, e.g.
@@ -241,7 +243,7 @@ buffer that appears
 
 ![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
 
-### Multi-window mode (inspired by [`vem-tabline`](https://github.com/pacha/vem-tabline))
+### Multi-window mode
 
 When this mode is active, for layouts of multiple windows in the tabpage,
 only the buffers that are displayed in those windows are listed in the
