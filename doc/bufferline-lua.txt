@@ -213,10 +213,6 @@ A few of this plugins commands can be mapped for ease of use. >
 ==============================================================================
 HIGHLIGHTS                                           *bufferline-lua-highlights*
 
-<
-==============================================================================
-HIGHLIGHTS                                           *bufferline-lua-highlights*
-
 This plugin is designed to work automatically, deriving colours from the
 user's theme, you can change highlight groups by overriding the section you'd
 like to change.
