@@ -158,6 +158,7 @@ require'bufferline'.setup{
       return "("..count..")"
     end
     show_buffer_close_icons = true | false,
+    show_tab_indicators = true | false,
     persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
     -- can also be a table containing 2 custom separators
     -- [focused and unfocused]. eg: { '|', '|' }
@@ -219,18 +220,21 @@ the tab size and all tabs will be the same length
 ### Sort by `...`
 
 Bufferline allows you to sort the visible buffers by `extension` or `directory`:
+
 ```vim
 " Using vim commands
 :BufferLineSortByExtension
 :BufferLineSortByDirectory
 ```
+
 ```lua
 -- Or using lua functions
 :lua require'bufferline'.sort_buffers_by('extension')`
 :lua require'bufferline'.sort_buffers_by('directory')`
 ```
+
 For more advanced usage you can provide a custom compare function which will
-receive two buffers to compare.  You can see what fields are available to use using
+receive two buffers to compare. You can see what fields are available to use using
 
 ```lua
 sort_by = function(buffer_a, buffer_b)

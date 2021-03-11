@@ -541,14 +541,16 @@ local function render(bufs, tbs, prefs)
   local right_align = "%="
   local tab_components = ""
   local close, close_length = render_close(options.close_icon)
-  local tabs_length = close_length
+  local tabs_length = 0
 
-  -- Add the length of the tabs + close components to total length
-  if #tbs > 1 then
-    for _, t in pairs(tbs) do
-      if not vim.tbl_isempty(t) then
-        tabs_length = tabs_length + t.length
-        tab_components = tab_components .. t.component
+  if options.show_tab_indicators then
+    -- Add the length of the tabs + close components to total length
+    if #tbs > 1 then
+      for _, t in pairs(tbs) do
+        if not vim.tbl_isempty(t) then
+          tabs_length = tabs_length + t.length
+          tab_components = tab_components .. t.component
+        end
       end
     end
   end
@@ -763,16 +765,16 @@ end
 --- sorts all buffers
 --- @param sort_by string|function
 function M.sort_buffers_by(sort_by)
-    if next(state.buffers) == nil then
-        return utils.echoerr("Unable to find buffers to sort, sorry")
-    end
+  if next(state.buffers) == nil then
+    return utils.echoerr("Unable to find buffers to sort, sorry")
+  end
 
-    sort.sort_buffers(sort_by, state.buffers)
-    state.custom_sort = get_buf_ids(state.buffers)
-    if state.preferences.options.persist_buffer_sort then
-      save_positions(state.custom_sort)
-    end
-    refresh()
+  sort.sort_buffers(sort_by, state.buffers)
+  state.custom_sort = get_buf_ids(state.buffers)
+  if state.preferences.options.persist_buffer_sort then
+    save_positions(state.custom_sort)
+  end
+  refresh()
 end
 
 local function setup_autocommands(preferences)
@@ -902,7 +904,9 @@ function M.setup(prefs)
   vim.cmd('command BufferLineMovePrev lua require"bufferline".move(-1)')
   vim.cmd('command BufferLineSortByExtension lua require"bufferline".sort_buffers_by("extension")')
   vim.cmd('command BufferLineSortByDirectory lua require"bufferline".sort_buffers_by("directory")')
-  vim.cmd('command BufferLineSortByRelativeDirectory lua require"bufferline".sort_buffers_by("relative_directory")')
+  vim.cmd(
+    'command BufferLineSortByRelativeDirectory lua require"bufferline".sort_buffers_by("relative_directory")'
+  )
 
   -- TODO / idea: consider allowing these mappings to open buffers based on their
   -- visual position i.e. <leader>1 maps to the first visible buffer regardless
