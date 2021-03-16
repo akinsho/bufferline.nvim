@@ -587,7 +587,11 @@ local function render(bufs, tbs, prefs)
     line = join(line, hl.background.hl, icon)
   end
 
-  return join(line, hl.fill.hl, right_align, tab_components, hl.tab_close.hl, close)
+	if options.show_close_icon then
+		return join(line, hl.fill.hl, right_align, tab_components, hl.tab_close.hl, close)
+	else
+		return join(line, hl.fill.hl, right_align, tab_components, hl.tab_close.hl)
+	end
 end
 
 --- TODO can this be done more efficiently in one loop?
