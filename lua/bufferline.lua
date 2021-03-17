@@ -540,10 +540,10 @@ local function render(bufs, tbs, prefs)
   local hl = prefs.highlights
   local right_align = "%="
   local tab_components = ""
-	local close, close_length = "", 0
-	if options.show_close_icon then
-		close, close_length = render_close(options.close_icon)
-	end
+  local close, close_length = "", 0
+  if options.show_close_icon then
+    close, close_length = render_close(options.close_icon)
+  end
   local tabs_length = 0
 
   if options.show_tab_indicators then
@@ -590,7 +590,7 @@ local function render(bufs, tbs, prefs)
     line = join(line, hl.background.hl, icon)
   end
 
-	return join(line, hl.fill.hl, right_align, tab_components, hl.tab_close.hl, close)
+  return join(line, hl.fill.hl, right_align, tab_components, hl.tab_close.hl, close)
 end
 
 --- TODO can this be done more efficiently in one loop?
