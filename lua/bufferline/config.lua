@@ -45,7 +45,7 @@ function M.get_defaults()
       max_name_length = 18,
       mappings = false,
       show_buffer_close_icons = true,
-			show_close_icon = true,
+      show_close_icon = true,
       show_tab_indicators = true,
       enforce_regular_tabs = false,
       always_show_bufferline = true,
