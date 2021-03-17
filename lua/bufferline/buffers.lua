@@ -52,7 +52,7 @@ end
 --------------------------------
 -- A single buffer
 --------------------------------
---- @class Buffer @parent class
+--- @class Buffer
 M.Buffer = {
   extension = nil,
   path = nil,

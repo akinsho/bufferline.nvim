@@ -11,7 +11,9 @@ local config = require "bufferline/config"
 local tabs = require "bufferline/tabs"
 local buffers = require "bufferline/buffers"
 
+---@type Buffer
 local Buffer = buffers.Buffer
+---@type Buffers
 local Buffers = buffers.Buffers
 
 local api = vim.api
@@ -618,11 +620,27 @@ local function get_updated_buffers(buf_nums, sorted)
   return updated
 end
 
+local function apply_buffer_filter(buf_nums, callback)
+  if not callback then
+    return buf_nums
+  end
+  local filtered = {}
+  for _, buf in ipairs(buf_nums) do
+    if callback(buf) then
+      table.insert(filtered, buf)
+    end
+  end
+  return filtered
+end
+
 --- @param preferences table
 --- @return string
 local function bufferline(preferences)
   local options = preferences.options
   local buf_nums = get_buffers_by_mode(options.view)
+  if options.custom_filter then
+    buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
+  end
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
   local all_tabs = tabs.get(options.separator_style, preferences)
 
