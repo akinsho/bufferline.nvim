@@ -64,6 +64,7 @@ The available settings are: >
             return "("..count..")"
             end
             show_buffer_close_icons = true | false,
+	    show_close_icon = true | false,
             show_tab_indicators = true | false
             persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
             -- can also be a table containing 2 custom separators
