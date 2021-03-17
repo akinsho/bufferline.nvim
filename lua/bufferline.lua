@@ -620,8 +620,12 @@ local function get_updated_buffers(buf_nums, sorted)
   return updated
 end
 
+---Filter the buffers to show based on the user callback passed in
+---@param buf_nums integer[]
+---@param callback fun(buf: integer): boolean
+---@return integer[]
 local function apply_buffer_filter(buf_nums, callback)
-  if not callback then
+  if not callback or type(callback) ~= "function" then
     return buf_nums
   end
   local filtered = {}
