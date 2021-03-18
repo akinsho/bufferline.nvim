@@ -625,7 +625,7 @@ end
 ---@param callback fun(buf: integer): boolean
 ---@return integer[]
 local function apply_buffer_filter(buf_nums, callback)
-  if not callback or type(callback) ~= "function" then
+  if type(callback) ~= "function" then
     return buf_nums
   end
   local filtered = {}
