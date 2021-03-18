@@ -1,29 +1,22 @@
 local M = {}
 
--- return the most severe level of diagnostic
--- local function get_max_severity(errors)
---   for _, err in ipairs(errors) do
---     if err and err.severity == 1 then
---       return "error"
---     end
---   end
---   return "warning"
--- end
---
 local function getErrDict (errs)
   local ds = {}
-  local max = "info"
+  local max = 3
   for _, err in ipairs (errs) do
     if err then
+      -- calculate max severity
       local s = err.severity
+      if s < max then max = s end
+      -- increment diagnostics dict
       if ds[s]
         then ds[s] = ds[s] + 1
         else ds[s] = 1
       end
-      max = s==1 and "error" or (s==2 and "warning" or "info")
     end
   end
-  return {level = max, errors = ds}
+  local maxSev = max==1 and "error" or (max==2 and "warning" or "info")
+  return {level = maxSev, errors = ds}
 end
 
 local mt = {
