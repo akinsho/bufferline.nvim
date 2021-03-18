@@ -166,11 +166,11 @@ FILTERING                                           *bufferline-lua-filtering*
 
 Bufferline can be configured to take a custom filtering function via the
 `custom_filter` option. This value must be a lua function that will receive
-each buffer number that is going to be used for the bufferline. A user can then
-check whatever they would like and return `true` if they would like it to
+each buffer number that is going to be used for the bufferline, as well as all the others.
+A user can then check whatever they would like and return `true` if they would like it to
 appear and `false` if not. 
 For example: >
-    custom_filter = function(buf)
+    custom_filter = function(buf, buf_nums)
         -- dont show help buffers in the bufferline
         return not vim.bo[buf].filetype == "help" then
 
@@ -190,12 +190,25 @@ For example: >
         end
 
 
-        -- my personal example, don't show output log buffers in the
-        -- same tab as my other code
+        -- My personal example:
+        -- Don't show output log buffers in the same tab as my other code.
+        -- 1. Check if there are any log buffers in the full list of buffers
+        -- if not don't do any filtering
+        local logs =
+            vim.tbl_filter(
+                function(b)
+                    return vim.bo[b].filetype == "log"
+                end,
+                buf_nums
+            )
+        if vim.tbl_isempty(logs) then
+            return true
+        end
+        -- 2. if there are log buffers then only show the log buffer 
         local tab_num = vim.fn.tabpagenr()
         local is_log = vim.bo[buf].filetype == "log"
         -- only show log buffers in secondary tabs
-        return (tab_num == 1 and not is_log) or (tab_num > 1 and is_log)
+        return (tab_num == 2 and is_log) or (tab_num ~= 2 and not is_log)
     end
 <
 ==============================================================================

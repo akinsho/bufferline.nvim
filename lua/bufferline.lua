@@ -622,7 +622,7 @@ end
 
 ---Filter the buffers to show based on the user callback passed in
 ---@param buf_nums integer[]
----@param callback fun(buf: integer): boolean
+---@param callback fun(buf: integer, bufs: integer[]): boolean
 ---@return integer[]
 local function apply_buffer_filter(buf_nums, callback)
   if type(callback) ~= "function" then
@@ -630,7 +630,7 @@ local function apply_buffer_filter(buf_nums, callback)
   end
   local filtered = {}
   for _, buf in ipairs(buf_nums) do
-    if callback(buf) then
+    if callback(buf, buf_nums) then
       table.insert(filtered, buf)
     end
   end
