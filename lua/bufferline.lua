@@ -540,7 +540,10 @@ local function render(bufs, tbs, prefs)
   local hl = prefs.highlights
   local right_align = "%="
   local tab_components = ""
-  local close, close_length = render_close(options.close_icon)
+  local close, close_length = "", 0
+  if options.show_close_icon then
+    close, close_length = render_close(options.close_icon)
+  end
   local tabs_length = 0
 
   if options.show_tab_indicators then
