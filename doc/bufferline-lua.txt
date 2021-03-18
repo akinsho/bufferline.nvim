@@ -166,9 +166,9 @@ FILTERING                                           *bufferline-lua-filtering*
 
 Bufferline can be configured to take a custom filtering function via the
 `custom_filter` option. This value must be a lua function that will receive
-each buffer num that is going to be used for the bufferline. A user can then
+each buffer number that is going to be used for the bufferline. A user can then
 check whatever they would like and return `true` if they would like it to
-appear and false if not. 
+appear and `false` if not. 
 For example: >
     custom_filter = function(buf)
         -- dont show help buffers in the bufferline
