@@ -11,58 +11,31 @@ local M = {}
 local terminal_icon = " "
 local terminal_buftype = "terminal"
 
---------------------------------
--- A collection of buffers
---------------------------------
---- @class Buffers @parent class
-M.Buffers = {
-  buffers = nil
-}
-
-function M.Buffers:new(n)
-  local t = n or {length = 0, buffers = {}}
-  self.__index = self
-  return setmetatable(t, self)
-end
-
-function M.Buffers.__add(a, b)
-  return a.length + b.length
-end
-
--- Take a section and remove a buffer arbitrarily
--- reducing the length is very important as otherwise we don't know
--- a section is actually smaller now
-function M.Buffers:drop(index)
-  if self.buffers[index] ~= nil then
-    self.length = self.length - self.buffers[index].length
-    table.remove(self.buffers, index)
-    return self
-  end
-end
-
-function M.Buffers:add(buf)
-  table.insert(self.buffers, buf)
-  self.length = self.length + buf.length
-end
-
+-----------------------------------------------------------------------------//
+-- helpers
+-----------------------------------------------------------------------------//
 local function buffer_is_terminal(buf)
   return string.find(buf.path, "term://") or buf.buftype == terminal_buftype
 end
-
 --------------------------------
 -- A single buffer
 --------------------------------
---- @class Buffer @parent class
-M.Buffer = {
-  extension = nil,
-  path = nil,
-  id = nil,
-  filename = nil,
-  icon = nil,
-  icon_highlight = nil,
-  diagnostics = nil
-}
+---@class Buffer
+---@field public extension string,
+---@field public path string,
+---@field public id integer,
+---@field public filename string,
+---@field public icon string,
+---@field public icon_highlight string,
+---@field public diagnostics table
+---@field public modified boolean
+---@field public modifiable boolean
+---@field public buftype string
+M.Buffer = {}
 
+---create a new buffer class
+---@param buf Buffer
+---@return Buffer
 function M.Buffer:new(buf)
   buf.modifiable = vim.bo[buf.id].modifiable
   buf.modified = vim.bo[buf.id].modified
@@ -95,7 +68,6 @@ end
 -- have the main selected highlighting. If it isn't but it is the window highlight it as inactive
 -- the "trick" here is that "bufwinnr" retunrs a value which is the first window associated with a buffer
 -- if there are no windows associated i.e. it is not in view and the function returns -1
-
 -- FIXME this does not work if the same buffer is open in multiple window
 -- maybe do something with win_findbuf(bufnr('%'))
 function M.Buffer:current()
@@ -124,6 +96,43 @@ function M.Buffer:ancestor(depth, formatter)
     ancestor = dir .. utils.path_sep .. ancestor
   end
   return ancestor
+end
+
+--------------------------------
+-- A collection of buffers
+--------------------------------
+
+---@class Buffers
+---@field buffers Buffers[]
+M.Buffers = {}
+
+---create a segment of buffers
+---@param n Buffers
+---@return Buffers
+function M.Buffers:new(n)
+  local t = n or {length = 0, buffers = {}}
+  self.__index = self
+  return setmetatable(t, self)
+end
+
+function M.Buffers.__add(a, b)
+  return a.length + b.length
+end
+
+-- Take a section and remove a buffer arbitrarily
+-- reducing the length is very important as otherwise we don't know
+-- a section is actually smaller now
+function M.Buffers:drop(index)
+  if self.buffers[index] ~= nil then
+    self.length = self.length - self.buffers[index].length
+    table.remove(self.buffers, index)
+    return self
+  end
+end
+
+function M.Buffers:add(buf)
+  table.insert(self.buffers, buf)
+  self.length = self.length + buf.length
 end
 
 return M

@@ -157,6 +157,22 @@ require'bufferline'.setup{
     diagnostics_indicator = function(count, level)
       return "("..count..")"
     end
+    -- NOTE: this will be called a lot so don't do any heavy processing here
+    custom_filter = function(buf_number)
+      -- filter out filetypes you don't want to see
+      if vim.bo[buf_number].filetype ~= "<i-dont-want-to-see-this>" then
+        return true
+      end
+      -- filter out by buffer name
+      if vim.fn.bufname(buf_number) ~= "<buffer-name-I-dont-want>" then
+        return true
+      end
+      -- filter out based on arbitrary rules
+      -- e.g. filter out vim wiki buffer from tabline in your work repo
+      if vim.fn.getcwd() == "<work-repo>" and vim.bo[buf_number].filetype ~= "wiki" then
+        return true
+      end
+    end,
     show_buffer_close_icons = true | false,
     show_close_icon = true | false,
     show_tab_indicators = true | false,
