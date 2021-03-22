@@ -2,7 +2,7 @@
 
 A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built using **lua**.
 
-![Bufferline](./screenshots/bufferline.png "Bufferline")
+![Demo GIF](https://user-images.githubusercontent.com/22454918/111992693-9c6a9b00-8b0d-11eb-8c39-19db58583061.gif)
 
 This plugin shamelessly attempts to emulate the aesthetics of GUI text editors/Doom Emacs.
 It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://github.com/ema2159/centaur-tabs). I don't intend to copy
@@ -10,13 +10,15 @@ all of it's functionality though.
 
 ## Features
 
-- Colours derived from colorscheme where possible, should appear similar in most cases
+- Colours derived from colorscheme where possible.
 
 - Sort buffers by `extension`, `directory` or pass in a custom compare function
 
+- Filter buffers using a custom function
+
 #### Alternate option for tab styling
 
-![slanted tabs](./screenshots/diagonal.png "slanted tabs")
+![slanted tabs](https://user-images.githubusercontent.com/22454918/111992989-fec39b80-8b0d-11eb-851b-010641196a04.png)
 
 NOTE: tested with [`kitty`](https://github.com/kovidgoyal/kitty), results may vary depending on your terminal emulator of choice
 
@@ -24,39 +26,35 @@ see: `:h bufferline-styling`
 
 #### LSP error indicators
 
-- This is experimental and only works with nvim's native lsp for now
+- **NOTE:** This only works with neovim's native lsp.
 
-![Bufferline with error indicator](./screenshots/lsp_error.png)
+![LSP error](https://user-images.githubusercontent.com/22454918/111993085-1d299700-8b0e-11eb-96eb-c1c289e36b08.png)
 
 #### Option to show buffer numbers
 
-![Bufferline with numbers ](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
+![bufferline with numbers](https://user-images.githubusercontent.com/22454918/111993201-3d595600-8b0e-11eb-8944-387ed3bd25b4.png)
 
 #### Buffer pick functionality
 
-![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
+![bufferline pick](https://user-images.githubusercontent.com/22454918/111993296-5bbf5180-8b0e-11eb-9ad9-fcf9619436fd.gif)
 
 #### Make buffer names unique if there are duplicates
 
-![Deduplicated buffers](./screenshots/duplicate_names.png "deduplicated buffer names")
+![duplicate names](https://user-images.githubusercontent.com/22454918/111993343-6da0f480-8b0e-11eb-8d93-44019458d2c9.png)
 
 #### Close icons for closing individual buffers
 
-![close buffer with mouse click](./screenshots/close_button.gif)
+![close button](https://user-images.githubusercontent.com/22454918/111993390-7a254d00-8b0e-11eb-9951-43b4350f6a29.gif)
 
 #### Re-order current buffer
 
-![move current buffer](./screenshots/re-order.gif "Move current buffer")
+![re-order buffers](https://user-images.githubusercontent.com/22454918/111993463-91643a80-8b0e-11eb-87f0-26acfe92c021.gif)
 
 This order can be persisted between sessions (enabled by default).
 
-#### Modified symbol
-
-<img src="./screenshots/bufferline_with_modified.png" alt="modified icon" width="350px" />
-
 ## Requirements
 
-- Nightly nvim
+- Neovim 0.5+ (_nightly_)
 - A patched font (see [nerd fonts](https://github.com/ryanoasis/nerd-fonts))
 
 ## Installation
@@ -77,16 +75,18 @@ Plug 'akinsho/nvim-bufferline.lua'
 1. I was looking for an excuse to play with lua and learn to create a plugin with it for Neovim and there was nothing else built in lua when I created this.
 2. I wanted to add some tweaks to my buffer line and didn't want to figure out a bunch of `vimscript` in some other plugin.
 
-### Why make it public rather than as part of your `init.vim`?
-
-:shrug: figured someone else might like the aesthetic.
-
 ## Caveats 🙏
 
 - This won't appeal to everyone's tastes. This plugin is opinionated about how the tabline
   looks, it's unlikely to please everyone, I don't want to try and support a bunch of different
   appearances.
 - I want to prevent this becoming a pain to maintain so I'll be conservative about what I add.
+- This plugin relies on some basic highlights being set by your colour scheme
+  i.e. `Normal`, `String`, `TabLineSel` (`WildMenu` as fallback), `Comment`.
+  It's unlikely to work with all colour schemes. You can either try manually overriding the colours or
+  manually creating these highlight groups before loading this plugin.
+- If the contrast in your colour scheme isn't very high, think an all black colour scheme, some of the highlights of
+  this plugin won't really work as intended since it depends on darkening things.
 
 ## Usage
 
@@ -124,17 +124,6 @@ nnoremap <silent><mymap> :lua require'bufferline'.sort_buffers_by(function (buf_
 If you manually arrange your buffers using `:BufferLineMove{Prev|Next}` during an nvim session this can be persisted for the session.
 This is enabled by default but you need to ensure that your `sessionopts+=globals` otherwise the session file will
 not track global variables which is the mechanism used to store your sort order.
-
-## Warning
-
-This plugin relies on some basic highlights being set by your colour scheme
-i.e. `Normal`, `String`, `TabLineSel` (`WildMenu` as fallback), `Comment`.
-It's unlikely to work with all colour schemes, which is not something I will fix tbh.
-You can either try manually overriding the colours or manually creating these highlight groups
-before loading this plugin.
-
-If the contrast in your colour scheme isn't very high, think an all black colour scheme, some of the highlights of
-this plugin won't really work as intended since it depends on darkening things.
 
 ## Configuration
 
@@ -277,7 +266,7 @@ nnoremap <silent> gb :BufferLinePick<CR>
 then pick a buffer by typing the character for that specific
 buffer that appears
 
-![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
+![bufferline_pick](https://user-images.githubusercontent.com/22454918/111994691-f2404280-8b0f-11eb-9bc1-6664ccb93154.gif)
 
 ### Multi-window mode
 
