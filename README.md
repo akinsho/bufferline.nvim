@@ -273,7 +273,7 @@ nnoremap <silent> gb :BufferLinePick<CR>
 then pick a buffer by typing the character for that specific
 buffer that appears
 
-![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
+![bufferline_pick](https://user-images.githubusercontent.com/22454918/111994691-f2404280-8b0f-11eb-9bc1-6664ccb93154.gif)
 
 ### Multi-window mode
 
