@@ -10,9 +10,11 @@ all of it's functionality though.
 
 ## Features
 
-- Colours derived from colorscheme where possible, should appear similar in most cases
+- Colours derived from colorscheme where possible.
 
 - Sort buffers by `extension`, `directory` or pass in a custom compare function
+
+- Filter buffers using a custom function
 
 #### Alternate option for tab styling
 
@@ -24,7 +26,7 @@ see: `:h bufferline-styling`
 
 #### LSP error indicators
 
-- This is experimental and only works with nvim's native lsp for now
+- **NOTE:** This only works with neovim's native lsp.
 
 ![LSP error](https://user-images.githubusercontent.com/22454918/111993085-1d299700-8b0e-11eb-96eb-c1c289e36b08.png)
 
@@ -52,7 +54,7 @@ This order can be persisted between sessions (enabled by default).
 
 ## Requirements
 
-- Nightly nvim
+- Neovim 0.5+ (_nightly_)
 - A patched font (see [nerd fonts](https://github.com/ryanoasis/nerd-fonts))
 
 ## Installation
@@ -73,16 +75,18 @@ Plug 'akinsho/nvim-bufferline.lua'
 1. I was looking for an excuse to play with lua and learn to create a plugin with it for Neovim and there was nothing else built in lua when I created this.
 2. I wanted to add some tweaks to my buffer line and didn't want to figure out a bunch of `vimscript` in some other plugin.
 
-### Why make it public rather than as part of your `init.vim`?
-
-:shrug: figured someone else might like the aesthetic.
-
 ## Caveats 🙏
 
 - This won't appeal to everyone's tastes. This plugin is opinionated about how the tabline
   looks, it's unlikely to please everyone, I don't want to try and support a bunch of different
   appearances.
 - I want to prevent this becoming a pain to maintain so I'll be conservative about what I add.
+- This plugin relies on some basic highlights being set by your colour scheme
+  i.e. `Normal`, `String`, `TabLineSel` (`WildMenu` as fallback), `Comment`.
+  It's unlikely to work with all colour schemes. You can either try manually overriding the colours or
+  manually creating these highlight groups before loading this plugin.
+- If the contrast in your colour scheme isn't very high, think an all black colour scheme, some of the highlights of
+  this plugin won't really work as intended since it depends on darkening things.
 
 ## Usage
 
@@ -120,17 +124,6 @@ nnoremap <silent><mymap> :lua require'bufferline'.sort_buffers_by(function (buf_
 If you manually arrange your buffers using `:BufferLineMove{Prev|Next}` during an nvim session this can be persisted for the session.
 This is enabled by default but you need to ensure that your `sessionopts+=globals` otherwise the session file will
 not track global variables which is the mechanism used to store your sort order.
-
-## Warning
-
-This plugin relies on some basic highlights being set by your colour scheme
-i.e. `Normal`, `String`, `TabLineSel` (`WildMenu` as fallback), `Comment`.
-It's unlikely to work with all colour schemes, which is not something I will fix tbh.
-You can either try manually overriding the colours or manually creating these highlight groups
-before loading this plugin.
-
-If the contrast in your colour scheme isn't very high, think an all black colour scheme, some of the highlights of
-this plugin won't really work as intended since it depends on darkening things.
 
 ## Configuration
 
