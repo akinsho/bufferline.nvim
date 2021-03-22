@@ -2,7 +2,7 @@
 
 A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built using **lua**.
 
-![Bufferline](./screenshots/bufferline.png "Bufferline")
+![Demo GIF](https://user-images.githubusercontent.com/22454918/111992693-9c6a9b00-8b0d-11eb-8c39-19db58583061.gif)
 
 This plugin shamelessly attempts to emulate the aesthetics of GUI text editors/Doom Emacs.
 It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://github.com/ema2159/centaur-tabs). I don't intend to copy
@@ -16,7 +16,7 @@ all of it's functionality though.
 
 #### Alternate option for tab styling
 
-![slanted tabs](./screenshots/diagonal.png "slanted tabs")
+![slanted tabs](https://user-images.githubusercontent.com/22454918/111992989-fec39b80-8b0d-11eb-851b-010641196a04.png)
 
 NOTE: tested with [`kitty`](https://github.com/kovidgoyal/kitty), results may vary depending on your terminal emulator of choice
 
@@ -26,33 +26,29 @@ see: `:h bufferline-styling`
 
 - This is experimental and only works with nvim's native lsp for now
 
-![Bufferline with error indicator](./screenshots/lsp_error.png)
+![LSP error](https://user-images.githubusercontent.com/22454918/111993085-1d299700-8b0e-11eb-96eb-c1c289e36b08.png)
 
 #### Option to show buffer numbers
 
-![Bufferline with numbers ](./screenshots/bufferline_with_numbers.png "Nvim Bufferline")
+![bufferline with numbers](https://user-images.githubusercontent.com/22454918/111993201-3d595600-8b0e-11eb-8944-387ed3bd25b4.png)
 
 #### Buffer pick functionality
 
-![Bufferline Pick](./screenshots/bufferline_pick.gif "Bufferline Pick functionality")
+![bufferline pick](https://user-images.githubusercontent.com/22454918/111993296-5bbf5180-8b0e-11eb-9ad9-fcf9619436fd.gif)
 
 #### Make buffer names unique if there are duplicates
 
-![Deduplicated buffers](./screenshots/duplicate_names.png "deduplicated buffer names")
+![duplicate names](https://user-images.githubusercontent.com/22454918/111993343-6da0f480-8b0e-11eb-8d93-44019458d2c9.png)
 
 #### Close icons for closing individual buffers
 
-![close buffer with mouse click](./screenshots/close_button.gif)
+![close button](https://user-images.githubusercontent.com/22454918/111993390-7a254d00-8b0e-11eb-9951-43b4350f6a29.gif)
 
 #### Re-order current buffer
 
-![move current buffer](./screenshots/re-order.gif "Move current buffer")
+![re-order buffers](https://user-images.githubusercontent.com/22454918/111993463-91643a80-8b0e-11eb-87f0-26acfe92c021.gif)
 
 This order can be persisted between sessions (enabled by default).
-
-#### Modified symbol
-
-<img src="./screenshots/bufferline_with_modified.png" alt="modified icon" width="350px" />
 
 ## Requirements
 
