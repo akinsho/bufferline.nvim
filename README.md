@@ -143,7 +143,7 @@ require'bufferline'.setup{
     max_prefix_length = 15, -- prefix used when a buffer is deduplicated
     tab_size = 18,
     diagnostics = false | "nvim_lsp"
-    diagnostics_indicator = function(count, level)
+    diagnostics_indicator = function(count, level, diagnostics_dict)
       return "("..count..")"
     end
     -- NOTE: this will be called a lot so don't do any heavy processing here
@@ -199,11 +199,24 @@ In order to customise the appearance of the diagnostic count you can pass a cust
 
 --- count is an integer representing total count of errors
 --- level is a string "error" | "warning"
+--- diagnostics_dict is a dictionary from error level to number of errors for each level.
+--- 1: error, 2: warning, 3: info
 --- this should return a string
 --- Don't get too fancy as this function will be executed a lot
-diagnostics_indicator = function(count, level)
+diagnostics_indicator = function(count, level, diagnostics_dict)
   local icon = level:match("error") and " " or ""
   return " " .. icon .. count
+end
+
+--- or
+
+diagnostics_indicator = function(_, _, diagnostics_dict)
+  local s = " "
+  for e, n in pairs(diagnostics_dict) do
+    local sym = e == 1 and " " or (e == 2 and " " or "" )
+    s = s .. n .. sym
+  end
+  return s
 end
 ```
 

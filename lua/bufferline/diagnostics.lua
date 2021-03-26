@@ -1,6 +1,6 @@
 local M = {}
 
-local function getErrDict (errs)
+local function get_err_dict(errs)
   local ds = {}
   local max = 3
   for _, err in ipairs (errs) do
@@ -9,14 +9,15 @@ local function getErrDict (errs)
       local s = err.severity
       if s < max then max = s end
       -- increment diagnostics dict
-      if ds[s]
-        then ds[s] = ds[s] + 1
-        else ds[s] = 1
+      if ds[s] then
+        ds[s] = ds[s] + 1
+      else
+        ds[s] = 1
       end
     end
   end
-  local maxSev = max==1 and "error" or (max==2 and "warning" or "info")
-  return {level = maxSev, errors = ds}
+  local max_severity = max==1 and "error" or (max==2 and "warning" or "info")
+  return {level = max_severity, errors = ds}
 end
 
 local mt = {
@@ -37,11 +38,12 @@ function M.get(opts)
   local diagnostics = vim.lsp.diagnostic.get_all()
   local result = {}
   for buf_num, items in pairs(diagnostics) do
-    local d = getErrDict(items)
-    result[buf_num] = { count = #items,
-                        level = d.level,
-                        errors = d.errors
-                      }
+    local d = get_err_dict(items)
+    result[buf_num] = {
+      count = #items,
+      level = d.level,
+      errors = d.errors
+    }
   end
   return setmetatable(result, mt)
 end
