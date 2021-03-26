@@ -219,6 +219,7 @@ diagnostics_indicator = function(_, _, diagnostics_dict)
   return s
 end
 ```
+![diagnostics_indicator](https://user-images.githubusercontent.com/4028913/112573484-9ee92100-8da9-11eb-9ffd-da9cb9cae3a6.png)
 
 #### Example custom indicator
 
