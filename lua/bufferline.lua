@@ -922,15 +922,15 @@ function M.setup(prefs)
   -----------------------------------------------------------
   -- Commands
   -----------------------------------------------------------
-  vim.cmd('command BufferLinePick lua require"bufferline".pick_buffer()')
-  vim.cmd('command BufferLineCycleNext lua require"bufferline".cycle(1)')
-  vim.cmd('command BufferLineCyclePrev lua require"bufferline".cycle(-1)')
-  vim.cmd('command BufferLineMoveNext lua require"bufferline".move(1)')
-  vim.cmd('command BufferLineMovePrev lua require"bufferline".move(-1)')
-  vim.cmd('command BufferLineSortByExtension lua require"bufferline".sort_buffers_by("extension")')
-  vim.cmd('command BufferLineSortByDirectory lua require"bufferline".sort_buffers_by("directory")')
+  vim.cmd('command! BufferLinePick lua require"bufferline".pick_buffer()')
+  vim.cmd('command! BufferLineCycleNext lua require"bufferline".cycle(1)')
+  vim.cmd('command! BufferLineCyclePrev lua require"bufferline".cycle(-1)')
+  vim.cmd('command! BufferLineMoveNext lua require"bufferline".move(1)')
+  vim.cmd('command! BufferLineMovePrev lua require"bufferline".move(-1)')
+  vim.cmd('command! BufferLineSortByExtension lua require"bufferline".sort_buffers_by("extension")')
+  vim.cmd('command! BufferLineSortByDirectory lua require"bufferline".sort_buffers_by("directory")')
   vim.cmd(
-    'command BufferLineSortByRelativeDirectory lua require"bufferline".sort_buffers_by("relative_directory")'
+    'command! BufferLineSortByRelativeDirectory lua require"bufferline".sort_buffers_by("relative_directory")'
   )
 
   -- TODO / idea: consider allowing these mappings to open buffers based on their
