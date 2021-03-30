@@ -199,12 +199,11 @@ In order to customise the appearance of the diagnostic count you can pass a cust
 
 --- count is an integer representing total count of errors
 --- level is a string "error" | "warning"
---- diagnostics_dict is a dictionary from error level to number of errors for each level.
---- 1: error, 2: warning, 3: info
+--- diagnostics_dict is a dictionary from error level ("error", "warning" or "info")to number of errors for each level.
 --- this should return a string
 --- Don't get too fancy as this function will be executed a lot
 diagnostics_indicator = function(count, level, diagnostics_dict)
-  local icon = level:match("error") and " " or ""
+  local icon = level:match("error") and " " or " "
   return " " .. icon .. count
 end
 
@@ -213,7 +212,8 @@ end
 diagnostics_indicator = function(_, _, diagnostics_dict)
   local s = " "
   for e, n in pairs(diagnostics_dict) do
-    local sym = e == 1 and " " or (e == 2 and " " or "" )
+    local sym = e == "error" and " "
+      or (e == "warning" and " " or "" )
     s = s .. n .. sym
   end
   return s
