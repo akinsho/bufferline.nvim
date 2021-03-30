@@ -1,13 +1,32 @@
 local M = {}
 
--- return the most severe level of diagnostic
-local function get_max_severity(errors)
-  for _, err in ipairs(errors) do
-    if err and err.severity == 1 then
-      return "error"
+local function get_sev_name(i)
+  if     i == 1 then return "error"
+  elseif i == 2 then return "warning"
+  elseif i == 3 then return "info"
+  else return "other"
+  end
+end
+
+local function get_err_dict(errs)
+  local ds = {}
+  local max = 3
+  for _, err in ipairs (errs) do
+    if err then
+      -- calculate max severity
+      local sev_num = err.severity
+      local sev_level = get_sev_name(sev_num)
+      if sev_num < max then max = sev_num end
+      -- increment diagnostics dict
+      if ds[sev_level] then
+        ds[sev_level] = ds[sev_level] + 1
+      else
+        ds[sev_level] = 1
+      end
     end
   end
-  return "warning"
+  local max_severity = get_sev_name(max)
+  return {level = max_severity, errors = ds}
 end
 
 local mt = {
@@ -28,9 +47,11 @@ function M.get(opts)
   local diagnostics = vim.lsp.diagnostic.get_all()
   local result = {}
   for buf_num, items in pairs(diagnostics) do
+    local d = get_err_dict(items)
     result[buf_num] = {
       count = #items,
-      level = get_max_severity(items)
+      level = d.level,
+      errors = d.errors
     }
   end
   return setmetatable(result, mt)
@@ -50,7 +71,7 @@ function M.component(context)
   end
   local indicator = " (" .. diagnostics.count .. ")"
   if user_indicator and type(user_indicator) == "function" then
-    indicator = user_indicator(diagnostics.count, diagnostics.level)
+    indicator = user_indicator(diagnostics.count, diagnostics.level, diagnostics.errors)
   end
   local highlight = highlights[diagnostics.level] or ""
   local size = context.length + vim.fn.strwidth(indicator)
