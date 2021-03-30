@@ -1,22 +1,31 @@
 local M = {}
 
+local function get_sev_name(i)
+  if     i == 1 then return "error"
+  elseif i == 2 then return "warning"
+  elseif i == 3 then return "info"
+  else return "other"
+  end
+end
+
 local function get_err_dict(errs)
   local ds = {}
   local max = 3
   for _, err in ipairs (errs) do
     if err then
       -- calculate max severity
-      local s = err.severity
-      if s < max then max = s end
+      local sev_num = err.severity
+      local sev_level = get_sev_name(sev_num)
+      if sev_num < max then max = sev_num end
       -- increment diagnostics dict
-      if ds[s] then
-        ds[s] = ds[s] + 1
+      if ds[sev_level] then
+        ds[sev_level] = ds[sev_level] + 1
       else
-        ds[s] = 1
+        ds[sev_level] = 1
       end
     end
   end
-  local max_severity = max==1 and "error" or (max==2 and "warning" or "info")
+  local max_severity = get_sev_name(max)
   return {level = max_severity, errors = ds}
 end
 
