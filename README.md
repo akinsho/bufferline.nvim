@@ -207,7 +207,9 @@ diagnostics_indicator = function(count, level, diagnostics_dict)
   return " " .. icon .. count
 end
 
---- or
+```
+![custom indicator](https://user-images.githubusercontent.com/22454918/113215394-b1180300-9272-11eb-9632-8a9f9aae99fa.png)
+```lua
 
 diagnostics_indicator = function(_, _, diagnostics_dict)
   local s = " "
@@ -219,11 +221,9 @@ diagnostics_indicator = function(_, _, diagnostics_dict)
   return s
 end
 ```
+
 ![diagnostics_indicator](https://user-images.githubusercontent.com/4028913/112573484-9ee92100-8da9-11eb-9ffd-da9cb9cae3a6.png)
 
-#### Example custom indicator
-
-![custom indicator](./screenshots/custom_lsp_indicator.png)
 
 The highlighting for the filename if there is an error can be changed by replacing the highlights for
 `error`, `error_visible`, `error_selected`, `warning`, `warning_visible`, `warning_selected`.
