@@ -1,22 +1,32 @@
 local M = {}
 
-local function get_sev_name(i)
-  if     i == 1 then return "error"
-  elseif i == 2 then return "warning"
-  elseif i == 3 then return "info"
-  else return "other"
-  end
-end
+local severity_name = {
+  [1] = "error",
+  [2] = "warning",
+  [3] = "info",
+  [4] = "other"
+}
+
+setmetatable(
+  severity_name,
+  {
+    __index = function()
+      return "other"
+    end
+  }
+)
 
 local function get_err_dict(errs)
   local ds = {}
-  local max = 3
-  for _, err in ipairs (errs) do
+  local max = #severity_name
+  for _, err in ipairs(errs) do
     if err then
       -- calculate max severity
       local sev_num = err.severity
-      local sev_level = get_sev_name(sev_num)
-      if sev_num < max then max = sev_num end
+      local sev_level = severity_name[sev_num]
+      if sev_num < max then
+        max = sev_num
+      end
       -- increment diagnostics dict
       if ds[sev_level] then
         ds[sev_level] = ds[sev_level] + 1
@@ -25,7 +35,7 @@ local function get_err_dict(errs)
       end
     end
   end
-  local max_severity = get_sev_name(max)
+  local max_severity = severity_name[max]
   return {level = max_severity, errors = ds}
 end
 
