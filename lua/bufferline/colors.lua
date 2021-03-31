@@ -60,11 +60,13 @@ function M.color_is_bright(hex)
 end
 
 function M.get_hex(hl_name, part, fallback)
-  if not fallback then fallback = "none" end
   local id = vim.fn.hlID(hl_name)
   local color = vim.fn.synIDattr(id, part)
   -- if we can't find the color we default to none
-  if not color or color == "" then return fallback else return color end
+  if not color or color == "" then
+    return fallback
+  end
+  return color
 end
 
 return M

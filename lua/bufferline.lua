@@ -116,6 +116,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.buffer = h.buffer_selected
     hl.error = h.error_selected.hl
     hl.warning = h.warning_selected.hl
+    hl.info = h.info_selected.hl
   elseif buffer:visible() then
     hl.background = h.buffer_visible.hl
     hl.modified = h.modified_visible.hl
@@ -125,6 +126,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.buffer = h.buffer_visible
     hl.error = h.error_visible.hl
     hl.warning = h.warning_visible.hl
+    hl.info = h.info_visible.hl
   else
     hl.background = h.background.hl
     hl.modified = h.modified.hl
@@ -134,6 +136,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.buffer = h.background
     hl.error = h.error.hl
     hl.warning = h.warning.hl
+    hl.info = h.info.hl
   end
   return hl
 end
@@ -212,8 +215,8 @@ local function highlight_icon(buffer)
     new_hl = new_hl .. "Inactive"
     bg_hl = prefix .. "BufferVisible"
   end
-  local guifg = colors.get_hex(hl, "fg")
-  local guibg = colors.get_hex(bg_hl, "bg")
+  local guifg = colors.get_hex(hl, "fg", "NONE")
+  local guibg = colors.get_hex(bg_hl, "bg", "NONE")
   highlights.set_one(new_hl, {guibg = guibg, guifg = guifg})
   return "%#" .. new_hl .. "#" .. icon .. padding .. "%*"
 end
@@ -884,7 +887,7 @@ local function convert_hl_tables(prefs)
     for attribute, value in pairs(attributes) do
       if type(value) == "table" then
         if value.highlight and value.attribute then
-          prefs.highlights[hl][attribute] = colors.get_hex(value.highlight, value.attribute)
+          prefs.highlights[hl][attribute] = colors.get_hex(value.highlight, value.attribute, "NONE")
         else
           prefs.highlights[hl][attribute] = nil
           print(string.format("removing %s as it is not formatted correctly", hl))

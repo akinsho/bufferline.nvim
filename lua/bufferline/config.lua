@@ -1,5 +1,3 @@
-local colors = require "bufferline/colors"
-
 local M = {}
 
 -- Ideally this plugin should generate a beautiful tabline a little similar
@@ -7,17 +5,19 @@ local M = {}
 -- be so nice it's what anyone using this plugin sticks with. It should ideally
 -- work across any well designed colorscheme deriving colors automagically.
 function M.get_defaults()
-  local comment_fg = colors.get_hex("Comment", "fg")
-  local normal_fg = colors.get_hex("Normal", "fg")
-  local normal_bg = colors.get_hex("Normal", "bg")
-  local string_fg = colors.get_hex("String", "fg")
-  local error_fg = colors.get_hex("Error", "fg")
-  local warning_fg = "DarkOrange"
+  local colors = require("bufferline/colors")
+  local hex = colors.get_hex
+  local shade = colors.shade_color
 
-  local tabline_sel_bg = colors.get_hex("TabLineSel", "bg")
-  if not tabline_sel_bg == "none" then
-    tabline_sel_bg = colors.get_hex("WildMenu", "bg")
-  end
+  local comment_fg = hex("Comment", "fg", "NONE")
+  local normal_fg = hex("Normal", "fg", "NONE")
+  local normal_bg = hex("Normal", "bg", "NONE")
+  local string_fg = hex("String", "fg", "NONE")
+  local error_fg = hex("LspDiagnosticsDefaultError", "fg") or hex("Error", "fg", "NONE")
+  local warning_fg = hex("LspDiagnosticsDefaultWarning", "fg") or "DarkOrange"
+  local info_fg = hex("LspDiagnosticsDefaultInformation", "fg") or "DarkBlue"
+
+  local tabline_sel_bg = hex("TabLineSel", "bg") or hex("WildMenu", "bg", "NONE")
 
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
@@ -25,10 +25,10 @@ function M.get_defaults()
   local separator_shading = is_bright_background and -20 or -45
   local background_shading = is_bright_background and -12 or -25
 
-  local visible_bg = colors.shade_color(normal_bg, -8)
-  local duplicate_color = colors.shade_color(comment_fg, -5)
-  local separator_background_color = colors.shade_color(normal_bg, separator_shading)
-  local background_color = colors.shade_color(normal_bg, background_shading)
+  local visible_bg = shade(normal_bg, -8)
+  local duplicate_color = shade(comment_fg, -5)
+  local separator_background_color = shade(normal_bg, separator_shading)
+  local background_color = shade(normal_bg, background_shading)
 
   return {
     options = {
@@ -84,6 +84,21 @@ function M.get_defaults()
         guifg = normal_fg,
         guibg = normal_bg,
         gui = "bold,italic"
+      },
+      info = {
+        guifg = comment_fg,
+        guisp = info_fg,
+        guibg = background_color
+      },
+      info_visible = {
+        guifg = comment_fg,
+        guibg = visible_bg
+      },
+      info_selected = {
+        guifg = info_fg,
+        guibg = normal_bg,
+        gui = "bold,italic",
+        guisp = info_fg
       },
       warning = {
         guifg = comment_fg,
