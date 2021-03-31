@@ -1,8 +1,8 @@
 local M = {}
 
 function M.to_rgb(color)
-  local r = tonumber(string.sub(color, 2,3), 16)
-  local g = tonumber(string.sub(color, 4,5), 16)
+  local r = tonumber(string.sub(color, 2, 3), 16)
+  local g = tonumber(string.sub(color, 4, 5), 16)
   local b = tonumber(string.sub(color, 6), 16)
   return r, g, b
 end
@@ -12,7 +12,9 @@ function M.shade_color(color, percent)
   local r, g, b = M.to_rgb(color)
 
   -- If any of the colors are missing return "NONE" i.e. no highlight
-  if not r or not g or not b then return "NONE" end
+  if not r or not g or not b then
+    return "NONE"
+  end
 
   r = math.floor(tonumber(r * (100 + percent) / 100))
   g = math.floor(tonumber(g * (100 + percent) / 100))
@@ -32,7 +34,7 @@ function M.shade_color(color, percent)
   local gg = string.len(g) == 1 and "0" .. g or g
   local bb = string.len(b) == 1 and "0" .. b or b
 
-  return "#"..rr..gg..bb
+  return "#" .. rr .. gg .. bb
 end
 
 --- Determine whether to use black or white text
@@ -45,9 +47,11 @@ function M.color_is_bright(hex)
   end
   local r, g, b = M.to_rgb(hex)
   -- If any of the colors are missing return false
-  if not r or not g or not b then return false end
+  if not r or not g or not b then
+    return false
+  end
   -- Counting the perceptive luminance - human eye favors green color
-  local luminance = (0.299*r + 0.587*g + 0.114*b)/255
+  local luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
   if luminance > 0.5 then
     return true -- Bright colors, black font
   else
