@@ -132,6 +132,9 @@ length specified (+ the other indicators). If you set
 `enforce_regular_tabs = true` tabs will be prevented from extending beyond
 the tab size and all tabs will be the same length
 
+NOTE: when this option is set to `true`. It will disable the ability to
+deduplicate buffers.
+
 ==============================================================================
 SORTING					               *bufferline-lua-sorting*
 
