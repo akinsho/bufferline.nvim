@@ -131,7 +131,7 @@ not track global variables which is the mechanism used to store your sort order.
 require'bufferline'.setup{
   options = {
     view = "multiwindow" | "default",
-    numbers = "none" | "ordinal" | "buffer_id",
+    numbers = "none" | "ordinal" | "buffer_id" | "mix",
     number_style = "superscript" | "",
     mappings = true | false,
     buffer_close_icon= '',

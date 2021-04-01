@@ -49,7 +49,7 @@ The available settings are: >
     require"bufferline".setup{
         options = {
             view = "multiwindow" | "default",
-            numbers = "none" | "ordinal" | "buffer_id",
+            numbers = "none" | "ordinal" | "buffer_id" | "mix",
             number_style = "superscript" | "",
             mappings = true | false,
             buffer_close_icon= "",
@@ -168,7 +168,7 @@ Bufferline can be configured to take a custom filtering function via the
 `custom_filter` option. This value must be a lua function that will receive
 each buffer number that is going to be used for the bufferline, as well as all the others.
 A user can then check whatever they would like and return `true` if they would like it to
-appear and `false` if not. 
+appear and `false` if not.
 For example: >
     custom_filter = function(buf, buf_nums)
         -- dont show help buffers in the bufferline
@@ -204,7 +204,7 @@ For example: >
         if vim.tbl_isempty(logs) then
             return true
         end
-        -- 2. if there are log buffers then only show the log buffer 
+        -- 2. if there are log buffers then only show the log buffer
         local tab_num = vim.fn.tabpagenr()
         local is_log = vim.bo[buf].filetype == "log"
         -- only show log buffers in secondary tabs
