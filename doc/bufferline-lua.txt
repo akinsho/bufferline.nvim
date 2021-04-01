@@ -49,7 +49,7 @@ The available settings are: >
     require"bufferline".setup{
         options = {
             view = "multiwindow" | "default",
-            numbers = "none" | "ordinal" | "buffer_id" | "mix",
+            numbers = "none" | "ordinal" | "buffer_id" | "both",
             number_style = "superscript" | "",
             mappings = true | false,
             buffer_close_icon= "",
