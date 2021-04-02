@@ -59,7 +59,7 @@ local function prefix(buffer, mode, style)
       elseif s == "subscript" then
         num = num .. convert_to_styled_num(subscript_numbers, v == "ordinal" and buffer.ordinal or buffer.id)
       else -- "none"
-        num = num .. v == "ordinal" and buffer.ordinal or buffer.id .. "."
+        num = num .. (v == "ordinal" and buffer.ordinal or buffer.id) .. "."
       end
     end
 
