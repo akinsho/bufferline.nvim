@@ -34,12 +34,13 @@ see: `:h bufferline-styling`
 
 ![bufferline with numbers](https://user-images.githubusercontent.com/22454918/111993201-3d595600-8b0e-11eb-8944-387ed3bd25b4.png)
 
-mode "both" with default number_style
+mode `both` with default number_style
+
 ![both with default style](https://user-images.githubusercontent.com/8133242/113400253-159ea380-93d4-11eb-822c-974d728a6bcf.png)
 
-mode "both" with customized number_style `{"superscript", "subscript"}`
-![both with customized style](https://user-images.githubusercontent.com/8133242/113400265-1a635780-93d4-11eb-8085-adc328385cb5.png)
+mode `both` with customized number_style `{"superscript", "subscript"}`
 
+![both with customized style](https://user-images.githubusercontent.com/8133242/113400265-1a635780-93d4-11eb-8085-adc328385cb5.png)
 
 #### Buffer pick functionality
 
@@ -215,7 +216,9 @@ diagnostics_indicator = function(count, level, diagnostics_dict)
 end
 
 ```
+
 ![custom indicator](https://user-images.githubusercontent.com/22454918/113215394-b1180300-9272-11eb-9632-8a9f9aae99fa.png)
+
 ```lua
 
 diagnostics_indicator = function(_, _, diagnostics_dict)
@@ -230,7 +233,6 @@ end
 ```
 
 ![diagnostics_indicator](https://user-images.githubusercontent.com/4028913/112573484-9ee92100-8da9-11eb-9ffd-da9cb9cae3a6.png)
-
 
 The highlighting for the filename if there is an error can be changed by replacing the highlights for
 `error`, `error_visible`, `error_selected`, `warning`, `warning_visible`, `warning_selected`.
