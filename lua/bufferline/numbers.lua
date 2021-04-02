@@ -42,11 +42,28 @@ local function prefix(buffer, mode, style)
   -- if mode is both, it will be like lightline-bufferline, buffer_id at top left
   -- and ordinal number at bottom down, so the user can get the buffer number
   if mode == "both" then
-    if style == "superscript" then
-      return convert_to_styled_num(superscript_numbers, buffer.id) .. convert_to_styled_num(subscript_numbers, buffer.ordinal)
-    else
-      return buffer.id .. "(" .. buffer.ordinal .. ")"
+    -- default number_style for mode "both"
+    local both_style = { buffer_id = "none", ordinal = "subscript" }
+    if style == "superscript" then -- this is the default number_style, do nothing
+      -- return convert_to_styled_num(superscript_numbers, buffer.id) .. convert_to_styled_num(subscript_numbers, buffer.ordinal)
+    elseif type(style) == "table" then
+      both_style.buffer_id = style[1] and style[1] or both_style.buffer_id
+      both_style.ordinal = style[2] and style[2] or both_style.ordinal
     end
+
+    local num = ""
+    for _, v in ipairs({"buffer_id", "ordinal"}) do
+      local s = both_style[v] --  "superscript"| "subscript" | "none"
+      if s == "superscript" then
+        num = num .. convert_to_styled_num(superscript_numbers, v == "ordinal" and buffer.ordinal or buffer.id)
+      elseif s == "subscript" then
+        num = num .. convert_to_styled_num(subscript_numbers, v == "ordinal" and buffer.ordinal or buffer.id)
+      else -- "none"
+        num = num .. v == "ordinal" and buffer.ordinal or buffer.id .. "."
+      end
+    end
+
+    return num
   else
     local n = mode == "ordinal" and buffer.ordinal or buffer.id
     local num = style == "superscript" and convert_to_styled_num(superscript_numbers,n) or n .. "."
