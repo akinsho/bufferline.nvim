@@ -114,9 +114,13 @@ local function get_buffer_highlight(buffer, hls)
     hl.pick = h.pick_selected.hl
     hl.separator = h.separator_selected.hl
     hl.buffer = h.buffer_selected
+    hl.diagnostic = h.diagnostic_selected.hl
     hl.error = h.error_selected.hl
+    hl.error_diagnostic = h.error_diagnostic_selected.hl
     hl.warning = h.warning_selected.hl
+    hl.warning_diagnostic = h.warning_diagnostic_selected.hl
     hl.info = h.info_selected.hl
+    hl.info_diagnostic = h.info_diagnostic_selected.hl
   elseif buffer:visible() then
     hl.background = h.buffer_visible.hl
     hl.modified = h.modified_visible.hl
@@ -124,9 +128,13 @@ local function get_buffer_highlight(buffer, hls)
     hl.pick = h.pick_visible.hl
     hl.separator = h.separator_visible.hl
     hl.buffer = h.buffer_visible
+    hl.diagnostic = h.diagnostic_visible.hl
     hl.error = h.error_visible.hl
+    hl.error_diagnostic = h.error_diagnostic_visible.hl
     hl.warning = h.warning_visible.hl
+    hl.warning_diagnostic = h.warning_diagnostic_visible.hl
     hl.info = h.info_visible.hl
+    hl.info_diagnostic = h.info_diagnostic_visible.hl
   else
     hl.background = h.background.hl
     hl.modified = h.modified.hl
@@ -134,10 +142,15 @@ local function get_buffer_highlight(buffer, hls)
     hl.pick = h.pick.hl
     hl.separator = h.separator.hl
     hl.buffer = h.background
+    hl.diagnostic = h.diagnostic.hl
     hl.error = h.error.hl
+    hl.error_diagnostic = h.error_diagnostic.hl
     hl.warning = h.warning.hl
+    hl.warning_diagnostic = h.warning_diagnostic.hl
     hl.info = h.info.hl
+    hl.info_diagnostic = h.info_diagnostic.hl
   end
+
   return hl
 end
 
