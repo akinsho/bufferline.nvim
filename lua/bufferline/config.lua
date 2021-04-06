@@ -24,11 +24,19 @@ function M.get_defaults()
   local is_bright_background = colors.color_is_bright(normal_bg)
   local separator_shading = is_bright_background and -20 or -45
   local background_shading = is_bright_background and -12 or -25
+  local diagnostic_shading = is_bright_background and -12 or -25
 
   local visible_bg = shade(normal_bg, -8)
   local duplicate_color = shade(comment_fg, -5)
   local separator_background_color = shade(normal_bg, separator_shading)
   local background_color = shade(normal_bg, background_shading)
+
+  -- diagnostic colors by default are a few shades darker
+  local normal_diagnostic_fg = shade(normal_fg, diagnostic_shading)
+  local comment_diagnostic_fg = shade(comment_fg, diagnostic_shading)
+  local info_diagnostic_fg = shade(info_fg, diagnostic_shading)
+  local warning_diagnostic_fg = shade(warning_fg, diagnostic_shading)
+  local error_diagnostic_fg = shade(error_fg, diagnostic_shading)
 
   return {
     options = {
@@ -85,6 +93,19 @@ function M.get_defaults()
         guibg = normal_bg,
         gui = "bold,italic"
       },
+      diagnostic = {
+        guifg = comment_diagnostic_fg,
+        guibg = background_color,
+      },
+      diagnostic_visible = {
+        guifg = comment_diagnostic_fg,
+        guibg = visible_bg,
+      },
+      diagnostic_selected = {
+        guifg = normal_diagnostic_fg,
+        guibg = normal_bg,
+        gui = "bold,italic"
+      },
       info = {
         guifg = comment_fg,
         guisp = info_fg,
@@ -99,6 +120,21 @@ function M.get_defaults()
         guibg = normal_bg,
         gui = "bold,italic",
         guisp = info_fg
+      },
+      info_diagnostic = {
+        guifg = comment_diagnostic_fg,
+        guisp = info_diagnostic_fg,
+        guibg = background_color
+      },
+      info_diagnostic_visible = {
+        guifg = comment_diagnostic_fg,
+        guibg = visible_bg
+      },
+      info_diagnostic_selected = {
+        guifg = info_diagnostic_fg,
+        guibg = normal_bg,
+        gui = "bold,italic",
+        guisp = info_diagnostic_fg
       },
       warning = {
         guifg = comment_fg,
@@ -115,6 +151,21 @@ function M.get_defaults()
         gui = "bold,italic",
         guisp = warning_fg
       },
+      warning_diagnostic = {
+        guifg = comment_diagnostic_fg,
+        guisp = warning_diagnostic_fg,
+        guibg = background_color
+      },
+      warning_diagnostic_visible = {
+        guifg = comment_diagnostic_fg,
+        guibg = visible_bg
+      },
+      warning_diagnostic_selected = {
+        guifg = warning_diagnostic_fg,
+        guibg = normal_bg,
+        gui = "bold,italic",
+        guisp = warning_diagnostic_fg
+      },
       error = {
         guifg = comment_fg,
         guibg = background_color,
@@ -129,6 +180,21 @@ function M.get_defaults()
         guibg = normal_bg,
         gui = "bold,italic",
         guisp = error_fg
+      },
+      error_diagnostic = {
+        guifg = comment_diagnostic_fg,
+        guibg = background_color,
+        guisp = error_diagnostic_fg
+      },
+      error_diagnostic_visible = {
+        guifg = comment_diagnostic_fg,
+        guibg = visible_bg
+      },
+      error_diagnostic_selected = {
+        guifg = error_diagnostic_fg,
+        guibg = normal_bg,
+        gui = "bold,italic",
+        guisp = error_diagnostic_fg
       },
       modified = {
         guifg = string_fg,

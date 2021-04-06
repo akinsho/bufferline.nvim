@@ -62,10 +62,15 @@ end
 function M.get_hex(hl_name, part, fallback)
   local id = vim.fn.hlID(hl_name)
   local color = vim.fn.synIDattr(id, part)
+
+  -- TODO: synIDattr may return a named color such as "Red"
+  -- we should use vim.api.nvim_get_hl_by_name(hl_name, true)
+
   -- if we can't find the color we default to none
   if not color or color == "" then
     return fallback
   end
+
   return color
 end
 
