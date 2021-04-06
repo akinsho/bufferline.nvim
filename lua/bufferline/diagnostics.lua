@@ -87,7 +87,7 @@ function M.component(context)
   end
 
   local highlight = highlights[diagnostics.level] or ""
-  local diag_highlight = highlights[diagnostics.level.."_diagnostic"] or highlights["diagnostic"] or ""
+  local diag_highlight = highlights[diagnostics.level.."_diagnostic"] or highlights.diagnostic or ""
   local size = context.length + vim.fn.strwidth(indicator)
   return highlight .. context.component .. diag_highlight .. indicator .. highlights.background, size
 end
