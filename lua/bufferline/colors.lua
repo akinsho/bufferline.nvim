@@ -69,7 +69,9 @@ function M.get_hex(hl_name, part, fallback)
 
   if hl and hl[part] then
     -- convert from decimal color value to hex (e.g. 14257292 => #D98C8C)
-    color = string.format("#%x",  hl[part])
+    color = string.format("%x",  hl[part])
+    color = string.rep('0', 6 - #color) .. color -- pad string with zeros
+    color = "#" .. color
   end
 
   return color
