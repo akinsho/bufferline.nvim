@@ -9,13 +9,13 @@ function M.get_defaults()
   local hex = colors.get_hex
   local shade = colors.shade_color
 
-  local comment_fg = hex("Comment", "fg", "NONE")
-  local normal_fg = hex("Normal", "fg", "NONE")
+  local comment_fg = hex("Comment", "fg", "#D3D3D3")
+  local normal_fg = hex("Normal", "fg", "#FFFFFF")
   local normal_bg = hex("Normal", "bg", "NONE")
   local string_fg = hex("String", "fg", "NONE")
-  local error_fg = hex("LspDiagnosticsDefaultError", "fg") or hex("Error", "fg", "NONE")
-  local warning_fg = hex("LspDiagnosticsDefaultWarning", "fg") or "#FF8C00"
-  local info_fg = hex("LspDiagnosticsDefaultInformation", "fg") or "#00008B"
+  local error_fg = hex("LspDiagnosticsDefaultError", "fg") or hex("Error", "fg", "#8B0000")
+  local warning_fg = hex("LspDiagnosticsDefaultWarning", "fg", "#FF8C00")
+  local info_fg = hex("LspDiagnosticsDefaultInformation", "fg", "#00008B")
 
   local tabline_sel_bg = hex("TabLineSel", "bg") or hex("WildMenu", "bg", "NONE")
 
