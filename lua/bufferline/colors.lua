@@ -60,15 +60,16 @@ function M.color_is_bright(hex)
 end
 
 function M.get_hex(hl_name, part, fallback)
-  local id = vim.fn.hlID(hl_name)
-  local color = vim.fn.synIDattr(id, part)
+  local color = fallback
+  local hl = vim.api.nvim_get_hl_by_name(hl_name, true)
 
-  -- TODO: synIDattr may return a named color such as "Red"
-  -- we should use vim.api.nvim_get_hl_by_name(hl_name, true)
+  -- translate from internal part to hl part
+  assert(part == "fg" or part == "bg", 'Color part should be one of "fg" or "bg"')
+  part = (part == "fg" and "foreground") or "background"
 
-  -- if we can't find the color we default to none
-  if not color or color == "" then
-    return fallback
+  if hl and hl[part] then
+    -- convert from decimal color value to hex (e.g. 14257292 => #D98C8C)
+    color = string.format("#%x",  hl[part])
   end
 
   return color
