@@ -71,8 +71,8 @@ function M.get_hex(hl_name, part, fallback)
   part = part == "fg" and "foreground" or "background"
 
   -- try and get hl from name
-  local hl = vim.api.nvim_get_hl_by_name(hl_name, true)
-  if hl and hl[part] then
+  local success, hl = pcall(vim.api.nvim_get_hl_by_name, hl_name, true)
+  if success and hl and hl[part] then
     -- convert from decimal color value to hex (e.g. 14257292 => "#D98C8C")
     return string.format("#%06x", hl[part])
   end
