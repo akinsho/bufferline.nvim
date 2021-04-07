@@ -60,7 +60,11 @@ function M.color_is_bright(hex)
 end
 
 -- parses the hex color code from the given hl_name
--- if unable to parse, uses the fallback value 
+-- if unable to parse, uses the fallback value
+---@param hl_name string
+---@param part string
+---@param fallback table
+---@return string
 function M.get_hex(hl_name, part, fallback)
   -- translate from internal part to hl part
   assert(part == "fg" or part == "bg", 'Color part should be one of "fg" or "bg"')
@@ -74,13 +78,16 @@ function M.get_hex(hl_name, part, fallback)
   end
 
   -- basic fallback
-  if fallback and type(fallback) == 'string' then
+  if fallback and type(fallback) == "string" then
     return fallback
   end
 
   -- bit of recursive fallback logic
-  if fallback and type(fallback) == 'table' then
-    assert(fallback.name and fallback.attribute, 'Fallback should have "name" and "attribute" fields')
+  if fallback and type(fallback) == "table" then
+    assert(
+      fallback.name and fallback.attribute,
+      'Fallback should have "name" and "attribute" fields'
+    )
     return M.get_hex(fallback.name, fallback.attribute, fallback.fallback) -- allow chaining
   end
 

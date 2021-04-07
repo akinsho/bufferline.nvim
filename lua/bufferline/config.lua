@@ -9,15 +9,16 @@ function M.get_defaults()
   local hex = colors.get_hex
   local shade = colors.shade_color
 
-  local comment_fg = hex("Comment", "fg", { name = "Normal", attribute = "fg" })
+  local comment_fg = hex("Comment", "fg", {name = "Normal", attribute = "fg"})
   local normal_fg = hex("Normal", "fg")
   local normal_bg = hex("Normal", "bg")
   local string_fg = hex("String", "fg")
-  local error_fg = hex("LspDiagnosticsDefaultError", "fg", { name = "Error", attribute = "fg" })
-  local warning_fg = hex("LspDiagnosticsDefaultWarning", "fg", { name = "WarningMsg", attribute = "fg" })
-  local info_fg = hex("LspDiagnosticsDefaultInformation", "fg", { name = "Normal", attribute = "fg" })
+  local error_fg = hex("LspDiagnosticsDefaultError", "fg", {name = "Error", attribute = "fg"})
+  local warning_fg =
+    hex("LspDiagnosticsDefaultWarning", "fg", {name = "WarningMsg", attribute = "fg"})
+  local info_fg = hex("LspDiagnosticsDefaultInformation", "fg", {name = "Normal", attribute = "fg"})
 
-  local tabline_sel_bg = hex("TabLineSel", "bg", { name = "WildMenu",attribute = "bg"  })
+  local tabline_sel_bg = hex("TabLineSel", "bg", {name = "WildMenu", attribute = "bg"})
 
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
@@ -95,11 +96,11 @@ function M.get_defaults()
       },
       diagnostic = {
         guifg = comment_diagnostic_fg,
-        guibg = background_color,
+        guibg = background_color
       },
       diagnostic_visible = {
         guifg = comment_diagnostic_fg,
-        guibg = visible_bg,
+        guibg = visible_bg
       },
       diagnostic_selected = {
         guifg = normal_diagnostic_fg,
