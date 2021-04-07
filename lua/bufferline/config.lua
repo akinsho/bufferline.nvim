@@ -9,15 +9,15 @@ function M.get_defaults()
   local hex = colors.get_hex
   local shade = colors.shade_color
 
-  local comment_fg = hex("Comment", "fg", "NONE")
-  local normal_fg = hex("Normal", "fg", "NONE")
-  local normal_bg = hex("Normal", "bg", "NONE")
-  local string_fg = hex("String", "fg", "NONE")
-  local error_fg = hex("LspDiagnosticsDefaultError", "fg") or hex("Error", "fg", "NONE")
-  local warning_fg = hex("LspDiagnosticsDefaultWarning", "fg") or "DarkOrange"
-  local info_fg = hex("LspDiagnosticsDefaultInformation", "fg") or "DarkBlue"
+  local comment_fg = hex("Comment", "fg", { name = "Normal", attribute = "fg" })
+  local normal_fg = hex("Normal", "fg")
+  local normal_bg = hex("Normal", "bg")
+  local string_fg = hex("String", "fg")
+  local error_fg = hex("LspDiagnosticsDefaultError", "fg", { name = "Error", attribute = "fg" })
+  local warning_fg = hex("LspDiagnosticsDefaultWarning", "fg", { name = "WarningMsg", attribute = "fg" })
+  local info_fg = hex("LspDiagnosticsDefaultInformation", "fg", { name = "Normal", attribute = "fg" })
 
-  local tabline_sel_bg = hex("TabLineSel", "bg") or hex("WildMenu", "bg", "NONE")
+  local tabline_sel_bg = hex("TabLineSel", "bg", { name = "WildMenu",attribute = "bg"  })
 
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
