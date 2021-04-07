@@ -65,7 +65,7 @@ function M.get_hex(hl_name, part, fallback)
 
   -- translate from internal part to hl part
   assert(part == "fg" or part == "bg", 'Color part should be one of "fg" or "bg"')
-  part = (part == "fg" and "foreground") or "background"
+  part = part == "fg" and "foreground" or "background"
 
   if hl and hl[part] then
     -- convert from decimal color value to hex (e.g. 14257292 => #D98C8C)
