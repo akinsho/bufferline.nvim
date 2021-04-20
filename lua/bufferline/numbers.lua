@@ -1,4 +1,4 @@
-local constants = require "bufferline/constants"
+local constants = require("bufferline/constants")
 
 local M = {}
 
@@ -12,7 +12,7 @@ local superscript_numbers = {
   ["6"] = "⁶",
   ["7"] = "⁷",
   ["8"] = "⁸",
-  ["9"] = "⁹"
+  ["9"] = "⁹",
 }
 
 local subscript_numbers = {
@@ -25,7 +25,7 @@ local subscript_numbers = {
   ["6"] = "₆",
   ["7"] = "₇",
   ["8"] = "₈",
-  ["9"] = "₉"
+  ["9"] = "₉",
 }
 
 -- from number to the styled number
@@ -43,22 +43,22 @@ local function prefix(buffer, mode, style)
   -- and ordinal number at bottom right, so the user see the buffer number
   if mode == "both" then
     -- default number_style for mode "both"
-    local both_style = {buffer_id = "none", ordinal = "subscript"}
+    local both_style = { buffer_id = "none", ordinal = "subscript" }
     if style ~= "superscript" and type(style) == "table" then
       both_style.buffer_id = style[1] and style[1] or both_style.buffer_id
       both_style.ordinal = style[2] and style[2] or both_style.ordinal
     end
 
     local num = ""
-    for _, v in ipairs({"buffer_id", "ordinal"}) do
+    for _, v in ipairs({ "buffer_id", "ordinal" }) do
       local ordinal = v == "ordinal"
       local s = both_style[v] --  "superscript"| "subscript" | "none"
       if s == "superscript" then
-        num =
-          num .. convert_to_styled_num(superscript_numbers, ordinal and buffer.ordinal or buffer.id)
+        num = num
+          .. convert_to_styled_num(superscript_numbers, ordinal and buffer.ordinal or buffer.id)
       elseif s == "subscript" then
-        num =
-          num .. convert_to_styled_num(subscript_numbers, ordinal and buffer.ordinal or buffer.id)
+        num = num
+          .. convert_to_styled_num(subscript_numbers, ordinal and buffer.ordinal or buffer.id)
       else -- "none"
         num = num .. (v == "ordinal" and buffer.ordinal or buffer.id) .. "."
       end
@@ -67,7 +67,8 @@ local function prefix(buffer, mode, style)
     return num
   else
     local n = mode == "ordinal" and buffer.ordinal or buffer.id
-    local num = style == "superscript" and convert_to_styled_num(superscript_numbers, n) or n .. "."
+    local num = style == "superscript" and convert_to_styled_num(superscript_numbers, n)
+      or n .. "."
     return num
   end
 end

@@ -1,15 +1,15 @@
-local colors = require "bufferline/colors"
-local highlights = require "bufferline/highlights"
-local utils = require "bufferline/utils"
-local numbers = require "bufferline/numbers"
-local diagnostics = require "bufferline/diagnostics"
-local letters = require "bufferline/letters"
-local sort = require "bufferline/sorters"
-local duplicates = require "bufferline/duplicates"
-local constants = require "bufferline/constants"
-local config = require "bufferline/config"
-local tabs = require "bufferline/tabs"
-local buffers = require "bufferline/buffers"
+local colors = require("bufferline/colors")
+local highlights = require("bufferline/highlights")
+local utils = require("bufferline/utils")
+local numbers = require("bufferline/numbers")
+local diagnostics = require("bufferline/diagnostics")
+local letters = require("bufferline/letters")
+local sort = require("bufferline/sorters")
+local duplicates = require("bufferline/duplicates")
+local constants = require("bufferline/constants")
+local config = require("bufferline/config")
+local tabs = require("bufferline/tabs")
+local buffers = require("bufferline/buffers")
 
 ---@type Buffer
 local Buffer = buffers.Buffer
@@ -34,7 +34,7 @@ local state = {
   buffers = {},
   current_letters = {},
   custom_sort = nil,
-  preferences = {}
+  preferences = {},
 }
 
 -------------------------------------------------------------------------//
@@ -101,7 +101,7 @@ function M.handle_click(id, button)
 end
 
 ---@param buffer Buffer
----@param hls table<string, table>
+---@param hls table<string, table<string, string>>
 ---@return table
 local function get_buffer_highlight(buffer, hls)
   local hl = {}
@@ -230,7 +230,7 @@ local function highlight_icon(buffer)
   end
   local guifg = colors.get_hex(hl, "fg")
   local guibg = colors.get_hex(bg_hl, "bg")
-  highlights.set_one(new_hl, {guibg = guibg, guifg = guifg})
+  highlights.set_one(new_hl, { guibg = guibg, guifg = guifg })
   return "%#" .. new_hl .. "#" .. icon .. padding .. "%*"
 end
 
@@ -416,7 +416,7 @@ local function render_buffer(preferences, buffer)
     component = "",
     preferences = preferences,
     current_highlights = hl,
-    buffer = buffer
+    buffer = buffer,
   }
 
   -- Order matter here as this is the sequence which builds up the tab component
@@ -585,19 +585,12 @@ local function render(bufs, tbs, prefs)
 
   local available_width = vim.o.columns - tabs_length - close_length
   local before, current, after = get_sections(bufs)
-  local line, marker =
-    truncate(
-    before,
-    current,
-    after,
-    available_width,
-    {
-      left_count = 0,
-      right_count = 0,
-      left_element_size = left_element_size,
-      right_element_size = right_element_size
-    }
-  )
+  local line, marker = truncate(before, current, after, available_width, {
+    left_count = 0,
+    right_count = 0,
+    left_element_size = left_element_size,
+    right_element_size = right_element_size,
+  })
 
   if marker.left_count > 0 then
     local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
@@ -678,20 +671,15 @@ local function bufferline(preferences)
 
   for i, buf_id in ipairs(buf_nums) do
     local name = vim.fn.bufname(buf_id)
-    local buf =
-      Buffer:new {
+    local buf = Buffer:new({
       path = name,
       id = buf_id,
       ordinal = i,
-      diagnostics = all_diagnostics[buf_id]
-    }
-    duplicates.mark(
-      state.buffers,
-      buf,
-      function(b)
-        b.component, b.length = render_buffer(preferences, b)
-      end
-    )
+      diagnostics = all_diagnostics[buf_id],
+    })
+    duplicates.mark(state.buffers, buf, function(b)
+      b.component, b.length = render_buffer(preferences, b)
+    end)
     buf.letter = letters.get(buf)
     buf.component, buf.length = render_buffer(preferences, buf)
     state.buffers[i] = buf
@@ -741,12 +729,9 @@ end
 --- @param bufs Buffer[]
 --- @return number[]
 local function get_buf_ids(bufs)
-  return vim.tbl_map(
-    function(buf)
-      return buf.id
-    end,
-    bufs
-  )
+  return vim.tbl_map(function(buf)
+    return buf.id
+  end, bufs)
 end
 
 --- @param direction number
@@ -795,7 +780,7 @@ function M.cycle(direction)
 end
 
 function M.toggle_bufferline()
-  local listed_bufs = vim.fn.getbufinfo({buflisted = 1})
+  local listed_bufs = vim.fn.getbufinfo({ buflisted = 1 })
   if #listed_bufs > 1 then
     vim.o.showtabline = 2
   else
@@ -820,42 +805,33 @@ end
 
 local function setup_autocommands(preferences)
   local autocommands = {
-    {"ColorScheme", "*", [[lua __setup_bufferline_colors()]]}
+    { "ColorScheme", "*", [[lua __setup_bufferline_colors()]] },
   }
   if preferences.options.persist_buffer_sort then
-    table.insert(
-      autocommands,
-      {
-        "SessionLoadPost",
-        "*",
-        [[lua require'bufferline'.restore_positions()]]
-      }
-    )
+    table.insert(autocommands, {
+      "SessionLoadPost",
+      "*",
+      [[lua require'bufferline'.restore_positions()]],
+    })
   end
   if not preferences.options.always_show_bufferline then
     -- toggle tabline
-    table.insert(
-      autocommands,
-      {
-        "VimEnter,BufAdd,TabEnter",
-        "*",
-        "lua require'bufferline'.toggle_bufferline()"
-      }
-    )
+    table.insert(autocommands, {
+      "VimEnter,BufAdd,TabEnter",
+      "*",
+      "lua require'bufferline'.toggle_bufferline()",
+    })
   end
   local loaded = pcall(require, "nvim-web-devicons")
   if loaded then
-    table.insert(
-      autocommands,
-      {
-        "ColorScheme",
-        "*",
-        [[lua require'nvim-web-devicons'.setup()]]
-      }
-    )
+    table.insert(autocommands, {
+      "ColorScheme",
+      "*",
+      [[lua require'nvim-web-devicons'.setup()]],
+    })
   end
 
-  utils.nvim_create_augroups({BufferlineColors = autocommands})
+  utils.nvim_create_augroups({ BufferlineColors = autocommands })
 end
 
 local function validate_prefs(prefs, defaults)
@@ -874,18 +850,15 @@ local function validate_prefs(prefs, defaults)
     local verb = is_plural and " are " or " is "
     local article = is_plural and " " or " a "
     local object = is_plural and " groups. " or " group. "
-    local msg =
-      table.concat(
-      {
-        table.concat(incorrect, ", "),
-        verb,
-        "not",
-        article,
-        "valid highlight",
-        object,
-        "Please check the README for all valid highlights"
-      }
-    )
+    local msg = table.concat({
+      table.concat(incorrect, ", "),
+      verb,
+      "not",
+      article,
+      "valid highlight",
+      object,
+      "Please check the README for all valid highlights",
+    })
     utils.echomsg(msg, "WarningMsg")
   end
 end
@@ -945,9 +918,7 @@ function M.setup(prefs)
   vim.cmd('command! BufferLineMovePrev lua require"bufferline".move(-1)')
   vim.cmd('command! BufferLineSortByExtension lua require"bufferline".sort_buffers_by("extension")')
   vim.cmd('command! BufferLineSortByDirectory lua require"bufferline".sort_buffers_by("directory")')
-  vim.cmd(
-    'command! BufferLineSortByRelativeDirectory lua require"bufferline".sort_buffers_by("relative_directory")'
-  )
+  vim.cmd('command! BufferLineSortByRelativeDirectory lua require"bufferline".sort_buffers_by("relative_directory")')
 
   -- TODO / idea: consider allowing these mappings to open buffers based on their
   -- visual position i.e. <leader>1 maps to the first visible buffer regardless
@@ -962,7 +933,7 @@ function M.setup(prefs)
         {
           silent = true,
           nowait = true,
-          noremap = true
+          noremap = true,
         }
       )
     end

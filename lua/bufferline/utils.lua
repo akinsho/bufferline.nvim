@@ -42,7 +42,7 @@ function M.filter_duplicates(array)
   local res = {}
 
   for _, v in ipairs(array) do
-    if (not seen[v]) then
+    if not seen[v] then
       res[#res + 1] = v
       seen[v] = true
     end
@@ -58,7 +58,7 @@ function M.nvim_create_augroups(definitions)
     vim.cmd("augroup " .. group_name)
     vim.cmd("autocmd!")
     for _, def in pairs(definition) do
-      local command = table.concat(vim.tbl_flatten {"autocmd", def}, " ")
+      local command = table.concat(vim.tbl_flatten({ "autocmd", def }), " ")
       vim.cmd(command)
     end
     vim.cmd("augroup END")

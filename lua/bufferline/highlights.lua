@@ -31,8 +31,11 @@ function M.set_one(name, opts)
     local success, err = pcall(api.nvim_command, cmd)
     if not success then
       api.nvim_err_writeln(
-        "Failed setting " ..
-          name .. " highlight, something isn't configured correctly" .. "\n" .. err
+        "Failed setting "
+          .. name
+          .. " highlight, something isn't configured correctly"
+          .. "\n"
+          .. err
       )
     end
   end

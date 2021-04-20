@@ -4,17 +4,14 @@ local severity_name = {
   [1] = "error",
   [2] = "warning",
   [3] = "info",
-  [4] = "other"
+  [4] = "other",
 }
 
-setmetatable(
-  severity_name,
-  {
-    __index = function()
-      return "other"
-    end
-  }
-)
+setmetatable(severity_name, {
+  __index = function()
+    return "other"
+  end,
+})
 
 local function get_err_dict(errs)
   local ds = {}
@@ -36,13 +33,13 @@ local function get_err_dict(errs)
     end
   end
   local max_severity = severity_name[max]
-  return {level = max_severity, errors = ds}
+  return { level = max_severity, errors = ds }
 end
 
 local mt = {
   __index = function(_, _)
-    return {count = 0, level = nil}
-  end
+    return { count = 0, level = nil }
+  end,
 }
 
 local function is_disabled(diagnostics)
@@ -61,7 +58,7 @@ function M.get(opts)
     result[buf_num] = {
       count = #items,
       level = d.level,
-      errors = d.errors
+      errors = d.errors,
     }
   end
   return setmetatable(result, mt)
@@ -87,9 +84,15 @@ function M.component(context)
   end
 
   local highlight = highlights[diagnostics.level] or ""
-  local diag_highlight = highlights[diagnostics.level.."_diagnostic"] or highlights.diagnostic or ""
+  local diag_highlight = highlights[diagnostics.level .. "_diagnostic"]
+    or highlights.diagnostic
+    or ""
   local size = context.length + vim.fn.strwidth(indicator)
-  return highlight .. context.component .. diag_highlight .. indicator .. highlights.background, size
+  return highlight
+    .. context.component
+    .. diag_highlight
+    .. indicator
+    .. highlights.background, size
 end
 
 return M

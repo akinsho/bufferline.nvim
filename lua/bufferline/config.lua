@@ -9,16 +9,23 @@ function M.get_defaults()
   local hex = colors.get_hex
   local shade = colors.shade_color
 
-  local comment_fg = hex("Comment", "fg", {name = "Normal", attribute = "fg"})
+  local comment_fg = hex("Comment", "fg", { name = "Normal", attribute = "fg" })
   local normal_fg = hex("Normal", "fg")
   local normal_bg = hex("Normal", "bg")
   local string_fg = hex("String", "fg")
-  local error_fg = hex("LspDiagnosticsDefaultError", "fg", {name = "Error", attribute = "fg"})
-  local warning_fg =
-    hex("LspDiagnosticsDefaultWarning", "fg", {name = "WarningMsg", attribute = "fg"})
-  local info_fg = hex("LspDiagnosticsDefaultInformation", "fg", {name = "Normal", attribute = "fg"})
+  local error_fg = hex("LspDiagnosticsDefaultError", "fg", { name = "Error", attribute = "fg" })
+  local warning_fg = hex(
+    "LspDiagnosticsDefaultWarning",
+    "fg",
+    { name = "WarningMsg", attribute = "fg" }
+  )
+  local info_fg = hex(
+    "LspDiagnosticsDefaultInformation",
+    "fg",
+    { name = "Normal", attribute = "fg" }
+  )
 
-  local tabline_sel_bg = hex("TabLineSel", "bg", {name = "WildMenu", attribute = "bg"})
+  local tabline_sel_bg = hex("TabLineSel", "bg", { name = "WildMenu", attribute = "bg" })
 
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
@@ -62,200 +69,200 @@ function M.get_defaults()
       max_prefix_length = 15,
       sort_by = "default",
       diagnostics = false,
-      diagnostic_indicator = nil
+      diagnostic_indicator = nil,
     },
     highlights = {
       fill = {
         guifg = comment_fg,
-        guibg = separator_background_color
+        guibg = separator_background_color,
       },
       tab = {
         guifg = comment_fg,
-        guibg = background_color
+        guibg = background_color,
       },
       tab_selected = {
         guifg = tabline_sel_bg,
-        guibg = normal_bg
+        guibg = normal_bg,
       },
       tab_close = {
         guifg = comment_fg,
-        guibg = background_color
+        guibg = background_color,
       },
       background = {
         guifg = comment_fg,
-        guibg = background_color
+        guibg = background_color,
       },
       buffer_visible = {
         guifg = comment_fg,
-        guibg = visible_bg
+        guibg = visible_bg,
       },
       buffer_selected = {
         guifg = normal_fg,
         guibg = normal_bg,
-        gui = "bold,italic"
+        gui = "bold,italic",
       },
       diagnostic = {
         guifg = comment_diagnostic_fg,
-        guibg = background_color
+        guibg = background_color,
       },
       diagnostic_visible = {
         guifg = comment_diagnostic_fg,
-        guibg = visible_bg
+        guibg = visible_bg,
       },
       diagnostic_selected = {
         guifg = normal_diagnostic_fg,
         guibg = normal_bg,
-        gui = "bold,italic"
+        gui = "bold,italic",
       },
       info = {
         guifg = comment_fg,
         guisp = info_fg,
-        guibg = background_color
+        guibg = background_color,
       },
       info_visible = {
         guifg = comment_fg,
-        guibg = visible_bg
+        guibg = visible_bg,
       },
       info_selected = {
         guifg = info_fg,
         guibg = normal_bg,
         gui = "bold,italic",
-        guisp = info_fg
+        guisp = info_fg,
       },
       info_diagnostic = {
         guifg = comment_diagnostic_fg,
         guisp = info_diagnostic_fg,
-        guibg = background_color
+        guibg = background_color,
       },
       info_diagnostic_visible = {
         guifg = comment_diagnostic_fg,
-        guibg = visible_bg
+        guibg = visible_bg,
       },
       info_diagnostic_selected = {
         guifg = info_diagnostic_fg,
         guibg = normal_bg,
         gui = "bold,italic",
-        guisp = info_diagnostic_fg
+        guisp = info_diagnostic_fg,
       },
       warning = {
         guifg = comment_fg,
         guisp = warning_fg,
-        guibg = background_color
+        guibg = background_color,
       },
       warning_visible = {
         guifg = comment_fg,
-        guibg = visible_bg
+        guibg = visible_bg,
       },
       warning_selected = {
         guifg = warning_fg,
         guibg = normal_bg,
         gui = "bold,italic",
-        guisp = warning_fg
+        guisp = warning_fg,
       },
       warning_diagnostic = {
         guifg = comment_diagnostic_fg,
         guisp = warning_diagnostic_fg,
-        guibg = background_color
+        guibg = background_color,
       },
       warning_diagnostic_visible = {
         guifg = comment_diagnostic_fg,
-        guibg = visible_bg
+        guibg = visible_bg,
       },
       warning_diagnostic_selected = {
         guifg = warning_diagnostic_fg,
         guibg = normal_bg,
         gui = "bold,italic",
-        guisp = warning_diagnostic_fg
+        guisp = warning_diagnostic_fg,
       },
       error = {
         guifg = comment_fg,
         guibg = background_color,
-        guisp = error_fg
+        guisp = error_fg,
       },
       error_visible = {
         guifg = comment_fg,
-        guibg = visible_bg
+        guibg = visible_bg,
       },
       error_selected = {
         guifg = error_fg,
         guibg = normal_bg,
         gui = "bold,italic",
-        guisp = error_fg
+        guisp = error_fg,
       },
       error_diagnostic = {
         guifg = comment_diagnostic_fg,
         guibg = background_color,
-        guisp = error_diagnostic_fg
+        guisp = error_diagnostic_fg,
       },
       error_diagnostic_visible = {
         guifg = comment_diagnostic_fg,
-        guibg = visible_bg
+        guibg = visible_bg,
       },
       error_diagnostic_selected = {
         guifg = error_diagnostic_fg,
         guibg = normal_bg,
         gui = "bold,italic",
-        guisp = error_diagnostic_fg
+        guisp = error_diagnostic_fg,
       },
       modified = {
         guifg = string_fg,
-        guibg = background_color
+        guibg = background_color,
       },
       modified_visible = {
         guifg = string_fg,
-        guibg = visible_bg
+        guibg = visible_bg,
       },
       modified_selected = {
         guifg = string_fg,
-        guibg = normal_bg
+        guibg = normal_bg,
       },
       duplicate_selected = {
         guifg = duplicate_color,
         gui = "italic",
-        guibg = normal_bg
+        guibg = normal_bg,
       },
       duplicate_visible = {
         guifg = duplicate_color,
         gui = "italic",
-        guibg = visible_bg
+        guibg = visible_bg,
       },
       duplicate = {
         guifg = duplicate_color,
         gui = "italic",
-        guibg = background_color
+        guibg = background_color,
       },
       separator_selected = {
         guifg = separator_background_color,
-        guibg = normal_bg
+        guibg = normal_bg,
       },
       separator_visible = {
         guifg = separator_background_color,
-        guibg = visible_bg
+        guibg = visible_bg,
       },
       separator = {
         guifg = separator_background_color,
-        guibg = background_color
+        guibg = background_color,
       },
       indicator_selected = {
         guifg = tabline_sel_bg,
-        guibg = normal_bg
+        guibg = normal_bg,
       },
       pick_selected = {
         guifg = error_fg,
         guibg = normal_bg,
-        gui = "bold,italic"
+        gui = "bold,italic",
       },
       pick_visible = {
         guifg = error_fg,
         guibg = visible_bg,
-        gui = "bold,italic"
+        gui = "bold,italic",
       },
       pick = {
         guifg = error_fg,
         guibg = background_color,
-        gui = "bold,italic"
-      }
-    }
+        gui = "bold,italic",
+      },
+    },
   }
 end
 

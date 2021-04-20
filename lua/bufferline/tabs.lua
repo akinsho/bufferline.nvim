@@ -1,4 +1,4 @@
-local constants = require "bufferline/constants"
+local constants = require("bufferline/constants")
 
 local M = {}
 
@@ -39,7 +39,7 @@ function M.get(style, prefs)
       component = component,
       length = length,
       id = tab.tabnr,
-      windows = tab.windows
+      windows = tab.windows,
     }
   end
   return all_tabs

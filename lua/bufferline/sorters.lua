@@ -42,7 +42,7 @@ end
 
 --- sorts a list of buffers in place
 --- @param sort_by string|function
---- @param buffers table<Buffer>
+--- @param buffers Buffer[]
 function M.sort_buffers(sort_by, buffers)
   if sort_by == "extension" then
     table.sort(buffers, sort_by_extension)

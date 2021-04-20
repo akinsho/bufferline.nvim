@@ -1,5 +1,5 @@
-require "bufferline/buffers"
-local constants = require "bufferline/constants"
+require("bufferline/buffers")
+local constants = require("bufferline/constants")
 
 local M = {}
 
@@ -13,7 +13,7 @@ function M.reset()
 end
 
 local cache = {}
-setmetatable(cache, {__mode = "v"}) -- make values weak
+setmetatable(cache, { __mode = "v" }) -- make values weak
 
 ---@param buffers Buffer[]
 ---@param current Buffer
@@ -25,7 +25,7 @@ local function mark_duplicates(buffers, current, callback)
   end
   local duplicate = duplicates[current.filename]
   if not duplicate then
-    duplicates[current.filename] = {current}
+    duplicates[current.filename] = { current }
   else
     local depth = 1
     local limit = 10
@@ -57,15 +57,9 @@ local function mark_duplicates(buffers, current, callback)
 end
 
 local function get_key(buffers)
-  return table.concat(
-    vim.tbl_map(
-      function(buf)
-        return buf.filename
-      end,
-      buffers
-    ),
-    "-"
-  )
+  return table.concat(vim.tbl_map(function(buf)
+    return buf.filename
+  end, buffers), "-")
 end
 
 --- This function marks any duplicate buffers granted
@@ -105,13 +99,9 @@ function M.component(context)
   -- user if we are going to potentially increase the tab length by
   -- prefixing it with the parent dir(s)
   if buffer.duplicated and not options.enforce_regular_tabs then
-    local dir =
-      buffer:ancestor(
-      buffer.prefix_count,
-      function(dir, depth)
-        return truncate(dir, depth, options.max_prefix_length)
-      end
-    )
+    local dir = buffer:ancestor(buffer.prefix_count, function(dir, depth)
+      return truncate(dir, depth, options.max_prefix_length)
+    end)
     component = hl.duplicate .. dir .. hl.background .. component
     length = length + strwidth(dir)
   end

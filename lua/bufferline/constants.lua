@@ -7,9 +7,9 @@ M.padding = " "
 M.separator_styles = {
   slant = "slant",
   thick = "thick",
-  thin = "thin"
+  thin = "thin",
 }
 
-M.positions_key = 'BufferlinePositions'
+M.positions_key = "BufferlinePositions"
 
 return M

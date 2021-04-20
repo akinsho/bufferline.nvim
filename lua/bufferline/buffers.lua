@@ -1,5 +1,5 @@
 local lua_devicons_loaded, webdev_icons = pcall(require, "nvim-web-devicons")
-local utils = require "bufferline/utils"
+local utils = require("bufferline/utils")
 local fn = vim.fn
 --------------------------------
 -- Export
@@ -49,13 +49,14 @@ function M.Buffer:new(buf)
   else
     if lua_devicons_loaded then
       buf.icon, buf.icon_highlight =
-        webdev_icons.get_icon(buf.path, buf.extension, {default = true})
+        webdev_icons.get_icon(buf.path, buf.extension, { default = true })
     else
       local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
       buf.icon = devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
     end
     -- TODO: allow the format specifier to be configured
-    buf.filename = (buf.path and #buf.path > 0) and fn.fnamemodify(buf.path, ":p:t") or "[No Name]"
+    buf.filename = (buf.path and #buf.path > 0) and fn.fnamemodify(buf.path, ":p:t")
+      or "[No Name]"
   end
 
   self.__index = self
@@ -110,7 +111,7 @@ M.Buffers = {}
 ---@param n Buffers
 ---@return Buffers
 function M.Buffers:new(n)
-  local t = n or {length = 0, buffers = {}}
+  local t = n or { length = 0, buffers = {} }
   self.__index = self
   return setmetatable(t, self)
 end
