@@ -3,6 +3,10 @@
 ---------------------------------------------------------------------------//
 local M = {}
 
+ function M.is_test()
+  return _G.__TEST
+end
+
 function M.join(...)
   local t = ""
   for n = 1, select("#", ...) do

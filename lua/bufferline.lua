@@ -26,24 +26,25 @@ local padding = constants.padding
 local separator_styles = constants.separator_styles
 local positions_key = constants.positions_key
 
+
+local M = {}
+
+M.shade_color = colors.shade_color
 -----------------------------------------------------------
 -- State
 -----------------------------------------------------------
 local state = {
   is_picking = false,
+  ---@type Buffer[]
   buffers = {},
   current_letters = {},
   custom_sort = nil,
   preferences = {},
 }
 
--------------------------------------------------------------------------//
--- EXPORT
----------------------------------------------------------------------------//
-
-local M = {}
-
-M.shade_color = colors.shade_color
+if utils.is_test() then
+  M._state = state
+end
 
 ---------------------------------------------------------------------------//
 -- CORE
