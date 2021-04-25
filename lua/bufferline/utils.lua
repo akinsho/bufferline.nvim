@@ -3,7 +3,7 @@
 ---------------------------------------------------------------------------//
 local M = {}
 
- function M.is_test()
+function M.is_test()
   return _G.__TEST
 end
 
