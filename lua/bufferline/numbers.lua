@@ -67,8 +67,10 @@ local function prefix(buffer, mode, style)
     return num
   else
     local n = mode == "ordinal" and buffer.ordinal or buffer.id
-    local num = style == "superscript" and convert_to_styled_num(superscript_numbers, n)
-      or n .. "."
+    local num = style == "superscript"
+      and convert_to_styled_num(superscript_numbers, n)
+      or n
+      .. "."
     return num
   end
 end

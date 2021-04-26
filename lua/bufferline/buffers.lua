@@ -55,7 +55,8 @@ function M.Buffer:new(buf)
       buf.icon = devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
     end
     -- TODO: allow the format specifier to be configured
-    buf.filename = (buf.path and #buf.path > 0) and fn.fnamemodify(buf.path, ":p:t")
+    buf.filename = (buf.path and #buf.path > 0)
+      and fn.fnamemodify(buf.path, ":p:t")
       or "[No Name]"
   end
 

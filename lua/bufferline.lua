@@ -26,7 +26,6 @@ local padding = constants.padding
 local separator_styles = constants.separator_styles
 local positions_key = constants.positions_key
 
-
 local M = {}
 
 M.shade_color = colors.shade_color
