@@ -307,3 +307,13 @@ be created to navigate the first to the tenth buffer in the bufferline.
 ```vim
 nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>
 ```
+
+### FAQ
+
+* __Why isn't the bufferline appearing?__
+
+  The most common reason for this that has come up in various issues is it clashes with
+  another plugin. Please make sure that you do not have another bufferline plugin installed.
+
+  If you are using `airline` make sure you set `let g:airline#extensions#tabline#enabled = 0`.
+  If you are using `lightline` this also takes over the tabline by default and needs to be deactivated.
