@@ -31,6 +31,7 @@ end
 ---@field public modified boolean
 ---@field public modifiable boolean
 ---@field public buftype string
+---@field public letter string
 M.Buffer = {}
 
 ---create a new buffer class
