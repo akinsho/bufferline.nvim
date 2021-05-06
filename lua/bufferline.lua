@@ -228,8 +228,8 @@ local function highlight_icon(buffer)
     new_hl = new_hl .. "Inactive"
     bg_hl = prefix .. "BufferVisible"
   end
-  local guifg = colors.get_hex(hl, "fg")
-  local guibg = colors.get_hex(bg_hl, "bg")
+  local guifg = colors.get_hex({ name = hl, attribute = "fg" })
+  local guibg = colors.get_hex({ name = bg_hl, attribute = "bg" })
   highlights.set_one(new_hl, { guibg = guibg, guifg = guifg })
   return "%#" .. new_hl .. "#" .. icon .. padding .. "%*"
 end
@@ -873,7 +873,8 @@ local function convert_hl_tables(prefs)
     for attribute, value in pairs(attributes) do
       if type(value) == "table" then
         if value.highlight and value.attribute then
-          prefs.highlights[hl][attribute] = colors.get_hex(value.highlight, value.attribute)
+          prefs.highlights[hl][attribute] =
+            colors.get_hex({ name = value.highlight, attribute = value.attribute })
         else
           prefs.highlights[hl][attribute] = nil
           print(string.format("removing %s as it is not formatted correctly", hl))

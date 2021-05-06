@@ -9,26 +9,44 @@ function M.get_defaults()
   local hex = colors.get_hex
   local shade = colors.shade_color
 
-  local comment_fg = hex("Comment", "fg", { name = "Normal", attribute = "fg" })
-  local normal_fg = hex("Normal", "fg")
-  local normal_bg = hex("Normal", "bg")
-  local string_fg = hex("String", "fg")
-  local error_fg = hex("LspDiagnosticsDefaultError", "fg", { name = "Error", attribute = "fg" })
-  local warning_fg = hex(
-    "LspDiagnosticsDefaultWarning",
-    "fg",
-    { name = "WarningMsg", attribute = "fg" }
-  )
-  local info_fg = hex(
-    "LspDiagnosticsDefaultInformation",
-    "fg",
-    { name = "Normal", attribute = "fg" }
-  )
+  local comment_fg = hex({
+    name = "Comment",
+    attribute = "fg",
+    fallback = { name = "Normal", attribute = "fg" },
+  })
 
-  local tabline_sel_bg = hex("TabLineSel", "fg", {
+  local normal_fg = hex({ name = "Normal", attribute = "fg" })
+  local normal_bg = hex({ name = "Normal", attribute = "bg" })
+  local string_fg = hex({ name = "String", attribute = "fg" })
+
+  local error_fg = hex({
+    name = "LspDiagnosticsDefaultError",
+    attribute = "fg",
+    fallback = { name = "Error", attribute = "fg" },
+  })
+
+  local warning_fg = hex({
+    name = "LspDiagnosticsDefaultWarning",
+    attribute = "fg",
+    fallback = { name = "WarningMsg", attribute = "fg" },
+  })
+
+  local info_fg = hex({
+    name = "LspDiagnosticsDefaultInformation",
+    attribute = "fg",
+    fallback = { name = "Normal", attribute = "fg" },
+  })
+
+  local tabline_sel_bg = hex({
     name = "TabLineSel",
     attribute = "bg",
-    fallback = { name = "WildMenu", attribute = "fg" },
+    not_match = normal_bg,
+    fallback = {
+      name = "TabLineSel",
+      attribute = "fg",
+      not_match = normal_bg,
+      fallback = { name = "WildMenu", attribute = "fg" },
+    },
   })
 
   -- If the colorscheme is bright we shouldn't do as much shading

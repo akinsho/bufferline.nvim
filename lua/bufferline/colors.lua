@@ -1,5 +1,7 @@
 local M = {}
 
+local fmt = string.format
+
 function M.to_rgb(color)
   local r = tonumber(string.sub(color, 2, 3), 16)
   local g = tonumber(string.sub(color, 4, 5), 16)
@@ -61,20 +63,26 @@ end
 
 -- parses the hex color code from the given hl_name
 -- if unable to parse, uses the fallback value
----@param hl_name string
----@param part string
----@param fallback table
+---@param opts table
 ---@return string
-function M.get_hex(hl_name, part, fallback)
+function M.get_hex(opts)
+  local name, attribute, fallback, not_match =
+    opts.name, opts.attribute, opts.fallback, opts.not_match
   -- translate from internal part to hl part
-  assert(part == "fg" or part == "bg", 'Color part should be one of "fg" or "bg"')
-  part = part == "fg" and "foreground" or "background"
+  assert(
+    attribute == "fg" or attribute == "bg",
+    fmt('Color part for %s should be one of "fg" or "bg"', vim.inspect(opts))
+  )
+  attribute = attribute == "fg" and "foreground" or "background"
 
   -- try and get hl from name
-  local success, hl = pcall(vim.api.nvim_get_hl_by_name, hl_name, true)
-  if success and hl and hl[part] then
+  local success, hl = pcall(vim.api.nvim_get_hl_by_name, name, true)
+  if success and hl and hl[attribute] then
     -- convert from decimal color value to hex (e.g. 14257292 => "#D98C8C")
-    return "#" .. bit.tohex(hl[part], 6)
+    local hex = "#" .. bit.tohex(hl[attribute], 6)
+    if not not_match or not_match ~= hex then
+      return hex
+    end
   end
 
   -- basic fallback
@@ -88,7 +96,7 @@ function M.get_hex(hl_name, part, fallback)
       fallback.name and fallback.attribute,
       'Fallback should have "name" and "attribute" fields'
     )
-    return M.get_hex(fallback.name, fallback.attribute, fallback.fallback) -- allow chaining
+    return M.get_hex(fallback) -- allow chaining
   end
 
   -- we couldn't resolve the color
