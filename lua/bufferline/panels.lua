@@ -8,12 +8,6 @@ local t = {
   ROW = "row",
 }
 
-local s = {
-  LEFT = 0,
-  RIGHT = 1,
-  NONE = 2,
-}
-
 ---Format the content of a neighbouring panel text
 ---@param size number
 ---@param highlight string
@@ -66,56 +60,68 @@ end
 ---@param panel table
 ---@return boolean
 ---@return number
----@return number
+---@return boolean
 local function is_panel(windows, panel)
-  for idx, window in ipairs({ windows[1], windows[#windows] }) do
-    local _type, win_id = window[1], window[2]
+  local wins = {windows[1]}
+  if #windows > 1 then
+    wins[#wins+1] = windows[#windows]
+  end
+  for idx, win in ipairs(wins) do
+    local _type, win_id = win[1], win[2]
     if _type == t.LEAF and type(win_id) == "number" then
       local buf = api.nvim_win_get_buf(win_id)
       local valid = buf and vim.bo[buf].filetype == panel.filetype
-      local side = idx == 0 and s.LEFT or s.RIGHT
-      return valid, win_id, side
+      local is_left = idx == 1
+      if valid then
+        return valid, win_id, is_left
+      end
     end
   end
-  return false, nil, s.NONE
+  return false, nil, nil
 end
 
 ---Calculate the size of padding required to offset the bufferline
 ---@param prefs table
----@return string
 ---@return number
+---@return string
 ---@return string
 function M.get(prefs)
   local panels = prefs.options.panels
 
-  local component = ""
-  local size = 0
-  local side = s.NONE
+  local left = ""
+  local right = ""
+  local total_size = 0
 
   if panels and #panels > 0 then
-    local panel = panels[1]
     local layout = fn.winlayout()
-    -- don't bother proceeding if there are no vertical splits
-    if layout[1] == t.ROW then
-      local is_valid, win_id, pan_side = is_panel(layout[2], panel)
-      if is_valid then
-        local win_width = api.nvim_win_get_width(win_id)
-        local sign_width = vim.wo[win_id].signcolumn and 1 or 0
+    for _, panel in ipairs(panels) do
+      -- don't bother proceeding if there are no vertical splits
+      if layout[1] == t.ROW then
+        local is_valid, win_id, is_left = is_panel(layout[2], panel)
+        if is_valid then
+          local win_width = api.nvim_win_get_width(win_id)
+          local sign_width = vim.wo[win_id].signcolumn and 1 or 0
 
-        local hl_name = panel.highlight
-          or guess_window_highlight(win_id)
-          or prefs.highlights.fill.hl
+          local hl_name = panel.highlight
+            or guess_window_highlight(win_id)
+            or prefs.highlights.fill.hl
 
-        local hl = require("bufferline.highlights").hl(hl_name)
+          local hl = require("bufferline.highlights").hl(hl_name)
 
-        side = pan_side
-        size = win_width + sign_width
+          local size = win_width + sign_width
+          total_size = total_size + size
+          local component = get_panel_text(size, hl, panel.text)
 
-        component = get_panel_text(size, hl, panel.text)
+          if is_left then
+            left = component
+          else
+            right = component
+          end
+        end
       end
     end
   end
-  return component, size, side
+  return total_size, left, right
 end
 
 return M

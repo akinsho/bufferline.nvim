@@ -583,8 +583,8 @@ local function render(bufs, tbs, prefs)
   local left_element_size = strwidth(join(padding, padding, left_trunc_icon, padding, padding))
   local right_element_size = strwidth(join(padding, padding, right_trunc_icon, padding))
 
-  local panel, panel_size, _ = require("bufferline.panels").get(prefs)
-  local available_width = vim.o.columns - panel_size - tabs_length - close_length
+  local panels_size, left_panel, right_panel = require("bufferline.panels").get(prefs)
+  local available_width = vim.o.columns - panels_size - tabs_length - close_length
   local before, current, after = get_sections(bufs)
   local line, marker = truncate(before, current, after, available_width, {
     left_count = 0,
@@ -602,7 +602,16 @@ local function render(bufs, tbs, prefs)
     line = join(line, hl.background.hl, icon)
   end
 
-  return join(panel, line, hl.fill.hl, right_align, tab_components, hl.tab_close.hl, close)
+  return join(
+    left_panel,
+    line,
+    hl.fill.hl,
+    right_align,
+    tab_components,
+    hl.tab_close.hl,
+    close,
+    right_panel
+  )
 end
 
 --- TODO can this be done more efficiently in one loop?
