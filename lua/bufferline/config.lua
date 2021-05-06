@@ -25,7 +25,11 @@ function M.get_defaults()
     { name = "Normal", attribute = "fg" }
   )
 
-  local tabline_sel_bg = hex("TabLineSel", "bg", { name = "WildMenu", attribute = "bg" })
+  local tabline_sel_bg = hex("TabLineSel", "fg", {
+    name = "TabLineSel",
+    attribute = "bg",
+    fallback = { name = "WildMenu", attribute = "fg" },
+  })
 
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
