@@ -8,12 +8,12 @@ local t = {
   ROW = "row",
 }
 
----Format the content of a neighbouring panel text
+---Format the content of a neighbouring offset's text
 ---@param size number
 ---@param highlight string
 ---@param text string
 ---@return string
-local function get_panel_text(size, highlight, text)
+local function get_section_text(size, highlight, text)
   if not text then
     text = string.rep(" ", size)
   else
@@ -57,11 +57,11 @@ end
 --- NOTE: this only tests the first and last windows as those are the only
 --- ones that it makes sense to add a panel for
 ---@param windows table[]
----@param panel table
+---@param offset table
 ---@return boolean
 ---@return number
 ---@return boolean
-local function is_panel(windows, panel)
+local function is_offset_section(windows, offset)
   local wins = {windows[1]}
   if #windows > 1 then
     wins[#wins+1] = windows[#windows]
@@ -70,7 +70,7 @@ local function is_panel(windows, panel)
     local _type, win_id = win[1], win[2]
     if _type == t.LEAF and type(win_id) == "number" then
       local buf = api.nvim_win_get_buf(win_id)
-      local valid = buf and vim.bo[buf].filetype == panel.filetype
+      local valid = buf and vim.bo[buf].filetype == offset.filetype
       local is_left = idx == 1
       if valid then
         return valid, win_id, is_left
@@ -86,23 +86,23 @@ end
 ---@return string
 ---@return string
 function M.get(prefs)
-  local panels = prefs.options.panels
+  local offsets = prefs.options.offsets
 
   local left = ""
   local right = ""
   local total_size = 0
 
-  if panels and #panels > 0 then
+  if offsets and #offsets > 0 then
     local layout = fn.winlayout()
-    for _, panel in ipairs(panels) do
+    for _, offset in ipairs(offsets) do
       -- don't bother proceeding if there are no vertical splits
       if layout[1] == t.ROW then
-        local is_valid, win_id, is_left = is_panel(layout[2], panel)
+        local is_valid, win_id, is_left = is_offset_section(layout[2], offset)
         if is_valid then
           local win_width = api.nvim_win_get_width(win_id)
           local sign_width = vim.wo[win_id].signcolumn and 1 or 0
 
-          local hl_name = panel.highlight
+          local hl_name = offset.highlight
             or guess_window_highlight(win_id)
             or prefs.highlights.fill.hl
 
@@ -110,7 +110,7 @@ function M.get(prefs)
 
           local size = win_width + sign_width
           total_size = total_size + size
-          local component = get_panel_text(size, hl, panel.text)
+          local component = get_section_text(size, hl, offset.text)
 
           if is_left then
             left = component

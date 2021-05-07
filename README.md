@@ -174,7 +174,7 @@ require'bufferline'.setup{
         return true
       end
     end,
-    panels = {{filetype = "NvimTree", text = "File Explorer"}},
+    offsets = {{filetype = "NvimTree", text = "File Explorer"}},
     show_buffer_close_icons = true | false,
     show_close_icon = true | false,
     show_tab_indicators = true | false,
@@ -285,10 +285,10 @@ buffers according to the buffer numbers given by vim.
 ### Sidebar Offset
 
 You can prevent the bufferline drawing above a **vertical** sidebar split such as a file explorer.
-To do this you must set the `panels` configuration option to a list of tables containing the details of the window to avoid.
+To do this you must set the `offsets` configuration option to a list of tables containing the details of the window to avoid.
 *NOTE:* this is only relevant for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or `Vista`
 ```lua
-panels = {{filetype = "NvimTree", text = "File Explorer", highlight = "Directory"}}
+offsets = {{filetype = "NvimTree", text = "File Explorer", highlight = "Directory"}}
 ```
 The `filetype` is used to check whether a particular window is a match, the `text` is *optional* and will show above the window if specified.
 If it is too long it will be truncated. The highlight controls what highlight is shown above the window.
