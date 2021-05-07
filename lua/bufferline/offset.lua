@@ -100,7 +100,8 @@ function M.get(prefs)
         local is_valid, win_id, is_left = is_offset_section(layout[2], offset)
         if is_valid then
           local win_width = api.nvim_win_get_width(win_id)
-          local sign_width = vim.wo[win_id].signcolumn and 1 or 0
+          local sign_column = vim.wo[win_id].signcolumn
+          local sign_width = (sign_column and sign_column ~= "") and 1 or 0
 
           local hl_name = offset.highlight
             or guess_window_highlight(win_id)
@@ -109,8 +110,9 @@ function M.get(prefs)
           local hl = require("bufferline.highlights").hl(hl_name)
 
           local size = win_width + sign_width
-          total_size = total_size + size
           local component = get_section_text(size, hl, offset.text)
+
+          total_size = total_size + size
 
           if is_left then
             left = component
