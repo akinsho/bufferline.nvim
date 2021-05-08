@@ -19,12 +19,16 @@ local function get_section_text(size, highlight, text)
   else
     local text_size = fn.strwidth(text)
     -- 2 here is for padding on either side of the text
-    if text_size > size then
+    if text_size + 2 > size then
       text = " " .. text:sub(1, text_size - size - 2) .. " "
-    elseif text_size < size then
-      local pad_size = math.floor((size - text_size) / 2)
-      local pad = string.rep(" ", pad_size)
-      text = pad .. text .. pad
+    else
+      local remainder = size - text_size
+      local is_even, side = remainder % 2 == 0, remainder / 2
+      local left, right = side, side
+      if not is_even then
+        left, right = math.ceil(side), math.floor(side)
+      end
+      text = string.rep(" ", left) .. text .. string.rep(" ", right)
     end
   end
   return highlight .. text
@@ -62,9 +66,9 @@ end
 ---@return number
 ---@return boolean
 local function is_offset_section(windows, offset)
-  local wins = {windows[1]}
+  local wins = { windows[1] }
   if #windows > 1 then
-    wins[#wins+1] = windows[#windows]
+    wins[#wins + 1] = windows[#windows]
   end
   for idx, win in ipairs(wins) do
     local _type, win_id = win[1], win[2]
@@ -99,20 +103,16 @@ function M.get(prefs)
       if layout[1] == t.ROW then
         local is_valid, win_id, is_left = is_offset_section(layout[2], offset)
         if is_valid then
-          local win_width = api.nvim_win_get_width(win_id)
-          local sign_column = vim.wo[win_id].signcolumn
-          local sign_width = (sign_column and sign_column ~= "") and 1 or 0
+          local width = api.nvim_win_get_width(win_id)
 
           local hl_name = offset.highlight
             or guess_window_highlight(win_id)
             or prefs.highlights.fill.hl
 
           local hl = require("bufferline.highlights").hl(hl_name)
+          local component = get_section_text(width, hl, offset.text)
 
-          local size = win_width + sign_width
-          local component = get_section_text(size, hl, offset.text)
-
-          total_size = total_size + size
+          total_size = total_size + width
 
           if is_left then
             left = component

@@ -39,7 +39,7 @@ describe("Offset tests:", function()
       options = { offsets = { { filetype = ft } } },
     }
     local size, left, right = offsets.get(opts)
-    assert.equal(21, size)
+    assert.equal(20, size)
     assert.equal(right, "")
     assert.is_truthy(left:match(" "))
   end)
@@ -51,7 +51,7 @@ describe("Offset tests:", function()
       options = { offsets = { { filetype = ft, text = "Test buffer" } } },
     }
     local size, left, right = offsets.get(opts)
-    assert.equal(21, size)
+    assert.equal(20, size)
     assert.equal(right, "")
     assert.is_truthy(left:match("    Test buffer    "))
   end)
@@ -65,7 +65,7 @@ describe("Offset tests:", function()
       },
     })
 
-    assert.equal(21, size)
+    assert.equal(20, size)
     assert.is_truthy(right:match("Test buffer"))
     assert.equal("", left)
   end)
