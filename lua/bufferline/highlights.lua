@@ -4,7 +4,7 @@ local api = vim.api
 ---------------------------------------------------------------------------//
 local M = {}
 
-local function hl(item)
+function M.hl(item)
   return "%#" .. item .. "#"
 end
 
@@ -59,7 +59,7 @@ function M.set_all(user_colors)
     local formatted = "BufferLine" .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
     M.set_one(formatted, tbl)
     local copy = shallow_copy(tbl)
-    copy.hl = hl(formatted)
+    copy.hl = M.hl(formatted)
     result[name] = copy
   end
   return result

@@ -30,6 +30,10 @@ see: `:h bufferline-styling`
 
 ![LSP error](https://user-images.githubusercontent.com/22454918/111993085-1d299700-8b0e-11eb-96eb-c1c289e36b08.png)
 
+#### Sidebar offset
+
+![explorer header](https://user-images.githubusercontent.com/22454918/117363338-5fd3e280-aeb4-11eb-99f2-5ec33dff6f31.png)
+
 #### Option to show buffer numbers
 
 ![bufferline with numbers](https://user-images.githubusercontent.com/22454918/111993201-3d595600-8b0e-11eb-8944-387ed3bd25b4.png)
@@ -170,6 +174,7 @@ require'bufferline'.setup{
         return true
       end
     end,
+    offsets = {{filetype = "NvimTree", text = "File Explorer"}},
     show_buffer_close_icons = true | false,
     show_close_icon = true | false,
     show_tab_indicators = true | false,
@@ -276,6 +281,18 @@ end
 When using a sorted bufferline it's advisable that you use the `BufferLineCycleNext` and `BufferLineCyclePrev`
 commands since these will traverse the bufferline bufferlist in order whereas `bnext` and `bprev` will cycle
 buffers according to the buffer numbers given by vim.
+
+### Sidebar Offset
+
+You can prevent the bufferline drawing above a **vertical** sidebar split such as a file explorer.
+To do this you must set the `offsets` configuration option to a list of tables containing the details of the window to avoid.
+*NOTE:* this is only relevant for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or `Vista`
+```lua
+offsets = {{filetype = "NvimTree", text = "File Explorer", highlight = "Directory"}}
+```
+The `filetype` is used to check whether a particular window is a match, the `text` is *optional* and will show above the window if specified.
+If it is too long it will be truncated. The highlight controls what highlight is shown above the window.
+You can also add a `padding` key which should be an integer if you want the offset to be larger than the window width.
 
 ### Bufferline Pick functionality
 

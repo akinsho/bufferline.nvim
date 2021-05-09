@@ -88,9 +88,8 @@ function M.is_valid(buf_num)
   if not buf_num or buf_num < 1 then
     return false
   end
-  local listed = vim.fn.getbufvar(buf_num, "&buflisted") == 1
   local exists = vim.api.nvim_buf_is_valid(buf_num)
-  return listed and exists
+  return vim.bo[buf_num].buflisted and exists
 end
 
 --- @param bufs table | nil

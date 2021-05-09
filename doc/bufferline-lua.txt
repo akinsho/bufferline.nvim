@@ -73,9 +73,10 @@ The available settings are: >
             separator_style = "slant" | "thick" | "thin" | { "any", "any" },
             enforce_regular_tabs = false | true,
             always_show_bufferline = true | false,
+            offsets = {{filetype = "NvimTree", text = "File Explorer"}},
             sort_by = "extension" | "relative_directory" | "directory" | function(buffer_a, buffer_b)
             -- add custom logic
-            return buffer_a.modified > buffer_b.modified
+                return buffer_a.modified > buffer_b.modified
             end
         }
     }
@@ -214,6 +215,26 @@ For example: >
         return (tab_num == 2 and is_log) or (tab_num ~= 2 and not is_log)
     end
 <
+
+==============================================================================
+SIDEBAR OFFSET                                           *bufferline-lua-offset*
+
+You can prevent the bufferline drawing above a *vertical* sidebar split such as a file explorer.
+To do this you must set the `offsets` configuration option to a list of tables
+containing the details of the window to avoid. *NOTE:* this is only relevant
+for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or
+`Vista`
+>
+    offsets = {{filetype = "NvimTree", text = "File Explorer", highlight = "Directory"}}
+<
+The `filetype` is used to check whether a particular window is a match, the
+`text` is *optional* and will show above the window if specified. If it is too
+long it will be truncated. The highlight controls what highlight is shown
+above the window.
+Lastly you can specify a `padding` option as well which will increase the
+amount the bufferline is offset beyond just the window width, this isn't
+something that is generally required though.
+
 ==============================================================================
 BUFFERLINE PICK                                            *bufferline-lua-pick*
 
