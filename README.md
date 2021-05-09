@@ -268,8 +268,8 @@ Bufferline allows you to sort the visible buffers by `extension` or `directory`:
 
 ```lua
 -- Or using lua functions
-:lua require'bufferline'.sort_buffers_by('extension')`
-:lua require'bufferline'.sort_buffers_by('directory')`
+:lua require'bufferline'.sort_buffers_by('extension')
+:lua require'bufferline'.sort_buffers_by('directory')
 ```
 
 For more advanced usage you can provide a custom compare function which will
