@@ -292,6 +292,7 @@ offsets = {{filetype = "NvimTree", text = "File Explorer", highlight = "Director
 ```
 The `filetype` is used to check whether a particular window is a match, the `text` is *optional* and will show above the window if specified.
 If it is too long it will be truncated. The highlight controls what highlight is shown above the window.
+You can also add a `padding` key which should be an integer if you want the offset to be larger than the window width.
 
 ### Bufferline Pick functionality
 
