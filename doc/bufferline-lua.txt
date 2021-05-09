@@ -64,6 +64,7 @@ The available settings are: >
             diagnostics_indicator = function(count, level)
             return "("..count..")"
             end
+            show_buffer_icons = true | false,
             show_buffer_close_icons = true | false,
             show_close_icon = true | false,
             show_tab_indicators = true | false

@@ -82,6 +82,7 @@ function M.get_defaults()
       tab_size = 18,
       max_name_length = 18,
       mappings = false,
+      show_buffer_icons = true,
       show_buffer_close_icons = true,
       show_close_icon = true,
       show_tab_indicators = true,

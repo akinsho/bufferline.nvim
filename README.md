@@ -175,6 +175,7 @@ require'bufferline'.setup{
       end
     end,
     offsets = {{filetype = "NvimTree", text = "File Explorer"}},
+    show_buffer_icons = true | false, -- disable filetype icons for buffers
     show_buffer_close_icons = true | false,
     show_close_icon = true | false,
     show_tab_indicators = true | false,
