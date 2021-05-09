@@ -19,8 +19,8 @@ local function get_section_text(size, highlight, text)
   else
     local text_size = fn.strwidth(text)
     -- 2 here is for padding on either side of the text
-    if text_size + 2 > size then
-      text = " " .. text:sub(1, text_size - size - 2) .. " "
+    if text_size + 2 >= size then
+      text = " " .. text:sub(1, size - 2) .. " "
     else
       local remainder = size - text_size
       local is_even, side = remainder % 2 == 0, remainder / 2

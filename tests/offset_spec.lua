@@ -69,4 +69,18 @@ describe("Offset tests:", function()
     assert.is_truthy(right:match("Test buffer"))
     assert.equal("", left)
   end)
+
+  it('should correctly truncate offset text', function()
+    local ft = open_test_panel()
+    local size, left, right = offsets.get({
+      highlights = {},
+      options = {
+        offsets = { { filetype = ft, text = "Test buffer buffer buffer buffer" } },
+      },
+    })
+
+    assert.equal(20, size)
+    assert.equal("", right)
+    assert.is_equal(" Test buffer buffer ", left:gsub("%%#Normal#", ""))
+  end)
 end)
