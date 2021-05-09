@@ -272,16 +272,14 @@ local function indicator_component(context)
   local component = context.component
   local hl = context.preferences.highlights
   local curr_hl = context.current_highlights
-  local style = context.preferences.options.separator_style
+  local options = context.preferences.options
+  local style = options.separator_style
 
   if buffer:current() then
     local indicator = " "
     local symbol = indicator
     if style ~= separator_styles.slant then
-      -- U+2590 ▐ Right half block, this character is right aligned so the
-      -- background highlight doesn't appear in th middle
-      -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
-      symbol = "▎"
+      symbol = options.indicator_icon
       indicator = hl.indicator_selected.hl .. symbol .. "%*"
     end
     length = length + strwidth(symbol)

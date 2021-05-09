@@ -76,6 +76,10 @@ function M.get_defaults()
       buffer_close_icon = "",
       modified_icon = "●",
       close_icon = "",
+      -- U+2590 ▐ Right half block, this character is right aligned so the
+      -- background highlight doesn't appear in th middle
+      -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
+      indicator_icon = "▎",
       left_trunc_marker = "",
       right_trunc_marker = "",
       separator_style = "thin",
