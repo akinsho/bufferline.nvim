@@ -1,17 +1,26 @@
+local fn = vim.fn
 local api = vim.api
 local fmt = string.format
 
 local filetype = "test"
 
-local function open_test_panel(ft, direction)
+local function open_test_panel(direction, ft)
   direction = direction or "H"
   ft = ft or filetype
-  vim.cmd("vnew file")
+  local win = api.nvim_get_current_win()
+  vim.cmd(fmt("vnew %s", fn.tempname()))
+  local win_id = api.nvim_get_current_win()
   vim.cmd(fmt("wincmd %s", direction))
-  local new_ft = fmt("%s_%d", ft, vim.fn.win_getid())
+  local new_ft = fmt("%s_%d", ft, win_id)
   vim.cmd(fmt("setfiletype %s", new_ft))
-  api.nvim_win_set_width(0, 20)
-  return new_ft
+  api.nvim_win_set_width(api.nvim_get_current_win(), 20)
+  api.nvim_set_current_win(win)
+  vim.wo[win_id].winfixwidth = true
+  return new_ft, win_id
+end
+
+local function remove_highlight(str)
+  return str:gsub("%%#Normal#", "")
 end
 
 describe("Offset tests:", function()
@@ -57,7 +66,7 @@ describe("Offset tests:", function()
   end)
 
   it("should add the offset to the correct side", function()
-    local ft = open_test_panel(nil, "L")
+    local ft = open_test_panel("L")
     local size, left, right = offsets.get({
       highlights = {},
       options = {
@@ -70,7 +79,7 @@ describe("Offset tests:", function()
     assert.equal("", left)
   end)
 
-  it('should correctly truncate offset text', function()
+  it("should correctly truncate offset text", function()
     local ft = open_test_panel()
     local size, left, right = offsets.get({
       highlights = {},
@@ -81,6 +90,21 @@ describe("Offset tests:", function()
 
     assert.equal(20, size)
     assert.equal("", right)
-    assert.is_equal(" Test buffer buffer ", left:gsub("%%#Normal#", ""))
+    assert.is_equal(" Test buffer buffer ", remove_highlight(left))
+  end)
+
+  it("should allow left and right offsets", function()
+    local ft1 = open_test_panel()
+    local ft2 = open_test_panel("L")
+    local size, left, right = offsets.get({
+      highlights = {},
+      options = {
+        offsets = { { filetype = ft1, text = "Left" }, { filetype = ft2, text = "Right" } },
+      },
+    })
+
+    assert.is_truthy(left:match("Left"))
+    assert.is_truthy(right:match("Right"))
+    assert.equal(40, size)
   end)
 end)
