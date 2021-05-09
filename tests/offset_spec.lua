@@ -107,4 +107,17 @@ describe("Offset tests:", function()
     assert.is_truthy(right:match("Right"))
     assert.equal(40, size)
   end)
+
+  it('should allow setting some extra padding', function()
+    local ft1 = open_test_panel()
+    local size, left, _ = offsets.get({
+      highlights = {},
+      options = {
+        offsets = { { filetype = ft1, text = "Left", padding = 5 } },
+      },
+    })
+
+    assert.is_truthy(left:match("Left"))
+    assert.equal(25, size)
+  end)
 end)

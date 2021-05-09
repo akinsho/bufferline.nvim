@@ -103,7 +103,7 @@ function M.get(prefs)
       if layout[1] == t.ROW then
         local is_valid, win_id, is_left = is_offset_section(layout[2], offset)
         if is_valid then
-          local width = api.nvim_win_get_width(win_id)
+          local width = api.nvim_win_get_width(win_id) + (offset.padding or 0)
 
           local hl_name = offset.highlight
             or guess_window_highlight(win_id)
