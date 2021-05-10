@@ -178,7 +178,7 @@ require('bufferline').setup {
         return true
       end
     end,
-    offsets = {{filetype = "NvimTree", text = "File Explorer"}},
+    offsets = {{filetype = "NvimTree", text = "File Explorer", text_align = "left" | "center" | "right"}},
     show_buffer_icons = true | false, -- disable filetype icons for buffers
     show_buffer_close_icons = true | false,
     show_close_icon = true | false,
@@ -293,10 +293,11 @@ You can prevent the bufferline drawing above a **vertical** sidebar split such a
 To do this you must set the `offsets` configuration option to a list of tables containing the details of the window to avoid.
 *NOTE:* this is only relevant for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or `Vista`
 ```lua
-offsets = {{filetype = "NvimTree", text = "File Explorer", highlight = "Directory"}}
+offsets = {{filetype = "NvimTree", text = "File Explorer", highlight = "Directory", text_align = "left"}}
 ```
 The `filetype` is used to check whether a particular window is a match, the `text` is *optional* and will show above the window if specified.
 If it is too long it will be truncated. The highlight controls what highlight is shown above the window.
+You can also change the alignment of the text in the offset section using `text_align` which can be set to `left`, `right` or `center`.
 You can also add a `padding` key which should be an integer if you want the offset to be larger than the window width.
 
 ### Bufferline Pick functionality

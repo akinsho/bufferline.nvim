@@ -11,25 +11,34 @@ local t = {
 ---Format the content of a neighbouring offset's text
 ---@param size number
 ---@param highlight string
----@param text string
+---@param offset table
 ---@return string
-local function get_section_text(size, highlight, text)
+local function get_section_text(size, highlight, offset)
+  local text = offset.text
+  local alignment = offset.text_align or "center"
   if not text then
     text = string.rep(" ", size)
   else
     local text_size = fn.strwidth(text)
-    -- 2 here is for padding on either side of the text
+    local left, right
     if text_size + 2 >= size then
-      text = " " .. text:sub(1, size - 2) .. " "
+      text = text:sub(1, size - 2)
+      left, right = 1, 1
     else
       local remainder = size - text_size
       local is_even, side = remainder % 2 == 0, remainder / 2
-      local left, right = side, side
-      if not is_even then
-        left, right = math.ceil(side), math.floor(side)
+      if alignment == "center" then
+        left, right = side, side
+        if not is_even then
+          left, right = math.ceil(side), math.floor(side)
+        end
+      elseif alignment == "left" then
+        left, right = 1, remainder - 1
+      else
+        left, right = remainder - 1, 1
       end
-      text = string.rep(" ", left) .. text .. string.rep(" ", right)
     end
+    text = string.rep(" ", left) .. text .. string.rep(" ", right)
   end
   return highlight .. text
 end
@@ -110,7 +119,7 @@ function M.get(prefs)
             or prefs.highlights.fill.hl
 
           local hl = require("bufferline.highlights").hl(hl_name)
-          local component = get_section_text(width, hl, offset.text)
+          local component = get_section_text(width, hl, offset)
 
           total_size = total_size + width
 
