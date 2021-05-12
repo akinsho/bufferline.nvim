@@ -120,4 +120,32 @@ describe("Offset tests:", function()
     assert.is_truthy(left:match("Left"))
     assert.equal(25, size)
   end)
+
+  it('should align the text to the right if specified', function()
+    local ft1 = open_test_panel()
+    local text = "Text"
+    local size, left, _ = offsets.get({
+      highlights = {},
+      options = {
+        offsets = { { filetype = ft1, text = text, text_align = "right" } },
+      },
+    })
+
+    assert.equal(20, size)
+    assert.equal(remove_highlight(left), string.rep(" ", size - (#text + 1))..text.." ")
+  end)
+
+  it('should align the text to the left if specified', function()
+    local text = "Text"
+    local ft1 = open_test_panel()
+    local size, left, _ = offsets.get({
+      highlights = {},
+      options = {
+        offsets = { { filetype = ft1, text = text, text_align = "left" } },
+      },
+    })
+
+    assert.equal(20, size)
+    assert.equal(remove_highlight(left), " "..text..string.rep(" ", size - (#text + 1)))
+  end)
 end)
