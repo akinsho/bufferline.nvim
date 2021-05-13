@@ -39,6 +39,7 @@ local state = {
   current_letters = {},
   custom_sort = nil,
   preferences = {},
+  recent_visits = {},
 }
 
 if utils.is_test() then
@@ -328,6 +329,16 @@ local function add_suffix(context)
     length = length + (buffer.modified and modified_size or size)
   end
   return component, length
+end
+
+function M.count_visit()
+  local buf = api.nvim_get_current_buf()
+  for _,b in pairs(state.buffers) do
+    if b.id == buf then
+      local previous_count = state.recent_visits[b.id] or 0
+      state.recent_visits[b.id] = previous_count + 1
+    end
+  end
 end
 
 --- TODO We increment the buffer length by the separator although the final
@@ -696,7 +707,7 @@ local function bufferline(preferences)
 
   -- if the user has reschuffled the buffers manually don't try and sort them
   if not state.custom_sort then
-    sort.sort_buffers(preferences.options.sort_by, state.buffers)
+    sort.sort_buffers(preferences.options.sort_by, state)
   end
 
   return render(state.buffers, all_tabs, preferences)
@@ -829,6 +840,13 @@ local function setup_autocommands(preferences)
       "VimEnter,BufAdd,TabEnter",
       "*",
       "lua require'bufferline'.toggle_bufferline()",
+    })
+  end
+  if preferences.options.sort_by == "recent" then
+    table.insert(autocommands, {
+      "BufEnter",
+      "*",
+      "lua require'bufferline'.count_visit()"
     })
   end
   local loaded = pcall(require, "nvim-web-devicons")

@@ -1,4 +1,5 @@
 local M = {}
+
 ---------------------------------------------------------------------------//
 -- Sorters
 ---------------------------------------------------------------------------//
@@ -12,6 +13,16 @@ end
 -- @param path string
 local function is_relative_path(path)
   return full_path(path) ~= path
+end
+
+---Sort buffers by the most recently visited
+---comment
+---@param recent_visits table<string,number>
+---@return function(buf_a: Buffer, buf_b: Buffer): boolean
+local function sort_by_recent(recent_visits)
+  return function(buf_a, buf_b)
+    return (recent_visits[buf_a.id] or 0) > (recent_visits[buf_b.id] or 0)
+  end
 end
 
 --- @param buf_a Buffer
@@ -42,14 +53,18 @@ end
 
 --- sorts a list of buffers in place
 --- @param sort_by string|function
---- @param buffers Buffer[]
-function M.sort_buffers(sort_by, buffers)
+--- @param state table
+function M.sort_buffers(sort_by, state)
+  --@type Buffers[]
+  local buffers = state.buffers
   if sort_by == "extension" then
     table.sort(buffers, sort_by_extension)
   elseif sort_by == "directory" then
     table.sort(buffers, sort_by_directory)
   elseif sort_by == "relative_directory" then
     table.sort(buffers, sort_by_relative_directory)
+  elseif sort_by == "recent" then
+    table.sort(buffers, sort_by_recent(state.recent_visits))
   elseif type(sort_by) == "function" then
     table.sort(buffers, sort_by)
   end
