@@ -39,7 +39,9 @@ local state = {
   current_letters = {},
   custom_sort = nil,
   preferences = {},
-  recent_visits = {},
+  recent_visits = setmetatable({}, { __index = function()
+    return 0
+  end }),
 }
 
 if utils.is_test() then
@@ -333,7 +335,7 @@ end
 
 function M.count_visit()
   local buf = api.nvim_get_current_buf()
-  for _,b in pairs(state.buffers) do
+  for _, b in pairs(state.buffers) do
     if b.id == buf then
       local previous_count = state.recent_visits[b.id] or 0
       state.recent_visits[b.id] = previous_count + 1

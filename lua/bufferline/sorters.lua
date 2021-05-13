@@ -21,7 +21,7 @@ end
 ---@return function(buf_a: Buffer, buf_b: Buffer): boolean
 local function sort_by_recent(recent_visits)
   return function(buf_a, buf_b)
-    return (recent_visits[buf_a.id] or 0) > (recent_visits[buf_b.id] or 0)
+    return recent_visits[buf_a.id] > recent_visits[buf_b.id]
   end
 end
 
