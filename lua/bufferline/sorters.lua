@@ -70,4 +70,17 @@ function M.sort_buffers(sort_by, state)
   end
 end
 
+---Setup autocommands for complex sorters
+---@param autocommands table[]
+---@param sort_by string
+function M.setup(autocommands, sort_by)
+  if sort_by == "recent" then
+    table.insert(autocommands, {
+      "BufEnter",
+      "*",
+      "lua require'bufferline'.count_visit()",
+    })
+  end
+end
+
 return M
