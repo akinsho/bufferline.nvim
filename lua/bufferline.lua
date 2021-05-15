@@ -825,6 +825,8 @@ function M.sort_buffers_by(sort_by)
   refresh()
 end
 
+---Create miscellaneous autocommands
+---@param preferences table
 local function setup_autocommands(preferences)
   local opts = preferences.options
   local autocommands = { { "ColorScheme", "*", [[lua __setup_bufferline_colors()]] } }

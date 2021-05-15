@@ -5,12 +5,14 @@ local M = {}
 ---------------------------------------------------------------------------//
 local fnamemodify = vim.fn.fnamemodify
 
--- @param path string
+---@param path string
+---@return string
 local function full_path(path)
   return fnamemodify(path, ":p")
 end
 
--- @param path string
+---@param path string
+---@return string
 local function is_relative_path(path)
   return full_path(path) ~= path
 end
