@@ -46,7 +46,7 @@ function M.Buffer:new(buf)
   -- Set icon
   if buffer_is_terminal(buf) then
     if lua_devicons_loaded then
-      terminal_icon = webdev_icons.get_icon("terminal").." "
+      terminal_icon = webdev_icons.get_icon("terminal") .. " "
     end
     buf.icon = terminal_icon
     buf.filename = fn.fnamemodify(buf.path, ":p:t")
