@@ -583,7 +583,14 @@ local function render(bufs, tbs, prefs)
   local right_element_size = strwidth(join(padding, padding, right_trunc_icon, padding))
 
   local offset_size, left_offset, right_offset = require("bufferline.offset").get(prefs)
-  local available_width = vim.o.columns - offset_size - tabs_length - close_length
+  local custom_area_size, left_area, right_area = require("bufferline.custom_area").get(prefs)
+
+  local available_width = vim.o.columns
+    - custom_area_size
+    - offset_size
+    - tabs_length
+    - close_length
+
   local before, current, after = get_sections(bufs)
   local line, marker = truncate(before, current, after, available_width, {
     left_count = 0,
@@ -603,12 +610,14 @@ local function render(bufs, tbs, prefs)
 
   return join(
     left_offset,
+    left_area,
     line,
     hl.fill.hl,
     right_align,
     tab_components,
     hl.tab_close.hl,
     close,
+    right_area,
     right_offset
   )
 end
