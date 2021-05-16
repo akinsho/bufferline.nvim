@@ -36,4 +36,22 @@ describe('Custom areas -', function()
     assert.is_truthy(right)
     assert.is_equal('%#BufferLineRightCustomAreaText1#test1', right)
   end)
+
+  it('should handle user errors gracefully', function()
+    local size, left, right = areas.get({
+      options = {
+        custom_areas = {
+          left = function ()
+            return {{text = {"test"}, guifg = "red", guibg = "black"}}
+          end,
+          right = function ()
+            error('This failed mysteriously')
+          end
+        }
+      }
+    })
+    assert.is_equal(0, size)
+    assert.is_equal("", left)
+    assert.is_equal("", right)
+  end)
 end)

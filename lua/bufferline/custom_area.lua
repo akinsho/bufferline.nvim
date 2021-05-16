@@ -36,10 +36,10 @@ function M.get(prefs)
             vim.inspect(side)
           ))
       end
-      local section = section_fn()
-      if section and not vim.tbl_isempty(section) then
+      local ok, section = pcall(section_fn)
+      if ok and section and not vim.tbl_isempty(section) then
         for i, item in ipairs(section) do
-          if item.text then
+          if item.text and type(item.text) == "string" then
             local hl = create_hl(i, side, item)
             size = size + fn.strwidth(item.text)
             if side == "left" then
