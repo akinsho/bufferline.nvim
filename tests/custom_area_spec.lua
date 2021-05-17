@@ -17,6 +17,9 @@ describe('Custom areas -', function()
 
   it('should handle sides correctly', function()
     local size, left, right = areas.get({
+      highlights = {
+        fill = "#000000"
+      },
       options = {
         custom_areas = {
           left = function ()

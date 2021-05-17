@@ -38,7 +38,8 @@ function M.get(prefs)
           ))
       end
       -- if the user doesn't specify a background use the default
-      local guibg = prefs.highlights.fill.guibg
+      local hls = prefs.highlights or {}
+      local guibg = hls.fill and hls.fill.guibg or nil
       local ok, section = pcall(section_fn)
       if ok and section and not vim.tbl_isempty(section) then
         for i, item in ipairs(section) do
