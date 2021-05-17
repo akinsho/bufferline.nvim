@@ -142,7 +142,6 @@ not track global variables which is the mechanism used to store your sort order.
 ```lua
 require('bufferline').setup {
   options = {
-    view = "multiwindow" | "default",
     numbers = "none" | "ordinal" | "buffer_id" | "both",
     number_style = "superscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
     mappings = true | false,
