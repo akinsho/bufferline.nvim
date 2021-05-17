@@ -6,12 +6,13 @@ local fmt = string.format
 ---@param index integer
 ---@param side string
 ---@param section table
-local function create_hl(index, side, section)
+---@param guibg string
+local function create_hl(index, side, section, guibg)
   local name = fmt("BufferLine%sCustomAreaText%d", side:gsub("^%l", string.upper), index)
   local H = require("bufferline.highlights")
   H.set_one(name, {
     guifg = section.guifg,
-    guibg = section.guibg,
+    guibg = section.guibg or guibg,
     gui = section.gui,
   })
   return H.hl(name)
@@ -36,11 +37,13 @@ function M.get(prefs)
             vim.inspect(side)
           ))
       end
+      -- if the user doesn't specify a background use the default
+      local guibg = prefs.highlights.fill.guibg
       local ok, section = pcall(section_fn)
       if ok and section and not vim.tbl_isempty(section) then
         for i, item in ipairs(section) do
           if item.text and type(item.text) == "string" then
-            local hl = create_hl(i, side, item)
+            local hl = create_hl(i, side, item, guibg)
             size = size + fn.strwidth(item.text)
             if side == "left" then
               left = left .. hl .. item.text
