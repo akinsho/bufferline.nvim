@@ -7,8 +7,7 @@ A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built usin
 ![Demo GIF](https://user-images.githubusercontent.com/22454918/111992693-9c6a9b00-8b0d-11eb-8c39-19db58583061.gif)
 
 This plugin shamelessly attempts to emulate the aesthetics of GUI text editors/Doom Emacs.
-It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://github.com/ema2159/centaur-tabs). I don't intend to copy
-all of it's functionality though.
+It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://github.com/ema2159/centaur-tabs).
 
 ## Features
 
