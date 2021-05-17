@@ -314,7 +314,7 @@ buffer that appears
 
 ### Custom Area (Advanced)
 
-![image](https://user-images.githubusercontent.com/22454918/118525973-aa1c5580-b737-11eb-883c-a2c55b7af479.png)
+![custom area example](https://user-images.githubusercontent.com/22454918/118527523-4d219f00-b739-11eb-889f-60fb06fd71bc.png)
 
 You can also add custom content at the start or end of the bufferline using `custom_areas`
 this option allow a user to specify a function which return the text and highlight for that text
