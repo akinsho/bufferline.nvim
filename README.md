@@ -1,4 +1,6 @@
-# nvim-bufferline.lua
+<h1 align="center">
+  nvim-bufferline.lua
+</h1>
 
 A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built using **lua**.
 
@@ -14,9 +16,9 @@ all of it's functionality though.
 
 - Sort buffers by `extension`, `directory` or pass in a custom compare function
 
-- Filter buffers using a custom function
+- Configuration via lua functions for greater customization.
 
-#### Alternate option for tab styling
+#### Alternate tab styling
 
 ![slanted tabs](https://user-images.githubusercontent.com/22454918/111992989-fec39b80-8b0d-11eb-851b-010641196a04.png)
 
@@ -34,31 +36,35 @@ see: `:h bufferline-styling`
 
 ![explorer header](https://user-images.githubusercontent.com/22454918/117363338-5fd3e280-aeb4-11eb-99f2-5ec33dff6f31.png)
 
-#### Option to show buffer numbers
+#### Buffer numbers
 
 ![bufferline with numbers](https://user-images.githubusercontent.com/22454918/111993201-3d595600-8b0e-11eb-8944-387ed3bd25b4.png)
 
-mode `both` with default number_style
-
 ![both with default style](https://user-images.githubusercontent.com/8133242/113400253-159ea380-93d4-11eb-822c-974d728a6bcf.png)
 
-mode `both` with customized number_style `{"superscript", "subscript"}`
+Default style
 
 ![both with customized style](https://user-images.githubusercontent.com/8133242/113400265-1a635780-93d4-11eb-8085-adc328385cb5.png)
 
-#### Buffer pick functionality
+Buffer ordinal number and buffer number with a customized number style.
+
+```lua
+number_style = {"superscript", "subscript"}
+```
+
+#### Buffer pick
 
 ![bufferline pick](https://user-images.githubusercontent.com/22454918/111993296-5bbf5180-8b0e-11eb-9ad9-fcf9619436fd.gif)
 
-#### Make buffer names unique if there are duplicates
+#### Unique buffer name
 
 ![duplicate names](https://user-images.githubusercontent.com/22454918/111993343-6da0f480-8b0e-11eb-8d93-44019458d2c9.png)
 
-#### Close icons for closing individual buffers
+#### Close icons
 
 ![close button](https://user-images.githubusercontent.com/22454918/111993390-7a254d00-8b0e-11eb-9951-43b4350f6a29.gif)
 
-#### Re-order current buffer
+#### Buffer Re-ordering
 
 ![re-order buffers](https://user-images.githubusercontent.com/22454918/111993463-91643a80-8b0e-11eb-87f0-26acfe92c021.gif)
 
@@ -71,10 +77,14 @@ This order can be persisted between sessions (enabled by default).
 
 ## Installation
 
+**lua**
+
 ```lua
 -- using packer.nvim
 use {'akinsho/nvim-bufferline.lua', requires = 'kyazdani42/nvim-web-devicons'}
 ```
+
+**vimscript**
 
 ```vim
 Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
@@ -82,21 +92,18 @@ Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
 Plug 'akinsho/nvim-bufferline.lua'
 ```
 
-## Why another buffer line plugin?
-
-1. I was looking for an excuse to play with lua and learn to create a plugin with it for Neovim and there was nothing else built in lua when I created this.
-2. I wanted to add some tweaks to my buffer line and didn't want to figure out a bunch of `vimscript` in some other plugin.
-
 ## Caveats 🙏
 
 - This won't appeal to everyone's tastes. This plugin is opinionated about how the tabline
-  looks, it's unlikely to please everyone, I don't want to try and support a bunch of different
-  appearances.
+  looks, it's unlikely to please everyone.
+
 - I want to prevent this becoming a pain to maintain so I'll be conservative about what I add.
+
 - This plugin relies on some basic highlights being set by your colour scheme
   i.e. `Normal`, `String`, `TabLineSel` (`WildMenu` as fallback), `Comment`.
   It's unlikely to work with all colour schemes. You can either try manually overriding the colours or
   manually creating these highlight groups before loading this plugin.
+
 - If the contrast in your colour scheme isn't very high, think an all black colour scheme, some of the highlights of
   this plugin won't really work as intended since it depends on darkening things.
 
@@ -109,8 +116,8 @@ of various highlight groups.
 
 ```vim
 set termguicolors
-" In your init.{vim/lua}
-lua require'bufferline'.setup{}
+" In your init.{vim|lua}
+lua require("bufferline").setup{}
 ```
 
 You can close buffers by clicking the close icon or by _right clicking_ the tab anywhere
@@ -236,7 +243,7 @@ end
 
 ![diagnostics_indicator](https://user-images.githubusercontent.com/4028913/112573484-9ee92100-8da9-11eb-9ffd-da9cb9cae3a6.png)
 
-The highlighting for the filename if there is an error can be changed by replacing the highlights for
+The highlighting for the file name if there is an error can be changed by replacing the highlights for
 `error`, `error_visible`, `error_selected`, `warning`, `warning_visible`, `warning_selected`.
 
 ### Regular tab sizes
@@ -276,7 +283,9 @@ receive two buffers to compare. You can see what fields are available to use usi
 sort_by = function(buffer_a, buffer_b)
   print(vim.inspect(buffer_a))
 -- add custom logic
-  return buffer_a.modified > buffer_b.modified
+  local mod_a = vim.loop.fs_stat(buffer_a.path).mtime.sec
+  local mod_b = vim.loop.fs_stat(buffer_b.path).mtime.sec
+  return mod_a > mod_b
 end
 ```
 
@@ -288,11 +297,13 @@ buffers according to the buffer numbers given by vim.
 
 You can prevent the bufferline drawing above a **vertical** sidebar split such as a file explorer.
 To do this you must set the `offsets` configuration option to a list of tables containing the details of the window to avoid.
-*NOTE:* this is only relevant for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or `Vista`
+_NOTE:_ this is only relevant for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or `Vista`
+
 ```lua
 offsets = {{filetype = "NvimTree", text = "File Explorer", highlight = "Directory", text_align = "left"}}
 ```
-The `filetype` is used to check whether a particular window is a match, the `text` is *optional* and will show above the window if specified.
+
+The `filetype` is used to check whether a particular window is a match, the `text` is _optional_ and will show above the window if specified.
 If it is too long it will be truncated. The highlight controls what highlight is shown above the window.
 You can also change the alignment of the text in the offset section using `text_align` which can be set to `left`, `right` or `center`.
 You can also add a `padding` key which should be an integer if you want the offset to be larger than the window width.
@@ -311,13 +322,14 @@ buffer that appears
 
 ![bufferline_pick](https://user-images.githubusercontent.com/22454918/111994691-f2404280-8b0f-11eb-9bc1-6664ccb93154.gif)
 
-### Custom Area (Advanced)
+### Custom Area
 
-![custom area example](https://user-images.githubusercontent.com/22454918/118527523-4d219f00-b739-11eb-889f-60fb06fd71bc.png)
+![custom area](https://user-images.githubusercontent.com/22454918/118527523-4d219f00-b739-11eb-889f-60fb06fd71bc.png)
 
 You can also add custom content at the start or end of the bufferline using `custom_areas`
 this option allow a user to specify a function which return the text and highlight for that text
 to be shown. For example:
+
 ```lua
 
 custom_areas = {
@@ -353,7 +365,7 @@ not block rendering the tabline.
 
 ### FAQ
 
-* __Why isn't the bufferline appearing?__
+- **Why isn't the bufferline appearing?**
 
   The most common reason for this that has come up in various issues is it clashes with
   another plugin. Please make sure that you do not have another bufferline plugin installed.
