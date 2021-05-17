@@ -43,11 +43,6 @@ local state = {
     return 0
   end }),
 }
-
-if utils.is_test() then
-  M._state = state
-end
-
 ---------------------------------------------------------------------------//
 -- CORE
 ---------------------------------------------------------------------------//
@@ -974,6 +969,17 @@ function M.setup(prefs)
 
   vim.o.showtabline = 2
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
+end
+
+if utils.is_test() then
+  function M._state()
+    return state
+  end
+end
+
+
+if utils.is_test() then
+  M.get_buffers_by_mode = get_buffers_by_mode
 end
 
 return M
