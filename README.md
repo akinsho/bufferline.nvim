@@ -197,13 +197,6 @@ require('bufferline').setup {
 }
 ```
 
-#### NOTE:
-
-If using a plugin such as `vim-rooter` and you want to sort by path, prefer using `directory` rather than
-`relative_directory`. Relative directory works by ordering relative paths first, however if you move from
-project to project and vim switches its directory, the bufferline will re-order itself as a different set of
-buffers will now be relative.
-
 ### LSP Error indicators
 
 By setting `diagnostics = "nvim_lsp"` you will get an indicator in the bufferline for a given tab if it has any errors
@@ -260,6 +253,11 @@ the tab size and all tabs will be the same length
 
 Bufferline allows you to sort the visible buffers by `extension` or `directory`:
 
+**NOTE**: If using a plugin such as `vim-rooter` and you want to sort by path, prefer using `directory` rather than
+`relative_directory`. Relative directory works by ordering relative paths first, however if you move from
+project to project and vim switches its directory, the bufferline will re-order itself as a different set of
+buffers will now be relative.
+
 ```vim
 " Using vim commands
 :BufferLineSortByExtension
@@ -314,22 +312,45 @@ buffer that appears
 
 ![bufferline_pick](https://user-images.githubusercontent.com/22454918/111994691-f2404280-8b0f-11eb-9bc1-6664ccb93154.gif)
 
-### Multi-window mode
+### Custom Area (Advanced)
 
-When this mode is active, for layouts of multiple windows in the tabpage,
-only the buffers that are displayed in those windows are listed in the
-tabline. That only applies to multi-window layouts, if there is only one
-window in the tabpage, all buffers are listed.
+![image](https://user-images.githubusercontent.com/22454918/118525973-aa1c5580-b737-11eb-883c-a2c55b7af479.png)
 
-### Mappings
+You can also add custom content at the start or end of the bufferline using `custom_areas`
+this option allow a user to specify a function which return the text and highlight for that text
+to be shown. For example:
+```lua
 
-If the `mappings` option is set to `true`. `<leader>`1-9 mappings will
-be created to navigate the first to the tenth buffer in the bufferline.
-**This is false by default**. If you'd rather map these yourself, use:
+custom_areas = {
+  right = function()
+    local result = {}
+    local error = vim.lsp.diagnostic.get_count(0, [[Error]])
+    local warning = vim.lsp.diagnostic.get_count(0, [[Warning]])
+    local info = vim.lsp.diagnostic.get_count(0, [[Information]])
+    local hint = vim.lsp.diagnostic.get_count(0, [[Hint]])
 
-```vim
-nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>
+    if error ~= 0 then
+    result[1] = {text = "  " .. error, guifg = "#EC5241"}
+    end
+
+    if warning ~= 0 then
+    result[2] = {text = "  " .. warning, guifg = "#EFB839"}
+    end
+
+    if hint ~= 0 then
+    result[3] = {text = "  " .. hint, guifg = "#A3BA5E"}
+    end
+
+    if info ~= 0 then
+    result[4] = {text = "  " .. info, guifg = "#7EA9A7"}
+  end
+  return result
+end
+}
 ```
+
+Please note that this function will be called a lot and should be as inexpensive as possible so it does
+not block rendering the tabline.
 
 ### FAQ
 
