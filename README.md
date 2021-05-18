@@ -326,8 +326,8 @@ buffer that appears
 ![custom area](https://user-images.githubusercontent.com/22454918/118527523-4d219f00-b739-11eb-889f-60fb06fd71bc.png)
 
 You can also add custom content at the start or end of the bufferline using `custom_areas`
-this option allow a user to specify a function which return the text and highlight for that text
-to be shown. For example:
+this option allows a user to specify a function which should return the text and highlight for that text
+to be shown in a list of tables. For example:
 
 ```lua
 
