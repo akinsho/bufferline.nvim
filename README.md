@@ -154,7 +154,7 @@ require('bufferline').setup {
     -- NOTE: this plugin is designed with this icon in mind,
     -- and so changing this is NOT recommended, this is intended
     -- as an escape hatch for people who cannot bear it for whatever reason
-    indicator_icon = '▎'
+    indicator_icon = '▎',
     buffer_close_icon = '',
     modified_icon = '●',
     close_icon = '',
@@ -163,10 +163,10 @@ require('bufferline').setup {
     max_name_length = 18,
     max_prefix_length = 15, -- prefix used when a buffer is de-duplicated
     tab_size = 18,
-    diagnostics = false | "nvim_lsp"
+    diagnostics = false | "nvim_lsp",
     diagnostics_indicator = function(count, level, diagnostics_dict)
       return "("..count..")"
-    end
+    end,
     -- NOTE: this will be called a lot so don't do any heavy processing here
     custom_filter = function(buf_number)
       -- filter out filetypes you don't want to see
