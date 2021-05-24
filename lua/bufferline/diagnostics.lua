@@ -80,7 +80,8 @@ function M.component(context)
 
   local indicator = " (" .. diagnostics.count .. ")"
   if user_indicator and type(user_indicator) == "function" then
-    indicator = user_indicator(diagnostics.count, diagnostics.level, diagnostics.errors)
+    local ctx = { buffer = context.buffer }
+    indicator = user_indicator(diagnostics.count, diagnostics.level, diagnostics.errors, ctx)
   end
 
   local highlight = highlights[diagnostics.level] or ""
