@@ -164,7 +164,7 @@ require('bufferline').setup {
     max_prefix_length = 15, -- prefix used when a buffer is de-duplicated
     tab_size = 18,
     diagnostics = false | "nvim_lsp",
-    diagnostics_indicator = function(count, level, diagnostics_dict)
+    diagnostics_indicator = function(count, level, diagnostics_dict, ctx)
       return "("..count..")"
     end,
     -- NOTE: this will be called a lot so don't do any heavy processing here
@@ -218,7 +218,7 @@ In order to customise the appearance of the diagnostic count you can pass a cust
 --- diagnostics_dict is a dictionary from error level ("error", "warning" or "info")to number of errors for each level.
 --- this should return a string
 --- Don't get too fancy as this function will be executed a lot
-diagnostics_indicator = function(count, level, diagnostics_dict)
+diagnostics_indicator = function(count, level, diagnostics_dict, _)
   local icon = level:match("error") and " " or " "
   return " " .. icon .. count
 end
@@ -229,7 +229,7 @@ end
 
 ```lua
 
-diagnostics_indicator = function(_, _, diagnostics_dict)
+diagnostics_indicator = function(_, _, diagnostics_dict, _)
   local s = " "
   for e, n in pairs(diagnostics_dict) do
     local sym = e == "error" and " "
@@ -244,6 +244,18 @@ end
 
 The highlighting for the file name if there is an error can be changed by replacing the highlights for
 `error`, `error_visible`, `error_selected`, `warning`, `warning_visible`, `warning_selected`.
+
+LSP indicators can additionaly be reported conditionally, based on buffer context. For instance, you could disable reporting LSP indicators for the current buffer and only have them appear for other buffers.
+
+```lua
+diagnostics_indicator = function(_, _, _, ctx)
+  if ctx.buffer:current() then
+    return ''
+  end
+
+  return '!'
+end,
+```
 
 ### Regular tab sizes
 
