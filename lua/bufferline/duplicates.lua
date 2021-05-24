@@ -1,10 +1,8 @@
 require("bufferline/buffers")
-local constants = require("bufferline/constants")
 
 local M = {}
 
 local strwidth = vim.fn.strwidth
-local padding = constants.padding
 
 local duplicates = {}
 
