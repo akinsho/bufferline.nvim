@@ -3,6 +3,8 @@
 ---------------------------------------------------------------------------//
 local M = {}
 
+local fmt = string.format
+
 function M.is_test()
   return _G.__TEST
 end
@@ -110,15 +112,18 @@ function M.get_valid_buffers(bufs)
   return valid_bufs
 end
 
+---Print an error message to the commandline
+---@param msg string
 function M.echoerr(msg)
-  vim.cmd(string.format([[echoerr "%s"]], msg))
+  M.echomsg(msg, "ErrorMsg")
 end
 
+---Print a message to the commandline
+---@param msg string
+---@param hl string?
 function M.echomsg(msg, hl)
   hl = hl or "Title"
-  vim.cmd("echohl " .. hl)
-  vim.cmd(string.format([[echomsg "[nvim-bufferline] %s"]], msg))
-  vim.cmd("echohl none")
+  vim.api.nvim_echo({{fmt("[nvim-bufferline] %s", msg), hl}}, true, {})
 end
 
 return M
