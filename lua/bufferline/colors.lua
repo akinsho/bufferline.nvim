@@ -2,63 +2,53 @@ local M = {}
 
 local fmt = string.format
 
-function M.to_rgb(color)
-  local r = tonumber(string.sub(color, 2, 3), 16)
-  local g = tonumber(string.sub(color, 4, 5), 16)
-  local b = tonumber(string.sub(color, 6), 16)
-  return r, g, b
+---Convert a hex color to rgb
+---@param color string
+---@return number
+---@return number
+---@return number
+local function hex_to_rgb(color)
+  local hex = color:gsub("#", "")
+  return tonumber(hex:sub(1, 2), 16), tonumber(hex:sub(3, 4), 16), tonumber(hex:sub(5), 16)
 end
 
---- SOURCE: https://stackoverflow.com/q/5560248
-function M.shade_color(color, percent)
-  local r, g, b = M.to_rgb(color)
+local function alter(attr, percent)
+  return math.floor(attr * (100 + percent) / 100)
+end
 
-  -- If any of the colors are missing return "NONE" i.e. no highlight
+---@source https://stackoverflow.com/q/5560248
+---@see: https://stackoverflow.com/a/37797380
+---Darken a specified hex color
+---@param color string
+---@param percent number
+---@return string
+function M.shade_color(color, percent)
+  local r, g, b = hex_to_rgb(color)
   if not r or not g or not b then
     return "NONE"
   end
-
-  r = math.floor(tonumber(r * (100 + percent) / 100))
-  g = math.floor(tonumber(g * (100 + percent) / 100))
-  b = math.floor(tonumber(b * (100 + percent) / 100))
-
-  r = r < 255 and r or 255
-  g = g < 255 and g or 255
-  b = b < 255 and b or 255
-
-  -- see:
-  -- https://stackoverflow.com/a/37797380
-  r = string.format("%x", r)
-  g = string.format("%x", g)
-  b = string.format("%x", b)
-
-  local rr = string.len(r) == 1 and "0" .. r or r
-  local gg = string.len(g) == 1 and "0" .. g or g
-  local bb = string.len(b) == 1 and "0" .. b or b
-
-  return "#" .. rr .. gg .. bb
+  r, g, b = alter(r, percent), alter(g, percent), alter(b, percent)
+  r, g, b = math.min(r, 255), math.min(g, 255), math.min(b, 255)
+  r, g, b = string.format("%0x", r), string.format("%0x", g), string.format("%0x", b)
+  return "#" .. r .. g .. b
 end
 
 --- Determine whether to use black or white text
---- Ref:
+--- References:
 --- 1. https://stackoverflow.com/a/1855903/837964
 --- 2. https://stackoverflow.com/a/596243
 function M.color_is_bright(hex)
   if not hex then
     return false
   end
-  local r, g, b = M.to_rgb(hex)
+  local r, g, b = hex_to_rgb(hex)
   -- If any of the colors are missing return false
   if not r or not g or not b then
     return false
   end
   -- Counting the perceptive luminance - human eye favors green color
   local luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  if luminance > 0.5 then
-    return true -- Bright colors, black font
-  else
-    return false -- Dark colors, white font
-  end
+  return luminance > 0.5 -- if > 0.5 Bright colors, black font, otherwise Dark colors, white font
 end
 
 -- parses the hex color code from the given hl_name
