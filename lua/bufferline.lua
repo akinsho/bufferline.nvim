@@ -891,8 +891,10 @@ local function convert_hl_tables(prefs)
     for attribute, value in pairs(attributes) do
       if type(value) == "table" then
         if value.highlight and value.attribute then
-          prefs.highlights[hl][attribute] =
-            colors.get_hex({ name = value.highlight, attribute = value.attribute })
+          prefs.highlights[hl][attribute] = colors.get_hex({
+            name = value.highlight,
+            attribute = value.attribute,
+          })
         else
           prefs.highlights[hl][attribute] = nil
           print(string.format("removing %s as it is not formatted correctly", hl))
