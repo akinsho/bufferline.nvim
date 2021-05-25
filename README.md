@@ -2,12 +2,38 @@
   nvim-bufferline.lua
 </h1>
 
-A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built using **lua**.
+<p align="center">A <i>snazzy</i> 💅 buffer line (with minimal tab integration) for Neovim built using <b>lua</b>.</p>
 
 ![Demo GIF](https://user-images.githubusercontent.com/22454918/111992693-9c6a9b00-8b0d-11eb-8c39-19db58583061.gif)
 
 This plugin shamelessly attempts to emulate the aesthetics of GUI text editors/Doom Emacs.
 It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://github.com/ema2159/centaur-tabs).
+
+Table of Contents
+=================
+
+   * [Features](#features)
+      * [Alternate styling](#alternate-styling)
+      * [LSP error indicators](#lsp-error-indicators)
+      * [Sidebar offset](#sidebar-offset)
+      * [Buffer numbers](#buffer-numbers)
+      * [Buffer pick](#buffer-pick)
+      * [Unique buffer name](#unique-buffer-name)
+      * [Close icons](#close-icons)
+      * [Buffer re-ordering](#buffer-re-ordering)
+   * [Requirements](#requirements)
+   * [Installation](#installation)
+   * [Caveats](#caveats)
+   * [Usage](#usage)
+   * [Configuration](#configuration)
+      * [LSP indicators](#lsp-indicators)
+      * [Conditional buffer based LSP indicators](#conditional-buffer-based-lsp-indicators)
+      * [Regular tab sizes](#regular-tab-sizes)
+      * [Sorting](#sorting)
+      * [Sidebar offset](#sidebar-offset-1)
+      * [Buffer pick functionality](#buffer-pick-functionality)
+      * [Custom area](#custom-area)
+   * [FAQ](#faq)
 
 ## Features
 
@@ -17,19 +43,19 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
 
 - Configuration via lua functions for greater customization.
 
-#### Alternate tab styling
+#### Alternate styling
 
 ![slanted tabs](https://user-images.githubusercontent.com/22454918/111992989-fec39b80-8b0d-11eb-851b-010641196a04.png)
 
-NOTE: tested with [`kitty`](https://github.com/kovidgoyal/kitty), results may vary depending on your terminal emulator of choice
+**NOTE**: tested with [`kitty`](https://github.com/kovidgoyal/kitty), results may vary depending on your terminal emulator of choice
 
 see: `:h bufferline-styling`
 
 #### LSP error indicators
 
-- **NOTE:** This only works with neovim's native lsp.
-
 ![LSP error](https://user-images.githubusercontent.com/22454918/111993085-1d299700-8b0e-11eb-96eb-c1c289e36b08.png)
+
+**NOTE:** This only works with neovim's native lsp.
 
 #### Sidebar offset
 
@@ -37,19 +63,14 @@ see: `:h bufferline-styling`
 
 #### Buffer numbers
 
-![bufferline with numbers](https://user-images.githubusercontent.com/22454918/111993201-3d595600-8b0e-11eb-8944-387ed3bd25b4.png)
+![bufferline with numbers](https://user-images.githubusercontent.com/22454918/119562833-b5f2c200-bd9e-11eb-81d3-06876024bf30.png)
+
+Ordinal number and buffer number with a customized number styles.
 
 ![both with default style](https://user-images.githubusercontent.com/8133242/113400253-159ea380-93d4-11eb-822c-974d728a6bcf.png)
 
-Default style
-
 ![both with customized style](https://user-images.githubusercontent.com/8133242/113400265-1a635780-93d4-11eb-8085-adc328385cb5.png)
 
-Buffer ordinal number and buffer number with a customized number style.
-
-```lua
-number_style = {"superscript", "subscript"}
-```
 
 #### Buffer pick
 
@@ -63,7 +84,7 @@ number_style = {"superscript", "subscript"}
 
 ![close button](https://user-images.githubusercontent.com/22454918/111993390-7a254d00-8b0e-11eb-9951-43b4350f6a29.gif)
 
-#### Buffer Re-ordering
+#### Buffer re-ordering
 
 ![re-order buffers](https://user-images.githubusercontent.com/22454918/111993463-91643a80-8b0e-11eb-87f0-26acfe92c021.gif)
 
@@ -91,7 +112,7 @@ Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
 Plug 'akinsho/nvim-bufferline.lua'
 ```
 
-## Caveats 🙏
+## Caveats
 
 - This won't appeal to everyone's tastes. This plugin is opinionated about how the tabline
   looks, it's unlikely to please everyone.
@@ -115,7 +136,7 @@ of various highlight groups.
 
 ```vim
 set termguicolors
-" In your init.{vim|lua}
+" In your init.lua or init.vim
 lua require("bufferline").setup{}
 ```
 
@@ -202,13 +223,19 @@ require('bufferline').setup {
 }
 ```
 
-### LSP Error indicators
+### LSP indicators
 
 By setting `diagnostics = "nvim_lsp"` you will get an indicator in the bufferline for a given tab if it has any errors
 This will allow you to tell at a glance if a particular buffer has errors. Currently only the native neovim lsp is
 supported, mainly because it has the easiest API for fetching all errors for all buffers (with an attached lsp client).
 
 In order to customise the appearance of the diagnostic count you can pass a custom function in your setup.
+
+![custom indicator](https://user-images.githubusercontent.com/22454918/113215394-b1180300-9272-11eb-9632-8a9f9aae99fa.png)
+
+
+<details>
+  <summary><b>Snippet</b></summary>
 
 ```lua
 -- rest of config ...
@@ -225,7 +252,13 @@ end
 
 ```
 
-![custom indicator](https://user-images.githubusercontent.com/22454918/113215394-b1180300-9272-11eb-9632-8a9f9aae99fa.png)
+</details>
+
+
+![diagnostics_indicator](https://user-images.githubusercontent.com/4028913/112573484-9ee92100-8da9-11eb-9ffd-da9cb9cae3a6.png)
+
+<details>
+  <summary><b>Snippet</b></summary>
 
 ```lua
 
@@ -240,10 +273,10 @@ diagnostics_indicator = function(count, level, diagnostics_dict, context)
 end
 ```
 
-![diagnostics_indicator](https://user-images.githubusercontent.com/4028913/112573484-9ee92100-8da9-11eb-9ffd-da9cb9cae3a6.png)
+</details>
 
 The highlighting for the file name if there is an error can be changed by replacing the highlights for
-`error`, `error_visible`, `error_selected`, `warning`, `warning_visible`, `warning_selected`.
+see `:h bufferline-lua-highlights`.
 
 ### Conditional buffer based LSP indicators
 
@@ -274,7 +307,7 @@ length specified (+ the other indicators).
 If you set `enforce_regular_tabs = true` tabs will be prevented from extending beyond
 the tab size and all tabs will be the same length
 
-### Sort by `...`
+### Sorting
 
 Bufferline allows you to sort the visible buffers by `extension` or `directory`:
 
@@ -312,7 +345,7 @@ When using a sorted bufferline it's advisable that you use the `BufferLineCycleN
 commands since these will traverse the bufferline bufferlist in order whereas `bnext` and `bprev` will cycle
 buffers according to the buffer numbers given by vim.
 
-### Sidebar Offset
+### Sidebar offset
 
 You can prevent the bufferline drawing above a **vertical** sidebar split such as a file explorer.
 To do this you must set the `offsets` configuration option to a list of tables containing the details of the window to avoid.
@@ -327,7 +360,7 @@ If it is too long it will be truncated. The highlight controls what highlight is
 You can also change the alignment of the text in the offset section using `text_align` which can be set to `left`, `right` or `center`.
 You can also add a `padding` key which should be an integer if you want the offset to be larger than the window width.
 
-### Bufferline Pick functionality
+### Buffer pick functionality
 
 Using the `BufferLinePick` command will allow for easy selection of a buffer in view.
 Trigger the command, using `:BufferLinePick` or better still map this to a key, e.g.
@@ -341,7 +374,7 @@ buffer that appears
 
 ![bufferline_pick](https://user-images.githubusercontent.com/22454918/111994691-f2404280-8b0f-11eb-9bc1-6664ccb93154.gif)
 
-### Custom Area
+### Custom area
 
 ![custom area](https://user-images.githubusercontent.com/22454918/118527523-4d219f00-b739-11eb-889f-60fb06fd71bc.png)
 
@@ -382,7 +415,7 @@ end
 Please note that this function will be called a lot and should be as inexpensive as possible so it does
 not block rendering the tabline.
 
-### FAQ
+## FAQ
 
 - **Why isn't the bufferline appearing?**
 
