@@ -9,6 +9,32 @@ A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built usin
 This plugin shamelessly attempts to emulate the aesthetics of GUI text editors/Doom Emacs.
 It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://github.com/ema2159/centaur-tabs).
 
+Table of Contents
+=================
+
+   * [Features](#features)
+      * [Alternate tab styling](#alternate-tab-styling)
+      * [LSP error indicators](#lsp-error-indicators)
+      * [Sidebar offset](#sidebar-offset)
+      * [Buffer numbers](#buffer-numbers)
+      * [Buffer pick](#buffer-pick)
+      * [Unique buffer name](#unique-buffer-name)
+      * [Close icons](#close-icons)
+      * [Buffer Re-ordering](#buffer-re-ordering)
+   * [Requirements](#requirements)
+   * [Installation](#installation)
+   * [Caveats](#caveats)
+   * [Usage](#usage)
+   * [Configuration](#configuration)
+      * [LSP Error indicators](#lsp-error-indicators-1)
+      * [Conditional buffer based LSP indicators](#conditional-buffer-based-lsp-indicators)
+      * [Regular tab sizes](#regular-tab-sizes)
+      * [Sort by ...](#sort-by-)
+      * [Sidebar Offset](#sidebar-offset-1)
+      * [Bufferline Pick functionality](#bufferline-pick-functionality)
+      * [Custom Area](#custom-area)
+   * [FAQ](#faq)
+
 ## Features
 
 - Colours derived from colorscheme where possible.
@@ -21,15 +47,15 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
 
 ![slanted tabs](https://user-images.githubusercontent.com/22454918/111992989-fec39b80-8b0d-11eb-851b-010641196a04.png)
 
-NOTE: tested with [`kitty`](https://github.com/kovidgoyal/kitty), results may vary depending on your terminal emulator of choice
+**NOTE**: tested with [`kitty`](https://github.com/kovidgoyal/kitty), results may vary depending on your terminal emulator of choice
 
 see: `:h bufferline-styling`
 
 #### LSP error indicators
 
-- **NOTE:** This only works with neovim's native lsp.
-
 ![LSP error](https://user-images.githubusercontent.com/22454918/111993085-1d299700-8b0e-11eb-96eb-c1c289e36b08.png)
+
+**NOTE:** This only works with neovim's native lsp.
 
 #### Sidebar offset
 
@@ -39,17 +65,12 @@ see: `:h bufferline-styling`
 
 ![bufferline with numbers](https://user-images.githubusercontent.com/22454918/111993201-3d595600-8b0e-11eb-8944-387ed3bd25b4.png)
 
-![both with default style](https://user-images.githubusercontent.com/8133242/113400253-159ea380-93d4-11eb-822c-974d728a6bcf.png)
+Ordinal number and buffer number with a customized number styles.
 
-Default style
+![both with default style](https://user-images.githubusercontent.com/8133242/113400253-159ea380-93d4-11eb-822c-974d728a6bcf.png)
 
 ![both with customized style](https://user-images.githubusercontent.com/8133242/113400265-1a635780-93d4-11eb-8085-adc328385cb5.png)
 
-Buffer ordinal number and buffer number with a customized number style.
-
-```lua
-number_style = {"superscript", "subscript"}
-```
 
 #### Buffer pick
 
@@ -63,7 +84,7 @@ number_style = {"superscript", "subscript"}
 
 ![close button](https://user-images.githubusercontent.com/22454918/111993390-7a254d00-8b0e-11eb-9951-43b4350f6a29.gif)
 
-#### Buffer Re-ordering
+#### Buffer re-ordering
 
 ![re-order buffers](https://user-images.githubusercontent.com/22454918/111993463-91643a80-8b0e-11eb-87f0-26acfe92c021.gif)
 
@@ -210,6 +231,13 @@ supported, mainly because it has the easiest API for fetching all errors for all
 
 In order to customise the appearance of the diagnostic count you can pass a custom function in your setup.
 
+![custom indicator](https://user-images.githubusercontent.com/22454918/113215394-b1180300-9272-11eb-9632-8a9f9aae99fa.png)
+
+
+<details>
+  <summary><b>Snippet</b></summary>
+  <br/>
+
 ```lua
 -- rest of config ...
 
@@ -225,7 +253,13 @@ end
 
 ```
 
-![custom indicator](https://user-images.githubusercontent.com/22454918/113215394-b1180300-9272-11eb-9632-8a9f9aae99fa.png)
+</details>
+
+
+![diagnostics_indicator](https://user-images.githubusercontent.com/4028913/112573484-9ee92100-8da9-11eb-9ffd-da9cb9cae3a6.png)
+
+<details>
+  <summary><b>Snippet</b></summary>
 
 ```lua
 
@@ -240,10 +274,10 @@ diagnostics_indicator = function(count, level, diagnostics_dict, context)
 end
 ```
 
-![diagnostics_indicator](https://user-images.githubusercontent.com/4028913/112573484-9ee92100-8da9-11eb-9ffd-da9cb9cae3a6.png)
+</details>
 
 The highlighting for the file name if there is an error can be changed by replacing the highlights for
-`error`, `error_visible`, `error_selected`, `warning`, `warning_visible`, `warning_selected`.
+see `:h bufferline-lua-highlights`.
 
 ### Conditional buffer based LSP indicators
 
@@ -382,7 +416,7 @@ end
 Please note that this function will be called a lot and should be as inexpensive as possible so it does
 not block rendering the tabline.
 
-### FAQ
+## FAQ
 
 - **Why isn't the bufferline appearing?**
 
