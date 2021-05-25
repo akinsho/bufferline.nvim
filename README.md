@@ -2,7 +2,7 @@
   nvim-bufferline.lua
 </h1>
 
-A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built using **lua**.
+<p align="center">A <i>snazzy</i> 💅 buffer line (with minimal tab integration) for Neovim built using <b>lua</b>.</p>
 
 ![Demo GIF](https://user-images.githubusercontent.com/22454918/111992693-9c6a9b00-8b0d-11eb-8c39-19db58583061.gif)
 
@@ -63,7 +63,7 @@ see: `:h bufferline-styling`
 
 #### Buffer numbers
 
-![bufferline with numbers](https://user-images.githubusercontent.com/22454918/111993201-3d595600-8b0e-11eb-8944-387ed3bd25b4.png)
+![bufferline with numbers](https://user-images.githubusercontent.com/22454918/119562833-b5f2c200-bd9e-11eb-81d3-06876024bf30.png)
 
 Ordinal number and buffer number with a customized number styles.
 
