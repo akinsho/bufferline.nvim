@@ -13,26 +13,26 @@ Table of Contents
 =================
 
    * [Features](#features)
-      * [Alternate tab styling](#alternate-tab-styling)
+      * [Alternate styling](#alternate-styling)
       * [LSP error indicators](#lsp-error-indicators)
       * [Sidebar offset](#sidebar-offset)
       * [Buffer numbers](#buffer-numbers)
       * [Buffer pick](#buffer-pick)
       * [Unique buffer name](#unique-buffer-name)
       * [Close icons](#close-icons)
-      * [Buffer Re-ordering](#buffer-re-ordering)
+      * [Buffer re-ordering](#buffer-re-ordering)
    * [Requirements](#requirements)
    * [Installation](#installation)
    * [Caveats](#caveats)
    * [Usage](#usage)
    * [Configuration](#configuration)
-      * [LSP Error indicators](#lsp-error-indicators-1)
+      * [LSP indicators](#lsp-indicators)
       * [Conditional buffer based LSP indicators](#conditional-buffer-based-lsp-indicators)
       * [Regular tab sizes](#regular-tab-sizes)
-      * [Sort by ...](#sort-by-)
-      * [Sidebar Offset](#sidebar-offset-1)
-      * [Bufferline Pick functionality](#bufferline-pick-functionality)
-      * [Custom Area](#custom-area)
+      * [Sorting](#sorting)
+      * [Sidebar offset](#sidebar-offset-1)
+      * [Buffer pick functionality](#buffer-pick-functionality)
+      * [Custom area](#custom-area)
    * [FAQ](#faq)
 
 ## Features
@@ -43,7 +43,7 @@ Table of Contents
 
 - Configuration via lua functions for greater customization.
 
-#### Alternate tab styling
+#### Alternate styling
 
 ![slanted tabs](https://user-images.githubusercontent.com/22454918/111992989-fec39b80-8b0d-11eb-851b-010641196a04.png)
 
@@ -112,7 +112,7 @@ Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
 Plug 'akinsho/nvim-bufferline.lua'
 ```
 
-## Caveats 🙏
+## Caveats
 
 - This won't appeal to everyone's tastes. This plugin is opinionated about how the tabline
   looks, it's unlikely to please everyone.
@@ -136,7 +136,7 @@ of various highlight groups.
 
 ```vim
 set termguicolors
-" In your init.{vim|lua}
+" In your init.lua or init.vim
 lua require("bufferline").setup{}
 ```
 
@@ -223,7 +223,7 @@ require('bufferline').setup {
 }
 ```
 
-### LSP Error indicators
+### LSP indicators
 
 By setting `diagnostics = "nvim_lsp"` you will get an indicator in the bufferline for a given tab if it has any errors
 This will allow you to tell at a glance if a particular buffer has errors. Currently only the native neovim lsp is
@@ -236,7 +236,6 @@ In order to customise the appearance of the diagnostic count you can pass a cust
 
 <details>
   <summary><b>Snippet</b></summary>
-  <br/>
 
 ```lua
 -- rest of config ...
@@ -308,7 +307,7 @@ length specified (+ the other indicators).
 If you set `enforce_regular_tabs = true` tabs will be prevented from extending beyond
 the tab size and all tabs will be the same length
 
-### Sort by `...`
+### Sorting
 
 Bufferline allows you to sort the visible buffers by `extension` or `directory`:
 
@@ -346,7 +345,7 @@ When using a sorted bufferline it's advisable that you use the `BufferLineCycleN
 commands since these will traverse the bufferline bufferlist in order whereas `bnext` and `bprev` will cycle
 buffers according to the buffer numbers given by vim.
 
-### Sidebar Offset
+### Sidebar offset
 
 You can prevent the bufferline drawing above a **vertical** sidebar split such as a file explorer.
 To do this you must set the `offsets` configuration option to a list of tables containing the details of the window to avoid.
@@ -361,7 +360,7 @@ If it is too long it will be truncated. The highlight controls what highlight is
 You can also change the alignment of the text in the offset section using `text_align` which can be set to `left`, `right` or `center`.
 You can also add a `padding` key which should be an integer if you want the offset to be larger than the window width.
 
-### Bufferline Pick functionality
+### Buffer pick functionality
 
 Using the `BufferLinePick` command will allow for easy selection of a buffer in view.
 Trigger the command, using `:BufferLinePick` or better still map this to a key, e.g.
@@ -375,7 +374,7 @@ buffer that appears
 
 ![bufferline_pick](https://user-images.githubusercontent.com/22454918/111994691-f2404280-8b0f-11eb-9bc1-6664ccb93154.gif)
 
-### Custom Area
+### Custom area
 
 ![custom area](https://user-images.githubusercontent.com/22454918/118527523-4d219f00-b739-11eb-889f-60fb06fd71bc.png)
 
