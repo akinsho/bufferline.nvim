@@ -53,7 +53,7 @@ function M.Buffer:new(buf)
   else
     if lua_devicons_loaded then
       buf.icon, buf.icon_highlight = webdev_icons.get_icon(
-        buf.path,
+        fn.fnamemodify(buf.path, ":t"),
         buf.extension,
         { default = true }
       )
