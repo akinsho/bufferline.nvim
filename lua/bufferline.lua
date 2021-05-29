@@ -1,15 +1,6 @@
-local colors = require("bufferline/colors")
-local highlights = require("bufferline/highlights")
-local utils = require("bufferline/utils")
-local numbers = require("bufferline/numbers")
-local diagnostics = require("bufferline/diagnostics")
-local letters = require("bufferline/letters")
-local sort = require("bufferline/sorters")
-local duplicates = require("bufferline/duplicates")
-local constants = require("bufferline/constants")
-local config = require("bufferline/config")
-local tabs = require("bufferline/tabs")
-local buffers = require("bufferline/buffers")
+local buffers = require("bufferline.buffers")
+local constants = require("bufferline.constants")
+local utils = require("bufferline.utils")
 
 ---@type Buffer
 local Buffer = buffers.Buffer
@@ -17,7 +8,6 @@ local Buffer = buffers.Buffer
 local Buffers = buffers.Buffers
 
 local api = vim.api
-local join = utils.join
 -- string.len counts number of bytes and so the unicode icons are counted
 -- larger than their display width. So we use nvim's strwidth
 local strwidth = vim.fn.strwidth
@@ -28,7 +18,6 @@ local positions_key = constants.positions_key
 
 local M = {}
 
-M.shade_color = colors.shade_color
 -----------------------------------------------------------
 -- State
 -----------------------------------------------------------
@@ -208,6 +197,7 @@ end
 --- @param buffer Buffer
 --- @return string
 local function highlight_icon(buffer)
+  local colors = require("bufferline.colors")
   local icon = buffer.icon
   local hl = buffer.icon_highlight
 
@@ -230,7 +220,7 @@ local function highlight_icon(buffer)
   end
   local guifg = colors.get_hex({ name = hl, attribute = "fg" })
   local guibg = colors.get_hex({ name = bg_hl, attribute = "bg" })
-  highlights.set_one(new_hl, { guibg = guibg, guifg = guifg })
+  require("bufferline.highlights").set_one(new_hl, { guibg = guibg, guifg = guifg })
   return "%#" .. new_hl .. "#" .. icon .. padding .. "%*"
 end
 
@@ -428,15 +418,15 @@ local function render_buffer(preferences, buffer)
   ctx.length = ctx.length + strwidth(ctx.component)
   --- apply diagnostics first since we want the highlight
   --- to only apply to the filename
-  ctx.component, ctx.length = diagnostics.component(ctx)
+  ctx.component, ctx.length = require("bufferline.diagnostics").component(ctx)
 
   ctx.component = ctx.component .. padding
   ctx.length = ctx.length + strwidth(padding)
 
-  ctx.component, ctx.length = duplicates.component(ctx)
+  ctx.component, ctx.length = require("bufferline.duplicates").component(ctx)
   ctx.component, ctx.length = add_prefix(ctx)
   ctx.component, ctx.length = pad_buffer(ctx)
-  ctx.component, ctx.length = numbers.component(ctx)
+  ctx.component, ctx.length = require("bufferline.numbers").component(ctx)
   ctx.component = utils.make_clickable(ctx)
   ctx.component, ctx.length = indicator_component(ctx)
 
@@ -495,7 +485,7 @@ local function get_marker_size(count, element_size)
 end
 
 local function truncation_component(count, icon, hls)
-  return join(hls.fill.hl, padding, count, padding, icon, padding)
+  return utils.join(hls.fill.hl, padding, count, padding, icon, padding)
 end
 
 --[[
@@ -574,6 +564,8 @@ local function render(bufs, tbs, prefs)
       end
     end
   end
+
+  local join = utils.join
 
   -- Icons from https://fontawesome.com/cheatsheet
   local left_trunc_icon = options.left_trunc_marker
@@ -673,7 +665,7 @@ local function bufferline(preferences)
     buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
   end
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
-  local all_tabs = tabs.get(options.separator_style, preferences)
+  local all_tabs = require("bufferline.tabs").get(options.separator_style, preferences)
 
   if not options.always_show_bufferline then
     if #buf_nums == 1 then
@@ -682,10 +674,13 @@ local function bufferline(preferences)
     end
   end
 
+  local letters = require("bufferline.letters")
+  local duplicates = require("bufferline.duplicates")
+
   letters.reset()
   duplicates.reset()
   state.buffers = {}
-  local all_diagnostics = diagnostics.get(options)
+  local all_diagnostics = require("bufferline.diagnostics").get(options)
 
   for i, buf_id in ipairs(buf_nums) do
     local name = vim.fn.bufname(buf_id)
@@ -705,7 +700,7 @@ local function bufferline(preferences)
 
   -- if the user has reschuffled the buffers manually don't try and sort them
   if not state.custom_sort then
-    sort.sort_buffers(preferences.options.sort_by, state.buffers)
+    require("bufferline.sorters").sort_buffers(preferences.options.sort_by, state.buffers)
   end
 
   return render(state.buffers, all_tabs, preferences)
@@ -813,7 +808,7 @@ function M.sort_buffers_by(sort_by)
     return utils.echoerr("Unable to find buffers to sort, sorry")
   end
 
-  sort.sort_buffers(sort_by, state.buffers)
+  require("bufferline.sorters").sort_buffers(sort_by, state.buffers)
   state.custom_sort = get_buf_ids(state.buffers)
   if state.preferences.options.persist_buffer_sort then
     save_positions(state.custom_sort)
@@ -891,7 +886,7 @@ local function convert_hl_tables(prefs)
     for attribute, value in pairs(attributes) do
       if type(value) == "table" then
         if value.highlight and value.attribute then
-          prefs.highlights[hl][attribute] = colors.get_hex({
+          prefs.highlights[hl][attribute] = require("bufferline.colors").get_hex({
             name = value.highlight,
             attribute = value.attribute,
           })
@@ -904,26 +899,28 @@ local function convert_hl_tables(prefs)
   end
 end
 
-local function merge_preferences(prefs)
-  local preferences = config.get_defaults()
-  validate_prefs(prefs, preferences)
+local function merge_preferences(prefs, defaults)
+  validate_prefs(prefs, defaults)
   convert_hl_tables(prefs)
   -- Combine user preferences with defaults preferring the user's own settings
+  local merged = defaults
   if prefs and type(prefs) == "table" then
-    preferences = vim.tbl_deep_extend("force", preferences, prefs)
+    merged = vim.tbl_deep_extend("force", defaults, prefs)
   end
-  return preferences
+  return merged
 end
 
 function M.setup(prefs)
-  local preferences = merge_preferences(prefs)
+  local defaults = require("bufferline.config").get_defaults()
+  local preferences = merge_preferences(prefs, defaults)
   state.preferences = preferences
 
+  local highlights = require("bufferline.highlights")
   -- on loading (and reloading) the plugin's config reset all the highlights
   local updated_highlights = highlights.set_all(preferences.highlights)
 
   function _G.__setup_bufferline_colors()
-    local current_prefs = merge_preferences(prefs)
+    local current_prefs = merge_preferences(prefs, defaults)
     state.preferences = current_prefs
     highlights.set_all(current_prefs.highlights)
   end

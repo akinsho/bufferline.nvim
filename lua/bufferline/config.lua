@@ -5,7 +5,7 @@ local M = {}
 -- be so nice it's what anyone using this plugin sticks with. It should ideally
 -- work across any well designed colorscheme deriving colors automagically.
 function M.get_defaults()
-  local colors = require("bufferline/colors")
+  local colors = require("bufferline.colors")
   local hex = colors.get_hex
   local shade = colors.shade_color
 
