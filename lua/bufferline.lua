@@ -759,7 +759,7 @@ function M.move(direction)
     state.buffers[next_index] = cur_buf
     state.buffers[index] = destination_buf
     state.custom_sort = get_buf_ids(state.buffers)
-    local opts = require("bufferline.config").get('options')
+    local opts = require("bufferline.config").get("options")
     if opts.persist_buffer_sort then
       save_positions(state.custom_sort)
     end
@@ -810,7 +810,7 @@ function M.sort_buffers_by(sort_by)
 
   require("bufferline.sorters").sort_buffers(sort_by, state.buffers)
   state.custom_sort = get_buf_ids(state.buffers)
-  local opts = require("bufferline.config").get('options')
+  local opts = require("bufferline.config").get("options")
   if opts.persist_buffer_sort then
     save_positions(state.custom_sort)
   end

@@ -376,7 +376,7 @@ local function add_highlight_groups(user_colors)
     -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
     local formatted = "BufferLine" .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
     tbl.hl_name = formatted
-    tbl.hl = require('bufferline.highlights').hl(formatted)
+    tbl.hl = require("bufferline.highlights").hl(formatted)
   end
 end
 
