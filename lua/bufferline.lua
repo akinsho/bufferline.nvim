@@ -899,6 +899,10 @@ local function convert_hl_tables(prefs)
   end
 end
 
+---Merge user preferences with defaults
+---@param prefs table
+---@param defaults table
+---@return table
 local function merge_preferences(prefs, defaults)
   validate_prefs(prefs, defaults)
   convert_hl_tables(prefs)
