@@ -28,7 +28,7 @@ function M.set_one(name, opts)
       cmd = cmd .. " " .. "guisp=" .. opts.guisp
     end
     -- TODO using api here as it warns of an error if setting highlight fails
-    local success, err = pcall(api.nvim_command, cmd)
+    local success, err = pcall(vim.cmd, cmd)
     if not success then
       api.nvim_err_writeln(
         "Failed setting "
@@ -41,28 +41,22 @@ function M.set_one(name, opts)
   end
 end
 
-local function shallow_copy(tbl)
-  local copy = {}
-  for k, v in pairs(tbl) do
-    copy[k] = v
-  end
-  return copy
-end
-
 --- Map through user colors and convert the keys to highlight names
 --- by changing the strings to pascal case and using those for highlight name
 --- @param user_colors table
 function M.set_all(user_colors)
-  local result = {}
   for name, tbl in pairs(user_colors) do
-    -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
-    local formatted = "BufferLine" .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
-    M.set_one(formatted, tbl)
-    local copy = shallow_copy(tbl)
-    copy.hl = M.hl(formatted)
-    result[name] = copy
+    if not tbl or not tbl.hl_name then
+      api.nvim_echo({
+        {
+          ("Error setting highlight group: no name for %s - %s"):format(name, vim.inspect(tbl)),
+          "ErrorMsg",
+        },
+      }, true, {})
+    else
+      M.set_one(tbl.hl_name, tbl)
+    end
   end
-  return result
 end
 
 return M

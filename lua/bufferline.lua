@@ -27,7 +27,6 @@ local state = {
   buffers = {},
   current_letters = {},
   custom_sort = nil,
-  preferences = {},
 }
 
 if utils.is_test() then
@@ -760,7 +759,8 @@ function M.move(direction)
     state.buffers[next_index] = cur_buf
     state.buffers[index] = destination_buf
     state.custom_sort = get_buf_ids(state.buffers)
-    if state.preferences.options.persist_buffer_sort then
+    local opts = require("bufferline.config").get('options')
+    if opts.persist_buffer_sort then
       save_positions(state.custom_sort)
     end
     refresh()
@@ -810,7 +810,8 @@ function M.sort_buffers_by(sort_by)
 
   require("bufferline.sorters").sort_buffers(sort_by, state.buffers)
   state.custom_sort = get_buf_ids(state.buffers)
-  if state.preferences.options.persist_buffer_sort then
+  local opts = require("bufferline.config").get('options')
+  if opts.persist_buffer_sort then
     save_positions(state.custom_sort)
   end
   refresh()
@@ -847,86 +848,16 @@ local function setup_autocommands(preferences)
   utils.nvim_create_augroups({ BufferlineColors = autocommands })
 end
 
-local function validate_prefs(prefs, defaults)
-  if prefs and prefs.highlights then
-    local incorrect = {}
-    for k, _ in pairs(prefs.highlights) do
-      if not defaults.highlights[k] then
-        table.insert(incorrect, k)
-      end
-    end
-    -- Don't continue if there are no incorrect highlights
-    if vim.tbl_isempty(incorrect) then
-      return
-    end
-    local is_plural = #incorrect > 1
-    local verb = is_plural and " are " or " is "
-    local article = is_plural and " " or " a "
-    local object = is_plural and " groups. " or " group. "
-    local msg = table.concat({
-      table.concat(incorrect, ", "),
-      verb,
-      "not",
-      article,
-      "valid highlight",
-      object,
-      "Please check the README for all valid highlights",
-    })
-    utils.echomsg(msg, "WarningMsg")
-  end
-end
-
---- Convert highlights specified as tables to the correct existing colours
----@param prefs table
-local function convert_hl_tables(prefs)
-  if not prefs or not prefs.highlights or vim.tbl_isempty(prefs.highlights) then
-    return
-  end
-  for hl, attributes in pairs(prefs.highlights) do
-    for attribute, value in pairs(attributes) do
-      if type(value) == "table" then
-        if value.highlight and value.attribute then
-          prefs.highlights[hl][attribute] = require("bufferline.colors").get_hex({
-            name = value.highlight,
-            attribute = value.attribute,
-          })
-        else
-          prefs.highlights[hl][attribute] = nil
-          print(string.format("removing %s as it is not formatted correctly", hl))
-        end
-      end
-    end
-  end
-end
-
----Merge user preferences with defaults
----@param prefs table
----@param defaults table
----@return table
-local function merge_preferences(prefs, defaults)
-  validate_prefs(prefs, defaults)
-  convert_hl_tables(prefs)
-  -- Combine user preferences with defaults preferring the user's own settings
-  local merged = defaults
-  if prefs and type(prefs) == "table" then
-    merged = vim.tbl_deep_extend("force", defaults, prefs)
-  end
-  return merged
-end
-
 function M.setup(prefs)
-  local defaults = require("bufferline.config").get_defaults()
-  local preferences = merge_preferences(prefs, defaults)
-  state.preferences = preferences
+  local config = require("bufferline.config")
+  local preferences = config.set(prefs)
 
-  local highlights = require("bufferline.highlights")
   -- on loading (and reloading) the plugin's config reset all the highlights
-  local updated_highlights = highlights.set_all(preferences.highlights)
+  require("bufferline.highlights").set_all(preferences.highlights)
 
   function _G.__setup_bufferline_colors()
-    local current_prefs = merge_preferences(prefs, defaults)
-    state.preferences = current_prefs
-    highlights.set_all(current_prefs.highlights)
+    local current_prefs = config.update_highlights()
+    require("bufferline.highlights").set_all(current_prefs.highlights)
   end
 
   setup_autocommands(preferences)
@@ -962,8 +893,7 @@ function M.setup(prefs)
   end
 
   function _G.nvim_bufferline()
-    preferences.highlights = updated_highlights
-    return bufferline(preferences)
+    return bufferline(config.get())
   end
 
   vim.o.showtabline = 2
