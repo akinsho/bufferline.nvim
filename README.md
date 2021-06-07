@@ -47,7 +47,7 @@ Table of Contents
 
 ![slanted tabs](https://user-images.githubusercontent.com/22454918/111992989-fec39b80-8b0d-11eb-851b-010641196a04.png)
 
-**NOTE**: tested with [`kitty`](https://github.com/kovidgoyal/kitty), results may vary depending on your terminal emulator of choice
+**NOTE**: tested with [`kitty`](https://github.com/kovidgoyal/kitty), [`alacritty`](https://github.com/alacritty/alacritty), `gnome terminal`, results may vary depending on your terminal emulator of choice
 
 see: `:h bufferline-styling`
 
