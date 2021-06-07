@@ -336,7 +336,13 @@ local function separator_components(context)
     sep_hl = curr_hl.separator
   end
 
-  local right_separator = sep_hl .. right_sep
+  --- HACK
+  --- Most other terminals are unable to draw the slant character correctly without
+  --- extra right sided padding. Kitty automagically can however, so we check if it's
+  --- kitty and if so we do not pad as this breaks rendering in that terminal
+  --- Fixes #114
+  local right_padding = not utils.is_kitty and constants.padding or ""
+  local right_separator = sep_hl .. right_sep .. right_padding
   local left_separator = left_sep and (sep_hl .. left_sep) or nil
   length = length + strwidth(right_sep)
 
