@@ -132,7 +132,7 @@ end
 ---@return term_type
 local function get_terminal_type()
   ---based on https://github.com/kovidgoyal/kitty/issues/957
-  if os.getenv('KITTY_WINDOW_ID') then
+  if os.getenv("KITTY_WINDOW_ID") then
     return "kitty"
   end
 end
