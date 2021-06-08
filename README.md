@@ -135,7 +135,7 @@ See the docs for details `:h nvim-bufferline.lua`
 You need to be using `termguicolors` for this plugin to work, as it reads the hex `gui` color values
 of various highlight groups.
 
-### Vimscript
+**Vimscript**
 ```vim
 set termguicolors
 lua << EOF
@@ -144,7 +144,7 @@ lua require("bufferline").setup{}
 EOF
 ```
 
-### Lua
+**Lua**
 ```lua
 vim.opt.termguicolors = true
 require("bufferline").setup{}
