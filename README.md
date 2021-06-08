@@ -182,6 +182,10 @@ require('bufferline').setup {
     numbers = "none" | "ordinal" | "buffer_id" | "both",
     number_style = "superscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
     mappings = true | false,
+    close_command = "bdelete! %d",       -- can be a string | function, see "Mouse actions"
+    right_mouse_command = "bdelete! %d", -- can be a string | function, see "Mouse actions"
+    left_mouse_command = "buffer %d",    -- can be a string | function, see "Mouse actions"
+    middle_mouse_command = nil,          -- can be a string | function, see "Mouse actions"
     -- NOTE: this plugin is designed with this icon in mind,
     -- and so changing this is NOT recommended, this is intended
     -- as an escape hatch for people who cannot bear it for whatever reason
