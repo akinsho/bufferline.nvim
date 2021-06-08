@@ -341,6 +341,7 @@ local function get_defaults()
       buffer_close_icon = "",
       modified_icon = "●",
       close_icon = "",
+      close_command = "bdelete!",
       -- U+2590 ▐ Right half block, this character is right aligned so the
       -- background highlight doesn't appear in th middle
       -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍

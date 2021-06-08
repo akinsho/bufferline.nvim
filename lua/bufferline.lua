@@ -75,16 +75,48 @@ function M.pick_buffer()
   refresh()
 end
 
+---Handle a user "command" which can be a string or a function
+---@param command string|function
+---@param buf_id string
+local function handle_user_command(command, buf_id)
+  if not command then
+    return
+  end
+  if type(command) == "function" then
+    command(buf_id)
+  elseif type(command) == "string" then
+    vim.cmd(command .. " " .. buf_id)
+  end
+end
+
+---@param buf_id number
+function M.handle_close_buffer(buf_id)
+  local options = require("bufferline.config").get("options")
+  local close = options.close_command
+  handle_user_command(close, buf_id)
+end
+
+---@param id number
+function M.handle_win_click(id)
+  local win_id = vim.fn.bufwinid(id)
+  vim.fn.win_gotoid(win_id)
+end
+
 -- if a button is right clicked close the buffer
 ---@param id number
 ---@param button string
 function M.handle_click(id, button)
+  local options = require("bufferline.config").get("options")
   if id then
     if button == "r" then
-      M.handle_close_buffer(id)
+      handle_user_command(options.right_mouse_command, id)
+    elseif button == "m" then
+      handle_user_command(options.middle_mouse_command, id)
     else
-      vim.cmd("buffer " .. id)
+      M.handle_close_buffer(id)
     end
+  else
+    vim.cmd("buffer " .. id)
   end
 end
 
@@ -712,17 +744,6 @@ local function bufferline(preferences)
   end
 
   return render(state.buffers, all_tabs, preferences)
-end
-
----@param buf_id number
-function M.handle_close_buffer(buf_id)
-  vim.cmd("bdelete! " .. buf_id)
-end
-
----@param id number
-function M.handle_win_click(id)
-  local win_id = vim.fn.bufwinid(id)
-  vim.fn.win_gotoid(win_id)
 end
 
 ---@param num number
