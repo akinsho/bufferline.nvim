@@ -2,12 +2,11 @@ local buffers = require("bufferline.buffers")
 local constants = require("bufferline.constants")
 local utils = require("bufferline.utils")
 
----@type Buffer
 local Buffer = buffers.Buffer
----@type Buffers
 local Buffers = buffers.Buffers
 
 local api = vim.api
+local fmt = string.format
 -- string.len counts number of bytes and so the unicode icons are counted
 -- larger than their display width. So we use nvim's strwidth
 local strwidth = vim.fn.strwidth
@@ -85,7 +84,7 @@ local function handle_user_command(command, buf_id)
   if type(command) == "function" then
     command(buf_id)
   elseif type(command) == "string" then
-    vim.cmd(command .. " " .. buf_id)
+    vim.cmd(fmt(command, buf_id))
   end
 end
 
@@ -102,21 +101,18 @@ function M.handle_win_click(id)
   vim.fn.win_gotoid(win_id)
 end
 
--- if a button is right clicked close the buffer
+---Handler for each type of mouse click
 ---@param id number
 ---@param button string
 function M.handle_click(id, button)
   local options = require("bufferline.config").get("options")
+  local cmds = {
+    r = "right_mouse_command",
+    l = "left_mouse_command",
+    m = "middle_mouse_command",
+  }
   if id then
-    if button == "r" then
-      handle_user_command(options.right_mouse_command, id)
-    elseif button == "m" then
-      handle_user_command(options.middle_mouse_command, id)
-    else
-      M.handle_close_buffer(id)
-    end
-  else
-    vim.cmd("buffer " .. id)
+    handle_user_command(options[cmds[button]], id)
   end
 end
 
