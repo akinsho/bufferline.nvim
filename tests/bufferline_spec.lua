@@ -1,6 +1,5 @@
 _G.__TEST = true
 local bufferline = require("bufferline")
-local fmt = string.format
 
 describe("Bufferline tests:", function()
 
