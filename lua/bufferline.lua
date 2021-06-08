@@ -845,7 +845,7 @@ end
 
 local function setup_autocommands(preferences)
   local autocommands = {
-    { "ColorScheme", "*", [[lua __setup_bufferline_colors()]] },
+    { "VimEnter,ColorScheme", "*", [[lua __setup_bufferline_colors()]] },
   }
   if preferences.options.persist_buffer_sort then
     table.insert(autocommands, {
