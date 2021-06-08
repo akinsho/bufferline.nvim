@@ -32,6 +32,7 @@ Table of Contents
       * [Sorting](#sorting)
       * [Sidebar offset](#sidebar-offset-1)
       * [Buffer pick functionality](#buffer-pick-functionality)
+      * [Mouse actions](#mouse-actions)
       * [Custom area](#custom-area)
    * [FAQ](#faq)
 
@@ -76,7 +77,7 @@ Ordinal number and buffer number with a customized number styles.
 
 ![bufferline pick](https://user-images.githubusercontent.com/22454918/111993296-5bbf5180-8b0e-11eb-9ad9-fcf9619436fd.gif)
 
-#### Unique buffer name
+#### Unique buffer names
 
 ![duplicate names](https://user-images.githubusercontent.com/22454918/111993343-6da0f480-8b0e-11eb-8d93-44019458d2c9.png)
 
@@ -97,14 +98,14 @@ This order can be persisted between sessions (enabled by default).
 
 ## Installation
 
-**lua**
+**Lua**
 
 ```lua
 -- using packer.nvim
 use {'akinsho/nvim-bufferline.lua', requires = 'kyazdani42/nvim-web-devicons'}
 ```
 
-**vimscript**
+**Vimscript**
 
 ```vim
 Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
@@ -134,10 +135,19 @@ See the docs for details `:h nvim-bufferline.lua`
 You need to be using `termguicolors` for this plugin to work, as it reads the hex `gui` color values
 of various highlight groups.
 
+### Vimscript
 ```vim
 set termguicolors
+lua << EOF
 " In your init.lua or init.vim
 lua require("bufferline").setup{}
+EOF
+```
+
+### Lua
+```lua
+vim.opt.termguicolors = true
+require("bufferline").setup{}
 ```
 
 You can close buffers by clicking the close icon or by _right clicking_ the tab anywhere
@@ -373,6 +383,30 @@ then pick a buffer by typing the character for that specific
 buffer that appears
 
 ![bufferline_pick](https://user-images.githubusercontent.com/22454918/111994691-f2404280-8b0f-11eb-9bc1-6664ccb93154.gif)
+
+### Mouse actions
+
+You can configure different type of mouse clicks to behave differently. The current mouse click types are
+* Left - `left_mouse_command`
+* Right - `right_mouse_command`
+* Middle - `middle_mouse_command`
+* Close - `close_command`
+
+Currently left mouse opens selected buffer but the command can be tweaked using `left_mouse_command`
+which can be specified as either a lua function or string which uses [lua's printf style string formatting](https://www.lua.org/pil/20.html) e.g. `buffer %d`
+
+You can do things like open a vertical split on right clicking the buffer name for example using
+```lua
+right_mouse_command = "vertical sbuffer %d"
+```
+
+Or you can set the value to a function and handle the click action however you please for example you can use
+another plugin such as [bufdelete.nvim](https://github.com/famiu/bufdelete.nvim) to handle closing the buffer using the `close_command`.
+```lua
+left_mouse_command = function(bufnum)
+   require('bufdelete').bufdelete(bufnum, true)
+end
+```
 
 ### Custom area
 
