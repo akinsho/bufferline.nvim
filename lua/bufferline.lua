@@ -2,12 +2,11 @@ local buffers = require("bufferline.buffers")
 local constants = require("bufferline.constants")
 local utils = require("bufferline.utils")
 
----@type Buffer
 local Buffer = buffers.Buffer
----@type Buffers
 local Buffers = buffers.Buffers
 
 local api = vim.api
+local fmt = string.format
 -- string.len counts number of bytes and so the unicode icons are counted
 -- larger than their display width. So we use nvim's strwidth
 local strwidth = vim.fn.strwidth
@@ -18,9 +17,9 @@ local positions_key = constants.positions_key
 
 local M = {}
 
------------------------------------------------------------
+-----------------------------------------------------------------------------//
 -- State
------------------------------------------------------------
+-----------------------------------------------------------------------------//
 local state = {
   is_picking = false,
   ---@type Buffer[]
@@ -75,16 +74,45 @@ function M.pick_buffer()
   refresh()
 end
 
--- if a button is right clicked close the buffer
+---Handle a user "command" which can be a string or a function
+---@param command string|function
+---@param buf_id string
+local function handle_user_command(command, buf_id)
+  if not command then
+    return
+  end
+  if type(command) == "function" then
+    command(buf_id)
+  elseif type(command) == "string" then
+    vim.cmd(fmt(command, buf_id))
+  end
+end
+
+---@param buf_id number
+function M.handle_close_buffer(buf_id)
+  local options = require("bufferline.config").get("options")
+  local close = options.close_command
+  handle_user_command(close, buf_id)
+end
+
+---@param id number
+function M.handle_win_click(id)
+  local win_id = vim.fn.bufwinid(id)
+  vim.fn.win_gotoid(win_id)
+end
+
+---Handler for each type of mouse click
 ---@param id number
 ---@param button string
 function M.handle_click(id, button)
+  local options = require("bufferline.config").get("options")
+  local cmds = {
+    r = "right_mouse_command",
+    l = "left_mouse_command",
+    m = "middle_mouse_command",
+  }
   if id then
-    if button == "r" then
-      M.handle_close_buffer(id)
-    else
-      vim.cmd("buffer " .. id)
-    end
+    handle_user_command(options[cmds[button]], id)
   end
 end
 
@@ -712,17 +740,6 @@ local function bufferline(preferences)
   end
 
   return render(state.buffers, all_tabs, preferences)
-end
-
----@param buf_id number
-function M.handle_close_buffer(buf_id)
-  vim.cmd("bdelete! " .. buf_id)
-end
-
----@param id number
-function M.handle_win_click(id)
-  local win_id = vim.fn.bufwinid(id)
-  vim.fn.win_gotoid(win_id)
 end
 
 ---@param num number

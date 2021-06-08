@@ -18,6 +18,7 @@ Pick...................................: |bufferline-lua-pick|
 Multi-window...........................: |bufferline-lua-multiwindow|
 Mappings...............................: |bufferline-lua-mapping|
 Highlights.............................: |bufferline-lua-highlights|
+Mouse actions..........................: |bufferline-lua-mouse-actions|
 Issues.................................: |bufferline-lua-issues|
 
 
@@ -257,6 +258,38 @@ When this mode is active, for layouts of multiple windows in the tabpage, only
 the buffers that are displayed in those windows are listed in the tabline.
 That only applies to multi-window layouts, if there is only one window in the
 tabpage, all buffers are listed.
+
+==============================================================================
+MOUSE ACTIONS                                     *bufferline-lua-mouse-actions*
+
+You can configure different type of mouse clicks to behave differently. The
+current mouse click types are
+
+* Left - `left_mouse_command`
+* Right - `right_mouse_command`
+* Middle - `middle_mouse_command`
+* Close - `close_command`
+
+Currently left mouse opens the selected buffer but the command can be tweaked
+using `left_mouse_command` which can be specified as either a lua function or
+string which uses lua's printf style string formatting (https://www.lua.org/pil/20.html)
+e.g. `buffer %d`
+
+You can do things like open a vertical split on right clicking the buffer name
+for example using.
+>
+    right_mouse_command = "vertical sbuffer %d"
+<
+
+Or you can set the value to a function and handle the click action however you
+please for example you can use another plugin such as `bufdelete.nvim`
+(https://github.com/famiu/bufdelete.nvim) to handle closing the buffer using
+the `close_command`.
+>
+    left_mouse_command = function(bufnum)
+        require('bufdelete').bufdelete(bufnum, true)
+    end
+<
 
 ==============================================================================
 MAPPINGS                                               *bufferline-lua-mappings*
