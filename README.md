@@ -392,7 +392,7 @@ You can configure different type of mouse clicks to behave differently. The curr
 * Middle - `middle_mouse_command`
 * Close - `close_command`
 
-Currently left mouse opens selected buffer but the command can be tweaked using `left_mouse_command`
+Currently left mouse opens the selected buffer but the command can be tweaked using `left_mouse_command`
 which can be specified as either a lua function or string which uses [lua's printf style string formatting](https://www.lua.org/pil/20.html) e.g. `buffer %d`
 
 You can do things like open a vertical split on right clicking the buffer name for example using
