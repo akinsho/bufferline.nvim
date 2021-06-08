@@ -18,6 +18,7 @@ Pick...................................: |bufferline-lua-pick|
 Multi-window...........................: |bufferline-lua-multiwindow|
 Mappings...............................: |bufferline-lua-mapping|
 Highlights.............................: |bufferline-lua-highlights|
+Mouse actions..........................: |bufferline-lua-mouse-actions|
 Issues.................................: |bufferline-lua-issues|
 
 
