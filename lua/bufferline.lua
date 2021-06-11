@@ -137,7 +137,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.warning_diagnostic = h.warning_diagnostic_selected.hl
     hl.info = h.info_selected.hl
     hl.info_diagnostic = h.info_diagnostic_selected.hl
-    hl.close_button_selected = h.close_button_selected.hl
+    hl.close_button = h.close_button_selected.hl
   elseif buffer:visible() then
     hl.background = h.buffer_visible.hl
     hl.modified = h.modified_visible.hl
@@ -152,7 +152,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.warning_diagnostic = h.warning_diagnostic_visible.hl
     hl.info = h.info_visible.hl
     hl.info_diagnostic = h.info_diagnostic_visible.hl
-    hl.close_button_visible = h.close_button_visible.hl
+    hl.close_button = h.close_button_visible.hl
   else
     hl.background = h.background.hl
     hl.modified = h.modified.hl
@@ -272,8 +272,8 @@ end
 
 --- @param buf_id number
 local function close_icon(buf_id, context)
-  local buffer_close_icon = context.options.buffer_close_icon
-  local close_button_hl = context.current_highlight.close_button.hl
+  local buffer_close_icon = context.preferences.options.buffer_close_icon
+  local close_button_hl = context.current_highlights.close_button
 
   local symbol = buffer_close_icon .. padding
   local size = strwidth(symbol)

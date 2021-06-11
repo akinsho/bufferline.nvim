@@ -152,16 +152,16 @@ local function derive_colors()
       guibg = background_color,
     },
     close_button = {
-       guifg = background_color,
+       guifg = comment_fg,
        guibg = background_color
     },
     close_button_visible = {
-      guifg = background_color,
-      guibg = background_color
+      guifg = comment_fg,
+      guibg = visible_bg
     },
     close_button_selected = {
-      guifg = background_color,
-      guibg = background_color
+      guifg = normal_fg,
+      guibg = normal_bg
     },
     background = {
       guifg = comment_fg,
