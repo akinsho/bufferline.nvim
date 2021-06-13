@@ -382,16 +382,16 @@ highlight command. See `:h highlight` .
                 guibg = '<color-value-here>'
             },
             close_button = {
-                guifg = comment_fg,
-                guibg = background_color
+                guifg = '<color-value-here>',
+                guibg = '<color-value-here>'
             },
             close_button_visible = {
-                guifg = comment_fg,
-                guibg = visible_bg
+                guifg = '<color-value-here>',
+                guibg = '<color-value-here>'
             },
             close_button_selected = {
-                guifg = normal_fg,
-                guibg = normal_bg
+                guifg = '<color-value-here>',
+                guibg = '<color-value-here>'
             },
             buffer_visible = {
                 guifg = '<color-value-here>',
