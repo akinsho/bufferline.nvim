@@ -137,6 +137,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.warning_diagnostic = h.warning_diagnostic_selected.hl
     hl.info = h.info_selected.hl
     hl.info_diagnostic = h.info_diagnostic_selected.hl
+    hl.close_button = h.close_button_selected.hl
   elseif buffer:visible() then
     hl.background = h.buffer_visible.hl
     hl.modified = h.modified_visible.hl
@@ -151,6 +152,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.warning_diagnostic = h.warning_diagnostic_visible.hl
     hl.info = h.info_visible.hl
     hl.info_diagnostic = h.info_diagnostic_visible.hl
+    hl.close_button = h.close_button_visible.hl
   else
     hl.background = h.background.hl
     hl.modified = h.modified.hl
@@ -165,6 +167,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.warning_diagnostic = h.warning_diagnostic.hl
     hl.info = h.info.hl
     hl.info_diagnostic = h.info_diagnostic.hl
+    hl.close_button = h.close_button.hl
   end
 
   return hl
@@ -268,11 +271,13 @@ local function get_separator(focused, style)
 end
 
 --- @param buf_id number
-local function close_icon(buf_id, options)
-  local buffer_close_icon = options.buffer_close_icon
+local function close_icon(buf_id, context)
+  local buffer_close_icon = context.preferences.options.buffer_close_icon
+  local close_button_hl = context.current_highlights.close_button
+
   local symbol = buffer_close_icon .. padding
   local size = strwidth(symbol)
-  return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@" .. symbol, size
+  return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@".. close_button_hl .. symbol, size
 end
 
 --- @param context table
@@ -339,7 +344,7 @@ local function add_suffix(context)
   local modified, modified_size = modified_component(context)
 
   if options.show_buffer_close_icons then
-    local close, size = close_icon(buffer.id, options)
+    local close, size = close_icon(buffer.id, context)
     local suffix = buffer.modified and hl.modified .. modified or close
     component = component .. hl.background .. suffix
     length = length + (buffer.modified and modified_size or size)
