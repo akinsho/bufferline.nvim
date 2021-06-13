@@ -829,7 +829,10 @@ function M.close_in_direction(direction)
     return
   end
   local length = #state.buffers
-  if index ~= length and index ~= 1 then
+  if
+    not (index == length and direction == "right")
+    and not (index == 1 and direction == "left")
+  then
     local start = direction == "left" and 1 or index + 1
     local _end = direction == "left" and index - 1 or length
     ---@type Buffer[]
