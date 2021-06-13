@@ -29,10 +29,6 @@ local state = {
   custom_sort = nil,
 }
 
-if utils.is_test() then
-  M._state = state
-end
-
 ---------------------------------------------------------------------------//
 -- CORE
 ---------------------------------------------------------------------------//
@@ -824,6 +820,26 @@ function M.cycle(direction)
   vim.cmd("buffer " .. next.id)
 end
 
+---@alias direction "'left'" | "'right'"
+---Close all buffers to the left or right of the current buffer
+---@param direction direction
+function M.close_in_direction(direction)
+  local index = get_current_buf_index()
+  if not index then
+    return
+  end
+  local length = #state.buffers
+  if index ~= length and index ~= 1 then
+    local start = direction == "left" and 1 or index + 1
+    local _end = direction == "left" and index - 1 or length
+    ---@type Buffer[]
+    local bufs = vim.list_slice(state.buffers, start, _end)
+    for _, buf in ipairs(bufs) do
+      api.nvim_buf_delete(buf.id, { force = true })
+    end
+  end
+end
+
 function M.toggle_bufferline()
   local listed_bufs = vim.fn.getbufinfo({ buflisted = 1 })
   if #listed_bufs > 1 then
@@ -899,6 +915,8 @@ function M.setup(prefs)
   vim.cmd('command! BufferLinePick lua require"bufferline".pick_buffer()')
   vim.cmd('command! BufferLineCycleNext lua require"bufferline".cycle(1)')
   vim.cmd('command! BufferLineCyclePrev lua require"bufferline".cycle(-1)')
+  vim.cmd('command! BufferLineCloseRight lua require"bufferline".close_in_direction("right")')
+  vim.cmd('command! BufferLineCloseLeft lua require"bufferline".close_in_direction("left")')
   vim.cmd('command! BufferLineMoveNext lua require"bufferline".move(1)')
   vim.cmd('command! BufferLineMovePrev lua require"bufferline".move(-1)')
   vim.cmd('command! BufferLineSortByExtension lua require"bufferline".sort_buffers_by("extension")')
@@ -932,6 +950,11 @@ function M.setup(prefs)
 
   vim.o.showtabline = 2
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
+end
+
+if utils.is_test() then
+  M._state = state
+  M._get_current_buf_index = get_current_buf_index
 end
 
 return M
