@@ -4,10 +4,18 @@ local M = {}
 ---------------------------------------------------------------------------//
 M.padding = " "
 
-M.separator_styles = {
-  slant = "slant",
-  thick = "thick",
+M.sep_names = {
   thin = "thin",
+  thick = "thick",
+  slant = "slant",
+  padded_slant = "padded_slant",
+}
+
+M.sep_chars = {
+  [M.sep_names.thin] = { "▏", "▕" },
+  [M.sep_names.thick] = { "▌", "▐" },
+  [M.sep_names.slant] = { "", "" },
+  [M.sep_names.padded_slant] = { ""..M.padding, ""..M.padding },
 }
 
 M.positions_key = "BufferlinePositions"
