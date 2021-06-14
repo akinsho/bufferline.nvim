@@ -958,6 +958,15 @@ end
 if utils.is_test() then
   M._state = state
   M._get_current_buf_index = get_current_buf_index
+  M._reset = function()
+    state = {
+      is_picking = false,
+      ---@type Buffer[]
+      buffers = {},
+      current_letters = {},
+      custom_sort = nil,
+    }
+  end
 end
 
 return M

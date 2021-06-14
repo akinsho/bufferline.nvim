@@ -6,6 +6,11 @@ describe("Bufferline tests:", function()
 
   local bufferline = require("bufferline")
 
+  after_each(function()
+    bufferline._reset()
+    vim.cmd("bufdo bd")
+  end)
+
   describe("render buffer - ", function()
     it("should create corresponding buffers in state", function()
       bufferline.setup()
@@ -76,9 +81,17 @@ describe("Bufferline tests:", function()
       assert.is_equal(count, expected)
     end)
 
-    pending("should close buffers to the right of the current buffer", function()
-      bufferline.setup()
-      vim.cmd("edit a.txt")
+    it("should close buffers to the right of the current buffer", function()
+      bufferline.setup({
+        options = {
+          sort_by = function(a, b)
+            local a_name = vim.api.nvim_buf_get_name(a.id)
+            local b_name = vim.api.nvim_buf_get_name(b.id)
+            return a_name > b_name
+          end,
+        },
+      })
+      vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
       vim.cmd("edit d.txt")
@@ -86,7 +99,30 @@ describe("Bufferline tests:", function()
 
       vim.cmd("edit c.txt")
       bufferline.close_in_direction("right")
-      assert.is_equal(3, #bufferline._state.buffers)
+      local bufs = vim.api.nvim_list_bufs()
+      assert.is_equal(3, #bufs - 2)
+    end)
+
+    pending("should close buffers to the left of the current buffer", function()
+      bufferline.setup({
+        options = {
+          sort_by = function(a, b)
+            local a_name = vim.api.nvim_buf_get_name(a.id)
+            local b_name = vim.api.nvim_buf_get_name(b.id)
+            return a_name > b_name
+          end,
+        },
+      })
+      vim.cmd("file! a.txt")
+      vim.cmd("edit b.txt")
+      vim.cmd("edit c.txt")
+      vim.cmd("edit d.txt")
+      vim.cmd("edit e.txt")
+
+      vim.cmd("edit e.txt")
+      bufferline.close_in_direction("left")
+      local bufs = vim.api.nvim_list_bufs()
+      assert.is_equal(1, #bufs)
     end)
   end)
 end)
