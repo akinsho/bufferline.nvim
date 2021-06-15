@@ -12,7 +12,8 @@ local fmt = string.format
 local strwidth = vim.fn.strwidth
 
 local padding = constants.padding
-local separator_styles = constants.separator_styles
+local sep_names = constants.sep_names
+local sep_chars = constants.sep_chars
 local positions_key = constants.positions_key
 
 local M = {}
@@ -254,6 +255,13 @@ local function highlight_icon(buffer)
   return "%#" .. new_hl .. "#" .. icon .. padding .. "%*"
 end
 
+---Determine if the separator style is one of the slant options
+---@param style string
+---@return boolean
+local function is_slant(style)
+  return vim.tbl_contains({sep_names.slant, sep_names.padded_slant}, style)
+end
+
 --- "▍" "░"
 --- Reference: https://en.wikipedia.org/wiki/Block_Elements
 --- @param focused boolean
@@ -261,13 +269,12 @@ end
 local function get_separator(focused, style)
   if type(style) == "table" then
     return focused and style[1] or style[2]
-  elseif style == separator_styles.thick then
-    return focused and "▌" or "▐"
-  elseif style == separator_styles.slant then
-    return "", ""
-  else
-    return focused and "▏" or "▕"
   end
+  local chars = sep_chars[style] or sep_chars.thin
+  if is_slant(style) then
+    return chars[1], chars[2]
+  end
+  return focused and chars[1] or chars[2]
 end
 
 --- @param buf_id number
@@ -300,7 +307,7 @@ local function indicator_component(context)
   if buffer:current() then
     local indicator = " "
     local symbol = indicator
-    if style ~= separator_styles.slant then
+    if not is_slant(style) then
       symbol = options.indicator_icon
       indicator = hl.indicator_selected.hl .. symbol .. "%*"
     end
@@ -364,17 +371,10 @@ local function separator_components(context)
   local focused = buffer:current() or buffer:visible()
 
   local right_sep, left_sep = get_separator(focused, style)
-  local sep_hl = hl.separator.hl
-  if style == separator_styles.slant then
-    sep_hl = curr_hl.separator
-  end
 
-  --- HACK: most other terminals are unable to draw the slant character correctly without
-  --- extra right sided padding. Kitty automagically can however, so we check if it's
-  --- kitty and if so we do not pad as this breaks rendering in that terminal
-  --- Fixes #114
-  if style == "slant" and not utils.is_kitty then
-    right_sep, left_sep = right_sep .. padding, left_sep .. padding
+  local sep_hl = hl.separator.hl
+  if is_slant(style) then
+    sep_hl = curr_hl.separator
   end
 
   local right_separator = sep_hl .. right_sep

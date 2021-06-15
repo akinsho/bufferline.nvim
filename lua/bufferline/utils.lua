@@ -126,19 +126,4 @@ function M.echomsg(msg, hl)
   vim.api.nvim_echo({ { fmt("[nvim-bufferline] %s", msg), hl } }, true, {})
 end
 
----@alias term_type "'kitty'"
----Determine what terminal a user is on as this can impact how
----special characters are rendered
----@return term_type
-local function get_terminal_type()
-  ---based on https://github.com/kovidgoyal/kitty/issues/957
-  if os.getenv("KITTY_WINDOW_ID") then
-    return "kitty"
-  end
-end
-
-local terminal_type = get_terminal_type()
-
-M.is_kitty = terminal_type == "kitty"
-
 return M
