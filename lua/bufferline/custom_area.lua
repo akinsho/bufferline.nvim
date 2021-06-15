@@ -32,10 +32,9 @@ function M.get(prefs)
   if areas then
     for side, section_fn in pairs(areas) do
       if type(section_fn) ~= "function" then
-        return require("bufferline.utils").echoerr(fmt(
-          "each side should be a function but you passed in %s",
-          vim.inspect(side)
-        ))
+        return require("bufferline.utils").echoerr(
+          fmt("each side should be a function but you passed in %s", vim.inspect(side))
+        )
       end
       -- if the user doesn't specify a background use the default
       local hls = prefs.highlights or {}

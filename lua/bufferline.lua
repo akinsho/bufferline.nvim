@@ -259,7 +259,7 @@ end
 ---@param style string
 ---@return boolean
 local function is_slant(style)
-  return vim.tbl_contains({sep_names.slant, sep_names.padded_slant}, style)
+  return vim.tbl_contains({ sep_names.slant, sep_names.padded_slant }, style)
 end
 
 --- "▍" "░"
@@ -902,7 +902,9 @@ function M.setup(prefs)
   vim.cmd('command! BufferLineMovePrev lua require"bufferline".move(-1)')
   vim.cmd('command! BufferLineSortByExtension lua require"bufferline".sort_buffers_by("extension")')
   vim.cmd('command! BufferLineSortByDirectory lua require"bufferline".sort_buffers_by("directory")')
-  vim.cmd('command! BufferLineSortByRelativeDirectory lua require"bufferline".sort_buffers_by("relative_directory")')
+  vim.cmd(
+    'command! BufferLineSortByRelativeDirectory lua require"bufferline".sort_buffers_by("relative_directory")'
+  )
 
   -- TODO / idea: consider allowing these mappings to open buffers based on their
   -- visual position i.e. <leader>1 maps to the first visible buffer regardless

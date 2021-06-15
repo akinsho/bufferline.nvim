@@ -93,7 +93,8 @@ function M.component(context)
     .. context.component
     .. diag_highlight
     .. indicator
-    .. highlights.background, size
+    .. highlights.background,
+    size
 end
 
 return M

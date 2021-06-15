@@ -55,9 +55,12 @@ local function mark_duplicates(buffers, current, callback)
 end
 
 local function get_key(buffers)
-  return table.concat(vim.tbl_map(function(buf)
-    return buf.filename
-  end, buffers), "-")
+  return table.concat(
+    vim.tbl_map(function(buf)
+      return buf.filename
+    end, buffers),
+    "-"
+  )
 end
 
 --- This function marks any duplicate buffers granted
