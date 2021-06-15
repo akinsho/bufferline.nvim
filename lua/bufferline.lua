@@ -255,6 +255,13 @@ local function highlight_icon(buffer)
   return "%#" .. new_hl .. "#" .. icon .. padding .. "%*"
 end
 
+---Determine if the separator style is one of the slant options
+---@param style string
+---@return boolean
+local function is_slant(style)
+  return vim.tbl_contains({sep_names.slant, sep_names.padded_slant}, style)
+end
+
 --- "▍" "░"
 --- Reference: https://en.wikipedia.org/wiki/Block_Elements
 --- @param focused boolean
@@ -262,15 +269,12 @@ end
 local function get_separator(focused, style)
   if type(style) == "table" then
     return focused and style[1] or style[2]
-  elseif style == sep_names.thick then
-    return focused and sep_chars.thick[1] or sep_chars.thick[2]
-  elseif style == sep_names.slant then
-    return sep_chars.slant[1], sep_chars.slant[2]
-  elseif style == sep_names.padded_slant then
-    return sep_chars.padded_slant[1], sep_chars.padded_slant[2]
-  else
-    return focused and "▏" or "▕"
   end
+  local chars = sep_chars[style] or sep_chars.thin
+  if is_slant(style) then
+    return chars[1], chars[2]
+  end
+  return focused and chars[1] or chars[2]
 end
 
 --- @param buf_id number
@@ -303,7 +307,7 @@ local function indicator_component(context)
   if buffer:current() then
     local indicator = " "
     local symbol = indicator
-    if not vim.tbl_contains({sep_names.slant, sep_names.padded_slant}, style) then
+    if not is_slant(style) then
       symbol = options.indicator_icon
       indicator = hl.indicator_selected.hl .. symbol .. "%*"
     end
@@ -369,7 +373,7 @@ local function separator_components(context)
   local right_sep, left_sep = get_separator(focused, style)
 
   local sep_hl = hl.separator.hl
-  if style == sep_names.slant then
+  if is_slant(style) then
     sep_hl = curr_hl.separator
   end
 

@@ -11,6 +11,7 @@ M.sep_names = {
   padded_slant = "padded_slant",
 }
 
+---@type table<string, string[]>
 M.sep_chars = {
   [M.sep_names.thin] = { "▏", "▕" },
   [M.sep_names.thick] = { "▌", "▐" },
