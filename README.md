@@ -48,8 +48,8 @@ Table of Contents
 
 ![slanted tabs](https://user-images.githubusercontent.com/22454918/111992989-fec39b80-8b0d-11eb-851b-010641196a04.png)
 
-**NOTE**: some terminals require special characters to be padded so set style to `padded_slant` if the appearance isn't right in your terminal emulator.
-Please keep in mind though that results may vary depending on your terminal emulator of choice and this style might will not work for all terminals
+**NOTE**: some terminals require special characters to be padded so set the style to `padded_slant` if the appearance isn't right in your terminal emulator. Please keep in mind
+though that results may vary depending on your terminal emulator of choice and this style might will not work for all terminals
 
 see: `:h bufferline-styling`
 
