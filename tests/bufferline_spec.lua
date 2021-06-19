@@ -103,6 +103,7 @@ describe("Bufferline tests:", function()
       assert.is_equal(3, #bufs - 2)
     end)
 
+    -- FIXME buffers are not sorted in correct order
     pending("should close buffers to the left of the current buffer", function()
       bufferline.setup({
         options = {
