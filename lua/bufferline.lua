@@ -583,6 +583,7 @@ end
 --- @param bufs Buffer[]
 --- @param tbs number[]
 --- @param prefs table
+--- @return string
 local function render(bufs, tbs, prefs)
   local options = prefs.options
   local hl = prefs.highlights

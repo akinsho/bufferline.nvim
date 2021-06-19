@@ -60,7 +60,7 @@ function M.get_hex(opts)
   -- translate from internal part to hl part
   assert(
     attribute == "fg" or attribute == "bg",
-    fmt('Color part for %s should be one of "fg" or "bg"', vim.inspect(opts))
+    fmt('attribute for %s should be one of "fg" or "bg", "%s" was passed in ', name, attribute)
   )
   attribute = attribute == "fg" and "foreground" or "background"
 
