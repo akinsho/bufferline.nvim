@@ -736,7 +736,7 @@ local function bufferline(preferences)
     state.buffers[i] = buf
   end
 
-  -- if the user has reschuffled the buffers manually don't try and sort them
+  -- if the user has reshuffled the buffers manually don't try and sort them
   if not state.custom_sort then
     require("bufferline.sorters").sort_buffers(preferences.options.sort_by, state.buffers)
   end
@@ -830,8 +830,7 @@ function M.close_in_direction(direction)
   end
   local length = #state.buffers
   if
-    not (index == length and direction == "right")
-    and not (index == 1 and direction == "left")
+    not (index == length and direction == "right") and not (index == 1 and direction == "left")
   then
     local start = direction == "left" and 1 or index + 1
     local _end = direction == "left" and index - 1 or length
