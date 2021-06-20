@@ -16,6 +16,7 @@ describe("Bufferline tests:", function()
       bufferline.setup()
       local tabline = nvim_bufferline()
       assert.truthy(tabline)
+      assert.equal(tabline, _G.nvim_bufferline())
       assert.is.equal(vim.tbl_count(bufferline._state.buffers), 1)
     end)
 
@@ -80,17 +81,17 @@ describe("Bufferline tests:", function()
       bufferline.handle_close_buffer(bufnum)
       assert.is_equal(count, expected)
     end)
+  end)
+
+  describe("commands - ", function()
+    local sort_by_name = function(a, b)
+      local a_name = vim.api.nvim_buf_get_name(a.id)
+      local b_name = vim.api.nvim_buf_get_name(b.id)
+      return a_name > b_name
+    end
 
     it("should close buffers to the right of the current buffer", function()
-      bufferline.setup({
-        options = {
-          sort_by = function(a, b)
-            local a_name = vim.api.nvim_buf_get_name(a.id)
-            local b_name = vim.api.nvim_buf_get_name(b.id)
-            return a_name > b_name
-          end,
-        },
-      })
+      bufferline.setup({ options = { sort_by = sort_by_name } })
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
@@ -103,26 +104,20 @@ describe("Bufferline tests:", function()
       assert.is_equal(3, #bufs - 2)
     end)
 
-    -- FIXME buffers are not sorted in correct order
+    -- FIXME: state.buffers is not being populated correctly for some reason
+    -- causing this and likely the test above not to work correctly.
     pending("should close buffers to the left of the current buffer", function()
-      bufferline.setup({
-        options = {
-          sort_by = function(a, b)
-            local a_name = vim.api.nvim_buf_get_name(a.id)
-            local b_name = vim.api.nvim_buf_get_name(b.id)
-            return a_name > b_name
-          end,
-        },
-      })
+      bufferline.setup({ options = { sort_by = sort_by_name } })
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
       vim.cmd("edit d.txt")
       vim.cmd("edit e.txt")
 
-      vim.cmd("edit e.txt")
-      bufferline.close_in_direction("left")
       local bufs = vim.api.nvim_list_bufs()
+      assert.is_equal(5, #bufs)
+      bufferline.close_in_direction("left")
+      bufs = vim.api.nvim_list_bufs()
       assert.is_equal(1, #bufs)
     end)
   end)
