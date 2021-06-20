@@ -9,32 +9,32 @@
 This plugin shamelessly attempts to emulate the aesthetics of GUI text editors/Doom Emacs.
 It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://github.com/ema2159/centaur-tabs).
 
-Table of Contents
-=================
+# Table of Contents
 
-   * [Features](#features)
-      * [Alternate styling](#alternate-styling)
-      * [LSP error indicators](#lsp-error-indicators)
-      * [Sidebar offset](#sidebar-offset)
-      * [Buffer numbers](#buffer-numbers)
-      * [Buffer pick](#buffer-pick)
-      * [Unique buffer name](#unique-buffer-name)
-      * [Close icons](#close-icons)
-      * [Buffer re-ordering](#buffer-re-ordering)
-   * [Requirements](#requirements)
-   * [Installation](#installation)
-   * [Caveats](#caveats)
-   * [Usage](#usage)
-   * [Configuration](#configuration)
-      * [LSP indicators](#lsp-indicators)
-      * [Conditional buffer based LSP indicators](#conditional-buffer-based-lsp-indicators)
-      * [Regular tab sizes](#regular-tab-sizes)
-      * [Sorting](#sorting)
-      * [Sidebar offset](#sidebar-offset-1)
-      * [Buffer pick functionality](#buffer-pick-functionality)
-      * [Mouse actions](#mouse-actions)
-      * [Custom area](#custom-area)
-   * [FAQ](#faq)
+- [Features](#features)
+  - [Alternate styling](#alternate-styling)
+  - [LSP error indicators](#lsp-error-indicators)
+  - [Sidebar offset](#sidebar-offset)
+  - [Buffer numbers](#buffer-numbers)
+  - [Buffer pick](#buffer-pick)
+  - [Unique buffer name](#unique-buffer-name)
+  - [Close icons](#close-icons)
+  - [Buffer re-ordering](#buffer-re-ordering)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Caveats](#caveats)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Feature overview](#feature-overview)
+  - [LSP indicators](#lsp-indicators)
+  - [Conditional buffer based LSP indicators](#conditional-buffer-based-lsp-indicators)
+  - [Regular tab sizes](#regular-tab-sizes)
+  - [Sorting](#sorting)
+  - [Sidebar offset](#sidebar-offset-1)
+  - [Buffer pick functionality](#buffer-pick-functionality)
+  - [Mouse actions](#mouse-actions)
+  - [Custom area](#custom-area)
+- [FAQ](#faq)
 
 ## Features
 
@@ -72,7 +72,6 @@ Ordinal number and buffer number with a customized number styles.
 ![both with default style](https://user-images.githubusercontent.com/8133242/113400253-159ea380-93d4-11eb-822c-974d728a6bcf.png)
 
 ![both with customized style](https://user-images.githubusercontent.com/8133242/113400265-1a635780-93d4-11eb-8085-adc328385cb5.png)
-
 
 #### Buffer pick
 
@@ -137,6 +136,7 @@ You need to be using `termguicolors` for this plugin to work, as it reads the he
 of various highlight groups.
 
 **Vimscript**
+
 ```vim
 set termguicolors
 lua << EOF
@@ -146,6 +146,7 @@ EOF
 ```
 
 **Lua**
+
 ```lua
 vim.opt.termguicolors = true
 require("bufferline").setup{}
@@ -169,6 +170,7 @@ nnoremap <silent><mymap> :BufferLineMovePrev<CR>
 nnoremap <silent>be :BufferLineSortByExtension<CR>
 nnoremap <silent>bd :BufferLineSortByDirectory<CR>
 nnoremap <silent><mymap> :lua require'bufferline'.sort_buffers_by(function (buf_a, buf_b) return buf_a.id < buf_b.id end)<CR>
+
 ```
 
 If you manually arrange your buffers using `:BufferLineMove{Prev|Next}` during an nvim session this can be persisted for the session.
@@ -236,7 +238,10 @@ require('bufferline').setup {
     end
   }
 }
+
 ```
+
+## Feature overview
 
 ### LSP indicators
 
@@ -247,7 +252,6 @@ supported, mainly because it has the easiest API for fetching all errors for all
 In order to customise the appearance of the diagnostic count you can pass a custom function in your setup.
 
 ![custom indicator](https://user-images.githubusercontent.com/22454918/113215394-b1180300-9272-11eb-9632-8a9f9aae99fa.png)
-
 
 <details>
   <summary><b>Snippet</b></summary>
@@ -268,7 +272,6 @@ end
 ```
 
 </details>
-
 
 ![diagnostics_indicator](https://user-images.githubusercontent.com/4028913/112573484-9ee92100-8da9-11eb-9ffd-da9cb9cae3a6.png)
 
@@ -360,6 +363,11 @@ When using a sorted bufferline it's advisable that you use the `BufferLineCycleN
 commands since these will traverse the bufferline bufferlist in order whereas `bnext` and `bprev` will cycle
 buffers according to the buffer numbers given by vim.
 
+### Closing buffers
+
+Bufferline provides _a few_ commands to handle closing buffers visible in the tabline using `BufferLineCloseRight` and `BufferLineCloseLeft`.
+As their names suggest these commands will close all visible buffers to the left or right of the current buffer.
+
 ### Sidebar offset
 
 You can prevent the bufferline drawing above a **vertical** sidebar split such as a file explorer.
@@ -392,21 +400,24 @@ buffer that appears
 ### Mouse actions
 
 You can configure different type of mouse clicks to behave differently. The current mouse click types are
-* Left - `left_mouse_command`
-* Right - `right_mouse_command`
-* Middle - `middle_mouse_command`
-* Close - `close_command`
+
+- Left - `left_mouse_command`
+- Right - `right_mouse_command`
+- Middle - `middle_mouse_command`
+- Close - `close_command`
 
 Currently left mouse opens the selected buffer but the command can be tweaked using `left_mouse_command`
 which can be specified as either a lua function or string which uses [lua's printf style string formatting](https://www.lua.org/pil/20.html) e.g. `buffer %d`
 
 You can do things like open a vertical split on right clicking the buffer name for example using
+
 ```lua
 right_mouse_command = "vertical sbuffer %d"
 ```
 
 Or you can set the value to a function and handle the click action however you please for example you can use
 another plugin such as [bufdelete.nvim](https://github.com/famiu/bufdelete.nvim) to handle closing the buffer using the `close_command`.
+
 ```lua
 left_mouse_command = function(bufnum)
    require('bufdelete').bufdelete(bufnum, true)

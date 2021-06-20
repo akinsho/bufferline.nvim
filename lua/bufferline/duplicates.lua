@@ -1,5 +1,3 @@
-require("bufferline/buffers")
-
 local M = {}
 
 local strwidth = vim.fn.strwidth
