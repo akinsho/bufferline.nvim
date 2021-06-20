@@ -14,6 +14,7 @@ Settings...............................: |bufferline-lua-settings|
 LSP Diagnostics........................: |bufferline-lua-diagnostics|
 Sorting................................: |bufferline-lua-sorting|
 Filtering..............................: |bufferline-lua-filtering|
+Commands...............................: |bufferline-lua-commands|
 Pick...................................: |bufferline-lua-pick|
 Multi-window...........................: |bufferline-lua-multiwindow|
 Mappings...............................: |bufferline-lua-mapping|
@@ -223,6 +224,17 @@ For example: >
         return (tab_num == 2 and is_log) or (tab_num ~= 2 and not is_log)
     end
 <
+
+==============================================================================
+COMMANDS                                               *bufferline-lua-commands*
+
+Bufferline includes a few commands to allow deleting buffers. These commands
+are:
+
+* `BufferLineCloseRight` - close all visible buffers to the right of the
+  current buffer
+* `BufferLineCloseLeft` - close all visible buffers to the left of the current
+  buffer
 
 ==============================================================================
 SIDEBAR OFFSET                                           *bufferline-lua-offset*
