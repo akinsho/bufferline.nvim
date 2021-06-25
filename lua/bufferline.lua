@@ -577,7 +577,7 @@ local function truncate(before, current, after, available_width, marker)
 end
 
 --- @param bufs Buffer[]
---- @param tbs number[]
+--- @param tbs table[]
 --- @param prefs table
 --- @return string
 local function render(bufs, tbs, prefs)

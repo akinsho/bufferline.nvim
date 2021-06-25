@@ -111,6 +111,7 @@ end
 
 ---@class Buffers
 ---@field buffers Buffers[]
+---@field length number
 M.Buffers = {}
 
 ---create a segment of buffers
