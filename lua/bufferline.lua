@@ -237,7 +237,7 @@ local function highlight_icon(buffer)
   local prefix = "Bufferline"
   local new_hl = prefix .. hl
   local bg_hl = prefix .. "Background"
-  -- TODO do not depend directly on style names
+  -- TODO: do not depend directly on style names
   if buffer:current() then
     new_hl = new_hl .. "Selected"
     bg_hl = prefix .. "BufferSelected"
@@ -727,6 +727,7 @@ local function bufferline(preferences)
       id = buf_id,
       ordinal = i,
       diagnostics = all_diagnostics[buf_id],
+      name_formatter = options.name_formatter,
     })
     duplicates.mark(state.buffers, buf, function(b)
       b.component, b.length = render_buffer(preferences, b)

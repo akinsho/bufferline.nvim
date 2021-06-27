@@ -14,19 +14,24 @@ local terminal_buftype = "terminal"
 -----------------------------------------------------------------------------//
 -- helpers
 -----------------------------------------------------------------------------//
-local function buffer_is_terminal(buf)
+
+---@param buf Buffer
+---@return boolean
+local function is_terminal(buf)
   return string.find(buf.path, "term://") or buf.buftype == terminal_buftype
 end
+
 --------------------------------
 -- A single buffer
 --------------------------------
 ---@class Buffer
----@field public extension string,
----@field public path string,
----@field public id integer,
----@field public filename string,
----@field public icon string,
----@field public icon_highlight string,
+---@field public extension string the file extension
+---@field public path string the full path to the file
+---@field public name_formatter function? dictates how the name should be shown
+---@field public id integer the buffer number
+---@field public filename string the visible name for the file
+---@field public icon string the icon
+---@field public icon_highlight string
 ---@field public diagnostics table
 ---@field public modified boolean
 ---@field public modifiable boolean
@@ -44,7 +49,7 @@ function M.Buffer:new(buf)
 
   buf.extension = fn.fnamemodify(buf.path, ":e")
   -- Set icon
-  if buffer_is_terminal(buf) then
+  if is_terminal(buf) then
     if lua_devicons_loaded then
       terminal_icon = webdev_icons.get_icon("terminal") .. " "
     end
@@ -61,8 +66,15 @@ function M.Buffer:new(buf)
       local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
       buf.icon = devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
     end
-    -- TODO: allow the format specifier to be configured
-    buf.filename = (buf.path and #buf.path > 0) and fn.fnamemodify(buf.path, ":p:t") or "[No Name]"
+
+    local name = "[No Name]"
+    if buf.path and #buf.path > 0 then
+      name = fn.fnamemodify(buf.path, ":p:t")
+      if buf.name_formatter and type(buf.name_formatter) == "function" then
+        name = buf.name_formatter({name = name, path = buf.path, bufnr = buf.id}) or name
+      end
+    end
+    buf.filename = name
   end
 
   self.__index = self

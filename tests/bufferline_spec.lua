@@ -32,6 +32,24 @@ describe("Bufferline tests:", function()
       assert.is_truthy(tabline:match(icon))
     end)
 
+    it("should allow formatting names", function()
+      bufferline.setup({
+        options = {
+          name_formatter = function(buf)
+            if buf.path:match("test.txt") then
+              return "TEST"
+            end
+          end,
+        },
+      })
+      vim.cmd("edit test.txt")
+      local tabline = nvim_bufferline()
+      assert.truthy(tabline)
+      assert.truthy(tabline:match("TEST"))
+    end)
+  end)
+
+  describe("clicking - ", function()
     it("should left handle mouse clicks correctly", function()
       local bufnum = vim.api.nvim_get_current_buf()
       bufferline.setup({

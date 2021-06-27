@@ -3,6 +3,38 @@ local M = {}
 local _config = {}
 local _user_config = {}
 
+---@class BufferlineOptions
+---@field public view string
+---@field public numbers string
+---@field public number_style '"superscript"' | '"subscript"'
+---@field public buffer_close_icon string
+---@field public modified_icon string
+---@field public close_icon string
+---@field public close_command string
+---@field public left_mouse_command string | function
+---@field public right_mouse_command string | function
+---@field public middle_mouse_command string | function
+---@field public indicator_icon string
+---@field public left_trunc_marker string
+---@field public right_trunc_marker string
+---@field public separator_style string
+---@field public name_formatter fun(path: string):string
+---@field public tab_size number
+---@field public max_name_length number
+---@field public mappings boolean
+---@field public show_buffer_icons boolean
+---@field public show_buffer_close_icons boolean
+---@field public show_close_icon boolean
+---@field public show_tab_indicators boolean
+---@field public enforce_regular_tabs boolean
+---@field public always_show_bufferline boolean
+---@field public persist_buffer_sort boolean
+---@field public max_prefix_length number
+---@field public sort_by string
+---@field public diagnostics boolean
+---@field public diagnostic_indicator function?
+---@field public offsets table[]
+
 ---Ensure the user has only specified highlight groups that exist
 ---@param prefs table
 ---@param defaults table
@@ -340,12 +372,17 @@ local function derive_colors()
   }
 end
 
+---@class BufferlineConfig
+---@field public options BufferlineOptions
+
 -- Ideally this plugin should generate a beautiful tabline a little similar
 -- to what you would get on other editors. The aim is that the default should
 -- be so nice it's what anyone using this plugin sticks with. It should ideally
 -- work across any well designed colorscheme deriving colors automagically.
+---@return BufferlineConfig
 local function get_defaults()
   return {
+    ---@type BufferlineOptions
     options = {
       view = "default",
       numbers = "none",
@@ -364,6 +401,7 @@ local function get_defaults()
       left_trunc_marker = "",
       right_trunc_marker = "",
       separator_style = "thin",
+      name_formatter = nil,
       tab_size = 18,
       max_name_length = 18,
       mappings = false,
