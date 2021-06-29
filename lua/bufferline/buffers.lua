@@ -71,7 +71,7 @@ function M.Buffer:new(buf)
     if buf.path and #buf.path > 0 then
       name = fn.fnamemodify(buf.path, ":p:t")
       if buf.name_formatter and type(buf.name_formatter) == "function" then
-        name = buf.name_formatter({name = name, path = buf.path, bufnr = buf.id}) or name
+        name = buf.name_formatter({ name = name, path = buf.path, bufnr = buf.id }) or name
       end
     end
     buf.filename = name
