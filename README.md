@@ -242,7 +242,7 @@ require('bufferline').setup {
     separator_style = "slant" | "thick" | "thin" | { 'any', 'any' },
     enforce_regular_tabs = false | true,
     always_show_bufferline = true | false,
-    sort_by = 'id' | 'extension' | 'relative_directory' | 'directory' | function(buffer_a, buffer_b)
+    sort_by = 'id' | 'extension' | 'relative_directory' | 'directory' | 'tabs' | function(buffer_a, buffer_b)
       -- add custom logic
       return buffer_a.modified > buffer_b.modified
     end
@@ -337,7 +337,7 @@ the tab size and all tabs will be the same length
 
 ### Sorting
 
-Bufferline allows you to sort the visible buffers by `extension` or `directory`:
+Bufferline allows you to sort the visible buffers by `extension`, `directory` or `tabs`:
 
 **NOTE**: If using a plugin such as `vim-rooter` and you want to sort by path, prefer using `directory` rather than
 `relative_directory`. Relative directory works by ordering relative paths first, however if you move from
@@ -348,12 +348,14 @@ buffers will now be relative.
 " Using vim commands
 :BufferLineSortByExtension
 :BufferLineSortByDirectory
+:BufferLineSortByTabs
 ```
 
 ```lua
 -- Or using lua functions
 :lua require'bufferline'.sort_buffers_by('extension')
 :lua require'bufferline'.sort_buffers_by('directory')
+:lua require'bufferline'.sort_buffers_by('tabs')
 ```
 
 For more advanced usage you can provide a custom compare function which will
