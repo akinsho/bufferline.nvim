@@ -174,7 +174,7 @@ nnoremap <silent><mymap> :lua require'bufferline'.sort_buffers_by(function (buf_
 ```
 
 If you manually arrange your buffers using `:BufferLineMove{Prev|Next}` during an nvim session this can be persisted for the session.
-This is enabled by default but you need to ensure that your `sessionopts+=globals` otherwise the session file will
+This is enabled by default but you need to ensure that your `sessionoptions+=globals` otherwise the session file will
 not track global variables which is the mechanism used to store your sort order.
 
 ## Configuration
