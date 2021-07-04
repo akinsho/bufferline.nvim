@@ -1,6 +1,10 @@
 name: stylua
 on:
-  push: {branches: ["master"]}
+  push:
+    branches: ["master"]
+    paths-ignore:
+      - ".github/**"
+      - "*.md"
 
 jobs:
   stylua:

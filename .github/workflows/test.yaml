@@ -3,6 +3,9 @@ name: Run tests
 on:
   pull_request: ~
   push:
+    paths-ignore:
+      - ".github/**"
+      - "*.md"
     branches:
       - master
 
