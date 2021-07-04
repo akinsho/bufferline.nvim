@@ -93,7 +93,7 @@ This order can be persisted between sessions (enabled by default).
 
 ## Requirements
 
-- Neovim 0.5+ (_nightly_)
+- Neovim 0.5+
 - A patched font (see [nerd fonts](https://github.com/ryanoasis/nerd-fonts))
 
 ## Installation
