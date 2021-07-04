@@ -91,7 +91,7 @@ The available settings are: >
             enforce_regular_tabs = false | true,
             always_show_bufferline = true | false,
             offsets = {{filetype = "NvimTree", text = "File Explorer", text_align = "center" | "right" | "left"}},
-            sort_by = "extension" | "relative_directory" | "directory" | function(buffer_a, buffer_b)
+            sort_by = "id" | "extension" | "relative_directory" | "directory" | function(buffer_a, buffer_b)
             -- add custom logic
                 return buffer_a.modified > buffer_b.modified
             end
@@ -167,6 +167,10 @@ Bufferline allows you to sort the visible buffers by `extension` or `directory`:
     -- Or using lua functions
     :lua require'bufferline'.sort_buffers_by('extension')`
     :lua require'bufferline'.sort_buffers_by('directory')`
+
+By default bufferline will sort by buffer number which is an integer value
+provided by vim to identify a buffer that increases as new buffers are opened
+this means that new buffers are placed at the end of the bufferline.
 
 For more advanced usage you can provide a custom compare function which
 will receive two buffers to compare. You can see what fields
