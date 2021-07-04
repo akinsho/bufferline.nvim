@@ -413,7 +413,7 @@ local function get_defaults()
       always_show_bufferline = true,
       persist_buffer_sort = true,
       max_prefix_length = 15,
-      sort_by = "default",
+      sort_by = "id",
       diagnostics = false,
       diagnostic_indicator = nil,
       offsets = {},

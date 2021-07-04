@@ -40,6 +40,12 @@ local function sort_by_directory(buf_a, buf_b)
   return full_path(buf_a.path) < full_path(buf_b.path)
 end
 
+--- @param buf_a Buffer
+--- @param buf_b Buffer
+local function sort_by_id(buf_a, buf_b)
+  return buf_a.id < buf_b.id
+end
+
 --- sorts a list of buffers in place
 --- @param sort_by string|function
 --- @param buffers Buffer[]
@@ -50,6 +56,8 @@ function M.sort_buffers(sort_by, buffers)
     table.sort(buffers, sort_by_directory)
   elseif sort_by == "relative_directory" then
     table.sort(buffers, sort_by_relative_directory)
+  elseif sort_by == "id" then
+    table.sort(buffers, sort_by_id)
   elseif type(sort_by) == "function" then
     table.sort(buffers, sort_by)
   end
