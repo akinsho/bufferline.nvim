@@ -17,7 +17,7 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
   - [Sidebar offset](#sidebar-offset)
   - [Buffer numbers](#buffer-numbers)
   - [Buffer pick](#buffer-pick)
-  - [Unique buffer name](#unique-buffer-name)
+  - [Unique buffer names](#unique-buffer-names)
   - [Close icons](#close-icons)
   - [Buffer re-ordering](#buffer-re-ordering)
 - [Requirements](#requirements)
