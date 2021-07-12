@@ -10,24 +10,26 @@ describe("Config tests", function()
 
   describe("Setting config", function()
     it("should add defaults to user values", function()
-      local under_test = config.set({
+      config.set({
         options = {
           show_close_icon = false,
         },
       })
+      local under_test = config.apply()
       assert.is_false(under_test.options.show_close_icon)
       assert.is_false(vim.tbl_isempty(under_test.highlights))
       assert.is_true(vim.tbl_count(under_test.highlights) > 10)
     end)
 
     it("should create vim highlight groups names for the highlights", function()
-      local under_test = config.set({
+      config.set({
         highlights = {
           fill = {
             guifg = "red",
           },
         },
       })
+      local under_test = config.apply()
 
       assert.equal(under_test.highlights.fill.guifg, "red")
       assert.equal(under_test.highlights.fill.hl_name, "BufferLineFill")
@@ -35,7 +37,8 @@ describe("Config tests", function()
 
     it("should derive colors from the existing highlights", function()
       vim.cmd(fmt("hi Comment guifg=%s", whitesmoke))
-      local under_test = config.set({})
+      config.set({})
+      local under_test = config.apply()
       assert.equal(under_test.highlights.info.guifg, whitesmoke:lower())
     end)
   end)

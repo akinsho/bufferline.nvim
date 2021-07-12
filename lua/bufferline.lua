@@ -873,17 +873,18 @@ function M.__apply_colors()
 end
 
 local function setup_autocommands(preferences)
+  local options = preferences.options or {}
   local autocommands = {
     { "ColorScheme", "*", [[lua require('bufferline').__apply_colors()]] },
   }
-  if preferences.options.persist_buffer_sort then
+  if options.persist_buffer_sort then
     table.insert(autocommands, {
       "SessionLoadPost",
       "*",
       [[lua require'bufferline'.restore_positions()]],
     })
   end
-  if not preferences.options.always_show_bufferline then
+  if not options.always_show_bufferline then
     -- toggle tabline
     table.insert(autocommands, {
       "VimEnter,BufAdd,TabEnter",
@@ -950,6 +951,7 @@ end
 
 ---@param prefs BufferlineConfig
 function M.setup(prefs)
+  prefs = prefs or {}
   require("bufferline.config").set(prefs)
   if vim.v.vim_did_enter == 1 then
     M.__load()
