@@ -1,9 +1,5 @@
-local buffers = require("bufferline.buffers")
 local constants = require("bufferline.constants")
 local utils = require("bufferline.utils")
-
-local Buffer = buffers.Buffer
-local Buffers = buffers.Buffers
 
 local api = vim.api
 local fmt = string.format
@@ -500,6 +496,7 @@ local function render_close(icon)
 end
 
 local function get_sections(bufs)
+  local Buffers = require("bufferline.buffers").Buffers
   local current = Buffers:new()
   local before = Buffers:new()
   local after = Buffers:new()
@@ -719,7 +716,7 @@ local function bufferline(preferences)
   duplicates.reset()
   state.buffers = {}
   local all_diagnostics = require("bufferline.diagnostics").get(options)
-
+  local Buffer = require("bufferline.buffers").Buffer
   for i, buf_id in ipairs(buf_nums) do
     local name = vim.fn.bufname(buf_id)
     local buf = Buffer:new({
