@@ -59,7 +59,7 @@ end
 M.path_sep = vim.loop.os_uname().sysname == "Windows" and "\\" or "/"
 
 -- Source: https://teukka.tech/luanvim.html
-function M.nvim_create_augroups(definitions)
+function M.augroup(definitions)
   for group_name, definition in pairs(definitions) do
     vim.cmd("augroup " .. group_name)
     vim.cmd("autocmd!")

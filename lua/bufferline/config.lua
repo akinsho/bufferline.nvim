@@ -374,6 +374,7 @@ end
 
 ---@class BufferlineConfig
 ---@field public options BufferlineOptions
+---@field public highlights table<string,table>
 
 -- Ideally this plugin should generate a beautiful tabline a little similar
 -- to what you would get on other editors. The aim is that the default should
@@ -424,7 +425,7 @@ end
 
 ---Generate highlight groups from user
 ---@param user_colors table<string, table>
---- TODO can this become part of a metatable for each highlight group so it is done at the time
+--- TODO: can this become part of a metatable for each highlight group so it is done at the time
 local function add_highlight_groups(user_colors)
   for name, tbl in pairs(user_colors) do
     -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
@@ -434,22 +435,23 @@ local function add_highlight_groups(user_colors)
   end
 end
 
----Keep track of a users config for use throughout the plugin as well as ensuring
----defaults are set
----@param user_config table
----@return table
-function M.set(user_config)
-  user_config = user_config or {}
+--- Merge user config with defaults
+--- @return BufferlineConfig
+function M.apply()
   local defaults = get_defaults()
-  validate_config(user_config, defaults)
-  convert_hl_tables(user_config)
-  --- Store a reference to the original user_config so we can diff what the user set
-  --- this is useful for setting the highlight groups etc. once this has been merged with the
-  --- defaults
-  _user_config = user_config
-  _config = merge(defaults, user_config)
+  validate_config(_user_config, defaults)
+  convert_hl_tables(_user_config)
+  _config = merge(defaults, _user_config)
   add_highlight_groups(_config.highlights)
   return _config
+end
+
+---Keep track of a users config for use throughout the plugin as well as ensuring
+---defaults are set. This is also so we can diff what the user set this is useful
+---for setting the highlight groups etc. once this has been merged with the defaults
+---@param user_config BufferlineConfig
+function M.set(user_config)
+  _user_config = user_config or {}
 end
 
 ---Update highlight colours when the colour scheme changes
