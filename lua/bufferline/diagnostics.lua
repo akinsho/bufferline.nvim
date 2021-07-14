@@ -89,11 +89,7 @@ function M.component(context)
     or highlights.diagnostic
     or ""
   local size = context.length + vim.fn.strwidth(indicator)
-  return highlight
-    .. context.component
-    .. diag_highlight
-    .. indicator
-    .. highlights.background,
+  return highlight .. context.component .. diag_highlight .. indicator .. highlights.background,
     size
 end
 
