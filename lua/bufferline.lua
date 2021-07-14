@@ -1,9 +1,5 @@
-local buffers = require("bufferline.buffers")
 local constants = require("bufferline.constants")
 local utils = require("bufferline.utils")
-
-local Buffer = buffers.Buffer
-local Buffers = buffers.Buffers
 
 local api = vim.api
 local fmt = string.format
@@ -500,6 +496,7 @@ local function render_close(icon)
 end
 
 local function get_sections(bufs)
+  local Buffers = require("bufferline.buffers").Buffers
   local current = Buffers:new()
   local before = Buffers:new()
   local after = Buffers:new()
@@ -719,7 +716,7 @@ local function bufferline(preferences)
   duplicates.reset()
   state.buffers = {}
   local all_diagnostics = require("bufferline.diagnostics").get(options)
-
+  local Buffer = require("bufferline.buffers").Buffer
   for i, buf_id in ipairs(buf_nums) do
     local name = vim.fn.bufname(buf_id)
     local buf = Buffer:new({
@@ -868,18 +865,26 @@ function M.sort_buffers_by(sort_by)
   refresh()
 end
 
+---@private
+function M.__apply_colors()
+  local config = require("bufferline.config")
+  local current_prefs = config.update_highlights()
+  require("bufferline.highlights").set_all(current_prefs.highlights)
+end
+
 local function setup_autocommands(preferences)
+  local options = preferences.options or {}
   local autocommands = {
-    { "ColorScheme", "*", [[lua __setup_bufferline_colors()]] },
+    { "ColorScheme", "*", [[lua require('bufferline').__apply_colors()]] },
   }
-  if preferences.options.persist_buffer_sort then
+  if options.persist_buffer_sort then
     table.insert(autocommands, {
       "SessionLoadPost",
       "*",
       [[lua require'bufferline'.restore_positions()]],
     })
   end
-  if not preferences.options.always_show_bufferline then
+  if not options.always_show_bufferline then
     -- toggle tabline
     table.insert(autocommands, {
       "VimEnter,BufAdd,TabEnter",
@@ -887,48 +892,13 @@ local function setup_autocommands(preferences)
       "lua require'bufferline'.toggle_bufferline()",
     })
   end
-  local loaded = pcall(require, "nvim-web-devicons")
-  if loaded then
-    table.insert(autocommands, {
-      "ColorScheme",
-      "*",
-      [[lua require'nvim-web-devicons'.setup()]],
-    })
-  end
 
-  utils.nvim_create_augroups({ BufferlineColors = autocommands })
+  utils.augroup({ BufferlineColors = autocommands })
 end
 
-function M.setup(prefs)
-  local config = require("bufferline.config")
-  local preferences = config.set(prefs)
-
-  -- on loading (and reloading) the plugin's config reset all the highlights
-  require("bufferline.highlights").set_all(preferences.highlights)
-
-  function _G.__setup_bufferline_colors()
-    local current_prefs = config.update_highlights()
-    require("bufferline.highlights").set_all(current_prefs.highlights)
-  end
-
-  setup_autocommands(preferences)
-  -----------------------------------------------------------
-  -- Commands
-  -----------------------------------------------------------
-  vim.cmd('command! BufferLinePick lua require"bufferline".pick_buffer()')
-  vim.cmd('command! BufferLineCycleNext lua require"bufferline".cycle(1)')
-  vim.cmd('command! BufferLineCyclePrev lua require"bufferline".cycle(-1)')
-  vim.cmd('command! BufferLineCloseRight lua require"bufferline".close_in_direction("right")')
-  vim.cmd('command! BufferLineCloseLeft lua require"bufferline".close_in_direction("left")')
-  vim.cmd('command! BufferLineMoveNext lua require"bufferline".move(1)')
-  vim.cmd('command! BufferLineMovePrev lua require"bufferline".move(-1)')
-  vim.cmd('command! BufferLineSortByExtension lua require"bufferline".sort_buffers_by("extension")')
-  vim.cmd('command! BufferLineSortByDirectory lua require"bufferline".sort_buffers_by("directory")')
-  vim.cmd(
-    'command! BufferLineSortByRelativeDirectory lua require"bufferline".sort_buffers_by("relative_directory")'
-  )
-
-  -- TODO / idea: consider allowing these mappings to open buffers based on their
+---@param preferences BufferlineConfig
+local function setup_mappings(preferences)
+  -- TODO: / idea: consider allowing these mappings to open buffers based on their
   -- visual position i.e. <leader>1 maps to the first visible buffer regardless
   -- of it actual ordinal number i.e. position in the full list or it's actual
   -- buffer id
@@ -938,21 +908,61 @@ function M.setup(prefs)
         "n",
         "<leader>" .. i,
         ':lua require"bufferline".go_to_buffer(' .. i .. ")<CR>",
-        {
-          silent = true,
-          nowait = true,
-          noremap = true,
-        }
+        { silent = true, nowait = true, noremap = true }
       )
     end
   end
+end
 
-  function _G.nvim_bufferline()
-    return bufferline(config.get())
+local function setup_commands()
+  local cmds = {
+    { name = "BufferLinePick", cmd = "pick_buffer()" },
+    { name = "BufferLineCycleNext", cmd = "cycle(1)" },
+    { name = "BufferLineCyclePrev", cmd = "cycle(-1)" },
+    { name = "BufferLineCloseRight", cmd = 'close_in_direction("right")' },
+    { name = "BufferLineCloseLeft", cmd = 'close_in_direction("left")' },
+    { name = "BufferLineMoveNext", cmd = "move(1)" },
+    { name = "BufferLineMovePrev", cmd = "move(-1)" },
+    { name = "BufferLineSortByExtension", cmd = 'sort_buffers_by("extension")' },
+    { name = "BufferLineSortByDirectory", cmd = 'sort_buffers_by("directory")' },
+    { name = "BufferLineSortByRelativeDirectory", cmd = 'sort_buffers_by("relative_directory")' },
+  }
+  for _, cmd in ipairs(cmds) do
+    vim.cmd(fmt('command! %s lua require("bufferline").%s', cmd.name, cmd.cmd))
   end
+end
 
+---@private
+function _G.nvim_bufferline()
+  return bufferline(require("bufferline.config").get())
+end
+
+---@private
+function M.__load()
+  local config = require("bufferline.config")
+  local preferences = config.apply()
+  -- on loading (and reloading) the plugin's config reset all the highlights
+  require("bufferline.highlights").set_all(preferences.highlights)
+  setup_commands()
+  setup_mappings(preferences)
   vim.o.showtabline = 2
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
+end
+
+---@param prefs BufferlineConfig
+function M.setup(prefs)
+  prefs = prefs or {}
+  require("bufferline.config").set(prefs)
+  if vim.v.vim_did_enter == 1 then
+    M.__load()
+  else
+    -- autocommands need to be setup as early as possible
+    setup_autocommands(prefs)
+    -- defer the first load of the plugin till vim has started
+    require("bufferline.utils").augroup({
+      BufferlineLoad = { { "VimEnter", "*", "++once", "lua require('bufferline').__load()" } },
+    })
+  end
 end
 
 if utils.is_test() then
