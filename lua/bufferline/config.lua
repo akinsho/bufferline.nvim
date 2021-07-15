@@ -68,7 +68,7 @@ local function validate_config(prefs, defaults)
 end
 
 --- Convert highlights specified as tables to the correct existing colours
----@param prefs table
+---@param prefs BufferlineConfig
 local function convert_hl_tables(prefs)
   if not prefs or not prefs.highlights or vim.tbl_isempty(prefs.highlights) then
     return
@@ -424,10 +424,10 @@ local function get_defaults()
 end
 
 ---Generate highlight groups from user
----@param user_colors table<string, table>
+---@param highlights table<string, table>
 --- TODO: can this become part of a metatable for each highlight group so it is done at the time
-local function add_highlight_groups(user_colors)
-  for name, tbl in pairs(user_colors) do
+local function add_highlight_groups(highlights)
+  for name, tbl in pairs(highlights) do
     -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
     local formatted = "BufferLine" .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
     tbl.hl_name = formatted

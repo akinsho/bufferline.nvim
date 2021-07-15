@@ -867,8 +867,7 @@ end
 
 ---@private
 function M.__apply_colors()
-  local config = require("bufferline.config")
-  local current_prefs = config.update_highlights()
+  local current_prefs = require("bufferline.config").update_highlights()
   require("bufferline.highlights").set_all(current_prefs.highlights)
 end
 
@@ -887,7 +886,7 @@ local function setup_autocommands(preferences)
   if not options.always_show_bufferline then
     -- toggle tabline
     table.insert(autocommands, {
-      "VimEnter,BufAdd,TabEnter",
+      "BufAdd,TabEnter",
       "*",
       "lua require'bufferline'.toggle_bufferline()",
     })
@@ -943,8 +942,10 @@ function M.__load()
   local preferences = config.apply()
   -- on loading (and reloading) the plugin's config reset all the highlights
   require("bufferline.highlights").set_all(preferences.highlights)
+  -- TODO: don't reapply commands,mappings and autocommands if load has already been called
   setup_commands()
   setup_mappings(preferences)
+  setup_autocommands(preferences)
   vim.o.showtabline = 2
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
 end
@@ -956,8 +957,6 @@ function M.setup(prefs)
   if vim.v.vim_did_enter == 1 then
     M.__load()
   else
-    -- autocommands need to be setup as early as possible
-    setup_autocommands(prefs)
     -- defer the first load of the plugin till vim has started
     require("bufferline.utils").augroup({
       BufferlineLoad = { { "VimEnter", "*", "++once", "lua require('bufferline').__load()" } },
