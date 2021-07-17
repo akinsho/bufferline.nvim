@@ -2,6 +2,7 @@ local constants = require("bufferline.constants")
 local utils = require("bufferline.utils")
 
 local api = vim.api
+local fn = vim.fn
 local fmt = string.format
 -- string.len counts number of bytes and so the unicode icons are counted
 -- larger than their display width. So we use nvim's strwidth
@@ -841,12 +842,9 @@ function M.close_in_direction(direction)
 end
 
 function M.toggle_bufferline()
-  local listed_bufs = vim.fn.getbufinfo({ buflisted = 1 })
-  if #listed_bufs > 1 then
-    vim.o.showtabline = 2
-  else
-    vim.o.showtabline = 0
-  end
+  local opts = require("bufferline.config").get("options")
+  local status = (opts.always_show_bufferline or #fn.getbufinfo({ buflisted = 1 }) > 1) and 2 or 0
+  vim.o.showtabline = status
 end
 
 --- sorts all buffers
@@ -946,8 +944,8 @@ function M.__load()
   setup_commands()
   setup_mappings(preferences)
   setup_autocommands(preferences)
-  vim.o.showtabline = preferences.options.always_show_bufferline and 2 or 0
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
+  M.toggle_bufferline()
 end
 
 ---@param prefs BufferlineConfig
