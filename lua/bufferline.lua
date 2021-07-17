@@ -946,7 +946,7 @@ function M.__load()
   setup_commands()
   setup_mappings(preferences)
   setup_autocommands(preferences)
-  vim.o.showtabline = 2
+  vim.o.showtabline = preferences.options.always_show_bufferline and 2 or 0
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
 end
 
