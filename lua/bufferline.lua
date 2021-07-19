@@ -95,8 +95,8 @@ function M.handle_click(id, button)
 end
 
 -- Prompts user to select a buffer then applies a function to the buffer
--- @param func function
-function select_buffer_apply(func)
+---@param func fun(buf_id: number)
+local function select_buffer_apply(func)
   state.is_picking = true
   refresh()
 
@@ -118,7 +118,7 @@ function M.pick_buffer()
   end)
 end
 
-function M.close_buffer()
+function M.close_buffer_with_pick()
   select_buffer_apply(function(buf_id)
     M.handle_close_buffer(buf_id)
   end)
@@ -928,7 +928,7 @@ end
 local function setup_commands()
   local cmds = {
     { name = "BufferLinePick", cmd = "pick_buffer()" },
-    { name = "BufferLineClose", cmd = "close_buffer()" },
+    { name = "BufferLinePickClose", cmd = "close_buffer_with_pick()" },
     { name = "BufferLineCycleNext", cmd = "cycle(1)" },
     { name = "BufferLineCyclePrev", cmd = "cycle(-1)" },
     { name = "BufferLineCloseRight", cmd = 'close_in_direction("right")' },
