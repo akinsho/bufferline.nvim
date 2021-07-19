@@ -24,7 +24,7 @@ end
 --- @param buf_a Buffer
 --- @param buf_b Buffer
 local function sort_by_mru(buf_a, buf_b)
-  return fn.getbufinfo(buf_a)[1].lastused > fn.getbufinfo(buf_b)[1].lastused
+  return fn.getbufinfo(buf_a.id)[1].lastused > fn.getbufinfo(buf_b.id)[1].lastused
 end
 
 --- @param buf_a Buffer
