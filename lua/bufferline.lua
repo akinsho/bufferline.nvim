@@ -505,9 +505,12 @@ local function render_buffer(preferences, buffer)
   return fn, ctx.length
 end
 
-local function render_close(icon)
+---@param icon string
+---@return string
+---@return number
+local function tab_close_button(icon)
   local component = padding .. icon .. padding
-  return component, strwidth(component)
+  return "%999X" .. component, strwidth(component)
 end
 
 local function get_sections(bufs)
@@ -599,7 +602,7 @@ local function render(bufs, tbs, prefs)
   local tab_components = ""
   local close, close_length = "", 0
   if options.show_close_icon then
-    close, close_length = render_close(options.close_icon)
+    close, close_length = tab_close_button(options.close_icon)
   end
   local tabs_length = 0
 
