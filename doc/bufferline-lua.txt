@@ -283,6 +283,15 @@ to a key, e.g. >
 then pick a buffer by typing the character for that specific buffer that
 appears
 
+This functionality can also be used to close a buffer using
+`BufferLinePickClose` by triggering this command the same selection UI will
+appear but on selecting a buffer it will be closed.
+
+this can also be mapped to something like
+>
+  nnoremap <silent> gD :BufferlinePickClose<CR>
+>
+
 ==============================================================================
 MULTIWINDOW MODE                                    *bufferline-lua-multiwindow*
 

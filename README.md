@@ -377,6 +377,7 @@ buffers according to the buffer numbers given by vim.
 
 Bufferline provides _a few_ commands to handle closing buffers visible in the tabline using `BufferLineCloseRight` and `BufferLineCloseLeft`.
 As their names suggest these commands will close all visible buffers to the left or right of the current buffer.
+Another way to close any single buffer is the `BufferLinePickClose` command ([see below](#buffer-pick-functionality)).
 
 ### Sidebar offset
 
@@ -406,6 +407,8 @@ then pick a buffer by typing the character for that specific
 buffer that appears
 
 ![bufferline_pick](https://user-images.githubusercontent.com/22454918/111994691-f2404280-8b0f-11eb-9bc1-6664ccb93154.gif)
+
+Likewise, `BufferLinePickClose` closes the buffer instead of viewing it.
 
 ### Mouse actions
 

@@ -52,22 +52,6 @@ function M.restore_positions()
   end
 end
 
-function M.pick_buffer()
-  state.is_picking = true
-  refresh()
-
-  local char = vim.fn.getchar()
-  local letter = vim.fn.nr2char(char)
-  for _, buf in pairs(state.buffers) do
-    if letter == buf.letter then
-      vim.cmd("buffer " .. buf.id)
-    end
-  end
-
-  state.is_picking = false
-  refresh()
-end
-
 ---Handle a user "command" which can be a string or a function
 ---@param command string|function
 ---@param buf_id string
@@ -108,6 +92,36 @@ function M.handle_click(id, button)
   if id then
     handle_user_command(options[cmds[button]], id)
   end
+end
+
+-- Prompts user to select a buffer then applies a function to the buffer
+---@param func fun(buf_id: number)
+local function select_buffer_apply(func)
+  state.is_picking = true
+  refresh()
+
+  local char = vim.fn.getchar()
+  local letter = vim.fn.nr2char(char)
+  for _, buf in pairs(state.buffers) do
+    if letter == buf.letter then
+      func(buf.id)
+    end
+  end
+
+  state.is_picking = false
+  refresh()
+end
+
+function M.pick_buffer()
+  select_buffer_apply(function(buf_id)
+    vim.cmd("buffer " .. buf_id)
+  end)
+end
+
+function M.close_buffer_with_pick()
+  select_buffer_apply(function(buf_id)
+    M.handle_close_buffer(buf_id)
+  end)
 end
 
 ---@param buffer Buffer
@@ -914,6 +928,7 @@ end
 local function setup_commands()
   local cmds = {
     { name = "BufferLinePick", cmd = "pick_buffer()" },
+    { name = "BufferLinePickClose", cmd = "close_buffer_with_pick()" },
     { name = "BufferLineCycleNext", cmd = "cycle(1)" },
     { name = "BufferLineCyclePrev", cmd = "cycle(-1)" },
     { name = "BufferLineCloseRight", cmd = 'close_in_direction("right")' },
