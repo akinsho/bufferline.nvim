@@ -138,10 +138,10 @@ of various highlight groups.
 **Vimscript**
 
 ```vim
+" In your init.lua or init.vim
 set termguicolors
 lua << EOF
-" In your init.lua or init.vim
-lua require("bufferline").setup{}
+require("bufferline").setup{}
 EOF
 ```
 
