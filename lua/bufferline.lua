@@ -291,7 +291,14 @@ local function close_icon(buf_id, context)
 
   local symbol = buffer_close_icon .. padding
   local size = strwidth(symbol)
-  return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@" .. close_button_hl .. symbol, size
+  return "%"
+    .. buf_id
+    .. "@nvim_bufferline#handle_close_buffer@"
+    .. close_button_hl
+    .. symbol
+    -- the %X works as a closing label. @see :h tabline
+    .. "%X",
+    size
 end
 
 --- @param context table
