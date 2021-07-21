@@ -674,7 +674,6 @@ local function render(bufs, tbs, prefs)
   )
 end
 
---- TODO can this be done more efficiently in one loop?
 --- @param buf_nums number[]
 --- @param sorted number[]
 --- @return number[]
@@ -682,21 +681,21 @@ local function get_updated_buffers(buf_nums, sorted)
   if not sorted then
     return buf_nums
   end
-  local updated = {}
-  -- add only buffers from our sort that are (still) in the
-  -- canonical buffer list, maintaining the order
-  for _, b in ipairs(sorted) do
-    if vim.tbl_contains(buf_nums, b) then
-      table.insert(updated, b)
-    end
+
+  local reverse_lookup_sorted = utils.tbl_reverse_lookup(sorted)
+
+--- a comparator that sorts buffers by their position in sorted
+  local sort_by_sorted = function (buf_id_1, buf_id_2)
+    local buf_1_rank = 1e5 -- assumes no sane person will have this many buffers open
+    local buf_2_rank = 1e5
+    if reverse_lookup_sorted[buf_id_1] then buf_1_rank = reverse_lookup_sorted[buf_id_1] end
+    if reverse_lookup_sorted[buf_id_2] then buf_2_rank = reverse_lookup_sorted[buf_id_2] end
+    return buf_1_rank < buf_2_rank
   end
-  -- add any buffers from the buffer list that aren't in our sort
-  for _, b in ipairs(buf_nums) do
-    if not vim.tbl_contains(sorted, b) then
-      table.insert(updated, b)
-    end
-  end
-  return updated
+
+  table.sort(buf_nums, sort_by_sorted)
+
+  return buf_nums
 end
 
 ---Filter the buffers to show based on the user callback passed in

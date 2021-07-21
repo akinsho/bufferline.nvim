@@ -56,6 +56,21 @@ function M.filter_duplicates(array)
   return res
 end
 
+--- creates a table whose keys are tbl's values and the value of these keys
+--- is their key in tbl (similar to vim.tbl_add_reverse_lookup)
+--- this assumes that the values in tbl are unique
+--- @param tbl table
+--- @return table
+function M.tbl_reverse_lookup(tbl)
+    local ret = {}
+
+    for i, b in ipairs(tbl) do
+      ret[b] = i
+    end
+
+    return ret
+end
+
 M.path_sep = vim.loop.os_uname().sysname == "Windows" and "\\" or "/"
 
 -- Source: https://teukka.tech/luanvim.html
