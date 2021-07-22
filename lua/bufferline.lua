@@ -674,6 +674,7 @@ local function render(bufs, tbs, prefs)
   )
 end
 
+--- sorts buf_names in place, but doesn't add/remove any values
 --- @param buf_nums number[]
 --- @param sorted number[]
 --- @return number[]
@@ -686,10 +687,10 @@ local function get_updated_buffers(buf_nums, sorted)
 
 --- a comparator that sorts buffers by their position in sorted
   local sort_by_sorted = function (buf_id_1, buf_id_2)
-    local buf_1_rank = 1e5 -- assumes no sane person will have this many buffers open
-    local buf_2_rank = 1e5
-    if reverse_lookup_sorted[buf_id_1] then buf_1_rank = reverse_lookup_sorted[buf_id_1] end
-    if reverse_lookup_sorted[buf_id_2] then buf_2_rank = reverse_lookup_sorted[buf_id_2] end
+    local buf_1_rank = reverse_lookup_sorted[buf_id_1]
+    local buf_2_rank = reverse_lookup_sorted[buf_id_2]
+    if not buf_1_rank then return false end
+    if not buf_2_rank then return true end
     return buf_1_rank < buf_2_rank
   end
 

@@ -59,15 +59,14 @@ end
 --- creates a table whose keys are tbl's values and the value of these keys
 --- is their key in tbl (similar to vim.tbl_add_reverse_lookup)
 --- this assumes that the values in tbl are unique and hashable (no nil/NaN)
---- @param tbl table
---- @return table
+--- @generic K,V
+--- @param tbl table<K,V>
+--- @return table<V,K>
 function M.tbl_reverse_lookup(tbl)
     local ret = {}
-
-    for i, b in pairs(tbl) do
-      ret[b] = i
+    for k, v in pairs(tbl) do
+      ret[v] = k
     end
-
     return ret
 end
 
