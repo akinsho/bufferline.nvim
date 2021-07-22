@@ -63,11 +63,11 @@ end
 --- @param tbl table<K,V>
 --- @return table<V,K>
 function M.tbl_reverse_lookup(tbl)
-    local ret = {}
-    for k, v in pairs(tbl) do
-      ret[v] = k
-    end
-    return ret
+  local ret = {}
+  for k, v in pairs(tbl) do
+    ret[v] = k
+  end
+  return ret
 end
 
 M.path_sep = vim.loop.os_uname().sysname == "Windows" and "\\" or "/"

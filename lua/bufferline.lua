@@ -685,12 +685,16 @@ local function get_updated_buffers(buf_nums, sorted)
 
   local reverse_lookup_sorted = utils.tbl_reverse_lookup(sorted)
 
---- a comparator that sorts buffers by their position in sorted
-  local sort_by_sorted = function (buf_id_1, buf_id_2)
+  --- a comparator that sorts buffers by their position in sorted
+  local sort_by_sorted = function(buf_id_1, buf_id_2)
     local buf_1_rank = reverse_lookup_sorted[buf_id_1]
     local buf_2_rank = reverse_lookup_sorted[buf_id_2]
-    if not buf_1_rank then return false end
-    if not buf_2_rank then return true end
+    if not buf_1_rank then
+      return false
+    end
+    if not buf_2_rank then
+      return true
+    end
     return buf_1_rank < buf_2_rank
   end
 
