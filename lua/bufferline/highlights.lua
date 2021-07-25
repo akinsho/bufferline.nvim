@@ -21,7 +21,7 @@ function M.set_one(name, opts)
   end
   local hls = {}
   for key, value in pairs(opts) do
-    if vim.tbl_contains(keys, key) then
+    if value and value ~= "" and vim.tbl_contains(keys, key) then
       table.insert(hls, fmt("%s=%s", key, value))
     end
   end
