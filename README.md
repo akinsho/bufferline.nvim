@@ -388,14 +388,30 @@ To do this you must set the `offsets` configuration option to a list of tables c
 _NOTE:_ this is only relevant for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or `Vista`
 
 ```lua
-offsets = {{filetype = "NvimTree", text = "File Explorer", highlight = "Directory", text_align = "left"}}
+offsets = {
+  {
+    filetype = "NvimTree",
+    text = "File Explorer",
+    highlight = "Directory",
+    text_align = "left"
+  }
+}
 ```
 
 The `filetype` is used to check whether a particular window is a match, the `text` is _optional_ and will show above the window if specified.
-`text` can be either a string or a function which should also return a string. See below example.
+`text` can be either a string or a function which should also return a string. See the example below.
 
 ```lua
-offsets = {{filetype = "NvimTree", text = function() return vim.fn.getcwd() end, highlight = "Directory", text_align = "left"}}
+offsets = {
+  {
+    filetype = "NvimTree",
+    text = function()
+      return vim.fn.getcwd()
+    end,
+    highlight = "Directory",
+    text_align = "left"
+  }
+}
 ```
 
 If it is too long it will be truncated. The highlight controls what highlight is shown above the window.

@@ -264,11 +264,28 @@ for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or
     offsets = {{filetype = "NvimTree", text = "File Explorer", highlight = "Directory"}}
 <
 The `filetype` is used to check whether a particular window is a match, the
-`text` is *optional* and will show above the window if specified. If it is too
-long it will be truncated. The highlight controls what highlight is shown
-above the window.
+`text` is *optional* and will show above the window if specified.
+`text` can be either a string or a function which should also return a string.
+See the example below.
+>
+  offsets = {
+    {
+      filetype = "NvimTree",
+      text = function()
+        return vim.fn.getcwd()
+      end,
+      highlight = "Directory",
+      text_align = "left"
+    }
+  }
+
+
+If it is too long it will be truncated. The highlight controls what highlight
+is shown above the window.
+
 You can also change the alignment of the text in the offset section using
 `text_align` which can be set to `left`, `right` or `center`.
+
 Lastly you can specify a `padding` option as well which will increase the
 amount the bufferline is offset beyond just the window width, this isn't
 something that is generally required though.
