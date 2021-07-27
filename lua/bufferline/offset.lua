@@ -15,6 +15,9 @@ local t = {
 ---@return string
 local function get_section_text(size, highlight, offset)
   local text = offset.text
+  if type(text) == "function" then
+    text = text()
+  end
   local alignment = offset.text_align or "center"
   if not text then
     text = string.rep(" ", size)

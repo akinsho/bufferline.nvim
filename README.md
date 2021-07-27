@@ -231,7 +231,7 @@ require('bufferline').setup {
         return true
       end
     end,
-    offsets = {{filetype = "NvimTree", text = "File Explorer", text_align = "left" | "center" | "right"}},
+    offsets = {{filetype = "NvimTree", text = "File Explorer" | function , text_align = "left" | "center" | "right"}},
     show_buffer_icons = true | false, -- disable filetype icons for buffers
     show_buffer_close_icons = true | false,
     show_close_icon = true | false,
@@ -392,6 +392,12 @@ offsets = {{filetype = "NvimTree", text = "File Explorer", highlight = "Director
 ```
 
 The `filetype` is used to check whether a particular window is a match, the `text` is _optional_ and will show above the window if specified.
+`text` can be either a string or a function which should also return a string. See below example.
+
+```lua
+offsets = {{filetype = "NvimTree", text = function() return vim.fn.getcwd() end, highlight = "Directory", text_align = "left"}}
+```
+
 If it is too long it will be truncated. The highlight controls what highlight is shown above the window.
 You can also change the alignment of the text in the offset section using `text_align` which can be set to `left`, `right` or `center`.
 You can also add a `padding` key which should be an integer if you want the offset to be larger than the window width.
