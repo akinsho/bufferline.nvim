@@ -26,6 +26,9 @@ end
 -- parameters have their values shallow-copied to the final array.
 -- Note that userdata and function values are treated as scalar.
 -- https://stackoverflow.com/questions/1410862/concatenation-of-tables-in-lua
+--- @generic T
+--- @vararg `T`
+--- @return T[]
 function M.array_concat(...)
   local t = {}
   for n = 1, select("#", ...) do

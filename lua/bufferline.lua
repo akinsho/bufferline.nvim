@@ -22,6 +22,8 @@ local state = {
   is_picking = false,
   ---@type Buffer[]
   buffers = {},
+  ---@type Buffer[]
+  visible_buffers = {},
   current_letters = {},
   custom_sort = nil,
 }
@@ -91,6 +93,16 @@ function M.handle_click(id, button)
   }
   if id then
     handle_user_command(options[cmds[button]], id)
+  end
+end
+
+---Execute an arbitrary user function on a visible by it's position buffer
+---@param index number
+---@param func fun(num: number)
+function M.buf_exec(index, func)
+  local target = state.visible_buffers[index]
+  if target and type(func) == "function" then
+    func(target, state.visible_buffers)
   end
 end
 
@@ -563,16 +575,22 @@ local function truncation_component(count, icon, hls)
   return utils.join(hls.fill.hl, padding, count, padding, icon, padding)
 end
 
---[[
-PREREQUISITE: active buffer always remains in view
-1. Find amount of available space in the window
-2. Find the amount of space the bufferline will take up
-3. If the bufferline will be too long remove one tab from the before or after
-section
-4. Re-check the size, if still too long truncate recursively till it fits
-5. Add the number of truncated buffers as an indicator
---]]
-local function truncate(before, current, after, available_width, marker)
+--- PREREQUISITE: active buffer always remains in view
+--- 1. Find amount of available space in the window
+--- 2. Find the amount of space the bufferline will take up
+--- 3. If the bufferline will be too long remove one tab from the before or after
+--- section
+--- 4. Re-check the size, if still too long truncate recursively till it fits
+--- 5. Add the number of truncated buffers as an indicator
+---@param before Buffers
+---@param current Buffers
+---@param after Buffers
+---@param available_width number
+---@param marker table
+---@return string
+---@return table
+---@return Buffer[]
+local function truncate(before, current, after, available_width, marker, visible)
   local line = ""
 
   local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)
@@ -583,17 +601,16 @@ local function truncate(before, current, after, available_width, marker)
   local total_length = before.length + current.length + after.length + markers_length
 
   if available_width >= total_length then
+    visible = utils.array_concat(before.buffers, current.buffers, after.buffers)
+    for index, buf in ipairs(visible) do
+      line = line .. buf.component(index, #visible)
+    end
+    return line, marker, visible
     -- if we aren't even able to fit the current buffer into the
     -- available space that means the window is really narrow
     -- so don't show anything
-    -- Merge all the buffers and render the components
-    local bufs = utils.array_concat(before.buffers, current.buffers, after.buffers)
-    for index, buf in ipairs(bufs) do
-      line = line .. buf.component(index, #bufs)
-    end
-    return line, marker
   elseif available_width < current.length then
-    return "", marker
+    return "", marker, visible
   else
     if before.length >= after.length then
       before:drop(1)
@@ -610,7 +627,7 @@ local function truncate(before, current, after, available_width, marker)
       marker.left_count = 0
       marker.right_count = 0
     end
-    return truncate(before, current, after, available_width, marker), marker
+    return truncate(before, current, after, available_width, marker, visible)
   end
 end
 
@@ -660,12 +677,14 @@ local function render(bufs, tbs, prefs)
     - close_length
 
   local before, current, after = get_sections(bufs)
-  local line, marker = truncate(before, current, after, available_width, {
+  local line, marker, visible_buffers = truncate(before, current, after, available_width, {
     left_count = 0,
     right_count = 0,
     left_element_size = left_element_size,
     right_element_size = right_element_size,
   })
+
+  state.visible_buffers = visible_buffers
 
   if marker.left_count > 0 then
     local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
@@ -785,12 +804,12 @@ local function bufferline(preferences)
   return render(state.buffers, all_tabs, preferences)
 end
 
+--- Open a buffer based on it's visible position in the list
 ---@param num number
 function M.go_to_buffer(num)
-  local buf_nums = get_buffers_by_mode()
-  buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
-  if num <= #buf_nums then
-    vim.cmd("buffer " .. buf_nums[num])
+  local buf = state.visible_buffers[num]
+  if buf then
+    vim.cmd("buffer " .. buf.id)
   end
 end
 
@@ -937,10 +956,6 @@ end
 
 ---@param preferences BufferlineConfig
 local function setup_mappings(preferences)
-  -- TODO: / idea: consider allowing these mappings to open buffers based on their
-  -- visual position i.e. <leader>1 maps to the first visible buffer regardless
-  -- of it actual ordinal number i.e. position in the full list or it's actual
-  -- buffer id
   if preferences.options.mappings then
     for i = 1, 9 do
       api.nvim_set_keymap(
