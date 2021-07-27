@@ -982,6 +982,7 @@ local function setup_commands()
     { name = "BufferLineSortByDirectory", cmd = 'sort_buffers_by("directory")' },
     { name = "BufferLineSortByRelativeDirectory", cmd = 'sort_buffers_by("relative_directory")' },
     { name = "BufferLineSortByTabs", cmd = 'sort_buffers_by("tabs")' },
+    -- { name = "BufferLineBufExec", count = true, cmd = 'buf_exec(v:count, )'}
   }
   for _, cmd in ipairs(cmds) do
     vim.cmd(fmt('command! %s lua require("bufferline").%s', cmd.name, cmd.cmd))
