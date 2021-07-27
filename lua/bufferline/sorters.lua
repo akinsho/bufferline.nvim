@@ -46,7 +46,6 @@ local function sort_by_id(buf_a, buf_b)
   return buf_a.id < buf_b.id
 end
 
-
 local maxinteger = 1000000000
 
 --- @param buf Buffer
@@ -54,7 +53,7 @@ local function init_buffer_tabnr(buf)
   -- If the buffer is visible, then its initial value shouldn't be
   -- maxed to prevent sorting it to the end of the list.
   if next(vim.fn.win_findbuf(buf.id)) ~= nil then
-      return 0
+    return 0
   end
 
   -- We use the max integer as a default tab number for hidden buffers,
@@ -71,16 +70,16 @@ local function sort_by_tabs(buf_a, buf_b)
 
   local tabs = vim.fn.gettabinfo()
   for _, tab in ipairs(tabs) do
-      local buffers = vim.fn.tabpagebuflist(tab.tabnr)
-      if buffers ~= 0 then
-          for _, buf_id in ipairs(buffers) do
-              if buf_id == buf_a.id then
-                  buf_a_tabnr = tab.tabnr
-              elseif buf_id == buf_b.id then
-                  buf_b_tabnr = tab.tabnr
-              end
-          end
+    local buffers = vim.fn.tabpagebuflist(tab.tabnr)
+    if buffers ~= 0 then
+      for _, buf_id in ipairs(buffers) do
+        if buf_id == buf_a.id then
+          buf_a_tabnr = tab.tabnr
+        elseif buf_id == buf_b.id then
+          buf_b_tabnr = tab.tabnr
+        end
       end
+    end
   end
 
   return buf_a_tabnr < buf_b_tabnr
