@@ -682,7 +682,7 @@ local function get_updated_buffers(buf_nums, sorted)
   if not sorted then
     return buf_nums
   end
-
+  local nums = { unpack(buf_nums) }
   local reverse_lookup_sorted = utils.tbl_reverse_lookup(sorted)
 
   --- a comparator that sorts buffers by their position in sorted
@@ -697,10 +697,8 @@ local function get_updated_buffers(buf_nums, sorted)
     end
     return buf_1_rank < buf_2_rank
   end
-
-  table.sort(buf_nums, sort_by_sorted)
-
-  return buf_nums
+  table.sort(nums, sort_by_sorted)
+  return nums
 end
 
 ---Filter the buffers to show based on the user callback passed in
