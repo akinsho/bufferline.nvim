@@ -31,6 +31,14 @@ body:
       value: "Expected behaviour"
     validations:
       required: true
+  - type: textarea
+    id: additional-information
+    attributes:
+      label: Additional Information
+      placeholder: Add in any relevant additional information
+      value: "..."
+    validations:
+      required: true
   - type: input
     id: commit
     attributes:
@@ -38,9 +46,3 @@ body:
       description: what commit triggered this issue?
     validations:
       required: false
-  - type: textarea
-    id: logs
-    attributes:
-      label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: shell
