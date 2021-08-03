@@ -79,7 +79,7 @@ end
 --- Valid window layouts can be
 --- * A list of full height splits in a row:
 --- `{'row', ['leaf', id], ['leaf', id]}`
---- * A row splits where one on either edge is not full height but the matching
+--- * A row of splits where one on either edge is not full height but the matching
 --- split is on the top:
 --- e.g. the vertical tool bar is split in two such as for undo tree
 --- `{'row', ['col', ['leaf', id], ['leaf', id]], ['leaf', id]}`
