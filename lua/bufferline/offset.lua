@@ -6,6 +6,12 @@ local fn = vim.fn
 local t = {
   LEAF = "leaf",
   ROW = "row",
+  COLUMN = "col",
+}
+
+local supported_win_types = {
+  [t.LEAF] = true,
+  [t.COLUMN] = true,
 }
 
 ---Format the content of a neighbouring offset's text
@@ -69,6 +75,26 @@ local function guess_window_highlight(win_id, attribute, match)
   return match
 end
 
+--- This helper checks to see if bufferline supports creating an offset for the given layout
+--- Valid window layouts can be
+--- * A list of full height splits in a row:
+--- `{'row', ['leaf', id], ['leaf', id]}`
+--- * A row of splits where one on either edge is not full height but the matching
+--- split is on the top:
+--- e.g. the vertical tool bar is split in two such as for undo tree
+--- `{'row', ['col', ['leaf', id], ['leaf', id]], ['leaf', id]}`
+---
+---@param windows table[]
+---@return boolean
+---@return number
+local function is_valid_layout(windows)
+  local win_type, win_id = windows[1], windows[2]
+  if vim.tbl_islist(win_id) and win_type == t.COLUMN then
+    win_id = win_id[1][2]
+  end
+  return supported_win_types[win_type] and type(win_id) == "number", win_id
+end
+
 --- Test if the windows within a layout row contain the correct panel buffer
 --- NOTE: this only tests the first and last windows as those are the only
 --- ones that it makes sense to add a panel for
@@ -83,8 +109,8 @@ local function is_offset_section(windows, offset)
     wins[#wins + 1] = windows[#windows]
   end
   for idx, win in ipairs(wins) do
-    local _type, win_id = win[1], win[2]
-    if _type == t.LEAF and type(win_id) == "number" then
+    local valid_layout, win_id = is_valid_layout(win)
+    if valid_layout then
       local buf = api.nvim_win_get_buf(win_id)
       local valid = buf and vim.bo[buf].filetype == offset.filetype
       local is_left = idx == 1

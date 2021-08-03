@@ -4,7 +4,7 @@ local fmt = string.format
 
 local filetype = "test"
 
-local function open_test_panel(direction, ft)
+local function open_test_panel(direction, ft, on_open)
   direction = direction or "H"
   ft = ft or filetype
   local win = api.nvim_get_current_win()
@@ -14,6 +14,9 @@ local function open_test_panel(direction, ft)
   local new_ft = fmt("%s_%d", ft, win_id)
   vim.cmd(fmt("setfiletype %s", new_ft))
   api.nvim_win_set_width(api.nvim_get_current_win(), 20)
+  if on_open then
+    on_open()
+  end
   api.nvim_set_current_win(win)
   vim.wo[win_id].winfixwidth = true
   return new_ft, win_id
@@ -108,7 +111,7 @@ describe("Offset tests:", function()
     assert.equal(40, size)
   end)
 
-  it('should allow setting some extra padding', function()
+  it("should allow setting some extra padding", function()
     local ft1 = open_test_panel()
     local size, left, _ = offsets.get({
       highlights = {},
@@ -121,7 +124,7 @@ describe("Offset tests:", function()
     assert.equal(25, size)
   end)
 
-  it('should align the text to the right if specified', function()
+  it("should align the text to the right if specified", function()
     local ft1 = open_test_panel()
     local text = "Text"
     local size, left, _ = offsets.get({
@@ -132,10 +135,10 @@ describe("Offset tests:", function()
     })
 
     assert.equal(20, size)
-    assert.equal(remove_highlight(left), string.rep(" ", size - (#text + 1))..text.." ")
+    assert.equal(remove_highlight(left), string.rep(" ", size - (#text + 1)) .. text .. " ")
   end)
 
-  it('should align the text to the left if specified', function()
+  it("should align the text to the left if specified", function()
     local text = "Text"
     local ft1 = open_test_panel()
     local size, left, _ = offsets.get({
@@ -146,6 +149,22 @@ describe("Offset tests:", function()
     })
 
     assert.equal(20, size)
-    assert.equal(remove_highlight(left), " "..text..string.rep(" ", size - (#text + 1)))
+    assert.equal(remove_highlight(left), " " .. text .. string.rep(" ", size - (#text + 1)))
+  end)
+
+  it("should handle a vertical panel with horizontal splits inside it", function()
+    local ft = open_test_panel("H", filetype, function()
+      -- add some child horizontal splits to the panel
+      vim.cmd("split")
+      vim.cmd("split")
+    end)
+    local opts = {
+      highlights = {},
+      options = { offsets = { { filetype = ft } } },
+    }
+    local size, left, right = offsets.get(opts)
+    assert.equal(20, size)
+    assert.equal(right, "")
+    assert.is_truthy(left:match(" "))
   end)
 end)
