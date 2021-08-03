@@ -1,0 +1,41 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please make sure you have read *both* the README *and* help text before opening an issue.
+        Highlight groups are documented in the help docs.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      placeholder: Please decribe the bug you are experiencing?
+      value: "The issue is that..."
+    validations:
+      required: true
+  - type: textarea
+    id: what-expected
+    attributes:
+      label: What did you expect to happen?
+      description: Expected behaviour
+      value: "Expected behaviour"
+    validations:
+      required: true
+  - type: textarea
+    id: additional-information
+    attributes:
+      label: Additional Information
+      placeholder: Add in any relevant additional information
+      value: "..."
+    validations:
+      required: false
+  - type: input
+    id: commit
+    attributes:
+      label: commit
+      description: what commit triggered this issue?
+    validations:
+      required: false
