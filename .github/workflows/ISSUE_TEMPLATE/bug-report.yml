@@ -6,15 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please make sure you have read both the README and help text before opening an issue
-  - type: input
-    id: contact
-    attributes:
-      label: Contact Details
-      description: How can we get in touch with you if we need more info?
-      placeholder: ex. email@example.com
-    validations:
-      required: false
+        Please make sure you have read *both* the README *and* help text before opening an issue.
+        Highlight groups are documented in the help docs.
   - type: textarea
     id: what-happened
     attributes:
@@ -24,7 +17,7 @@ body:
     validations:
       required: true
   - type: textarea
-    id: what-expedcted
+    id: what-expected
     attributes:
       label: What did you expect to happen?
       description: Expected behaviour
@@ -38,7 +31,7 @@ body:
       placeholder: Add in any relevant additional information
       value: "..."
     validations:
-      required: true
+      required: false
   - type: input
     id: commit
     attributes:
