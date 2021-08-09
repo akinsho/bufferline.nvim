@@ -241,6 +241,10 @@ local function derive_colors()
       guifg = comment_fg,
       guibg = background_color,
     },
+    buffer = {
+      guifg = comment_fg,
+      guibg = background_color,
+    },
     buffer_visible = {
       guifg = comment_fg,
       guibg = visible_bg,
@@ -483,6 +487,9 @@ function M.apply()
   validate_config(user_config, defaults)
   convert_hl_tables(user_config)
   config = merge(defaults, user_config)
+  if config.options.groups then
+    require("bufferline.groups").set_hls(config)
+  end
   add_highlight_groups(config.highlights)
   return config
 end
@@ -498,6 +505,9 @@ end
 ---Update highlight colours when the colour scheme changes
 function M.update_highlights()
   config.highlights = merge(derive_colors(), user_config.highlights or {})
+  if config.options.groups then
+    require("bufferline.groups").set_hls(config)
+  end
   add_highlight_groups(config.highlights)
   return config
 end
