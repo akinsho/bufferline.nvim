@@ -34,6 +34,15 @@ function M.set_one(name, opts)
   end
 end
 
+---Generate highlight groups from user
+---@param highlight table
+function M.add_group(name, highlight)
+  -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
+  local formatted = "BufferLine" .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
+  highlight.hl_name = formatted
+  highlight.hl = require("bufferline.highlights").hl(formatted)
+end
+
 --- Map through user colors and convert the keys to highlight names
 --- by changing the strings to pascal case and using those for highlight name
 --- @param user_colors table

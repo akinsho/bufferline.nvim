@@ -468,13 +468,11 @@ end
 
 ---Generate highlight groups from user
 ---@param highlights table<string, table>
---- TODO: can this become part of a metatable for each highlight group so it is done at the time
+--- TODO: can this become part of a metatable for each highlight group so it is done at the point
+---of usage
 local function add_highlight_groups(highlights)
   for name, tbl in pairs(highlights) do
-    -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
-    local formatted = "BufferLine" .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
-    tbl.hl_name = formatted
-    tbl.hl = require("bufferline.highlights").hl(formatted)
+    require("bufferline.highlights").add_group(name, tbl)
   end
 end
 
