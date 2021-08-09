@@ -474,8 +474,9 @@ local function highlight_icon(buffer)
   end
   local guifg = colors.get_hex({ name = hl, attribute = "fg" })
   local guibg = colors.get_hex({ name = bg_hl, attribute = "bg" })
-  require("bufferline.highlights").set_one(new_hl, { guibg = guibg, guifg = guifg })
-  return "%#" .. new_hl .. "#" .. icon .. padding .. "%*"
+  local H = require("bufferline.highlights")
+  H.set_one(new_hl, { guibg = guibg, guifg = guifg })
+  return H.hl(new_hl) .. icon .. padding .. "%*"
 end
 
 ---Determine if the separator style is one of the slant options
