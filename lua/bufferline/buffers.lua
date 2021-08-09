@@ -29,7 +29,7 @@ local M = {}
 local Buffer = {}
 ---@field public group Group
 ---@field public group_fn string
-M.Buffer = {}
+local Buffer = {}
 
 ---create a new buffer class
 ---@param buf Buffer
