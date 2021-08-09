@@ -218,17 +218,16 @@ end
 
 local function truncate_filename(filename, word_limit)
   local trunc_symbol = "…"
-  local too_long = api.nvim_strwidth(filename) > word_limit
-  if not too_long then
+  if api.nvim_strwidth(filename) <= word_limit then
     return filename
   end
   -- truncate nicely by seeing if we can drop the extension first
   -- to make things fit if not then truncate abruptly
-  local without_prefix = vim.fn.fnamemodify(filename, ":t:r")
+  local without_prefix = fn.fnamemodify(filename, ":t:r")
   if api.nvim_strwidth(without_prefix) < word_limit then
     return without_prefix .. trunc_symbol
   else
-    return string.sub(filename, 0, word_limit - 1) .. trunc_symbol
+    return fn.strcharpart(filename, 0, word_limit - 1) .. trunc_symbol
   end
 end
 
