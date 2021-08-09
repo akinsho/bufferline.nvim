@@ -27,6 +27,9 @@ local M = {}
 ---@field public prefix_count boolean
 ---@field public component BufferComponent
 local Buffer = {}
+---@field public group Group
+---@field public group_fn string
+M.Buffer = {}
 
 ---create a new buffer class
 ---@param buf Buffer

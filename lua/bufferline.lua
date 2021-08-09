@@ -360,11 +360,11 @@ end
 
 --- TODO: find a tidier way to do this if possible
 ---@param buffer Buffer
----@param hls table<string, table<string, string>>
+---@param highlights table<string, table<string, string>>
 ---@return table
-local function get_buffer_highlight(buffer, hls)
+local function get_buffer_highlight(buffer, highlights)
   local hl = {}
-  local h = hls
+  local h = highlights
 
   if buffer:current() then
     hl.background = h.buffer_selected.hl
@@ -372,7 +372,7 @@ local function get_buffer_highlight(buffer, hls)
     hl.duplicate = h.duplicate_selected.hl
     hl.pick = h.pick_selected.hl
     hl.separator = h.separator_selected.hl
-    hl.buffer = h.buffer_selected
+    hl.buffer = { hl = buffer.group.highlight } or h.buffer_selected
     hl.diagnostic = h.diagnostic_selected.hl
     hl.error = h.error_selected.hl
     hl.error_diagnostic = h.error_diagnostic_selected.hl
@@ -931,6 +931,7 @@ local function bufferline(preferences)
 
   local pick = require("bufferline.pick")
   local duplicates = require("bufferline.duplicates")
+  local groups = require("bufferline.groups")
 
   pick.reset()
   duplicates.reset()
@@ -947,6 +948,7 @@ local function bufferline(preferences)
       name_formatter = options.name_formatter,
     })
     buf.letter = pick.get(buf)
+    buf.group = groups.get(buf, options.groups)
     buffers[i] = buf
   end
 
