@@ -142,6 +142,8 @@ local function merge(defaults, preferences)
   return preferences
 end
 
+---Derive the colors for the bufferline
+---@return table
 local function derive_colors()
   local colors = require("bufferline.colors")
   local hex = colors.get_hex
