@@ -42,6 +42,14 @@ end
 
 --- @param buf_a Buffer
 --- @param buf_b Buffer
+local function sort_by_group(buf_a, buf_b)
+  local a_grp = buf_a.group or { priority = 0 }
+  local b_grp = buf_b.group or { priority = 0 }
+  return a_grp.priority > b_grp.priority
+end
+
+--- @param buf_a Buffer
+--- @param buf_b Buffer
 local function sort_by_id(buf_a, buf_b)
   return buf_a.id < buf_b.id
 end
@@ -95,6 +103,8 @@ function M.sort_buffers(sort_by, buffers)
     table.sort(buffers, sort_by_relative_directory)
   elseif sort_by == "id" then
     table.sort(buffers, sort_by_id)
+  elseif sort_by == "group" then
+    table.sort(buffers, sort_by_group)
   elseif sort_by == "tabs" then
     table.sort(buffers, sort_by_tabs)
   elseif type(sort_by) == "function" then

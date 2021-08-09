@@ -5,9 +5,10 @@ local fmt = string.format
 ---@alias grouper fun(b: Buffer): boolean
 
 ---@class Group
----@field name string
----@field fn grouper
----@field highlight string
+---@field public name string
+---@field public fn grouper
+---@field public priority number
+---@field public highlight string
 
 ---Group buffers based on user criteria
 ---@param buffer Buffer
@@ -16,9 +17,10 @@ function M.get(buffer, groups)
   if not groups or #groups < 1 then
     return
   end
-  for _, grp in ipairs(groups) do
-    if type(grp.fn) == "function" and grp.fn(buffer) then
-      return grp
+  for index, group in ipairs(groups) do
+    if type(group.fn) == "function" and group.fn(buffer) then
+      group.priority = group.priority or index
+      return group
     end
   end
 end
@@ -32,8 +34,8 @@ function M.component(ctx)
   return ctx.component, ctx.length
 end
 
----Add group highlights to the user highlights table
----NOTE: this function mutates the user's configuration.
+--- Add group highlights to the user highlights table
+--- NOTE: this function mutates the user's configuration.
 ---@param config table
 function M.set_hls(config)
   assert(
@@ -60,8 +62,8 @@ function M.set_hls(config)
   end
 end
 
----Add the current highlight for a specific buffer
----NOTE: this function mutates the current highlights.
+--- Add the current highlight for a specific buffer
+--- NOTE: this function mutates the current highlights.
 ---@param buffer Buffer
 ---@param highlights table<string, table<string, string>>
 ---@param current_hl table<string, string>
