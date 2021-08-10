@@ -60,10 +60,9 @@ end
 -- https://github.com/bagrat/vim-buffet/blob/28e8535766f1a48e6006dc70178985de2b8c026d/autoload/buffet.vim#L186
 -- If the current buffer in the current window has a matching ID it is ours and so should
 -- have the main selected highlighting. If it isn't but it is the window highlight it as inactive
--- the "trick" here is that "bufwinnr" retunrs a value which is the first window associated with a buffer
+-- the "trick" here is that "bufwinnr" returns a value which is the first window associated with a buffer
 -- if there are no windows associated i.e. it is not in view and the function returns -1
--- FIXME this does not work if the same buffer is open in multiple window
--- maybe do something with win_findbuf(bufnr('%'))
+-- FIXME: this does not work if the same buffer is open in multiple window maybe do something with win_findbuf(bufnr('%'))
 function Buffer:current()
   return fn.winbufnr(0) == self.id
 end
