@@ -1,5 +1,6 @@
 local M = {}
 
+local api = vim.api
 local fmt = string.format
 
 ---@alias grouper fun(b: Buffer): boolean
@@ -9,6 +10,7 @@ local fmt = string.format
 ---@field public fn grouper
 ---@field public priority number
 ---@field public highlight string
+---@field public icon string
 
 ---Group buffers based on user criteria
 ---@param buffer Buffer
@@ -32,8 +34,12 @@ end
 function M.component(ctx)
   local buffer = ctx.buffer
   local hls = ctx.current_highlights
-  if buffer.group then
-    return hls[buffer.group.name] .. ctx.component, ctx.length
+  local group = buffer.group
+  if group then
+    --- TODO: should there be default icons at all
+    local icon = group.icon and group.icon .. " " or " "
+    local icon_length = api.nvim_strwidth(icon)
+    return hls[group.name] .. icon .. ctx.component, ctx.length + icon_length
   end
   return ctx.component, ctx.length
 end
@@ -51,18 +57,20 @@ function M.set_hls(config)
   end
   local hls = config.highlights
   local groups = config.options.groups
-  for _, grp in ipairs(groups) do
-    local hl = grp.highlight
-    local name = grp.name
-    hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
-      guibg = hls.buffer_selected.guibg,
-    })
-    hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, {
-      guibg = hls.buffer_visible.guibg,
-    })
-    hls[name] = vim.tbl_extend("keep", hl, {
-      guibg = hls.buffer.guibg,
-    })
+  for _, group in ipairs(groups) do
+    local hl = group.highlight
+    local name = group.name
+    if hl and type(hl) == "table" then
+      hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
+        guibg = hls.buffer_selected.guibg,
+      })
+      hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, {
+        guibg = hls.buffer_visible.guibg,
+      })
+      hls[name] = vim.tbl_extend("keep", hl, {
+        guibg = hls.buffer.guibg,
+      })
+    end
   end
 end
 

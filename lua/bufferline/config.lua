@@ -37,6 +37,7 @@ local user_config = {}
 ---@field public diagnostics_indicator function?
 ---@field public diagnostics_update_in_insert boolean
 ---@field public offsets table[]
+---@field public groups Group[]
 
 local deprecations = {
   mappings = {
