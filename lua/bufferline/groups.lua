@@ -25,6 +25,10 @@ function M.get(buffer, groups)
   end
 end
 
+---Add group styling to the buffer component
+---@param ctx BufferlineContext
+---@return string
+---@return number
 function M.component(ctx)
   local buffer = ctx.buffer
   local hls = ctx.current_highlights
@@ -36,7 +40,7 @@ end
 
 --- Add group highlights to the user highlights table
 --- NOTE: this function mutates the user's configuration.
----@param config table
+---@param config BufferlineConfig
 function M.set_hls(config)
   assert(
     config and config.options,

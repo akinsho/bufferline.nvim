@@ -692,6 +692,13 @@ local function get_buffer_name(ctx)
   return ctx:update({ component = filename, length = strwidth(filename) })
 end
 
+---@class BufferlineContext
+---@field length string
+---@field component string
+---@field preferences BufferlineOptions
+---@field current_highlights table<string, table<string, string>>
+---@field buffer Buffer
+
 --- @param preferences table
 --- @param buffer Buffer
 --- @return BufferComponent,number
