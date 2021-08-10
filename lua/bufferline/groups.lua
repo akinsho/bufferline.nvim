@@ -102,4 +102,17 @@ function M.command(buffers, group_name, callback)
     return buf.group and group_name and buf.group.name == group_name
   end)
 end
+
+---Get the names for all bufferline groups
+---@return string[]
+function M.names()
+  local opts = require("bufferline.config").get("options")
+  if opts.groups == nil then
+    return {}
+  end
+  return vim.tbl_map(function(group)
+    return group.name
+  end, opts.groups)
+end
+
 return M

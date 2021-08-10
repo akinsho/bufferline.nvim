@@ -15,6 +15,9 @@ local positions_key = constants.positions_key
 
 local M = {}
 
+--- Global namespace for callbacks and other use cases such as commandline completion functions
+_G.__bufferline = __bufferline or {}
+
 -----------------------------------------------------------------------------//
 -- State
 -----------------------------------------------------------------------------//
@@ -1028,22 +1031,12 @@ function M.group_action(name, action)
   end
 end
 
----@param preferences BufferlineConfig
-local function setup_mappings(preferences)
-  -- TODO: / idea: consider allowing these mappings to open buffers based on their
-  -- visual position i.e. <leader>1 maps to the first visible buffer regardless
-  -- of it actual ordinal number i.e. position in the full list or it's actual
-  -- buffer id
-  if preferences.options.mappings then
-    for i = 1, 9 do
-      api.nvim_set_keymap(
-        "n",
-        "<leader>" .. i,
-        ':lua require"bufferline".go_to_buffer(' .. i .. ")<CR>",
-        { silent = true, nowait = true, noremap = true }
-      )
-    end
-  end
+---@param arg_lead string
+---@param cmd_line string
+---@param cursor_pos number
+---@return string[]
+function _G.__bufferline.complete_groups(arg_lead, cmd_line, cursor_pos)
+  return require("bufferline.groups").names()
 end
 
 local function setup_commands()
@@ -1061,10 +1054,21 @@ local function setup_commands()
     { name = "BufferLineSortByRelativeDirectory", cmd = 'sort_buffers_by("relative_directory")' },
     { name = "BufferLineSortByTabs", cmd = 'sort_buffers_by("tabs")' },
     { name = "BufferLineGoToBuffer", cmd = "go_to_buffer(<q-args>)", nargs = 1 },
+    {
+      nargs = 1,
+      name = "BufferLineGroupClose",
+      cmd = 'group_action(<q-args>, "close")',
+      complete = "complete_groups",
+    },
   }
   for _, cmd in ipairs(cmds) do
     local nargs = cmd.nargs and fmt("-nargs=%d", cmd.nargs) or ""
-    vim.cmd(fmt('command! %s %s lua require("bufferline").%s', nargs, cmd.name, cmd.cmd))
+    local complete = cmd.complete
+        and fmt("-complete=customlist,v:lua.__bufferline.%s", cmd.complete)
+      or ""
+    vim.cmd(
+      fmt('command! %s %s %s lua require("bufferline").%s', nargs, complete, cmd.name, cmd.cmd)
+    )
   end
 end
 
