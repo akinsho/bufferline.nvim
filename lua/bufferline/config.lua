@@ -2,7 +2,9 @@ local M = {}
 
 local fmt = string.format
 
+---@type BufferlineConfig
 local config = {}
+---@type BufferlineConfig
 local user_config = {}
 
 ---@class BufferlineOptions
