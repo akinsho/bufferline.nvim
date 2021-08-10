@@ -92,6 +92,22 @@ function M.array_concat(...)
   return t
 end
 
+---Execute a callback for each item or only those that match if a matcher is passed
+---@generic T
+---@param list T[]
+---@param callback fun(item: `T`)
+---@param matcher fun(item: `T`):boolean
+function M.for_each(list, callback, matcher)
+  for _, item in ipairs(list) do
+    if matcher == nil then
+      return callback(item)
+    end
+    if matcher(item) then
+      callback(item)
+    end
+  end
+end
+
 --- @param array table
 --- @return table
 function M.filter_duplicates(array)

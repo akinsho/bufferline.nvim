@@ -93,4 +93,13 @@ function M.set_current_hl(buffer, highlights, current_hl)
   end
 end
 
+---Execute a command on each buffer of a group
+---@param buffers Buffers[]
+---@param group_name string
+---@param callback fun(b: Buffer)
+function M.command(buffers, group_name, callback)
+  require("bufferline.utils").for_each(buffers, callback, function(buf)
+    return buf.group and group_name and buf.group.name == group_name
+  end)
+end
 return M

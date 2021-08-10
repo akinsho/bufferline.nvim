@@ -1013,6 +1013,39 @@ local function setup_autocommands(preferences)
   utils.augroup({ BufferlineColors = autocommands })
 end
 
+---Execute an action on a group of buffers
+---@param name string
+---@param action 'close' | fun(b: Buffer)
+function M.group_action(name, action)
+  assert(name, "A name must be passed to execute a group action")
+  local groups = require("bufferline.groups")
+  if action == "close" then
+    groups.command(state.buffers, name, function(b)
+      api.nvim_buf_delete(b.id, { force = true })
+    end)
+  elseif type(action) == "function" then
+    groups.command(state.buffers, name, action)
+  end
+end
+
+---@param preferences BufferlineConfig
+local function setup_mappings(preferences)
+  -- TODO: / idea: consider allowing these mappings to open buffers based on their
+  -- visual position i.e. <leader>1 maps to the first visible buffer regardless
+  -- of it actual ordinal number i.e. position in the full list or it's actual
+  -- buffer id
+  if preferences.options.mappings then
+    for i = 1, 9 do
+      api.nvim_set_keymap(
+        "n",
+        "<leader>" .. i,
+        ':lua require"bufferline".go_to_buffer(' .. i .. ")<CR>",
+        { silent = true, nowait = true, noremap = true }
+      )
+    end
+  end
+end
+
 local function setup_commands()
   local cmds = {
     { name = "BufferLinePick", cmd = "pick_buffer()" },
