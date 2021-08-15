@@ -31,45 +31,49 @@ local subscript_numbers = {
 -- from number to the styled number
 local convert_to_styled_num = function(t, n)
   n = tostring(n)
-  local r = ""
+  local str = ""
   for i = 1, #n do
-    r = r .. t[n:sub(i, i)]
+    str = str .. t[n:sub(i, i)]
   end
-  return r
+  return str
 end
 
+-- build numbers string depending on config settings
 local function prefix(buffer, mode, style)
-  -- if mode is both, it numbers will look similar lightline-bufferline, buffer_id at top left
-  -- and ordinal number at bottom right, so the user see the buffer number
-  if mode == "both" then
-    -- default number_style for mode "both"
-    local both_style = { buffer_id = "none", ordinal = "subscript" }
-    if style ~= "superscript" and type(style) == "table" then
-      both_style.buffer_id = style[1] and style[1] or both_style.buffer_id
-      both_style.ordinal = style[2] and style[2] or both_style.ordinal
+  local str = "" -- a result that will be returned from the function
+  local function str_append_with_style(number_style, number)
+    if number_style == "superscript" then
+      str = str .. convert_to_styled_num(superscript_numbers, number)
+    elseif number_style == "subscript" then
+      str = str .. convert_to_styled_num(subscript_numbers, number)
+    else -- "none"
+      str = str .. number
     end
-
-    local num = ""
-    for _, v in ipairs({ "buffer_id", "ordinal" }) do
-      local ordinal = v == "ordinal"
-      local s = both_style[v] --  "superscript"| "subscript" | "none"
-      if s == "superscript" then
-        num = num
-          .. convert_to_styled_num(superscript_numbers, ordinal and buffer.ordinal or buffer.id)
-      elseif s == "subscript" then
-        num = num
-          .. convert_to_styled_num(subscript_numbers, ordinal and buffer.ordinal or buffer.id)
-      else -- "none"
-        num = num .. (v == "ordinal" and buffer.ordinal or buffer.id) .. "."
-      end
-    end
-
-    return num
-  else
-    local n = mode == "ordinal" and buffer.ordinal or buffer.id
-    local num = style == "superscript" and convert_to_styled_num(superscript_numbers, n) or n .. "."
-    return num
   end
+  -- if mode is "both" then by default numbers will look similar to lightline-bufferline
+  -- with buffer_id at the top left and ordinal number at the bottom right,
+  -- also conversely with "ordinal_first"
+  if mode == "both" or mode == "ordinal_first" then
+    -- trying to override default styles with user-defined
+    local first_number_style, second_number_style = style, style
+    if type(style) == "table" then first_number_style, second_number_style = style[1], style[2] end
+    first_number_style, second_number_style = first_number_style or "none", second_number_style or "subscript"
+
+    local numbers = mode == "ordinal_first" and { buffer.ordinal, buffer.id } or { buffer.id, buffer.ordinal }
+    -- append the first number
+    str_append_with_style(first_number_style, numbers[1])
+    -- append some sensible styling after
+    if first_number_style == "none" or first_number_style == "subscript" and second_number_style == "none" then
+      str = str .. '.' -- makes numbers less confusing in this case
+    elseif first_number_style == second_number_style then
+      str = str .. ' ' -- adds space between numbers, so they don't look like one
+    end
+    -- append the second number
+    str_append_with_style(second_number_style, numbers[2])
+  else
+    str_append_with_style(style, mode == "ordinal" and buffer.ordinal or buffer.id)
+  end
+  return str
 end
 
 --- @param context table

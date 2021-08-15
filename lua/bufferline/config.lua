@@ -387,7 +387,7 @@ local function get_defaults()
     options = {
       view = "default",
       numbers = "none",
-      number_style = "superscript",
+      number_style = nil,
       buffer_close_icon = "",
       modified_icon = "●",
       close_icon = "",
