@@ -805,11 +805,16 @@ local function bufferline(preferences)
 end
 
 --- Open a buffer based on it's visible position in the list
----@param num number
-function M.go_to_buffer(num)
-  local buf = state.visible_buffers[num]
+--- unless absolute is specified in which case this will open it based on it place in the full list
+--- this is significantly less helpful if you have a lot of buffers open
+---@param num number | string
+---@param absolute boolean whether or not to use the buffers absolute position or visible positions
+function M.go_to_buffer(num, absolute)
+  num = type(num) == "string" and tonumber(num) or num
+  local list = absolute and state.buffers or state.visible_buffers
+  local buf = list[num]
   if buf then
-    vim.cmd("buffer " .. buf.id)
+    vim.cmd(fmt("buffer %d", buf.id))
   end
 end
 
@@ -968,9 +973,11 @@ local function setup_commands()
     { name = "BufferLineSortByDirectory", cmd = 'sort_buffers_by("directory")' },
     { name = "BufferLineSortByRelativeDirectory", cmd = 'sort_buffers_by("relative_directory")' },
     { name = "BufferLineSortByTabs", cmd = 'sort_buffers_by("tabs")' },
+    { name = "BufferLineGoToBuffer", cmd = "go_to_buffer(<q-args>)", nargs = 1 },
   }
   for _, cmd in ipairs(cmds) do
-    vim.cmd(fmt('command! %s lua require("bufferline").%s', cmd.name, cmd.cmd))
+    local nargs = cmd.nargs and fmt("-nargs=%d", cmd.nargs) or ""
+    vim.cmd(fmt('command! %s %s lua require("bufferline").%s', nargs, cmd.name, cmd.cmd))
   end
 end
 
