@@ -354,15 +354,38 @@ the `close_command`.
 ==============================================================================
 MAPPINGS                                               *bufferline-lua-mappings*
 
-If the `mappings` option is set to `true`. `<leader>`1-9 mappings will be
-created to navigate the first to the tenth buffer in the bufferline.
+`BufferLineGoToBuffer`
 
-NOTE This is `false` by default.
+You can select a buffer by it's visible position in the bufferline using the `BufferLineGoToBuffer`
+command. This means that if you have 60 buffers open but only 7 visible in the bufferline
+then using `BufferLineGoToBuffer 4` will go to the 4th visible buffer not necessarily the 5 in the
+absolute list of open buffers.
+>
+
+  <- (30) | buf31 | buf32 | buf33 | buf34 | buf35 | buf36 | buf37 (24) ->
+<
+
+Using `BufferLineGoToBuffer 4` will open `buf34` as it is the 4th visible buffer.
+
+This can then be mapped using
+
+>
+  nnoremap <silent><leader>1 <Cmd>BufferLineGoToBuffer 1<CR>
+  nnoremap <silent><leader>2 <Cmd>BufferLineGoToBuffer 2<CR>
+  nnoremap <silent><leader>3 <Cmd>BufferLineGoToBuffer 3<CR>
+  nnoremap <silent><leader>4 <Cmd>BufferLineGoToBuffer 4<CR>
+  nnoremap <silent><leader>5 <Cmd>BufferLineGoToBuffer 5<CR>
+  nnoremap <silent><leader>6 <Cmd>BufferLineGoToBuffer 6<CR>
+  nnoremap <silent><leader>7 <Cmd>BufferLineGoToBuffer 7<CR>
+  nnoremap <silent><leader>8 <Cmd>BufferLineGoToBuffer 8<CR>
+  nnoremap <silent><leader>9 <Cmd>BufferLineGoToBuffer 9<CR>
+<
 
 If you'd rather map these yourself, use:
 
 `vim nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>`
-You can close buffers by clicking the close icon or by _right clicking_ the tab anywhere
+
+You can close buffers by clicking the close icon or by right clicking the tab anywhere
 
 
 A few of this plugins commands can be mapped for ease of use. >
