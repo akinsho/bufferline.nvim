@@ -528,7 +528,7 @@ local function render_buffer(preferences, buffer)
   --- @param index number
   --- @param num_of_bufs number
   --- @returns string
-  local fn = function(index, num_of_bufs)
+  local function render_fn(index, num_of_bufs)
     if left_sep then
       buffer_component = left_sep .. buffer_component .. right_sep
     elseif index < num_of_bufs then
@@ -537,7 +537,7 @@ local function render_buffer(preferences, buffer)
     return buffer_component
   end
 
-  return fn, ctx.length
+  return render_fn, ctx.length
 end
 
 ---@param icon string
