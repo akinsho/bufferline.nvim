@@ -954,20 +954,6 @@ local function setup_autocommands(preferences)
   utils.augroup({ BufferlineColors = autocommands })
 end
 
----@param preferences BufferlineConfig
-local function setup_mappings(preferences)
-  if preferences.options.mappings then
-    for i = 1, 9 do
-      api.nvim_set_keymap(
-        "n",
-        "<leader>" .. i,
-        ':lua require"bufferline".go_to_buffer(' .. i .. ")<CR>",
-        { silent = true, nowait = true, noremap = true }
-      )
-    end
-  end
-end
-
 local function setup_commands()
   local cmds = {
     { name = "BufferLinePick", cmd = "pick_buffer()" },
@@ -999,9 +985,8 @@ function M.__load()
   local preferences = config.apply()
   -- on loading (and reloading) the plugin's config reset all the highlights
   require("bufferline.highlights").set_all(preferences.highlights)
-  -- TODO: don't reapply commands,mappings and autocommands if load has already been called
+  -- TODO: don't reapply commands and autocommands if load has already been called
   setup_commands()
-  setup_mappings(preferences)
   setup_autocommands(preferences)
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
   M.toggle_bufferline()
