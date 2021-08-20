@@ -487,6 +487,29 @@ left_mouse_command = function(bufnum)
 end
 ```
 
+### Custom functions
+
+A user can also execute arbitrary functions against a buffer using the
+`buf_exec` function. For example
+
+```lua
+    require('bufferline').buf_exec(
+        4, -- the forth visible buffer from the left
+        user_function -- an arbitrary user function which gets passed the buffer
+    )
+
+    -- e.g.
+    function _G.bdel(num)
+        require('bufferline').buf_exec(num, function(buf, visible_buffers)
+            vim.cmd('bdelete '..buf.id)
+        end
+    end
+
+    vim.cmd [[
+        command -count Bdel <Cmd>lua _G.bdel(<count>)<CR>
+    ]]
+```
+
 ### Custom area
 
 ![custom area](https://user-images.githubusercontent.com/22454918/118527523-4d219f00-b739-11eb-889f-60fb06fd71bc.png)

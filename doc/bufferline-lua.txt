@@ -253,7 +253,31 @@ are:
   buffer
 
 ==============================================================================
-SIDEBAR OFFSET                                           *bufferline-lua-offset*
+CUSTOM-FUNCTIONS                                     *bufferline-functions*
+
+A user can also execute arbitrary functions against a buffer using the
+`buf_exec` function. For example
+
+>
+    require('bufferline').buf_exec(
+        4, -- the forth visible buffer from the left
+        user_function -- an arbitrary user function which gets passed the buffer
+    )
+
+    -- e.g.
+    function _G.bdel(num)
+        require('bufferline').buf_exec(num, function(buf, visible_buffers)
+            vim.cmd('bdelete '..buf.id)
+        end
+    end
+
+    vim.cmd [[
+        command -count Bdel <Cmd>lua _G.bdel(<count>)<CR>
+    ]]
+
+
+==============================================================================
+SIDEBAR OFFSET                                           *bufferline-offset*
 
 You can prevent the bufferline drawing above a *vertical* sidebar split such as a file explorer.
 To do this you must set the `offsets` configuration option to a list of tables
