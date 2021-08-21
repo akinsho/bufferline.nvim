@@ -667,7 +667,7 @@ highlight command. See `:h highlight` .
 ISSUES							*bufferline-issues*
 
 Please raise any issues you encounter whilst using this plugin at:
-https://github.com/akinsho/bufferline.nvim/issues
+https://github.com/akinsho/bufferline.lua/issues
 
 
 vim:tw=78:sw=4:ft=help:norl:
