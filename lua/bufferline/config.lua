@@ -21,7 +21,7 @@ local _user_config = {}
 ---@field public name_formatter fun(path: string):string
 ---@field public tab_size number
 ---@field public max_name_length number
----@field public mappings boolean
+---@field public mappings boolean DEPRECATED
 ---@field public show_buffer_icons boolean
 ---@field public show_buffer_close_icons boolean
 ---@field public show_close_icon boolean
@@ -36,10 +36,19 @@ local _user_config = {}
 ---@field public offsets table[]
 
 ---Ensure the user has only specified highlight groups that exist
----@param prefs table
----@param defaults table
+---@param prefs BufferlineConfig
+---@param defaults BufferlineConfig
 local function validate_config(prefs, defaults)
-  if prefs and prefs.highlights then
+  if not prefs then
+    return
+  end
+  if prefs.options and prefs.options.mappings then
+    vim.notify(
+      "'mappings' has been deprecated please refer to the BufferLineGoToBuffer section of the README",
+      vim.log.levels.WARN
+    )
+  end
+  if prefs.highlights then
     local incorrect = {}
     for k, _ in pairs(prefs.highlights) do
       if not defaults.highlights[k] then
@@ -83,7 +92,10 @@ local function convert_hl_tables(prefs)
           })
         else
           prefs.highlights[hl][attribute] = nil
-          print(string.format("removing %s as it is not formatted correctly", hl))
+          require("bufferline.utils").echomsg(
+            string.format("removing %s as it is not formatted correctly", hl),
+            "WarningMsg"
+          )
         end
       end
     end

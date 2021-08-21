@@ -1,30 +1,31 @@
-*nvim-bufferline.lua*   For Neovim version 0.5+   Last change: 2021 January 19
+*nvim-bufferline.lua*   For Neovim version 0.5+   Last change: 2021 August 20
 
 A snazzy bufferline for neovim written in lua
 
 Author: Akin Sowemimo
 
 ==============================================================================
-CONTENTS                                      *bufferline-lua*
-*bufferline-lua-contents*
+CONTENTS                                      *bufferline*
+*bufferline-contents*
 
-Introduction...........................: |bufferline-lua-introduction|
-Usage..................................: |bufferline-lua-usage|
-Settings...............................: |bufferline-lua-settings|
-LSP Diagnostics........................: |bufferline-lua-diagnostics|
-Sorting................................: |bufferline-lua-sorting|
-Filtering..............................: |bufferline-lua-filtering|
-Commands...............................: |bufferline-lua-commands|
-Pick...................................: |bufferline-lua-pick|
-Multi-window...........................: |bufferline-lua-multiwindow|
-Mappings...............................: |bufferline-lua-mapping|
-Highlights.............................: |bufferline-lua-highlights|
-Mouse actions..........................: |bufferline-lua-mouse-actions|
-Issues.................................: |bufferline-lua-issues|
+Introduction...........................: |bufferline-introduction|
+Usage..................................: |bufferline-usage|
+Settings...............................: |bufferline-settings|
+LSP Diagnostics........................: |bufferline-diagnostics|
+Sorting................................: |bufferline-sorting|
+Filtering..............................: |bufferline-filtering|
+Commands...............................: |bufferline-commands|
+Custom functions.......................: |bufferline-exec|
+Pick...................................: |bufferline-pick|
+Multi-window...........................: |bufferline-multiwindow|
+Mappings...............................: |bufferline-mapping|
+Highlights.............................: |bufferline-highlights|
+Mouse actions..........................: |bufferline-mouse-actions|
+Issues.................................: |bufferline-issues|
 
 
 ==============================================================================
-INTRODUCTION				        *bufferline-lua-introduction*
+INTRODUCTION				        *bufferline-introduction*
 
 A _snazzy_ 💅 buffer line (with minimal tab integration) for Neovim built
 using `lua`.
@@ -35,7 +36,7 @@ centaur tabs (https://github.com/ema2159/centaur-tabs). I don't intend to copy
 all of it's functionality though.
 
 ==============================================================================
-USAGE						        *bufferline-lua-usage*
+USAGE						        *bufferline-usage*
 You need to be using `termguicolors` for this plugin to work, as it reads the
 hex `gui` color values of various highlight groups. >
 
@@ -44,7 +45,7 @@ hex `gui` color values of various highlight groups. >
     lua require"bufferline".setup{}
 <
 ==============================================================================
-SETTINGS					     *bufferline-lua-settings*
+SETTINGS					     *bufferline-settings*
 
 The available settings are: >
 
@@ -113,7 +114,7 @@ You can change the appearance of the bufferline separators by setting the
   second is the right separator
 
 ==============================================================================
-LSP DIAGNOSTICS					    *bufferline-lua-diagnostics*
+LSP DIAGNOSTICS					    *bufferline-diagnostics*
 
 By setting `diagnostics = "nvim_lsp"` you will get an indicator in the
 bufferline for a given tab if it has any errors This will allow you to
@@ -143,7 +144,7 @@ replacing the highlights for `error`, `error_visible`, `error_selected`,
 `warning`, `warning_visible`, `warning_selected`.
 
 ==============================================================================
-REGULAR TAB SIZES                                  *bufferline-lua-regular-tabs*
+REGULAR TAB SIZES                                  *bufferline-regular-tabs*
 
 Generally this plugin enforces a minimum tab size so that the buffer line
 appears consistent. Where a tab is smaller than the tab size it is padded.
@@ -156,7 +157,7 @@ NOTE: when this option is set to `true`. It will disable the ability to
 deduplicate buffers.
 
 ==============================================================================
-SORTING					               *bufferline-lua-sorting*
+SORTING					               *bufferline-sorting*
 
 Bufferline allows you to sort the visible buffers by `extension` or `directory`: >
 
@@ -191,7 +192,7 @@ traverse the bufferline bufferlist in order whereas `bnext` and `bprev` will
 cycle buffers according to the buffer numbers given by vim.
 
 ==============================================================================
-FILTERING                                           *bufferline-lua-filtering*
+FILTERING                                           *bufferline-filtering*
 
 Bufferline can be configured to take a custom filtering function via the
 `custom_filter` option. This value must be a lua function that will receive
@@ -242,7 +243,7 @@ For example: >
 <
 
 ==============================================================================
-COMMANDS                                               *bufferline-lua-commands*
+COMMANDS                                               *bufferline-commands*
 
 Bufferline includes a few commands to allow deleting buffers. These commands
 are:
@@ -253,7 +254,31 @@ are:
   buffer
 
 ==============================================================================
-SIDEBAR OFFSET                                           *bufferline-lua-offset*
+CUSTOM-FUNCTIONS                                     *bufferline-functions*
+
+A user can also execute arbitrary functions against a buffer using the
+`buf_exec` function. For example
+
+>
+    require('bufferline').buf_exec(
+        4, -- the forth visible buffer from the left
+        user_function -- an arbitrary user function which gets passed the buffer
+    )
+
+    -- e.g.
+    function _G.bdel(num)
+        require('bufferline').buf_exec(num, function(buf, visible_buffers)
+            vim.cmd('bdelete '..buf.id)
+        end
+    end
+
+    vim.cmd [[
+        command -count Bdel <Cmd>lua _G.bdel(<count>)<CR>
+    ]]
+
+
+==============================================================================
+SIDEBAR OFFSET                                           *bufferline-offset*
 
 You can prevent the bufferline drawing above a *vertical* sidebar split such as a file explorer.
 To do this you must set the `offsets` configuration option to a list of tables
@@ -291,7 +316,7 @@ amount the bufferline is offset beyond just the window width, this isn't
 something that is generally required though.
 
 ==============================================================================
-BUFFERLINE PICK                                            *bufferline-lua-pick*
+BUFFERLINE PICK                                            *bufferline-pick*
 
 Using the `BufferLinePick` command will allow for easy selection of a buffer
 in view. Trigger the command, using `:BufferLinePick` or better still map this
@@ -312,15 +337,7 @@ this can also be mapped to something like
 >
 
 ==============================================================================
-MULTIWINDOW MODE                                    *bufferline-lua-multiwindow*
-
-When this mode is active, for layouts of multiple windows in the tabpage, only
-the buffers that are displayed in those windows are listed in the tabline.
-That only applies to multi-window layouts, if there is only one window in the
-tabpage, all buffers are listed.
-
-==============================================================================
-MOUSE ACTIONS                                     *bufferline-lua-mouse-actions*
+MOUSE ACTIONS                                     *bufferline-mouse-actions*
 
 You can configure different type of mouse clicks to behave differently. The
 current mouse click types are
@@ -352,17 +369,40 @@ the `close_command`.
 <
 
 ==============================================================================
-MAPPINGS                                               *bufferline-lua-mappings*
+MAPPINGS                                               *bufferline-mappings*
 
-If the `mappings` option is set to `true`. `<leader>`1-9 mappings will be
-created to navigate the first to the tenth buffer in the bufferline.
+`BufferLineGoToBuffer`
 
-NOTE This is `false` by default.
+You can select a buffer by it's visible position in the bufferline using the `BufferLineGoToBuffer`
+command. This means that if you have 60 buffers open but only 7 visible in the bufferline
+then using `BufferLineGoToBuffer 4` will go to the 4th visible buffer not necessarily the 5 in the
+absolute list of open buffers.
+>
+
+  <- (30) | buf31 | buf32 | buf33 | buf34 | buf35 | buf36 | buf37 (24) ->
+<
+
+Using `BufferLineGoToBuffer 4` will open `buf34` as it is the 4th visible buffer.
+
+This can then be mapped using
+
+>
+  nnoremap <silent><leader>1 <Cmd>BufferLineGoToBuffer 1<CR>
+  nnoremap <silent><leader>2 <Cmd>BufferLineGoToBuffer 2<CR>
+  nnoremap <silent><leader>3 <Cmd>BufferLineGoToBuffer 3<CR>
+  nnoremap <silent><leader>4 <Cmd>BufferLineGoToBuffer 4<CR>
+  nnoremap <silent><leader>5 <Cmd>BufferLineGoToBuffer 5<CR>
+  nnoremap <silent><leader>6 <Cmd>BufferLineGoToBuffer 6<CR>
+  nnoremap <silent><leader>7 <Cmd>BufferLineGoToBuffer 7<CR>
+  nnoremap <silent><leader>8 <Cmd>BufferLineGoToBuffer 8<CR>
+  nnoremap <silent><leader>9 <Cmd>BufferLineGoToBuffer 9<CR>
+<
 
 If you'd rather map these yourself, use:
 
 `vim nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>`
-You can close buffers by clicking the close icon or by _right clicking_ the tab anywhere
+
+You can close buffers by clicking the close icon or by right clicking the tab anywhere
 
 
 A few of this plugins commands can be mapped for ease of use. >
@@ -383,7 +423,7 @@ A few of this plugins commands can be mapped for ease of use. >
     nnoremap <silent><mymap> :lua require'bufferline'.sort_buffers_by(function (buf_a, buf_b) return buf_a.id < buf_b.id end)<CR>
 <
 ==============================================================================
-HIGHLIGHTS                                           *bufferline-lua-highlights*
+HIGHLIGHTS                                           *bufferline-highlights*
 
 This plugin is designed to work automatically, deriving colours from the
 user's theme, you can change highlight groups by overriding the section you'd
@@ -624,7 +664,7 @@ highlight command. See `:h highlight` .
 <
 
 ==============================================================================
-ISSUES							*bufferline-lua-issues*
+ISSUES							*bufferline-issues*
 
 Please raise any issues you encounter whilst using this plugin at:
 https://github.com/akinsho/nvim-bufferline.lua/issues

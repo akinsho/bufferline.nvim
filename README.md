@@ -184,7 +184,6 @@ require('bufferline').setup {
   options = {
     numbers = "none" | "ordinal" | "buffer_id" | "both",
     number_style = "superscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
-    mappings = true | false,
     close_command = "bdelete! %d",       -- can be a string | function, see "Mouse actions"
     right_mouse_command = "bdelete! %d", -- can be a string | function, see "Mouse actions"
     left_mouse_command = "buffer %d",    -- can be a string | function, see "Mouse actions"
@@ -434,6 +433,33 @@ buffer that appears
 
 Likewise, `BufferLinePickClose` closes the buffer instead of viewing it.
 
+### `BufferLineGoToBuffer`
+
+You can select a buffer by it's _visible_ position in the bufferline using the `BufferLineGoToBuffer`
+command. This means that if you have 60 buffers open but only 7 visible in the bufferline
+then using `BufferLineGoToBuffer 4` will go to the 4th visible buffer not necessarily the 5 in the
+absolute list of open buffers.
+
+```
+<- (30) | buf31 | buf32 | buf33 | buf34 | buf35 | buf36 | buf37 (24) ->
+```
+
+Using `BufferLineGoToBuffer 4` will open `buf34` as it is the 4th visible buffer.
+
+This can then be mapped using
+
+```vim
+nnoremap <silent><leader>1 <Cmd>BufferLineGoToBuffer 1<CR>
+nnoremap <silent><leader>2 <Cmd>BufferLineGoToBuffer 2<CR>
+nnoremap <silent><leader>3 <Cmd>BufferLineGoToBuffer 3<CR>
+nnoremap <silent><leader>4 <Cmd>BufferLineGoToBuffer 4<CR>
+nnoremap <silent><leader>5 <Cmd>BufferLineGoToBuffer 5<CR>
+nnoremap <silent><leader>6 <Cmd>BufferLineGoToBuffer 6<CR>
+nnoremap <silent><leader>7 <Cmd>BufferLineGoToBuffer 7<CR>
+nnoremap <silent><leader>8 <Cmd>BufferLineGoToBuffer 8<CR>
+nnoremap <silent><leader>9 <Cmd>BufferLineGoToBuffer 9<CR>
+```
+
 ### Mouse actions
 
 You can configure different type of mouse clicks to behave differently. The current mouse click types are
@@ -459,6 +485,29 @@ another plugin such as [bufdelete.nvim](https://github.com/famiu/bufdelete.nvim)
 left_mouse_command = function(bufnum)
    require('bufdelete').bufdelete(bufnum, true)
 end
+```
+
+### Custom functions
+
+A user can also execute arbitrary functions against a buffer using the
+`buf_exec` function. For example
+
+```lua
+    require('bufferline').buf_exec(
+        4, -- the forth visible buffer from the left
+        user_function -- an arbitrary user function which gets passed the buffer
+    )
+
+    -- e.g.
+    function _G.bdel(num)
+        require('bufferline').buf_exec(num, function(buf, visible_buffers)
+            vim.cmd('bdelete '..buf.id)
+        end
+    end
+
+    vim.cmd [[
+        command -count Bdel <Cmd>lua _G.bdel(<count>)<CR>
+    ]]
 ```
 
 ### Custom area

@@ -37,6 +37,7 @@ end
 ---@field public modifiable boolean
 ---@field public buftype string
 ---@field public letter string
+---@field public ordinal number
 M.Buffer = {}
 
 ---create a new buffer class
