@@ -27,7 +27,7 @@ end
 -- Note that userdata and function values are treated as scalar.
 -- https://stackoverflow.com/questions/1410862/concatenation-of-tables-in-lua
 --- @generic T
---- @vararg `T`
+--- @vararg any
 --- @return T[]
 function M.array_concat(...)
   local t = {}
