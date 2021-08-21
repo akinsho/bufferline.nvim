@@ -270,7 +270,7 @@ local function highlight_icon(buffer)
   if not icon or icon == "" then
     return ""
   elseif not hl or hl == "" then
-    return icon
+    return icon .. padding
   end
 
   local prefix = "Bufferline"

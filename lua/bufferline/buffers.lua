@@ -1,25 +1,8 @@
-local lua_devicons_loaded, webdev_icons = pcall(require, "nvim-web-devicons")
-local utils = require("bufferline/utils")
 local fn = vim.fn
 --------------------------------
 -- Export
 --------------------------------
 local M = {}
---------------------------------
--- Constants
---------------------------------
-local terminal_icon = " "
-local terminal_buftype = "terminal"
-
------------------------------------------------------------------------------//
--- helpers
------------------------------------------------------------------------------//
-
----@param buf Buffer
----@return boolean
-local function is_terminal(buf)
-  return string.find(buf.path, "term://") or buf.buftype == terminal_buftype
-end
 
 --------------------------------
 -- A single buffer
@@ -49,34 +32,17 @@ function M.Buffer:new(buf)
   buf.buftype = vim.bo[buf.id].buftype
 
   buf.extension = fn.fnamemodify(buf.path, ":e")
-  -- Set icon
-  if is_terminal(buf) then
-    if lua_devicons_loaded then
-      terminal_icon = webdev_icons.get_icon("terminal") .. " "
-    end
-    buf.icon = terminal_icon
-    buf.filename = fn.fnamemodify(buf.path, ":p:t")
-  else
-    if lua_devicons_loaded then
-      buf.icon, buf.icon_highlight = webdev_icons.get_icon(
-        fn.fnamemodify(buf.path, ":t"),
-        buf.extension,
-        { default = true }
-      )
-    else
-      local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
-      buf.icon = devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
-    end
+  local utils = require("bufferline.utils")
+  buf.icon, buf.icon_highlight = utils.get_icon(buf)
 
-    local name = "[No Name]"
-    if buf.path and #buf.path > 0 then
-      name = fn.fnamemodify(buf.path, ":p:t")
-      if buf.name_formatter and type(buf.name_formatter) == "function" then
-        name = buf.name_formatter({ name = name, path = buf.path, bufnr = buf.id }) or name
-      end
+  local name = "[No Name]"
+  if buf.path and #buf.path > 0 then
+    name = fn.fnamemodify(buf.path, ":p:t")
+    if buf.name_formatter and type(buf.name_formatter) == "function" then
+      name = buf.name_formatter({ name = name, path = buf.path, bufnr = buf.id }) or name
     end
-    buf.filename = name
   end
+  buf.filename = name
 
   self.__index = self
   return setmetatable(buf, self)
@@ -113,7 +79,8 @@ function M.Buffer:ancestor(depth, formatter)
     if formatter then
       dir = formatter(dir, depth)
     end
-    ancestor = dir .. utils.path_sep .. ancestor
+
+    ancestor = dir .. require("bufferline.utils").path_sep .. ancestor
   end
   return ancestor
 end
