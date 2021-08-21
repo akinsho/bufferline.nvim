@@ -140,7 +140,7 @@ end
 ---@param hl string?
 function M.echomsg(msg, hl)
   hl = hl or "Title"
-  vim.api.nvim_echo({ { fmt("[nvim-bufferline] %s", msg), hl } }, true, {})
+  vim.api.nvim_echo({ { fmt("[bufferline] %s", msg), hl } }, true, {})
 end
 
 return M

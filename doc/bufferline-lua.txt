@@ -1,4 +1,4 @@
-*nvim-bufferline.lua*   For Neovim version 0.5+   Last change: 2021 August 20
+*bufferline.nvim*   For Neovim version 0.5+   Last change: 2021 August 20
 
 A snazzy bufferline for neovim written in lua
 
@@ -667,7 +667,7 @@ highlight command. See `:h highlight` .
 ISSUES							*bufferline-issues*
 
 Please raise any issues you encounter whilst using this plugin at:
-https://github.com/akinsho/nvim-bufferline.lua/issues
+https://github.com/akinsho/bufferline.nvim/issues
 
 
 vim:tw=78:sw=4:ft=help:norl:

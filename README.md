@@ -1,5 +1,5 @@
 <h1 align="center">
-  nvim-bufferline.lua
+  bufferline.nvim
 </h1>
 
 <p align="center">A <i>snazzy</i> 💅 buffer line (with minimal tab integration) for Neovim built using <b>lua</b>.</p>
@@ -102,7 +102,7 @@ This order can be persisted between sessions (enabled by default).
 
 ```lua
 -- using packer.nvim
-use {'akinsho/nvim-bufferline.lua', requires = 'kyazdani42/nvim-web-devicons'}
+use {'akinsho/bufferline.nvim', requires = 'kyazdani42/nvim-web-devicons'}
 ```
 
 **Vimscript**
@@ -110,7 +110,7 @@ use {'akinsho/nvim-bufferline.lua', requires = 'kyazdani42/nvim-web-devicons'}
 ```vim
 Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
 " Plug 'ryanoasis/vim-devicons' Icons without colours
-Plug 'akinsho/nvim-bufferline.lua'
+Plug 'akinsho/bufferline.nvim'
 ```
 
 ## Caveats
@@ -130,7 +130,7 @@ Plug 'akinsho/nvim-bufferline.lua'
 
 ## Usage
 
-See the docs for details `:h nvim-bufferline.lua`
+See the docs for details `:h bufferline.nvim`
 
 You need to be using `termguicolors` for this plugin to work, as it reads the hex `gui` color values
 of various highlight groups.
