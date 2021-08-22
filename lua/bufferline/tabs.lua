@@ -9,13 +9,30 @@ local function tab_click_component(num)
   return "%" .. num .. "T"
 end
 
-local function render(tab, is_active, style, highlights)
+local function render(tab, is_active, style, highlights, tab_indicator_style)
+
   local h = highlights
   local hl = is_active and h.tab_selected.hl or h.tab.hl
   local separator_hl = is_active and h.separator_selected.hl or h.separator.hl
   local separator_component = style == "thick" and "▐" or "▕"
   local separator = separator_hl .. separator_component
-  local name = padding .. padding .. tab.tabnr .. padding
+
+  -- TODO: There's bound to be a better way to get the buffer name!
+  local bufname = vim.fn.getbufinfo(
+      vim.fn.getwininfo(tab.windows[1])[1].bufnr
+      )[1].name
+
+  if tab_indicator_style == 'tabnr' or (bufname == '' or not bufname) then
+    bufname = tab.tabnr
+  elseif tab_indicator_style == 'title' then
+    bufname = bufname:match("^.+/(.+)$")
+  elseif tab_indicator_style == 'both' then
+    bufname = tab.tabnr .. ': '  .. bufname:match("^.+/(.+)$")
+  else
+    bufname = tab_indicator_style(bufname)
+  end
+
+  local name = padding .. padding .. bufname  .. padding
   local length = strwidth(name) + strwidth(separator_component)
   return hl .. tab_click_component(tab.tabnr) .. name .. separator, length
 end
@@ -33,7 +50,7 @@ function M.get(style, prefs)
   -- GOOD = {1: thing, 2: thing} BAD: {1: thing, [5]: thing}
   for i, tab in ipairs(tabs) do
     local is_active_tab = current_tab == tab.tabnr
-    local component, length = render(tab, is_active_tab, style, highlights)
+    local component, length = render(tab, is_active_tab, style, highlights, prefs.options.tab_indicator_option)
 
     all_tabs[i] = {
       component = component,

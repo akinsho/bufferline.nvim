@@ -236,6 +236,8 @@ require('bufferline').setup {
     show_buffer_close_icons = true | false,
     show_close_icon = true | false,
     show_tab_indicators = true | false,
+    tab_indicator_option = 'both' | 'tabnr' | 'title' | function(str)
+    
     persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
     -- can also be a table containing 2 custom separators
     -- [focused and unfocused]. eg: { '|', '|' }

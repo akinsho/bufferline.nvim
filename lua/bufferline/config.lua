@@ -26,6 +26,7 @@ local _user_config = {}
 ---@field public show_buffer_close_icons boolean
 ---@field public show_close_icon boolean
 ---@field public show_tab_indicators boolean
+---@field public tab_indicator_options string | function
 ---@field public enforce_regular_tabs boolean
 ---@field public always_show_bufferline boolean
 ---@field public persist_buffer_sort boolean
@@ -409,7 +410,8 @@ local function get_defaults()
       show_buffer_icons = true,
       show_buffer_close_icons = true,
       show_close_icon = true,
-      show_tab_indicators = true,
+      show_tab_indicators = false,
+      tab_indicator_option = 'both',
       enforce_regular_tabs = false,
       always_show_bufferline = true,
       persist_buffer_sort = true,
