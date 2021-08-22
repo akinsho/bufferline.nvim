@@ -22,6 +22,8 @@ local state = {
   is_picking = false,
   ---@type Buffer[]
   buffers = {},
+  ---@type Buffer[]
+  visible_buffers = {},
   current_letters = {},
   custom_sort = nil,
 }
@@ -91,6 +93,16 @@ function M.handle_click(id, button)
   }
   if id then
     handle_user_command(options[cmds[button]], id)
+  end
+end
+
+---Execute an arbitrary user function on a visible by it's position buffer
+---@param index number
+---@param func fun(num: number)
+function M.buf_exec(index, func)
+  local target = state.visible_buffers[index]
+  if target and type(func) == "function" then
+    func(target, state.visible_buffers)
   end
 end
 
@@ -216,20 +228,36 @@ local function get_buffers_by_mode(mode)
   return utils.get_valid_buffers()
 end
 
+-- truncate a string based on number of display columns/cells it occupies
+-- so that multibyte characters are not broken up mid character
+---@param str string
+---@param col_limit number
+---@return string
+local function truncate_by_cell(str, col_limit)
+  if str and str:len() == strwidth(str) then
+    return fn.strcharpart(str, 0, col_limit)
+  end
+  local short = fn.strcharpart(str, 0, col_limit)
+  if api.nvim_strwidth(short) > col_limit then
+    while api.nvim_strwidth(short) > col_limit do
+      short = fn.strcharpart(short, 0, fn.strchars(short) - 1)
+    end
+  end
+  return short
+end
+
 local function truncate_filename(filename, word_limit)
   local trunc_symbol = "…"
-  local too_long = string.len(filename) > word_limit
-  if not too_long then
+  if api.nvim_strwidth(filename) <= word_limit then
     return filename
   end
   -- truncate nicely by seeing if we can drop the extension first
   -- to make things fit if not then truncate abruptly
-  local without_prefix = vim.fn.fnamemodify(filename, ":t:r")
-  if string.len(without_prefix) < word_limit then
+  local without_prefix = fn.fnamemodify(filename, ":t:r")
+  if api.nvim_strwidth(without_prefix) < word_limit then
     return without_prefix .. trunc_symbol
-  else
-    return string.sub(filename, 0, word_limit - 1) .. trunc_symbol
   end
+  return truncate_by_cell(filename, word_limit - 1) .. trunc_symbol
 end
 
 --- @param buffer Buffer
@@ -242,7 +270,7 @@ local function highlight_icon(buffer)
   if not icon or icon == "" then
     return ""
   elseif not hl or hl == "" then
-    return icon
+    return icon .. padding
   end
 
   local prefix = "Bufferline"
@@ -291,7 +319,14 @@ local function close_icon(buf_id, context)
 
   local symbol = buffer_close_icon .. padding
   local size = strwidth(symbol)
-  return "%" .. buf_id .. "@nvim_bufferline#handle_close_buffer@" .. close_button_hl .. symbol, size
+  return "%"
+    .. buf_id
+    .. "@nvim_bufferline#handle_close_buffer@"
+    .. close_button_hl
+    .. symbol
+    -- the %X works as a closing label. @see :h tabline
+    .. "%X",
+    size
 end
 
 --- @param context table
@@ -493,7 +528,7 @@ local function render_buffer(preferences, buffer)
   --- @param index number
   --- @param num_of_bufs number
   --- @returns string
-  local fn = function(index, num_of_bufs)
+  local function render_fn(index, num_of_bufs)
     if left_sep then
       buffer_component = left_sep .. buffer_component .. right_sep
     elseif index < num_of_bufs then
@@ -502,7 +537,7 @@ local function render_buffer(preferences, buffer)
     return buffer_component
   end
 
-  return fn, ctx.length
+  return render_fn, ctx.length
 end
 
 ---@param icon string
@@ -540,16 +575,22 @@ local function truncation_component(count, icon, hls)
   return utils.join(hls.fill.hl, padding, count, padding, icon, padding)
 end
 
---[[
-PREREQUISITE: active buffer always remains in view
-1. Find amount of available space in the window
-2. Find the amount of space the bufferline will take up
-3. If the bufferline will be too long remove one tab from the before or after
-section
-4. Re-check the size, if still too long truncate recursively till it fits
-5. Add the number of truncated buffers as an indicator
---]]
-local function truncate(before, current, after, available_width, marker)
+--- PREREQUISITE: active buffer always remains in view
+--- 1. Find amount of available space in the window
+--- 2. Find the amount of space the bufferline will take up
+--- 3. If the bufferline will be too long remove one tab from the before or after
+--- section
+--- 4. Re-check the size, if still too long truncate recursively till it fits
+--- 5. Add the number of truncated buffers as an indicator
+---@param before Buffers
+---@param current Buffers
+---@param after Buffers
+---@param available_width number
+---@param marker table
+---@return string
+---@return table
+---@return Buffer[]
+local function truncate(before, current, after, available_width, marker, visible)
   local line = ""
 
   local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)
@@ -560,17 +601,16 @@ local function truncate(before, current, after, available_width, marker)
   local total_length = before.length + current.length + after.length + markers_length
 
   if available_width >= total_length then
+    visible = utils.array_concat(before.buffers, current.buffers, after.buffers)
+    for index, buf in ipairs(visible) do
+      line = line .. buf.component(index, #visible)
+    end
+    return line, marker, visible
     -- if we aren't even able to fit the current buffer into the
     -- available space that means the window is really narrow
     -- so don't show anything
-    -- Merge all the buffers and render the components
-    local bufs = utils.array_concat(before.buffers, current.buffers, after.buffers)
-    for index, buf in ipairs(bufs) do
-      line = line .. buf.component(index, #bufs)
-    end
-    return line, marker
   elseif available_width < current.length then
-    return "", marker
+    return "", marker, visible
   else
     if before.length >= after.length then
       before:drop(1)
@@ -587,7 +627,7 @@ local function truncate(before, current, after, available_width, marker)
       marker.left_count = 0
       marker.right_count = 0
     end
-    return truncate(before, current, after, available_width, marker), marker
+    return truncate(before, current, after, available_width, marker, visible)
   end
 end
 
@@ -637,12 +677,14 @@ local function render(bufs, tbs, prefs)
     - close_length
 
   local before, current, after = get_sections(bufs)
-  local line, marker = truncate(before, current, after, available_width, {
+  local line, marker, visible_buffers = truncate(before, current, after, available_width, {
     left_count = 0,
     right_count = 0,
     left_element_size = left_element_size,
     right_element_size = right_element_size,
   })
+
+  state.visible_buffers = visible_buffers
 
   if marker.left_count > 0 then
     local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
@@ -667,7 +709,7 @@ local function render(bufs, tbs, prefs)
   )
 end
 
---- TODO can this be done more efficiently in one loop?
+--- sorts buf_names in place, but doesn't add/remove any values
 --- @param buf_nums number[]
 --- @param sorted number[]
 --- @return number[]
@@ -675,21 +717,23 @@ local function get_updated_buffers(buf_nums, sorted)
   if not sorted then
     return buf_nums
   end
-  local updated = {}
-  -- add only buffers from our sort that are (still) in the
-  -- canonical buffer list, maintaining the order
-  for _, b in ipairs(sorted) do
-    if vim.tbl_contains(buf_nums, b) then
-      table.insert(updated, b)
+  local nums = { unpack(buf_nums) }
+  local reverse_lookup_sorted = utils.tbl_reverse_lookup(sorted)
+
+  --- a comparator that sorts buffers by their position in sorted
+  local sort_by_sorted = function(buf_id_1, buf_id_2)
+    local buf_1_rank = reverse_lookup_sorted[buf_id_1]
+    local buf_2_rank = reverse_lookup_sorted[buf_id_2]
+    if not buf_1_rank then
+      return false
     end
-  end
-  -- add any buffers from the buffer list that aren't in our sort
-  for _, b in ipairs(buf_nums) do
-    if not vim.tbl_contains(sorted, b) then
-      table.insert(updated, b)
+    if not buf_2_rank then
+      return true
     end
+    return buf_1_rank < buf_2_rank
   end
-  return updated
+  table.sort(nums, sort_by_sorted)
+  return nums
 end
 
 ---Filter the buffers to show based on the user callback passed in
@@ -760,12 +804,17 @@ local function bufferline(preferences)
   return render(state.buffers, all_tabs, preferences)
 end
 
----@param num number
-function M.go_to_buffer(num)
-  local buf_nums = get_buffers_by_mode()
-  buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
-  if num <= #buf_nums then
-    vim.cmd("buffer " .. buf_nums[num])
+--- Open a buffer based on it's visible position in the list
+--- unless absolute is specified in which case this will open it based on it place in the full list
+--- this is significantly less helpful if you have a lot of buffers open
+---@param num number | string
+---@param absolute boolean whether or not to use the buffers absolute position or visible positions
+function M.go_to_buffer(num, absolute)
+  num = type(num) == "string" and tonumber(num) or num
+  local list = absolute and state.buffers or state.visible_buffers
+  local buf = list[num]
+  if buf then
+    vim.cmd(fmt("buffer %d", buf.id))
   end
 end
 
@@ -910,24 +959,6 @@ local function setup_autocommands(preferences)
   utils.augroup({ BufferlineColors = autocommands })
 end
 
----@param preferences BufferlineConfig
-local function setup_mappings(preferences)
-  -- TODO: / idea: consider allowing these mappings to open buffers based on their
-  -- visual position i.e. <leader>1 maps to the first visible buffer regardless
-  -- of it actual ordinal number i.e. position in the full list or it's actual
-  -- buffer id
-  if preferences.options.mappings then
-    for i = 1, 9 do
-      api.nvim_set_keymap(
-        "n",
-        "<leader>" .. i,
-        ':lua require"bufferline".go_to_buffer(' .. i .. ")<CR>",
-        { silent = true, nowait = true, noremap = true }
-      )
-    end
-  end
-end
-
 local function setup_commands()
   local cmds = {
     { name = "BufferLinePick", cmd = "pick_buffer()" },
@@ -941,9 +972,12 @@ local function setup_commands()
     { name = "BufferLineSortByExtension", cmd = 'sort_buffers_by("extension")' },
     { name = "BufferLineSortByDirectory", cmd = 'sort_buffers_by("directory")' },
     { name = "BufferLineSortByRelativeDirectory", cmd = 'sort_buffers_by("relative_directory")' },
+    { name = "BufferLineSortByTabs", cmd = 'sort_buffers_by("tabs")' },
+    { name = "BufferLineGoToBuffer", cmd = "go_to_buffer(<q-args>)", nargs = 1 },
   }
   for _, cmd in ipairs(cmds) do
-    vim.cmd(fmt('command! %s lua require("bufferline").%s', cmd.name, cmd.cmd))
+    local nargs = cmd.nargs and fmt("-nargs=%d", cmd.nargs) or ""
+    vim.cmd(fmt('command! %s %s lua require("bufferline").%s', nargs, cmd.name, cmd.cmd))
   end
 end
 
@@ -958,9 +992,8 @@ function M.__load()
   local preferences = config.apply()
   -- on loading (and reloading) the plugin's config reset all the highlights
   require("bufferline.highlights").set_all(preferences.highlights)
-  -- TODO: don't reapply commands,mappings and autocommands if load has already been called
+  -- TODO: don't reapply commands and autocommands if load has already been called
   setup_commands()
-  setup_mappings(preferences)
   setup_autocommands(preferences)
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
   M.toggle_bufferline()

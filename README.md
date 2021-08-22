@@ -1,5 +1,5 @@
 <h1 align="center">
-  nvim-bufferline.lua
+  bufferline.nvim
 </h1>
 
 <p align="center">A <i>snazzy</i> 💅 buffer line (with minimal tab integration) for Neovim built using <b>lua</b>.</p>
@@ -102,7 +102,7 @@ This order can be persisted between sessions (enabled by default).
 
 ```lua
 -- using packer.nvim
-use {'akinsho/nvim-bufferline.lua', requires = 'kyazdani42/nvim-web-devicons'}
+use {'akinsho/bufferline.nvim', requires = 'kyazdani42/nvim-web-devicons'}
 ```
 
 **Vimscript**
@@ -110,7 +110,7 @@ use {'akinsho/nvim-bufferline.lua', requires = 'kyazdani42/nvim-web-devicons'}
 ```vim
 Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
 " Plug 'ryanoasis/vim-devicons' Icons without colours
-Plug 'akinsho/nvim-bufferline.lua'
+Plug 'akinsho/bufferline.nvim'
 ```
 
 ## Caveats
@@ -130,7 +130,7 @@ Plug 'akinsho/nvim-bufferline.lua'
 
 ## Usage
 
-See the docs for details `:h nvim-bufferline.lua`
+See the docs for details `:h bufferline.nvim`
 
 You need to be using `termguicolors` for this plugin to work, as it reads the hex `gui` color values
 of various highlight groups.
@@ -138,10 +138,10 @@ of various highlight groups.
 **Vimscript**
 
 ```vim
+" In your init.lua or init.vim
 set termguicolors
 lua << EOF
-" In your init.lua or init.vim
-lua require("bufferline").setup{}
+require("bufferline").setup{}
 EOF
 ```
 
@@ -184,7 +184,6 @@ require('bufferline').setup {
   options = {
     numbers = "none" | "ordinal" | "buffer_id" | "both",
     number_style = "superscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
-    mappings = true | false,
     close_command = "bdelete! %d",       -- can be a string | function, see "Mouse actions"
     right_mouse_command = "bdelete! %d", -- can be a string | function, see "Mouse actions"
     left_mouse_command = "buffer %d",    -- can be a string | function, see "Mouse actions"
@@ -231,7 +230,7 @@ require('bufferline').setup {
         return true
       end
     end,
-    offsets = {{filetype = "NvimTree", text = "File Explorer", text_align = "left" | "center" | "right"}},
+    offsets = {{filetype = "NvimTree", text = "File Explorer" | function , text_align = "left" | "center" | "right"}},
     show_buffer_icons = true | false, -- disable filetype icons for buffers
     show_buffer_close_icons = true | false,
     show_close_icon = true | false,
@@ -244,7 +243,7 @@ require('bufferline').setup {
     separator_style = "slant" | "thick" | "thin" | { 'any', 'any' },
     enforce_regular_tabs = false | true,
     always_show_bufferline = true | false,
-    sort_by = 'id' | 'extension' | 'relative_directory' | 'directory' | function(buffer_a, buffer_b)
+    sort_by = 'id' | 'extension' | 'relative_directory' | 'directory' | 'tabs' | function(buffer_a, buffer_b)
       -- add custom logic
       return buffer_a.modified > buffer_b.modified
     end
@@ -339,7 +338,7 @@ the tab size and all tabs will be the same length
 
 ### Sorting
 
-Bufferline allows you to sort the visible buffers by `extension` or `directory`:
+Bufferline allows you to sort the visible buffers by `extension`, `directory` or `tabs`:
 
 **NOTE**: If using a plugin such as `vim-rooter` and you want to sort by path, prefer using `directory` rather than
 `relative_directory`. Relative directory works by ordering relative paths first, however if you move from
@@ -350,12 +349,14 @@ buffers will now be relative.
 " Using vim commands
 :BufferLineSortByExtension
 :BufferLineSortByDirectory
+:BufferLineSortByTabs
 ```
 
 ```lua
 -- Or using lua functions
 :lua require'bufferline'.sort_buffers_by('extension')
 :lua require'bufferline'.sort_buffers_by('directory')
+:lua require'bufferline'.sort_buffers_by('tabs')
 ```
 
 For more advanced usage you can provide a custom compare function which will
@@ -388,10 +389,32 @@ To do this you must set the `offsets` configuration option to a list of tables c
 _NOTE:_ this is only relevant for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or `Vista`
 
 ```lua
-offsets = {{filetype = "NvimTree", text = "File Explorer", highlight = "Directory", text_align = "left"}}
+offsets = {
+  {
+    filetype = "NvimTree",
+    text = "File Explorer",
+    highlight = "Directory",
+    text_align = "left"
+  }
+}
 ```
 
 The `filetype` is used to check whether a particular window is a match, the `text` is _optional_ and will show above the window if specified.
+`text` can be either a string or a function which should also return a string. See the example below.
+
+```lua
+offsets = {
+  {
+    filetype = "NvimTree",
+    text = function()
+      return vim.fn.getcwd()
+    end,
+    highlight = "Directory",
+    text_align = "left"
+  }
+}
+```
+
 If it is too long it will be truncated. The highlight controls what highlight is shown above the window.
 You can also change the alignment of the text in the offset section using `text_align` which can be set to `left`, `right` or `center`.
 You can also add a `padding` key which should be an integer if you want the offset to be larger than the window width.
@@ -411,6 +434,33 @@ buffer that appears
 ![bufferline_pick](https://user-images.githubusercontent.com/22454918/111994691-f2404280-8b0f-11eb-9bc1-6664ccb93154.gif)
 
 Likewise, `BufferLinePickClose` closes the buffer instead of viewing it.
+
+### `BufferLineGoToBuffer`
+
+You can select a buffer by it's _visible_ position in the bufferline using the `BufferLineGoToBuffer`
+command. This means that if you have 60 buffers open but only 7 visible in the bufferline
+then using `BufferLineGoToBuffer 4` will go to the 4th visible buffer not necessarily the 5 in the
+absolute list of open buffers.
+
+```
+<- (30) | buf31 | buf32 | buf33 | buf34 | buf35 | buf36 | buf37 (24) ->
+```
+
+Using `BufferLineGoToBuffer 4` will open `buf34` as it is the 4th visible buffer.
+
+This can then be mapped using
+
+```vim
+nnoremap <silent><leader>1 <Cmd>BufferLineGoToBuffer 1<CR>
+nnoremap <silent><leader>2 <Cmd>BufferLineGoToBuffer 2<CR>
+nnoremap <silent><leader>3 <Cmd>BufferLineGoToBuffer 3<CR>
+nnoremap <silent><leader>4 <Cmd>BufferLineGoToBuffer 4<CR>
+nnoremap <silent><leader>5 <Cmd>BufferLineGoToBuffer 5<CR>
+nnoremap <silent><leader>6 <Cmd>BufferLineGoToBuffer 6<CR>
+nnoremap <silent><leader>7 <Cmd>BufferLineGoToBuffer 7<CR>
+nnoremap <silent><leader>8 <Cmd>BufferLineGoToBuffer 8<CR>
+nnoremap <silent><leader>9 <Cmd>BufferLineGoToBuffer 9<CR>
+```
 
 ### Mouse actions
 
@@ -437,6 +487,29 @@ another plugin such as [bufdelete.nvim](https://github.com/famiu/bufdelete.nvim)
 left_mouse_command = function(bufnum)
    require('bufdelete').bufdelete(bufnum, true)
 end
+```
+
+### Custom functions
+
+A user can also execute arbitrary functions against a buffer using the
+`buf_exec` function. For example
+
+```lua
+    require('bufferline').buf_exec(
+        4, -- the forth visible buffer from the left
+        user_function -- an arbitrary user function which gets passed the buffer
+    )
+
+    -- e.g.
+    function _G.bdel(num)
+        require('bufferline').buf_exec(num, function(buf, visible_buffers)
+            vim.cmd('bdelete '..buf.id)
+        end
+    end
+
+    vim.cmd [[
+        command -count Bdel <Cmd>lua _G.bdel(<count>)<CR>
+    ]]
 ```
 
 ### Custom area

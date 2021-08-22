@@ -4,6 +4,7 @@
 local M = {}
 
 local fmt = string.format
+local fn = vim.fn
 
 function M.is_test()
   return _G.__TEST
@@ -26,6 +27,9 @@ end
 -- parameters have their values shallow-copied to the final array.
 -- Note that userdata and function values are treated as scalar.
 -- https://stackoverflow.com/questions/1410862/concatenation-of-tables-in-lua
+--- @generic T
+--- @vararg any
+--- @return T[]
 function M.array_concat(...)
   local t = {}
   for n = 1, select("#", ...) do
@@ -54,6 +58,20 @@ function M.filter_duplicates(array)
     end
   end
   return res
+end
+
+--- creates a table whose keys are tbl's values and the value of these keys
+--- is their key in tbl (similar to vim.tbl_add_reverse_lookup)
+--- this assumes that the values in tbl are unique and hashable (no nil/NaN)
+--- @generic K,V
+--- @param tbl table<K,V>
+--- @return table<V,K>
+function M.tbl_reverse_lookup(tbl)
+  local ret = {}
+  for k, v in pairs(tbl) do
+    ret[v] = k
+  end
+  return ret
 end
 
 M.path_sep = vim.loop.os_uname().sysname == "Windows" and "\\" or "/"
@@ -123,7 +141,38 @@ end
 ---@param hl string?
 function M.echomsg(msg, hl)
   hl = hl or "Title"
-  vim.api.nvim_echo({ { fmt("[nvim-bufferline] %s", msg), hl } }, true, {})
+  vim.api.nvim_echo({ { fmt("[bufferline] %s", msg), hl } }, true, {})
+end
+
+do
+  local loaded, webdev_icons
+  ---Get an icon for a filetype using either nvim-web-devicons or vim-devicons
+  ---if using the lua plugin this also returns the icon's highlights
+  ---@param buf Buffer
+  ---@return string, string?
+  function M.get_icon(buf)
+    if loaded == nil then
+      loaded, webdev_icons = pcall(require, "nvim-web-devicons")
+    end
+    if buf.buftype == "terminal" then
+      -- use an explicit if statement so both values from get icon can be returned
+      -- this does not work if a ternary is used instead as only a single value is returned
+      if not loaded then
+        return ""
+      end
+      return webdev_icons.get_icon(buf.buftype)
+    end
+    if loaded then
+      return webdev_icons.get_icon(
+        fn.fnamemodify(buf.path, ":t"),
+        buf.extension,
+        { default = true }
+      )
+    else
+      local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
+      return devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
+    end
+  end
 end
 
 return M

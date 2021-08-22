@@ -1,4 +1,5 @@
 local api = vim.api
+local fmt = string.format
 ---------------------------------------------------------------------------//
 -- Highlights
 ---------------------------------------------------------------------------//
@@ -12,32 +13,24 @@ function M.hl_exists(name)
   return vim.fn.hlexists(name) > 0
 end
 
+local keys = { "gui", "guisp", "guibg", "guifg" }
+
 function M.set_one(name, opts)
-  if opts and vim.tbl_count(opts) > 0 then
-    local cmd = "highlight! " .. name
-    if opts.gui and opts.gui ~= "" then
-      cmd = cmd .. " " .. "gui=" .. opts.gui
+  if not opts or vim.tbl_isempty(opts) then
+    return
+  end
+  local hls = {}
+  for key, value in pairs(opts) do
+    if value and value ~= "" and vim.tbl_contains(keys, key) then
+      table.insert(hls, fmt("%s=%s", key, value))
     end
-    if opts.guifg and opts.guifg ~= "" then
-      cmd = cmd .. " " .. "guifg=" .. opts.guifg
-    end
-    if opts.guibg and opts.guibg ~= "" then
-      cmd = cmd .. " " .. "guibg=" .. opts.guibg
-    end
-    if opts.guisp and opts.guisp ~= "" then
-      cmd = cmd .. " " .. "guisp=" .. opts.guisp
-    end
-    -- TODO using api here as it warns of an error if setting highlight fails
-    local success, err = pcall(vim.cmd, cmd)
-    if not success then
-      api.nvim_err_writeln(
-        "Failed setting "
-          .. name
-          .. " highlight, something isn't configured correctly"
-          .. "\n"
-          .. err
-      )
-    end
+  end
+  local success, err = pcall(vim.cmd, fmt("highlight! %s %s", name, table.concat(hls, " ")))
+  if not success then
+    vim.notify(
+      "Failed setting " .. name .. " highlight, something isn't configured correctly: " .. err,
+      vim.log.levels.ERROR
+    )
   end
 end
 
