@@ -695,14 +695,7 @@ local function get_buffer_name(ctx)
   return ctx:update({ component = filename, length = strwidth(filename) })
 end
 
----@class BufferlineContext
----@field length string
----@field component string
----@field preferences BufferlineOptions
----@field current_highlights table<string, table<string, string>>
----@field buffer Buffer
-
---- @param preferences table
+--- @param preferences BufferlineConfig
 --- @param buffer Buffer
 --- @return BufferComponent,number
 local function render_buffer(preferences, buffer)
@@ -715,6 +708,7 @@ local function render_buffer(preferences, buffer)
   local add_diagnostics = require("bufferline.diagnostics").component
   local add_duplicates = require("bufferline.duplicates").component
   local add_numbers = require("bufferline.numbers").component
+  local add_group = require("bufferline.groups").component
 
   --- Order matter here as this is the sequence which builds up the tab component
   --- each render function takes the context and returns an updated context with it's
@@ -724,6 +718,7 @@ local function render_buffer(preferences, buffer)
     get_buffer_name,
     --- apply diagnostics here since we want the highlight to only apply to the filename
     add_diagnostics,
+    add_group,
     add_duplicates,
     add_prefix,
     add_numbers,
@@ -806,6 +801,7 @@ end
 ---@return table
 ---@return Buffer[]
 local function truncate(before, current, after, available_width, marker, visible)
+  visible = visible or {}
   local line = ""
 
   local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)

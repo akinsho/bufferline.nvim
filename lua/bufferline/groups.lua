@@ -28,20 +28,21 @@ function M.get(buffer, groups)
 end
 
 ---Add group styling to the buffer component
----@param ctx BufferlineContext
+---@param ctx BufferContext
 ---@return string
 ---@return number
 function M.component(ctx)
   local buffer = ctx.buffer
   local hls = ctx.current_highlights
   local group = buffer.group
-  if group then
-    --- TODO: should there be default icons at all
-    local icon = group.icon and group.icon .. " " or " "
-    local icon_length = api.nvim_strwidth(icon)
-    return hls[group.name] .. icon .. ctx.component, ctx.length + icon_length
+  if not group then
+    return ctx
   end
-  return ctx.component, ctx.length
+  --- TODO: should there be default icons at all
+  local icon = group.icon and group.icon .. " " or ""
+  local icon_length = api.nvim_strwidth(icon)
+  local component, length = hls[group.name] .. icon .. ctx.component, ctx.length + icon_length
+  return ctx:update({ component = component, length = length })
 end
 
 --- Add group highlights to the user highlights table

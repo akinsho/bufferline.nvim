@@ -26,7 +26,6 @@ local M = {}
 ---@field public duplicated boolean
 ---@field public prefix_count boolean
 ---@field public component BufferComponent
-local Buffer = {}
 ---@field public group Group
 ---@field public group_fn string
 local Buffer = {}

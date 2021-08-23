@@ -40,7 +40,7 @@ function M.add_group(name, highlight)
   -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
   local formatted = "BufferLine" .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
   highlight.hl_name = formatted
-  highlight.hl = require("bufferline.highlights").hl(formatted)
+  highlight.hl = M.hl(formatted)
 end
 
 --- Map through user colors and convert the keys to highlight names
