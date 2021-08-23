@@ -1,5 +1,7 @@
 local M = {}
 
+local fn = vim.fn
+
 local severity_name = {
   [1] = "error",
   [2] = "warning",
@@ -88,7 +90,8 @@ function M.component(context)
   local diag_highlight = highlights[diagnostics.level .. "_diagnostic"]
     or highlights.diagnostic
     or ""
-  local size = context.length + vim.fn.strwidth(indicator)
+  local padding = require("bufferline.constants").padding
+  local size = context.length + fn.strwidth(indicator) + fn.strwidth(padding)
 
   context.length = size
   context.component = highlight
@@ -96,6 +99,7 @@ function M.component(context)
     .. diag_highlight
     .. indicator
     .. highlights.background
+    .. padding
 
   return context
 end

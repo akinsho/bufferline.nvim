@@ -471,13 +471,6 @@ local function add_padding(context)
   return context
 end
 
----@param ctx table
----@return table
-local function extra_padding(ctx)
-  ctx.component, ctx.length = ctx.component .. padding, ctx.length + strwidth(padding)
-  return ctx
-end
-
 ---@param ctx BufferContext
 ---@return table
 local function get_buffer_name(ctx)
@@ -516,7 +509,6 @@ local function render_buffer(preferences, buffer)
     get_buffer_name,
     --- apply diagnostics here since we want the highlight to only apply to the filename
     add_diagnostics,
-    extra_padding,
     add_duplicates,
     add_prefix,
     add_padding,
