@@ -16,6 +16,17 @@ local positions_key = constants.positions_key
 local M = {}
 
 -----------------------------------------------------------------------------//
+-- types
+-----------------------------------------------------------------------------//
+---@class BufferContext
+---@field length number
+---@field component string
+---@field preferences BufferlineConfig
+---@field current_highlights table<string, table<string, string>>
+---@field buffer Buffer
+---@field separators table<string, string>
+
+-----------------------------------------------------------------------------//
 -- State
 -----------------------------------------------------------------------------//
 local state = {
@@ -294,14 +305,14 @@ local function close_icon(buf_id, context)
     size
 end
 
---- @param context table
+--- @param context BufferContext
 local function modified_component(context)
   local modified_icon = context.preferences.options.modified_icon
   local modified_section = modified_icon .. padding
   return modified_section, strwidth(modified_section)
 end
 
---- @param context table
+--- @param context BufferContext
 local function add_indicator(context)
   local buffer = context.buffer
   local length = context.length
@@ -330,7 +341,7 @@ local function add_indicator(context)
   return context
 end
 
---- @param context table
+--- @param context BufferContext
 local function add_prefix(context)
   local component = context.component
   local options = context.preferences.options
@@ -350,7 +361,7 @@ local function add_prefix(context)
   return context
 end
 
---- @param context table
+--- @param context BufferContext
 local function add_suffix(context)
   local component = context.component
   local buffer = context.buffer
@@ -371,8 +382,8 @@ end
 
 --- TODO: We increment the buffer length by the separator although the final
 --- buffer will not have a separator so we are technically off by 1
---- @param context table
 local function separator_components(context)
+--- @param context BufferContext
   local buffer = context.buffer
   local length = context.length
   local hl = context.preferences.highlights
@@ -418,7 +429,7 @@ local function enforce_regular_tabs(context)
   return max_length
 end
 
---- @param context table
+--- @param context BufferContext
 --- @return number
 --- @return number
 local function make_clickable(context)
@@ -431,7 +442,7 @@ local function make_clickable(context)
   return context
 end
 
---- @param context table
+--- @param context BufferContext
 local function add_padding(context)
   local component = context.component
   local options = context.preferences.options
@@ -467,7 +478,7 @@ local function extra_padding(ctx)
   return ctx
 end
 
----@param ctx table
+---@param ctx BufferContext
 ---@return table
 local function get_buffer_name(ctx)
   local max_length = enforce_regular_tabs(ctx)
@@ -487,6 +498,7 @@ end
 --- @return function,number
 local function render_buffer(preferences, buffer)
   local hl = get_buffer_highlight(buffer, preferences.highlights)
+  ---@type BufferContext
   local ctx = {
     length = 0,
     component = "",

@@ -72,7 +72,7 @@ local function prefix(buffer, mode, style)
   end
 end
 
---- @param context table
+--- @param context BufferContext
 function M.component(context)
   local buffer = context.buffer
   local component = context.component

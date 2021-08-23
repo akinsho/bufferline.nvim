@@ -64,7 +64,7 @@ function M.get(opts)
   return setmetatable(result, mt)
 end
 
----@param context table
+---@param context BufferContext
 function M.component(context)
   local opts = context.preferences.options
   if is_disabled(opts.diagnostics) then
