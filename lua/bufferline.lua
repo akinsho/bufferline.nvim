@@ -417,15 +417,12 @@ local function enforce_regular_tabs(context)
   local padding_size = strwidth(padding) * 2
   local max_length = options.max_name_length
 
-  -- if we are enforcing regular tab size then all tabs will try and fit
-  -- into the maximum tab size. If not we enforce a minimum tab size
-  -- and allow tabs to be larger then the max otherwise
-  if options.enforce_regular_tabs then
-    -- estimate the maximum allowed size of a filename given that it will be
-    -- padded and prefixed with a file icon
-    max_length = options.tab_size - modified_size - icon_size - padding_size
+  if not options.enforce_regular_tabs then
+    return max_length
   end
-  return max_length
+  -- estimate the maximum allowed size of a filename given that it will be
+  -- padded and prefixed with a file icon
+  return options.tab_size - modified_size - icon_size - padding_size
 end
 
 --- @param context BufferContext
@@ -481,10 +478,6 @@ local function get_buffer_name(ctx)
   return ctx
 end
 
-local function identity(...)
-  -- P(...)
-  return ...
-end
 --- @param preferences table
 --- @param buffer Buffer
 --- @return function,number
