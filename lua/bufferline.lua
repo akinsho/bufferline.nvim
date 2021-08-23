@@ -479,8 +479,8 @@ local function get_buffer_name(ctx)
   local max_length = enforce_regular_tabs(ctx)
   local filename = truncate_filename(ctx.buffer.filename, max_length)
   -- escape filenames that contain "%" as this breaks in statusline patterns
-  filename = filename:gsub("%%", "%%%1")
-  ctx.component, ctx.length = filename, ctx.length + strwidth(ctx.component)
+  filename = filename:gsub("%%", "%%%1") .. padding
+  ctx.component, ctx.length = filename, strwidth(filename) + strwidth(padding)
   return ctx
 end
 
