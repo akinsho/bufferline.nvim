@@ -193,41 +193,6 @@ local function get_buffer_highlight(buffer, hls)
   return hl
 end
 
---- @param mode string | nil
-local function get_buffers_by_mode(mode)
-  --[[
-      show only relevant buffers depending on the layout of the current tabpage:
-      - In tabs with only one window all buffers are listed.
-      - In tabs with more than one window, only the buffers that are being displayed are listed.
-  --]]
-  if mode == "multiwindow" then
-    local is_single_tab = vim.fn.tabpagenr("$") == 1
-    if is_single_tab then
-      return utils.get_valid_buffers()
-    end
-
-    local tab_wins = api.nvim_tabpage_list_wins(0)
-
-    local valid_wins = 0
-    for _, win_id in ipairs(tab_wins) do
-      -- Check that the window contains a listed buffer, if the buffer isn't
-      -- listed we shouldn't be hiding the remaining buffers because of it
-      -- note this is to stop temporary unlisted buffers like fzf from
-      -- triggering this mode
-      local buf_nr = vim.api.nvim_win_get_buf(win_id)
-      if utils.is_valid(buf_nr) then
-        valid_wins = valid_wins + 1
-      end
-    end
-
-    if valid_wins > 1 then
-      local unique = utils.filter_duplicates(vim.fn.tabpagebuflist())
-      return utils.get_valid_buffers(unique)
-    end
-  end
-  return utils.get_valid_buffers()
-end
-
 -- truncate a string based on number of display columns/cells it occupies
 -- so that multibyte characters are not broken up mid character
 ---@param str string
@@ -457,14 +422,12 @@ end
 --- @return number
 --- @return number
 local function make_clickable(context)
-  local mode = context.preferences.options.mode
-  local component = context.component
-  local buf_num = context.buffer.id
   -- v:lua does not support function references in vimscript so
   -- the only way to implement this is using autoload viml functions
-  local func_name = mode == "multiwindow" and "handle_win_click" or "handle_click"
-  component = "%" .. buf_num .. "@nvim_bufferline#" .. func_name .. "@" .. component
-  context.component = component
+  context.component = "%"
+    .. context.buffer.id
+    .. "@nvim_bufferline#handle_click@"
+    .. context.component
   return context
 end
 
@@ -793,7 +756,7 @@ end
 --- @return string
 local function bufferline(preferences)
   local options = preferences.options
-  local buf_nums = get_buffers_by_mode(options.view)
+  local buf_nums = utils.get_valid_buffers()
   if options.custom_filter then
     buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
   end
