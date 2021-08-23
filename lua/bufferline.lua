@@ -313,6 +313,7 @@ local function modified_component(context)
 end
 
 --- @param context BufferContext
+--- @return BufferContext
 local function add_indicator(context)
   local buffer = context.buffer
   local length = context.length
@@ -342,6 +343,7 @@ local function add_indicator(context)
 end
 
 --- @param context BufferContext
+--- @return BufferContext
 local function add_prefix(context)
   local component = context.component
   local options = context.preferences.options
@@ -362,6 +364,7 @@ local function add_prefix(context)
 end
 
 --- @param context BufferContext
+--- @return BufferContext
 local function add_suffix(context)
   local component = context.component
   local buffer = context.buffer
@@ -383,6 +386,7 @@ end
 --- TODO: We increment the buffer length by the separator although the final
 --- buffer will not have a separator so we are technically off by 1
 --- @param context BufferContext
+--- @return BufferContext
 local function add_separators(context)
   local buffer = context.buffer
   local length = context.length
@@ -409,6 +413,8 @@ end
 -- if we are enforcing regular tab size then all tabs will try and fit
 -- into the maximum tab size. If not we enforce a minimum tab size
 -- and allow tabs to be larger than the max.
+---@param context BufferContext
+---@return number
 local function enforce_regular_tabs(context)
   local _, modified_size = modified_component(context)
   local options = context.preferences.options
@@ -426,8 +432,7 @@ local function enforce_regular_tabs(context)
 end
 
 --- @param context BufferContext
---- @return number
---- @return number
+--- @return BufferContext
 local function make_clickable(context)
   -- v:lua does not support function references in vimscript so
   -- the only way to implement this is using autoload viml functions
@@ -439,6 +444,7 @@ local function make_clickable(context)
 end
 
 --- @param context BufferContext
+--- @return BufferContext
 local function add_padding(context)
   local component = context.component
   local options = context.preferences.options
@@ -468,7 +474,7 @@ local function add_padding(context)
 end
 
 ---@param ctx BufferContext
----@return table
+---@return BufferContext
 local function get_buffer_name(ctx)
   local max_length = enforce_regular_tabs(ctx)
   local filename = truncate_filename(ctx.buffer.filename, max_length)

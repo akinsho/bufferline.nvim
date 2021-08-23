@@ -32,7 +32,7 @@ local _user_config = {}
 ---@field public max_prefix_length number
 ---@field public sort_by string
 ---@field public diagnostics boolean
----@field public diagnostic_indicator function?
+---@field public diagnostics_indicator function?
 ---@field public offsets table[]
 
 ---Ensure the user has only specified highlight groups that exist
