@@ -21,6 +21,8 @@ local M = {}
 ---@field public buftype string
 ---@field public letter string
 ---@field public ordinal number
+---@field public duplicated boolean
+---@field public prefix_count boolean
 M.Buffer = {}
 
 ---create a new buffer class
