@@ -113,6 +113,17 @@ Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
 Plug 'akinsho/bufferline.nvim'
 ```
 
+## What about Tabs?
+
+This plugin, as the name implies, shows a user their buffers _not tabs_ if you're unclear as to what the difference
+is please read `:help tabpage`. It does include minimal indicators which show how many tabs you have open and which is focused.
+These are not however part of the bufferline proper and tabs cannot currently replace buffers.
+
+If you are interested in _contributing a PR_ for tab related functionality please raise an issue to discuss.
+
+**N.B:** please **don't open a feature request** for this. It isn't something I plan on _personally_ implementing but will happily help
+a willing contributor who wants to add this themselves.
+
 ## Caveats
 
 - This won't appeal to everyone's tastes. This plugin is opinionated about how the tabline
