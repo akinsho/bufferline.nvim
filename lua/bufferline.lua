@@ -382,8 +382,8 @@ end
 
 --- TODO: We increment the buffer length by the separator although the final
 --- buffer will not have a separator so we are technically off by 1
-local function separator_components(context)
 --- @param context BufferContext
+local function add_separators(context)
   local buffer = context.buffer
   local length = context.length
   local hl = context.preferences.highlights
@@ -392,24 +392,23 @@ local function separator_components(context)
   local focused = buffer:current() or buffer:visible()
 
   local right_sep, left_sep = get_separator(focused, style)
-
-  local sep_hl = hl.separator.hl
-  if is_slant(style) then
-    sep_hl = curr_hl.separator
-  end
-
+  local sep_hl = is_slant(style) and curr_hl.separator or hl.separator.hl
   local right_separator = sep_hl .. right_sep
-
   local left_separator = left_sep and (sep_hl .. left_sep) or nil
   length = length + strwidth(right_sep)
-
   if left_sep then
     length = length + strwidth(left_sep)
   end
 
-  return length, left_separator, right_separator
+  context.length = length
+  context.separators.left = left_separator
+  context.separators.right = right_separator
+  return context
 end
 
+-- if we are enforcing regular tab size then all tabs will try and fit
+-- into the maximum tab size. If not we enforce a minimum tab size
+-- and allow tabs to be larger than the max.
 local function enforce_regular_tabs(context)
   local _, modified_size = modified_component(context)
   local options = context.preferences.options
@@ -498,6 +497,7 @@ local function render_buffer(preferences, buffer)
     preferences = preferences,
     current_highlights = hl,
     buffer = buffer,
+    separators = { left = "", right = "" },
   }
 
   local add_diagnostics = require("bufferline.diagnostics").component
@@ -515,11 +515,9 @@ local function render_buffer(preferences, buffer)
     add_numbers,
     make_clickable,
     add_indicator,
-    add_suffix
+    add_suffix,
+    add_separators
   )(ctx)
-
-  local length, left_sep, right_sep = separator_components(ctx)
-  ctx.length = length
 
   -- NOTE: the component is wrapped in an item -> %(content) so
   -- vim counts each item as one rather than all of its individual
@@ -532,10 +530,10 @@ local function render_buffer(preferences, buffer)
   --- @param num_of_bufs number
   --- @returns string
   local function render_fn(index, num_of_bufs)
-    if left_sep then
-      buffer_component = left_sep .. buffer_component .. right_sep
+    if ctx.separators.left then
+      buffer_component = ctx.separators.left .. buffer_component .. ctx.separators.right
     elseif index < num_of_bufs then
-      buffer_component = buffer_component .. right_sep
+      buffer_component = buffer_component .. ctx.separators.right
     end
     return buffer_component
   end
