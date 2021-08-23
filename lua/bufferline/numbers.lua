@@ -79,13 +79,14 @@ function M.component(context)
   local options = context.preferences.options
   local length = context.length
   if options.numbers == "none" then
-    return component, length
+    return context
   end
   local number_prefix = prefix(buffer, options.numbers, options.number_style)
   local number_component = number_prefix .. constants.padding
   component = number_component .. component
   length = length + vim.fn.strwidth(number_component)
-  return component, length
+  context.component, context.length = component, length
+  return context
 end
 
 return M

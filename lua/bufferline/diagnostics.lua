@@ -68,14 +68,14 @@ end
 function M.component(context)
   local opts = context.preferences.options
   if is_disabled(opts.diagnostics) then
-    return context.component, context.length
+    return context
   end
 
   local user_indicator = opts.diagnostics_indicator
   local highlights = context.current_highlights
   local diagnostics = context.buffer.diagnostics
   if diagnostics.count < 1 then
-    return context.component, context.length
+    return context
   end
 
   local indicator = " (" .. diagnostics.count .. ")"
@@ -89,8 +89,15 @@ function M.component(context)
     or highlights.diagnostic
     or ""
   local size = context.length + vim.fn.strwidth(indicator)
-  return highlight .. context.component .. diag_highlight .. indicator .. highlights.background,
-    size
+
+  context.length = size
+  context.component = highlight
+    .. context.component
+    .. diag_highlight
+    .. indicator
+    .. highlights.background
+
+  return context
 end
 
 return M

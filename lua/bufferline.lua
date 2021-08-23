@@ -337,7 +337,7 @@ local function modified_component(context)
 end
 
 --- @param context table
-local function indicator_component(context)
+local function add_indicator(context)
   local buffer = context.buffer
   local length = context.length
   local component = context.component
@@ -361,7 +361,8 @@ local function indicator_component(context)
     length = length + strwidth(padding)
     component = curr_hl.background .. padding .. component
   end
-  return component, length
+  context.component, context.length = component, length
+  return context
 end
 
 --- @param context table
@@ -380,7 +381,8 @@ local function add_prefix(context)
     component = icon_highlight .. hl.background .. component
     length = length + strwidth(buffer.icon .. padding)
   end
-  return component, length
+  context.component, context.length = component, length
+  return context
 end
 
 --- @param context table
@@ -398,10 +400,11 @@ local function add_suffix(context)
     component = component .. hl.background .. suffix
     length = length + (buffer.modified and modified_size or size)
   end
-  return component, length
+  context.component, context.length = component, length
+  return context
 end
 
---- TODO We increment the buffer length by the separator although the final
+--- TODO: We increment the buffer length by the separator although the final
 --- buffer will not have a separator so we are technically off by 1
 --- @param context table
 local function separator_components(context)
@@ -451,7 +454,22 @@ local function enforce_regular_tabs(context)
 end
 
 --- @param context table
-local function pad_buffer(context)
+--- @return number
+--- @return number
+local function make_clickable(context)
+  local mode = context.preferences.options.mode
+  local component = context.component
+  local buf_num = context.buffer.id
+  -- v:lua does not support function references in vimscript so
+  -- the only way to implement this is using autoload viml functions
+  local func_name = mode == "multiwindow" and "handle_win_click" or "handle_click"
+  component = "%" .. buf_num .. "@nvim_bufferline#" .. func_name .. "@" .. component
+  context.component = component
+  return context
+end
+
+--- @param context table
+local function add_padding(context)
   local component = context.component
   local options = context.preferences.options
   local length = context.length
@@ -475,9 +493,32 @@ local function pad_buffer(context)
     component = pad .. component .. pad
     length = length + strwidth(pad) * 2
   end
-  return component, length
+  context.component, context.length = component, length
+  return context
 end
 
+---@param ctx table
+---@return table
+local function extra_padding(ctx)
+  ctx.component, ctx.length = ctx.component .. padding, ctx.length + strwidth(padding)
+  return ctx
+end
+
+---@param ctx table
+---@return table
+local function get_buffer_name(ctx)
+  local max_length = enforce_regular_tabs(ctx)
+  local filename = truncate_filename(ctx.buffer.filename, max_length)
+  -- escape filenames that contain "%" as this breaks in statusline patterns
+  filename = filename:gsub("%%", "%%%1")
+  ctx.component, ctx.length = filename, ctx.length + strwidth(ctx.component)
+  return ctx
+end
+
+local function identity(...)
+  -- P(...)
+  return ...
+end
 --- @param preferences table
 --- @param buffer Buffer
 --- @return function,number
@@ -491,29 +532,24 @@ local function render_buffer(preferences, buffer)
     buffer = buffer,
   }
 
+  local add_diagnostics = require("bufferline.diagnostics").component
+  local add_duplicates = require("bufferline.duplicates").component
+  local add_numbers = require("bufferline.numbers").component
+
   -- Order matter here as this is the sequence which builds up the tab component
-  local max_length = enforce_regular_tabs(ctx)
-  local filename = truncate_filename(buffer.filename, max_length)
-  -- escape filenames that contain "%" as this breaks in statusline patterns
-  filename = filename:gsub("%%", "%%%1")
-
-  ctx.component = filename
-  ctx.length = ctx.length + strwidth(ctx.component)
-  --- apply diagnostics first since we want the highlight
-  --- to only apply to the filename
-  ctx.component, ctx.length = require("bufferline.diagnostics").component(ctx)
-
-  ctx.component = ctx.component .. padding
-  ctx.length = ctx.length + strwidth(padding)
-
-  ctx.component, ctx.length = require("bufferline.duplicates").component(ctx)
-  ctx.component, ctx.length = add_prefix(ctx)
-  ctx.component, ctx.length = pad_buffer(ctx)
-  ctx.component, ctx.length = require("bufferline.numbers").component(ctx)
-  ctx.component = utils.make_clickable(ctx)
-  ctx.component, ctx.length = indicator_component(ctx)
-
-  ctx.component, ctx.length = add_suffix(ctx)
+  ctx = utils.compose(
+    get_buffer_name,
+    --- apply diagnostics here since we want the highlight to only apply to the filename
+    add_diagnostics,
+    extra_padding,
+    add_duplicates,
+    add_prefix,
+    add_padding,
+    add_numbers,
+    make_clickable,
+    add_indicator,
+    add_suffix
+  )(ctx)
 
   local length, left_sep, right_sep = separator_components(ctx)
   ctx.length = length

@@ -104,7 +104,8 @@ function M.component(context)
     component = hl.duplicate .. dir .. hl.background .. component
     length = length + strwidth(dir)
   end
-  return component, length
+  context.component, context.length = component, length
+  return context
 end
 
 return M
