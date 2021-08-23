@@ -16,17 +16,6 @@ local positions_key = constants.positions_key
 local M = {}
 
 -----------------------------------------------------------------------------//
--- types
------------------------------------------------------------------------------//
----@class BufferContext
----@field length number
----@field component string
----@field preferences BufferlineConfig
----@field current_highlights table<string, table<string, string>>
----@field buffer Buffer
----@field separators table<string, string>
-
------------------------------------------------------------------------------//
 -- State
 -----------------------------------------------------------------------------//
 local state = {
@@ -38,6 +27,38 @@ local state = {
   current_letters = {},
   custom_sort = nil,
 }
+
+-----------------------------------------------------------------------------//
+-- Context
+-----------------------------------------------------------------------------//
+
+---@class BufferContext
+---@field length number
+---@field component string
+---@field preferences BufferlineConfig
+---@field current_highlights table<string, table<string, string>>
+---@field buffer Buffer
+---@field separators table<string, string>
+---@type BufferContext
+local Context = {}
+
+---@param o BufferContext
+---@return BufferContext
+function Context:new(o)
+  self.__index = self
+  return setmetatable(o, self)
+end
+
+---@param o BufferContext
+---@return BufferContext
+function Context:update(o)
+  for k, v in pairs(o) do
+    if v ~= nil then
+      self[k] = v
+    end
+  end
+  return self
+end
 
 ---------------------------------------------------------------------------//
 -- CORE
@@ -338,8 +359,7 @@ local function add_indicator(context)
     length = length + strwidth(padding)
     component = curr_hl.background .. padding .. component
   end
-  context.component, context.length = component, length
-  return context
+  return context:update({ component = component, length = length })
 end
 
 --- @param context BufferContext
@@ -359,8 +379,7 @@ local function add_prefix(context)
     component = icon_highlight .. hl.background .. component
     length = length + strwidth(buffer.icon .. padding)
   end
-  context.component, context.length = component, length
-  return context
+  return context:update({ component = component, length = length })
 end
 
 --- @param context BufferContext
@@ -379,8 +398,7 @@ local function add_suffix(context)
     component = component .. hl.background .. suffix
     length = length + (buffer.modified and modified_size or size)
   end
-  context.component, context.length = component, length
-  return context
+  return context:update({ component = component, length = length })
 end
 
 --- TODO: We increment the buffer length by the separator although the final
@@ -404,10 +422,13 @@ local function add_separators(context)
     length = length + strwidth(left_sep)
   end
 
-  context.length = length
-  context.separators.left = left_separator
-  context.separators.right = right_separator
-  return context
+  return context:update({
+    length = length,
+    separators = {
+      left = left_separator,
+      right = right_separator,
+    },
+  })
 end
 
 -- if we are enforcing regular tab size then all tabs will try and fit
@@ -436,11 +457,9 @@ end
 local function make_clickable(context)
   -- v:lua does not support function references in vimscript so
   -- the only way to implement this is using autoload viml functions
-  context.component = "%"
-    .. context.buffer.id
-    .. "@nvim_bufferline#handle_click@"
-    .. context.component
-  return context
+  return context:update({
+    component = "%" .. context.buffer.id .. "@nvim_bufferline#handle_click@" .. context.component,
+  })
 end
 
 --- @param context BufferContext
@@ -469,8 +488,7 @@ local function add_padding(context)
     component = pad .. component .. pad
     length = length + strwidth(pad) * 2
   end
-  context.component, context.length = component, length
-  return context
+  return context:update({ component = component, length = length })
 end
 
 ---@param ctx BufferContext
@@ -480,8 +498,7 @@ local function get_buffer_name(ctx)
   local filename = truncate_filename(ctx.buffer.filename, max_length)
   -- escape filenames that contain "%" as this breaks in statusline patterns
   filename = filename:gsub("%%", "%%%1") .. padding
-  ctx.component, ctx.length = filename, strwidth(filename) + strwidth(padding)
-  return ctx
+  return ctx:update({ component = filename, length = strwidth(filename) + strwidth(padding) })
 end
 
 --- @param preferences table
@@ -489,21 +506,20 @@ end
 --- @return function,number
 local function render_buffer(preferences, buffer)
   local hl = get_buffer_highlight(buffer, preferences.highlights)
-  ---@type BufferContext
-  local ctx = {
+  local ctx = Context:new({
     length = 0,
     component = "",
     preferences = preferences,
     current_highlights = hl,
     buffer = buffer,
     separators = { left = "", right = "" },
-  }
+  })
 
   local add_diagnostics = require("bufferline.diagnostics").component
   local add_duplicates = require("bufferline.duplicates").component
   local add_numbers = require("bufferline.numbers").component
 
-  -- Order matter here as this is the sequence which builds up the tab component
+  --- Order matter here as this is the sequence which builds up the tab component
   ctx = utils.compose(
     get_buffer_name,
     --- apply diagnostics here since we want the highlight to only apply to the filename
@@ -518,20 +534,19 @@ local function render_buffer(preferences, buffer)
     add_separators
   )(ctx)
 
-  -- NOTE: the component is wrapped in an item -> %(content) so
-  -- vim counts each item as one rather than all of its individual
-  -- sub-components.
-  local buffer_component = "%(" .. ctx.component .. "%)"
-
   --- We return a function from render buffer as we do not yet have access to
   --- information regarding which buffers will actually be rendered
   --- @param index number
-  --- @param num_of_bufs number
+  --- @param buf_count number
   --- @returns string
-  local function render_fn(index, num_of_bufs)
+  local function render_fn(index, buf_count)
+    -- NOTE: the component is wrapped in an item -> %(content) so
+    -- vim counts each item as one rather than all of its individual
+    -- sub-components.
+    local buffer_component = "%(" .. ctx.component .. "%)"
     if ctx.separators.left then
       buffer_component = ctx.separators.left .. buffer_component .. ctx.separators.right
-    elseif index < num_of_bufs then
+    elseif index < buf_count then
       buffer_component = buffer_component .. ctx.separators.right
     end
     return buffer_component

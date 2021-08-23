@@ -85,8 +85,7 @@ function M.component(context)
   local number_component = number_prefix .. constants.padding
   component = number_component .. component
   length = length + vim.fn.strwidth(number_component)
-  context.component, context.length = component, length
-  return context
+  return context:update({ component = component, length = length })
 end
 
 return M

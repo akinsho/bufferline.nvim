@@ -93,15 +93,15 @@ function M.component(context)
   local padding = require("bufferline.constants").padding
   local size = context.length + fn.strwidth(indicator) + fn.strwidth(padding)
 
-  context.length = size
-  context.component = highlight
-    .. context.component
-    .. diag_highlight
-    .. indicator
-    .. highlights.background
-    .. padding
-
-  return context
+  return context:update({
+    length = size,
+    component = highlight
+      .. context.component
+      .. diag_highlight
+      .. indicator
+      .. highlights.background
+      .. padding,
+  })
 end
 
 return M
