@@ -686,7 +686,7 @@ local function get_buffer_name(ctx)
   local filename = truncate_filename(ctx.buffer.filename, max_length)
   -- escape filenames that contain "%" as this breaks in statusline patterns
   filename = filename:gsub("%%", "%%%1") .. padding
-  return ctx:update({ component = filename, length = strwidth(filename) + strwidth(padding) })
+  return ctx:update({ component = filename, length = strwidth(filename) })
 end
 
 --- @param preferences table
