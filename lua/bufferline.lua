@@ -135,6 +135,17 @@ end
 -- User commands
 ---------------------------------------------------------------------------//
 
+---Add click action to a component
+---@param func_name string
+---@param buf number
+---@param component string
+---@return string
+local function make_clickable(func_name, buf, component)
+  -- v:lua does not support function references in vimscript so
+  -- the only way to implement this is using autoload vimscript functions
+  return "%" .. buf .. "@nvim_bufferline#" .. func_name .. "@" .. component
+end
+
 ---Handle a user "command" which can be a string or a function
 ---@param command string|function
 ---@param buf_id string
@@ -489,14 +500,13 @@ local function close_icon(buf_id, context)
 
   local symbol = buffer_close_icon .. padding
   local size = strwidth(symbol)
-  return "%"
-    .. buf_id
-    .. "@nvim_bufferline#handle_close_buffer@"
-    .. close_button_hl
-    .. symbol
+  local component = make_clickable(
+    "handle_close_buffer",
+    buf_id,
     -- the %X works as a closing label. @see :h tabline
-    .. "%X",
-    size
+    close_button_hl .. symbol .. "%X"
+  )
+  return component, size
 end
 
 --- @param context BufferContext
@@ -627,11 +637,9 @@ end
 
 --- @param context BufferContext
 --- @return BufferContext
-local function make_clickable(context)
-  -- v:lua does not support function references in vimscript so
-  -- the only way to implement this is using autoload viml functions
+local function add_click_action(context)
   return context:update({
-    component = "%" .. context.buffer.id .. "@nvim_bufferline#handle_click@" .. context.component,
+    component = make_clickable("handle_click", context.buffer.id, context.component),
   })
 end
 
@@ -692,6 +700,9 @@ local function render_buffer(preferences, buffer)
   local add_numbers = require("bufferline.numbers").component
 
   --- Order matter here as this is the sequence which builds up the tab component
+  --- each render function takes the context and returns an updated context with it's
+  --- changes e.g. adding a modified icon to the context component or updating the
+  --- length of the component
   ctx = utils.compose(
     get_buffer_name,
     --- apply diagnostics here since we want the highlight to only apply to the filename
@@ -700,7 +711,7 @@ local function render_buffer(preferences, buffer)
     add_prefix,
     add_padding,
     add_numbers,
-    make_clickable,
+    add_click_action,
     add_indicator,
     add_suffix,
     add_separators
