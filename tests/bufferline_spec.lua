@@ -1,10 +1,19 @@
 _G.__TEST = true
 
+local function vim_enter()
+  vim.cmd("doautocmd VimEnter")
+end
+
 describe("Bufferline tests:", function()
   vim.opt.swapfile = false
   vim.opt.hidden = true
 
-  local bufferline = require("bufferline")
+  local bufferline
+
+  before_each(function()
+    package.loaded["bufferline"] = nil
+    bufferline = require("bufferline")
+  end)
 
   after_each(function()
     bufferline._reset()
@@ -15,12 +24,12 @@ describe("Bufferline tests:", function()
     it("should create corresponding buffers in state", function()
       bufferline.setup()
       -- FIXME: vim.v.vim_did_enter is 0 in all test cases.
-      -- figure out how to ensure it is set to 1 instead
-      -- so load should not need to be called manually
-      bufferline.__load()
+      vim_enter()
+      vim.cmd("edit test-1.txt")
+      vim.cmd("edit test-2.txt")
       local tabline = nvim_bufferline()
       assert.truthy(tabline)
-      assert.is.equal(vim.tbl_count(bufferline._state.buffers), 1)
+      assert.is.equal(vim.tbl_count(bufferline._state.buffers), 2)
     end)
 
     it("should allow configuring the indicator icon", function()
@@ -30,7 +39,9 @@ describe("Bufferline tests:", function()
           indicator_icon = icon,
         },
       })
-      bufferline.__load()
+      vim_enter()
+      vim.cmd("doautocmd VimEnter")
+      vim.cmd("edit test.txt")
       local tabline = nvim_bufferline()
       assert.truthy(tabline)
       assert.is_truthy(tabline:match(icon))
@@ -46,7 +57,7 @@ describe("Bufferline tests:", function()
           end,
         },
       })
-      bufferline.__load()
+      vim_enter()
       vim.cmd("edit test.txt")
       local tabline = nvim_bufferline()
       assert.truthy(tabline)
@@ -62,7 +73,7 @@ describe("Bufferline tests:", function()
           left_mouse_command = "vertical sbuffer %d",
         },
       })
-      bufferline.__load()
+      vim_enter()
       bufferline.handle_click(bufnum, "l")
       assert.is_equal(#vim.api.nvim_list_wins(), 2)
     end)
@@ -76,7 +87,7 @@ describe("Bufferline tests:", function()
           end,
         },
       })
-      bufferline.__load()
+      vim_enter()
       bufferline.handle_click(bufnum, "m")
       assert.is_equal(vim.bo[bufnum].filetype, "test")
     end)
@@ -88,7 +99,7 @@ describe("Bufferline tests:", function()
           right_mouse_command = "setfiletype egg",
         },
       })
-      bufferline.__load()
+      vim_enter()
       bufferline.handle_click(bufnum, "r")
       assert.is_equal(vim.bo.filetype, "egg")
     end)
@@ -104,7 +115,7 @@ describe("Bufferline tests:", function()
           end,
         },
       })
-      bufferline.__load()
+      vim_enter()
       bufferline.handle_close_buffer(bufnum)
       assert.is_equal(count, expected)
     end)
