@@ -505,14 +505,13 @@ end
 --- @param buffer Buffer
 --- @return function,number
 local function render_buffer(preferences, buffer)
-  local hl = get_buffer_highlight(buffer, preferences.highlights)
   local ctx = Context:new({
     length = 0,
     component = "",
-    preferences = preferences,
-    current_highlights = hl,
     buffer = buffer,
+    preferences = preferences,
     separators = { left = "", right = "" },
+    current_highlights = get_buffer_highlight(buffer, preferences.highlights),
   })
 
   local add_diagnostics = require("bufferline.diagnostics").component
