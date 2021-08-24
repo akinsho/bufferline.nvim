@@ -73,6 +73,7 @@ local function prefix(buffer, mode, style)
 end
 
 --- @param context BufferContext
+--- @return BufferContext
 function M.component(context)
   local buffer = context.buffer
   local component = context.component

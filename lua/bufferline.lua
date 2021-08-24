@@ -42,11 +42,18 @@ local state = {
 ---@type BufferContext
 local Context = {}
 
----@param o BufferContext
+---@param ctx BufferContext
 ---@return BufferContext
-function Context:new(o)
+function Context:new(ctx)
+  assert(ctx.buffer, "A buffer is required to create a context")
+  assert(ctx.preferences, "The user's preferences are required to create a context")
+  self.length = ctx.length or 0
+  self.buffer = ctx.buffer
+  self.preferences = ctx.preferences
+  self.component = ctx.component or ""
+  self.separators = ctx.component or { left = "", right = "" }
   self.__index = self
-  return setmetatable(o, self)
+  return setmetatable(ctx, self)
 end
 
 ---@param o BufferContext
@@ -687,11 +694,8 @@ end
 --- @return function,number
 local function render_buffer(preferences, buffer)
   local ctx = Context:new({
-    length = 0,
-    component = "",
     buffer = buffer,
     preferences = preferences,
-    separators = { left = "", right = "" },
     current_highlights = get_buffer_highlight(buffer, preferences.highlights),
   })
 
