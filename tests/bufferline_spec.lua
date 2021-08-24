@@ -1,5 +1,6 @@
 _G.__TEST = true
 
+-- FIXME: vim.v.vim_did_enter is 0 in all test cases.
 local function vim_enter()
   vim.cmd("doautocmd VimEnter")
 end
@@ -16,14 +17,12 @@ describe("Bufferline tests:", function()
   end)
 
   after_each(function()
-    bufferline._reset()
-    vim.cmd("bufdo bd")
+    vim.cmd("silent %bwipeout!")
   end)
 
   describe("render buffer - ", function()
     it("should create corresponding buffers in state", function()
       bufferline.setup()
-      -- FIXME: vim.v.vim_did_enter is 0 in all test cases.
       vim_enter()
       vim.cmd("edit test-1.txt")
       vim.cmd("edit test-2.txt")
@@ -40,7 +39,6 @@ describe("Bufferline tests:", function()
         },
       })
       vim_enter()
-      vim.cmd("doautocmd VimEnter")
       vim.cmd("edit test.txt")
       local tabline = nvim_bufferline()
       assert.truthy(tabline)
@@ -121,22 +119,16 @@ describe("Bufferline tests:", function()
     end)
   end)
 
+  -- FIXME: nvim_bufferline() needs to be manually called
   describe("commands - ", function()
-    local sort_by_name = function(a, b)
-      local a_name = vim.api.nvim_buf_get_name(a.id)
-      local b_name = vim.api.nvim_buf_get_name(b.id)
-      return a_name > b_name
-    end
-
-    -- FIXME: state.buffers is not being populated correctly for some reason
-    -- causing this and likely the test above not to work correctly.
-    pending("should close buffers to the right of the current buffer", function()
-      bufferline.setup({ options = { sort_by = sort_by_name } })
+    it("should close buffers to the right of the current buffer", function()
+      bufferline.setup()
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
       vim.cmd("edit d.txt")
       vim.cmd("edit e.txt")
+      nvim_bufferline()
 
       vim.cmd("edit c.txt")
       bufferline.close_in_direction("right")
@@ -144,13 +136,16 @@ describe("Bufferline tests:", function()
       assert.is_equal(3, #bufs)
     end)
 
-    pending("should close buffers to the left of the current buffer", function()
-      bufferline.setup({ options = { sort_by = sort_by_name } })
-      vim.cmd("file! a.txt")
+    it("should close buffers to the left of the current buffer", function()
+      bufferline.setup()
+      vim.cmd("edit! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
       vim.cmd("edit d.txt")
       vim.cmd("edit e.txt")
+      nvim_bufferline()
+
+      assert.is.equal(5, vim.tbl_count(bufferline._state.buffers))
 
       local bufs = vim.api.nvim_list_bufs()
       assert.is_equal(5, #bufs)
