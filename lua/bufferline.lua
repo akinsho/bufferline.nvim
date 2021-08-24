@@ -581,13 +581,14 @@ local function add_suffix(context)
   local length = context.length
   local options = context.preferences.options
   local modified, modified_size = modified_component(context)
-
-  if options.show_buffer_close_icons then
-    local close, size = close_icon(buffer.id, context)
-    local suffix = buffer.modified and hl.modified .. modified or close
-    component = component .. hl.background .. suffix
-    length = length + (buffer.modified and modified_size or size)
+  if not options.show_buffer_close_icons then
+    return context
   end
+
+  local close, size = close_icon(buffer.id, context)
+  local suffix = buffer.modified and hl.modified .. modified or close
+  component = component .. hl.background .. suffix
+  length = length + (buffer.modified and modified_size or size)
   return context:update({ component = component, length = length })
 end
 
