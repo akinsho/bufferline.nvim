@@ -691,7 +691,7 @@ end
 
 --- @param preferences table
 --- @param buffer Buffer
---- @return function,number
+--- @return BufferComponent,number
 local function render_buffer(preferences, buffer)
   local ctx = Context:new({
     buffer = buffer,
@@ -934,7 +934,7 @@ local function bufferline(preferences)
 
   letters.reset()
   duplicates.reset()
-  state.buffers = {}
+  local buffers = {}
   local all_diagnostics = require("bufferline.diagnostics").get(options)
   local Buffer = require("bufferline.buffers").Buffer
   for i, buf_id in ipairs(buf_nums) do
@@ -946,18 +946,21 @@ local function bufferline(preferences)
       diagnostics = all_diagnostics[buf_id],
       name_formatter = options.name_formatter,
     })
-    duplicates.mark(state.buffers, buf, function(b)
-      b.component, b.length = render_buffer(preferences, b)
-    end)
     buf.letter = letters.get(buf)
-    buf.component, buf.length = render_buffer(preferences, buf)
-    state.buffers[i] = buf
+    buffers[i] = buf
   end
 
   -- if the user has reshuffled the buffers manually don't try and sort them
   if not state.custom_sort then
-    require("bufferline.sorters").sort_buffers(preferences.options.sort_by, state.buffers)
+    require("bufferline.sorters").sort_buffers(preferences.options.sort_by, buffers)
   end
+
+  local deduplicated = duplicates.mark(buffers)
+  --- Assign buffers to state
+  state.buffers = vim.tbl_map(function(buf)
+    buf.component, buf.length = render_buffer(preferences, buf)
+    return buf
+  end, deduplicated)
 
   return render(state.buffers, all_tabs, preferences)
 end

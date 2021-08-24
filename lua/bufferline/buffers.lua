@@ -7,6 +7,8 @@ local M = {}
 --------------------------------
 -- A single buffer
 --------------------------------
+---@alias BufferComponent fun(index: number, buf_count: number): string
+
 ---@class Buffer
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
@@ -23,6 +25,7 @@ local M = {}
 ---@field public ordinal number
 ---@field public duplicated boolean
 ---@field public prefix_count boolean
+---@field public component BufferComponent
 local Buffer = {}
 
 ---create a new buffer class
