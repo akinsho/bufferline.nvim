@@ -17,7 +17,6 @@ Filtering..............................: |bufferline-filtering|
 Commands...............................: |bufferline-commands|
 Custom functions.......................: |bufferline-exec|
 Pick...................................: |bufferline-pick|
-Multi-window...........................: |bufferline-multiwindow|
 Mappings...............................: |bufferline-mapping|
 Highlights.............................: |bufferline-highlights|
 Mouse actions..........................: |bufferline-mouse-actions|
@@ -51,7 +50,6 @@ The available settings are: >
 
     require"bufferline".setup{
         options = {
-            view = "multiwindow" | "default",
             numbers = "none" | "ordinal" | "buffer_id" | "both",
             number_style = "superscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
             mappings = true | false,
