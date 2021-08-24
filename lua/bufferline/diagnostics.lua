@@ -86,6 +86,11 @@ function M.component(context)
     indicator = user_indicator(diagnostics.count, diagnostics.level, diagnostics.errors, ctx)
   end
 
+  --- Don't adjust the diagnostic indicator size if it is empty
+  if not indicator or #indicator == 0 then
+    return context
+  end
+
   local highlight = highlights[diagnostics.level] or ""
   local diag_highlight = highlights[diagnostics.level .. "_diagnostic"]
     or highlights.diagnostic
