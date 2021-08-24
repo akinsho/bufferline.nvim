@@ -60,9 +60,10 @@ function Context:update(o)
   return self
 end
 
----------------------------------------------------------------------------//
--- CORE
----------------------------------------------------------------------------//
+-----------------------------------------------------------------------------//
+-- Helpers
+-----------------------------------------------------------------------------//
+
 local function refresh()
   vim.cmd("redrawtabline")
   vim.cmd("redraw")
@@ -85,6 +86,54 @@ function M.restore_positions()
     state.custom_sort = vim.tbl_map(tonumber, buf_ids)
   end
 end
+
+--- sorts buf_names in place, but doesn't add/remove any values
+--- @param buf_nums number[]
+--- @param sorted number[]
+--- @return number[]
+local function get_updated_buffers(buf_nums, sorted)
+  if not sorted then
+    return buf_nums
+  end
+  local nums = { unpack(buf_nums) }
+  local reverse_lookup_sorted = utils.tbl_reverse_lookup(sorted)
+
+  --- a comparator that sorts buffers by their position in sorted
+  local sort_by_sorted = function(buf_id_1, buf_id_2)
+    local buf_1_rank = reverse_lookup_sorted[buf_id_1]
+    local buf_2_rank = reverse_lookup_sorted[buf_id_2]
+    if not buf_1_rank then
+      return false
+    end
+    if not buf_2_rank then
+      return true
+    end
+    return buf_1_rank < buf_2_rank
+  end
+  table.sort(nums, sort_by_sorted)
+  return nums
+end
+
+---Filter the buffers to show based on the user callback passed in
+---@param buf_nums integer[]
+---@param callback fun(buf: integer, bufs: integer[]): boolean
+---@return integer[]
+local function apply_buffer_filter(buf_nums, callback)
+  if type(callback) ~= "function" then
+    return buf_nums
+  end
+  local filtered = {}
+  for _, buf in ipairs(buf_nums) do
+    if callback(buf, buf_nums) then
+      table.insert(filtered, buf)
+    end
+  end
+  return filtered
+end
+
+---------------------------------------------------------------------------//
+-- User commands
+---------------------------------------------------------------------------//
 
 ---Handle a user "command" which can be a string or a function
 ---@param command string|function
@@ -168,6 +217,130 @@ function M.close_buffer_with_pick()
   end)
 end
 
+--- Open a buffer based on it's visible position in the list
+--- unless absolute is specified in which case this will open it based on it place in the full list
+--- this is significantly less helpful if you have a lot of buffers open
+---@param num number | string
+---@param absolute boolean whether or not to use the buffers absolute position or visible positions
+function M.go_to_buffer(num, absolute)
+  num = type(num) == "string" and tonumber(num) or num
+  local list = absolute and state.buffers or state.visible_buffers
+  local buf = list[num]
+  if buf then
+    vim.cmd(fmt("buffer %d", buf.id))
+  end
+end
+
+local function get_current_buf_index()
+  local current = api.nvim_get_current_buf()
+  local index
+
+  for i, buf in ipairs(state.buffers) do
+    if buf.id == current then
+      index = i
+      break
+    end
+  end
+  return index
+end
+
+--- @param bufs Buffer[]
+--- @return number[]
+local function get_buf_ids(bufs)
+  return vim.tbl_map(function(buf)
+    return buf.id
+  end, bufs)
+end
+
+--- @param direction number
+function M.move(direction)
+  local index = get_current_buf_index()
+  if not index then
+    return utils.echoerr("Unable to find buffer to move, sorry")
+  end
+  local next_index = index + direction
+  if next_index >= 1 and next_index <= #state.buffers then
+    local cur_buf = state.buffers[index]
+    local destination_buf = state.buffers[next_index]
+    state.buffers[next_index] = cur_buf
+    state.buffers[index] = destination_buf
+    state.custom_sort = get_buf_ids(state.buffers)
+    local opts = require("bufferline.config").get("options")
+    if opts.persist_buffer_sort then
+      save_positions(state.custom_sort)
+    end
+    refresh()
+  end
+end
+
+function M.cycle(direction)
+  local index = get_current_buf_index()
+  if not index then
+    return
+  end
+  local length = #state.buffers
+  local next_index = index + direction
+
+  if next_index <= length and next_index >= 1 then
+    next_index = index + direction
+  elseif index + direction <= 0 then
+    next_index = length
+  else
+    next_index = 1
+  end
+
+  local next = state.buffers[next_index]
+
+  if not next then
+    return utils.echoerr("This buffer does not exist")
+  end
+
+  vim.cmd("buffer " .. next.id)
+end
+
+---@alias direction "'left'" | "'right'"
+---Close all buffers to the left or right of the current buffer
+---@param direction direction
+function M.close_in_direction(direction)
+  local index = get_current_buf_index()
+  if not index then
+    return
+  end
+  local length = #state.buffers
+  if
+    not (index == length and direction == "right") and not (index == 1 and direction == "left")
+  then
+    local start = direction == "left" and 1 or index + 1
+    local _end = direction == "left" and index - 1 or length
+    ---@type Buffer[]
+    local bufs = vim.list_slice(state.buffers, start, _end)
+    for _, buf in ipairs(bufs) do
+      api.nvim_buf_delete(buf.id, { force = true })
+    end
+  end
+end
+
+--- sorts all buffers
+--- @param sort_by string|function
+function M.sort_buffers_by(sort_by)
+  if next(state.buffers) == nil then
+    return utils.echoerr("Unable to find buffers to sort, sorry")
+  end
+
+  require("bufferline.sorters").sort_buffers(sort_by, state.buffers)
+  state.custom_sort = get_buf_ids(state.buffers)
+  local opts = require("bufferline.config").get("options")
+  if opts.persist_buffer_sort then
+    save_positions(state.custom_sort)
+  end
+  refresh()
+end
+
+-----------------------------------------------------------------------------//
+-- UI
+-----------------------------------------------------------------------------//
+
+--- TODO: find a tidier way to do this if possible
 ---@param buffer Buffer
 ---@param hls table<string, table<string, string>>
 ---@return table
@@ -723,50 +896,6 @@ local function render(bufs, tbs, prefs)
   )
 end
 
---- sorts buf_names in place, but doesn't add/remove any values
---- @param buf_nums number[]
---- @param sorted number[]
---- @return number[]
-local function get_updated_buffers(buf_nums, sorted)
-  if not sorted then
-    return buf_nums
-  end
-  local nums = { unpack(buf_nums) }
-  local reverse_lookup_sorted = utils.tbl_reverse_lookup(sorted)
-
-  --- a comparator that sorts buffers by their position in sorted
-  local sort_by_sorted = function(buf_id_1, buf_id_2)
-    local buf_1_rank = reverse_lookup_sorted[buf_id_1]
-    local buf_2_rank = reverse_lookup_sorted[buf_id_2]
-    if not buf_1_rank then
-      return false
-    end
-    if not buf_2_rank then
-      return true
-    end
-    return buf_1_rank < buf_2_rank
-  end
-  table.sort(nums, sort_by_sorted)
-  return nums
-end
-
----Filter the buffers to show based on the user callback passed in
----@param buf_nums integer[]
----@param callback fun(buf: integer, bufs: integer[]): boolean
----@return integer[]
-local function apply_buffer_filter(buf_nums, callback)
-  if type(callback) ~= "function" then
-    return buf_nums
-  end
-  local filtered = {}
-  for _, buf in ipairs(buf_nums) do
-    if callback(buf, buf_nums) then
-      table.insert(filtered, buf)
-    end
-  end
-  return filtered
-end
-
 --- @param preferences table
 --- @return string
 local function bufferline(preferences)
@@ -818,129 +947,10 @@ local function bufferline(preferences)
   return render(state.buffers, all_tabs, preferences)
 end
 
---- Open a buffer based on it's visible position in the list
---- unless absolute is specified in which case this will open it based on it place in the full list
---- this is significantly less helpful if you have a lot of buffers open
----@param num number | string
----@param absolute boolean whether or not to use the buffers absolute position or visible positions
-function M.go_to_buffer(num, absolute)
-  num = type(num) == "string" and tonumber(num) or num
-  local list = absolute and state.buffers or state.visible_buffers
-  local buf = list[num]
-  if buf then
-    vim.cmd(fmt("buffer %d", buf.id))
-  end
-end
-
-local function get_current_buf_index()
-  local current = api.nvim_get_current_buf()
-  local index
-
-  for i, buf in ipairs(state.buffers) do
-    if buf.id == current then
-      index = i
-      break
-    end
-  end
-  return index
-end
-
---- @param bufs Buffer[]
---- @return number[]
-local function get_buf_ids(bufs)
-  return vim.tbl_map(function(buf)
-    return buf.id
-  end, bufs)
-end
-
---- @param direction number
-function M.move(direction)
-  local index = get_current_buf_index()
-  if not index then
-    return utils.echoerr("Unable to find buffer to move, sorry")
-  end
-  local next_index = index + direction
-  if next_index >= 1 and next_index <= #state.buffers then
-    local cur_buf = state.buffers[index]
-    local destination_buf = state.buffers[next_index]
-    state.buffers[next_index] = cur_buf
-    state.buffers[index] = destination_buf
-    state.custom_sort = get_buf_ids(state.buffers)
-    local opts = require("bufferline.config").get("options")
-    if opts.persist_buffer_sort then
-      save_positions(state.custom_sort)
-    end
-    refresh()
-  end
-end
-
-function M.cycle(direction)
-  local index = get_current_buf_index()
-  if not index then
-    return
-  end
-  local length = #state.buffers
-  local next_index = index + direction
-
-  if next_index <= length and next_index >= 1 then
-    next_index = index + direction
-  elseif index + direction <= 0 then
-    next_index = length
-  else
-    next_index = 1
-  end
-
-  local next = state.buffers[next_index]
-
-  if not next then
-    return utils.echoerr("This buffer does not exist")
-  end
-
-  vim.cmd("buffer " .. next.id)
-end
-
----@alias direction "'left'" | "'right'"
----Close all buffers to the left or right of the current buffer
----@param direction direction
-function M.close_in_direction(direction)
-  local index = get_current_buf_index()
-  if not index then
-    return
-  end
-  local length = #state.buffers
-  if
-    not (index == length and direction == "right") and not (index == 1 and direction == "left")
-  then
-    local start = direction == "left" and 1 or index + 1
-    local _end = direction == "left" and index - 1 or length
-    ---@type Buffer[]
-    local bufs = vim.list_slice(state.buffers, start, _end)
-    for _, buf in ipairs(bufs) do
-      api.nvim_buf_delete(buf.id, { force = true })
-    end
-  end
-end
-
 function M.toggle_bufferline()
   local opts = require("bufferline.config").get("options")
   local status = (opts.always_show_bufferline or #fn.getbufinfo({ buflisted = 1 }) > 1) and 2 or 0
   vim.o.showtabline = status
-end
-
---- sorts all buffers
---- @param sort_by string|function
-function M.sort_buffers_by(sort_by)
-  if next(state.buffers) == nil then
-    return utils.echoerr("Unable to find buffers to sort, sorry")
-  end
-
-  require("bufferline.sorters").sort_buffers(sort_by, state.buffers)
-  state.custom_sort = get_buf_ids(state.buffers)
-  local opts = require("bufferline.config").get("options")
-  if opts.persist_buffer_sort then
-    save_positions(state.custom_sort)
-  end
-  refresh()
 end
 
 ---@private
@@ -1013,10 +1023,10 @@ function M.__load()
   M.toggle_bufferline()
 end
 
----@param prefs BufferlineConfig
-function M.setup(prefs)
-  prefs = prefs or {}
-  require("bufferline.config").set(prefs)
+---@param config BufferlineConfig
+function M.setup(config)
+  config = config or {}
+  require("bufferline.config").set(config)
   if vim.v.vim_did_enter == 1 then
     M.__load()
   else
