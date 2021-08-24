@@ -21,12 +21,14 @@ local M = {}
 ---@field public buftype string
 ---@field public letter string
 ---@field public ordinal number
-M.Buffer = {}
+---@field public duplicated boolean
+---@field public prefix_count boolean
+local Buffer = {}
 
 ---create a new buffer class
 ---@param buf Buffer
 ---@return Buffer
-function M.Buffer:new(buf)
+function Buffer:new(buf)
   buf.modifiable = vim.bo[buf.id].modifiable
   buf.modified = vim.bo[buf.id].modified
   buf.buftype = vim.bo[buf.id].buftype
@@ -56,18 +58,18 @@ end
 -- if there are no windows associated i.e. it is not in view and the function returns -1
 -- FIXME this does not work if the same buffer is open in multiple window
 -- maybe do something with win_findbuf(bufnr('%'))
-function M.Buffer:current()
+function Buffer:current()
   return fn.winbufnr(0) == self.id
 end
 
-function M.Buffer:visible()
+function Buffer:visible()
   return fn.bufwinnr(self.id) > 0
 end
 
 --- @param depth number
 --- @param formatter function(string, number)
 --- @returns string
-function M.Buffer:ancestor(depth, formatter)
+function Buffer:ancestor(depth, formatter)
   depth = (depth and depth > 1) and depth or 1
   local ancestor = ""
   for index = 1, depth do
@@ -92,25 +94,25 @@ end
 ---@class Buffers
 ---@field buffers Buffers[]
 ---@field length number
-M.Buffers = {}
+local Buffers = {}
 
 ---create a segment of buffers
 ---@param n Buffers
 ---@return Buffers
-function M.Buffers:new(n)
+function Buffers:new(n)
   local t = n or { length = 0, buffers = {} }
   self.__index = self
   return setmetatable(t, self)
 end
 
-function M.Buffers.__add(a, b)
+function Buffers.__add(a, b)
   return a.length + b.length
 end
 
 -- Take a section and remove a buffer arbitrarily
 -- reducing the length is very important as otherwise we don't know
 -- a section is actually smaller now
-function M.Buffers:drop(index)
+function Buffers:drop(index)
   if self.buffers[index] ~= nil then
     self.length = self.length - self.buffers[index].length
     table.remove(self.buffers, index)
@@ -118,9 +120,12 @@ function M.Buffers:drop(index)
   end
 end
 
-function M.Buffers:add(buf)
+function Buffers:add(buf)
   table.insert(self.buffers, buf)
   self.length = self.length + buf.length
 end
+
+M.Buffer = Buffer
+M.Buffers = Buffers
 
 return M

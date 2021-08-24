@@ -87,7 +87,7 @@ local function truncate(dir, depth, max_size)
   return dir:sub(0, allowed_size - strwidth(marker)) .. marker
 end
 
---- @param context table
+--- @param context BufferContext
 function M.component(context)
   local buffer = context.buffer
   local component = context.component
@@ -104,7 +104,7 @@ function M.component(context)
     component = hl.duplicate .. dir .. hl.background .. component
     length = length + strwidth(dir)
   end
-  return component, length
+  return context:update({ component = component, length = length })
 end
 
 return M

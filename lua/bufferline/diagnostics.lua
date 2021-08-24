@@ -1,5 +1,7 @@
 local M = {}
 
+local fn = vim.fn
+
 local severity_name = {
   [1] = "error",
   [2] = "warning",
@@ -64,18 +66,18 @@ function M.get(opts)
   return setmetatable(result, mt)
 end
 
----@param context table
+---@param context BufferContext
 function M.component(context)
   local opts = context.preferences.options
   if is_disabled(opts.diagnostics) then
-    return context.component, context.length
+    return context
   end
 
   local user_indicator = opts.diagnostics_indicator
   local highlights = context.current_highlights
   local diagnostics = context.buffer.diagnostics
   if diagnostics.count < 1 then
-    return context.component, context.length
+    return context
   end
 
   local indicator = " (" .. diagnostics.count .. ")"
@@ -88,9 +90,18 @@ function M.component(context)
   local diag_highlight = highlights[diagnostics.level .. "_diagnostic"]
     or highlights.diagnostic
     or ""
-  local size = context.length + vim.fn.strwidth(indicator)
-  return highlight .. context.component .. diag_highlight .. indicator .. highlights.background,
-    size
+  local padding = require("bufferline.constants").padding
+  local size = context.length + fn.strwidth(indicator) + fn.strwidth(padding)
+
+  return context:update({
+    length = size,
+    component = highlight
+      .. context.component
+      .. diag_highlight
+      .. indicator
+      .. highlights.background
+      .. padding,
+  })
 end
 
 return M

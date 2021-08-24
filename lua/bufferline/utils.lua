@@ -22,6 +22,23 @@ function M.join(...)
   return t
 end
 
+--- A function which takes n number of functions and
+--- passes the result of each function to the next
+---@generic T
+---@return fun(args: T): T
+function M.compose(...)
+  local funcs = { ... }
+  local function recurse(i, ...)
+    if i == #funcs then
+      return funcs[i](...)
+    end
+    return recurse(i + 1, funcs[i](...))
+  end
+  return function(...)
+    return recurse(1, ...)
+  end
+end
+
 -- return a new array containing the concatenation of all of its
 -- parameters. Scalar parameters are included in place, and array
 -- parameters have their values shallow-copied to the final array.
@@ -87,20 +104,6 @@ function M.augroup(definitions)
     end
     vim.cmd("augroup END")
   end
-end
-
---- @param context table
-function M.make_clickable(context)
-  local mode = context.preferences.options.mode
-  local component = context.component
-  local buf_num = context.buffer.id
-  if not vim.fn.has("tablineat") then
-    return component
-  end
-  -- v:lua does not support function references in vimscript so
-  -- the only way to implement this is using autoload viml functions
-  local fn = mode == "multiwindow" and "handle_win_click" or "handle_click"
-  return "%" .. buf_num .. "@nvim_bufferline#" .. fn .. "@" .. component
 end
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
