@@ -29,6 +29,7 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
   - [LSP indicators](#lsp-indicators)
   - [Conditional buffer based LSP indicators](#conditional-buffer-based-lsp-indicators)
   - [Regular tab sizes](#regular-tab-sizes)
+  - [Numbers](#numbers)
   - [Sorting](#sorting)
   - [Sidebar offset](#sidebar-offset-1)
   - [Buffer pick functionality](#buffer-pick-functionality)
@@ -69,9 +70,7 @@ see: `:h bufferline-styling`
 
 Ordinal number and buffer number with a customized number styles.
 
-![both with default style](https://user-images.githubusercontent.com/8133242/113400253-159ea380-93d4-11eb-822c-974d728a6bcf.png)
-
-![both with customized style](https://user-images.githubusercontent.com/8133242/113400265-1a635780-93d4-11eb-8085-adc328385cb5.png)
+![numbers](https://user-images.githubusercontent.com/22454918/130784872-936d4c55-b9dd-413b-871d-7bc66caf8f17.png)
 
 #### Buffer pick
 
@@ -193,8 +192,8 @@ not track global variables which is the mechanism used to store your sort order.
 ```lua
 require('bufferline').setup {
   options = {
-    numbers = "none" | "ordinal" | "buffer_id" | "both",
-    number_style = "superscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
+    numbers = "none" | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
+    number_style = "superscript" | "subscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
     close_command = "bdelete! %d",       -- can be a string | function, see "Mouse actions"
     right_mouse_command = "bdelete! %d", -- can be a string | function, see "Mouse actions"
     left_mouse_command = "buffer %d",    -- can be a string | function, see "Mouse actions"
@@ -344,6 +343,20 @@ If it is larger than the tab size it is allowed to grow up to the max name
 length specified (+ the other indicators).
 If you set `enforce_regular_tabs = true` tabs will be prevented from extending beyond
 the tab size and all tabs will be the same length
+
+### Numbers
+
+![numbers](https://user-images.githubusercontent.com/22454918/130784872-936d4c55-b9dd-413b-871d-7bc66caf8f17.png)
+
+You can prefix buffer names with either the `ordinal` or `buffer id`, using the `numbers` option.
+Currently this can be specified as either a string of `buffer_id` | `ordinal` or a function
+This function allows maximum flexibility in determining the appearance of this section
+
+```lua
+numbers = function(opts)
+  return string.format('%s·%s', opts.raise(opts.id), opts.lower(opts.ordinal))
+end,
+```
 
 ### Sorting
 

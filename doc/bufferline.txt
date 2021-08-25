@@ -11,6 +11,8 @@ CONTENTS                                      *bufferline*
 Introduction...........................: |bufferline-introduction|
 Usage..................................: |bufferline-usage|
 Settings...............................: |bufferline-settings|
+Styling................................: |bufferline-styling|
+Numbers................................: |bufferline-numbers|
 LSP Diagnostics........................: |bufferline-diagnostics|
 Sorting................................: |bufferline-sorting|
 Filtering..............................: |bufferline-filtering|
@@ -50,7 +52,7 @@ The available settings are: >
 
     require"bufferline".setup{
         options = {
-            numbers = "none" | "ordinal" | "buffer_id" | "both",
+            numbers = "none" | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
             number_style = "superscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
             mappings = true | false,
             close_command = "bdelete! %d",       -- can be a string | function, see "Mouse actions"
@@ -98,7 +100,7 @@ The available settings are: >
     }
 <
 ==============================================================================
-STYLING                                             *bufferline-styling*
+STYLING                                                  *bufferline-styling*
 
 You can change the appearance of the bufferline separators by setting the
 `separator_style`. The available options are:
@@ -111,8 +113,22 @@ You can change the appearance of the bufferline separators by setting the
   used as the separators e.g. `{"|", "|"}`, the first is the left and the
   second is the right separator
 
+
 ==============================================================================
-LSP DIAGNOSTICS					    *bufferline-diagnostics*
+NUMBERS                                                    *bufferline-numbers*
+
+You can prefix buffer names with either the `ordinal` or `buffer id`, using
+the `numbers` option. Currently this can be specified as either a string of
+`buffer_id` | `ordinal` or a function This function allows maximum flexibility
+in determining the appearance of this section
+>
+  numbers = function(opts)
+    return string.format('%s·%s', opts.raise(opts.id), opts.lower(opts.ordinal))
+  end,
+<
+
+==============================================================================
+LSP DIAGNOSTICS                                         *bufferline-diagnostics*
 
 By setting `diagnostics = "nvim_lsp"` you will get an indicator in the
 bufferline for a given tab if it has any errors This will allow you to
