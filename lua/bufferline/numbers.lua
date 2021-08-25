@@ -1,4 +1,14 @@
-local constants = require("bufferline/constants")
+local constants = require("bufferline.constants")
+
+---@class NumbersFuncOpts
+---@field ordinal number
+---@field id number
+---@field lower number_helper
+---@field raise number_helper
+
+---@alias number_helper fun(num: number): string
+---@alias numbers_func fun(opts: NumbersFuncOpts): string
+---@alias numbers_opt '"superscript"' | '"subscript"' | '"both"' | numbers_func
 
 local M = {}
 
@@ -53,7 +63,12 @@ local lower, raise = to_style(subscript_numbers), to_style(superscript_numbers)
 ---@return string
 local function prefix(buffer, mode, style)
   if type(mode) == "function" then
-    return mode(buffer.ordinal, buffer.id, lower, raise)
+    return mode({
+      ordinal = buffer.ordinal,
+      id = buffer.id,
+      lower = lower,
+      raise = raise,
+    })
   end
   -- if mode is both, it numbers will look similar lightline-bufferline, buffer_id at top left
   -- and ordinal number at bottom right, so the user see the buffer number

@@ -3,10 +3,6 @@ local M = {}
 local config = {}
 local user_config = {}
 
----@alias number_helper fun(num: number): string
----@alias numbers_func fun(ordinal: number, id: number, lower: number_helper, raise: number_helper): string
----@alias numbers_opt '"superscript"' | '"subscript"' | '"both"' | numbers_func
-
 ---@class BufferlineOptions
 ---@field public view string
 ---@field public numbers string
