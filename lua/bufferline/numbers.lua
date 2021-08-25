@@ -63,12 +63,16 @@ local lower, raise = to_style(subscript_numbers), to_style(superscript_numbers)
 ---@return string
 local function prefix(buffer, mode, style)
   if type(mode) == "function" then
-    return mode({
+    local ok, number = pcall(mode, {
       ordinal = buffer.ordinal,
       id = buffer.id,
       lower = lower,
       raise = raise,
     })
+    if not ok then
+      return ""
+    end
+    return number
   end
   -- if mode is both, it numbers will look similar lightline-bufferline, buffer_id at top left
   -- and ordinal number at bottom right, so the user see the buffer number
