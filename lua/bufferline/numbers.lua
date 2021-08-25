@@ -12,6 +12,8 @@ local constants = require("bufferline.constants")
 
 local M = {}
 
+local styles = { "buffer_id", "ordinal" }
+
 local superscript_numbers = {
   ["0"] = "⁰",
   ["1"] = "¹",
@@ -86,20 +88,18 @@ local function prefix(buffer, mode, style)
     end
 
     local num = ""
-    for _, v in ipairs({ "buffer_id", "ordinal" }) do
-      local ordinal = v == "ordinal"
-      local s = both_style[v] --  "superscript"| "subscript" | "none"
-      if s == "superscript" then
-        num = num
-          .. construct_number(superscript_numbers, ordinal and buffer.ordinal or buffer.id)
-      elseif s == "subscript" then
-        num = num
-          .. construct_number(subscript_numbers, ordinal and buffer.ordinal or buffer.id)
-      else -- "none"
-        num = num .. (v == "ordinal" and buffer.ordinal or buffer.id) .. "."
+    for _, value in ipairs(styles) do
+      local is_ordinal = value == "ordinal"
+      local suffix = both_style[value] --  "superscript"| "subscript" | "none"
+      local suffix_style = is_ordinal and buffer.ordinal or buffer.id
+      if suffix_style == "superscript" then
+        num = num .. construct_number(superscript_numbers, suffix)
+      elseif suffix_style == "subscript" then
+        num = num .. construct_number(subscript_numbers, suffix)
+      else
+        return num .. suffix .. "."
       end
     end
-
     return num
   else
     local n = mode == "ordinal" and buffer.ordinal or buffer.id
