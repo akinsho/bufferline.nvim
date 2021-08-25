@@ -38,19 +38,20 @@ local subscript_numbers = {
   ["9"] = "₉",
 }
 
--- from number to the styled number
-local convert_to_styled_num = function(t, n)
-  n = tostring(n)
-  local r = ""
-  for i = 1, #n do
-    r = r .. t[n:sub(i, i)]
-  end
-  return r
+--- convert single or multi-digit strings to {sub|super}script
+---@param map table<string, string>
+---@param num number
+---@return string
+local function construct_number(map, num)
+  num = tostring(num)
+  return num:gsub(".", function(c)
+    return map[c] or ""
+  end)
 end
 
 local function to_style(map)
   return function(num)
-    return map[tostring(num)]
+    return construct_number(map, num)
   end
 end
 
@@ -90,10 +91,10 @@ local function prefix(buffer, mode, style)
       local s = both_style[v] --  "superscript"| "subscript" | "none"
       if s == "superscript" then
         num = num
-          .. convert_to_styled_num(superscript_numbers, ordinal and buffer.ordinal or buffer.id)
+          .. construct_number(superscript_numbers, ordinal and buffer.ordinal or buffer.id)
       elseif s == "subscript" then
         num = num
-          .. convert_to_styled_num(subscript_numbers, ordinal and buffer.ordinal or buffer.id)
+          .. construct_number(subscript_numbers, ordinal and buffer.ordinal or buffer.id)
       else -- "none"
         num = num .. (v == "ordinal" and buffer.ordinal or buffer.id) .. "."
       end
@@ -102,7 +103,7 @@ local function prefix(buffer, mode, style)
     return num
   else
     local n = mode == "ordinal" and buffer.ordinal or buffer.id
-    local num = style == "superscript" and convert_to_styled_num(superscript_numbers, n) or n .. "."
+    local num = style == "superscript" and construct_number(superscript_numbers, n) or n .. "."
     return num
   end
 end
