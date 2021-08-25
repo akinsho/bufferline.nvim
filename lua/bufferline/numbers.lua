@@ -38,7 +38,23 @@ local convert_to_styled_num = function(t, n)
   return r
 end
 
+local function to_style(map)
+  return function(num)
+    return map[tostring(num)]
+  end
+end
+
+local lower, raise = to_style(subscript_numbers), to_style(superscript_numbers)
+
+---Add a number prefix to the buffer matching a user's preference
+---@param buffer Buffer
+---@param mode numbers_opt
+---@param style string[]
+---@return string
 local function prefix(buffer, mode, style)
+  if type(mode) == "function" then
+    return mode(buffer.ordinal, buffer.id, lower, raise)
+  end
   -- if mode is both, it numbers will look similar lightline-bufferline, buffer_id at top left
   -- and ordinal number at bottom right, so the user see the buffer number
   if mode == "both" then
