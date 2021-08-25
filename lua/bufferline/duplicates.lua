@@ -16,7 +16,7 @@ function M.mark(buffers)
   return vim.tbl_map(function(current)
     -- Do not attempt to mark unnamed files
     if current.path == "" then
-      return
+      return current
     end
     local duplicate = duplicates[current.filename]
     if not duplicate then
