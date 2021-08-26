@@ -10,31 +10,48 @@ local function tab_click_component(num)
 end
 
 local function render(tab, is_active, style, highlights, tab_indicator_style)
-
   local h = highlights
   local hl = is_active and h.tab_selected.hl or h.tab.hl
   local separator_hl = is_active and h.separator_selected.hl or h.separator.hl
   local separator_component = style == "thick" and "▐" or "▕"
   local separator = separator_hl .. separator_component
 
-  -- TODO: There's bound to be a better way to get the buffer name!
-  local bufname = vim.fn.getbufinfo(
-      vim.fn.getwininfo(tab.windows[1])[1].bufnr
-      )[1].name
+  local bufname = tab.tabnr
 
-  if tab_indicator_style == 'tabnr' or (bufname == '' or not bufname) then
-    bufname = tab.tabnr
-  elseif tab_indicator_style == 'title' then
-    bufname = bufname:match("^.+/(.+)$")
-  elseif tab_indicator_style == 'both' then
-    bufname = tab.tabnr .. ': '  .. bufname:match("^.+/(.+)$")
-  else
-    bufname = tab_indicator_style(bufname)
+  if tab_indicator_style ~= 'tabnr' then
+    bufname = tab.name ~= '' and tab.name or "[No Name]"
   end
 
-  local name = padding .. padding .. bufname  .. padding
+  if tab.name and bufname ~= "[No Name]" then
+    if tab_indicator_style == 'title' then
+      bufname = bufname:match("^.+/(.+)$")
+    elseif tab_indicator_style == 'both' then
+      bufname = tab.tabnr .. ': '  .. bufname:match("^.+/(.+)$")
+    else
+      bufname = tab_indicator_style(tab, bufname)
+    end
+  end
+
+  local name = padding .. padding .. bufname .. padding
   local length = strwidth(name) + strwidth(separator_component)
   return hl .. tab_click_component(tab.tabnr) .. name .. separator, length
+end
+
+-- @param tab table
+local function get_mru_buffer(tab)
+  local mru_buffer = vim.api.nvim_win_get_buf(tab.windows[1])
+  local mru_timestamp = vim.fn.getbufinfo(mru_buffer)[1].lastused
+  local buf
+  local timestamp
+  for _, w in ipairs(tab.windows) do
+    buf = vim.api.nvim_win_get_buf(w)
+    timestamp = vim.fn.getbufinfo(buf)[1].lastused
+    if timestamp > mru_timestamp then
+      mru_buffer = buf
+      mru_timestamp = timestamp
+    end
+  end
+  return mru_buffer
 end
 
 --- @param style string
@@ -47,11 +64,12 @@ function M.get(style, prefs)
 
   -- use contiguous numbers to ensure contiguous keys in the table i.e. an array
   -- rather than an object
-  -- GOOD = {1: thing, 2: thing} BAD: {1: thing, [5]: thing}
+  -- GOOD: = {1: thing, 2: thing} BAD: {1: thing, [5]: thing}
   for i, tab in ipairs(tabs) do
     local is_active_tab = current_tab == tab.tabnr
+    local buf = get_mru_buffer(tab)
+    tab.name = vim.api.nvim_buf_get_name(buf)
     local component, length = render(tab, is_active_tab, style, highlights, prefs.options.tab_indicator_option)
-
     all_tabs[i] = {
       component = component,
       length = length,
