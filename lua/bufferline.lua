@@ -28,9 +28,49 @@ local state = {
   custom_sort = nil,
 }
 
----------------------------------------------------------------------------//
--- CORE
----------------------------------------------------------------------------//
+-----------------------------------------------------------------------------//
+-- Context
+-----------------------------------------------------------------------------//
+
+---@class BufferContext
+---@field length number
+---@field component string
+---@field preferences BufferlineConfig
+---@field current_highlights table<string, table<string, string>>
+---@field buffer Buffer
+---@field separators table<string, string>
+---@type BufferContext
+local Context = {}
+
+---@param ctx BufferContext
+---@return BufferContext
+function Context:new(ctx)
+  assert(ctx.buffer, "A buffer is required to create a context")
+  assert(ctx.preferences, "The user's preferences are required to create a context")
+  self.length = ctx.length or 0
+  self.buffer = ctx.buffer
+  self.preferences = ctx.preferences
+  self.component = ctx.component or ""
+  self.separators = ctx.component or { left = "", right = "" }
+  self.__index = self
+  return setmetatable(ctx, self)
+end
+
+---@param o BufferContext
+---@return BufferContext
+function Context:update(o)
+  for k, v in pairs(o) do
+    if v ~= nil then
+      self[k] = v
+    end
+  end
+  return self
+end
+
+-----------------------------------------------------------------------------//
+-- Helpers
+-----------------------------------------------------------------------------//
+
 local function refresh()
   vim.cmd("redrawtabline")
   vim.cmd("redraw")
@@ -52,6 +92,65 @@ function M.restore_positions()
     -- so have to be converted back before usage
     state.custom_sort = vim.tbl_map(tonumber, buf_ids)
   end
+end
+
+--- sorts buf_names in place, but doesn't add/remove any values
+--- @param buf_nums number[]
+--- @param sorted number[]
+--- @return number[]
+local function get_updated_buffers(buf_nums, sorted)
+  if not sorted then
+    return buf_nums
+  end
+  local nums = { unpack(buf_nums) }
+  local reverse_lookup_sorted = utils.tbl_reverse_lookup(sorted)
+
+  --- a comparator that sorts buffers by their position in sorted
+  local sort_by_sorted = function(buf_id_1, buf_id_2)
+    local buf_1_rank = reverse_lookup_sorted[buf_id_1]
+    local buf_2_rank = reverse_lookup_sorted[buf_id_2]
+    if not buf_1_rank then
+      return false
+    end
+    if not buf_2_rank then
+      return true
+    end
+    return buf_1_rank < buf_2_rank
+  end
+  table.sort(nums, sort_by_sorted)
+  return nums
+end
+
+---Filter the buffers to show based on the user callback passed in
+---@param buf_nums integer[]
+---@param callback fun(buf: integer, bufs: integer[]): boolean
+---@return integer[]
+local function apply_buffer_filter(buf_nums, callback)
+  if type(callback) ~= "function" then
+    return buf_nums
+  end
+  local filtered = {}
+  for _, buf in ipairs(buf_nums) do
+    if callback(buf, buf_nums) then
+      table.insert(filtered, buf)
+    end
+  end
+  return filtered
+end
+
+---------------------------------------------------------------------------//
+-- User commands
+---------------------------------------------------------------------------//
+
+---Add click action to a component
+---@param func_name string
+---@param buf number
+---@param component string
+---@return string
+local function make_clickable(func_name, buf, component)
+  -- v:lua does not support function references in vimscript so
+  -- the only way to implement this is using autoload vimscript functions
+  return "%" .. buf .. "@nvim_bufferline#" .. func_name .. "@" .. component
 end
 
 ---Handle a user "command" which can be a string or a function
@@ -136,6 +235,130 @@ function M.close_buffer_with_pick()
   end)
 end
 
+--- Open a buffer based on it's visible position in the list
+--- unless absolute is specified in which case this will open it based on it place in the full list
+--- this is significantly less helpful if you have a lot of buffers open
+---@param num number | string
+---@param absolute boolean whether or not to use the buffers absolute position or visible positions
+function M.go_to_buffer(num, absolute)
+  num = type(num) == "string" and tonumber(num) or num
+  local list = absolute and state.buffers or state.visible_buffers
+  local buf = list[num]
+  if buf then
+    vim.cmd(fmt("buffer %d", buf.id))
+  end
+end
+
+local function get_current_buf_index()
+  local current = api.nvim_get_current_buf()
+  local index
+
+  for i, buf in ipairs(state.buffers) do
+    if buf.id == current then
+      index = i
+      break
+    end
+  end
+  return index
+end
+
+--- @param bufs Buffer[]
+--- @return number[]
+local function get_buf_ids(bufs)
+  return vim.tbl_map(function(buf)
+    return buf.id
+  end, bufs)
+end
+
+--- @param direction number
+function M.move(direction)
+  local index = get_current_buf_index()
+  if not index then
+    return utils.echoerr("Unable to find buffer to move, sorry")
+  end
+  local next_index = index + direction
+  if next_index >= 1 and next_index <= #state.buffers then
+    local cur_buf = state.buffers[index]
+    local destination_buf = state.buffers[next_index]
+    state.buffers[next_index] = cur_buf
+    state.buffers[index] = destination_buf
+    state.custom_sort = get_buf_ids(state.buffers)
+    local opts = require("bufferline.config").get("options")
+    if opts.persist_buffer_sort then
+      save_positions(state.custom_sort)
+    end
+    refresh()
+  end
+end
+
+function M.cycle(direction)
+  local index = get_current_buf_index()
+  if not index then
+    return
+  end
+  local length = #state.buffers
+  local next_index = index + direction
+
+  if next_index <= length and next_index >= 1 then
+    next_index = index + direction
+  elseif index + direction <= 0 then
+    next_index = length
+  else
+    next_index = 1
+  end
+
+  local next = state.buffers[next_index]
+
+  if not next then
+    return utils.echoerr("This buffer does not exist")
+  end
+
+  vim.cmd("buffer " .. next.id)
+end
+
+---@alias direction "'left'" | "'right'"
+---Close all buffers to the left or right of the current buffer
+---@param direction direction
+function M.close_in_direction(direction)
+  local index = get_current_buf_index()
+  if not index then
+    return
+  end
+  local length = #state.buffers
+  if
+    not (index == length and direction == "right") and not (index == 1 and direction == "left")
+  then
+    local start = direction == "left" and 1 or index + 1
+    local _end = direction == "left" and index - 1 or length
+    ---@type Buffer[]
+    local bufs = vim.list_slice(state.buffers, start, _end)
+    for _, buf in ipairs(bufs) do
+      api.nvim_buf_delete(buf.id, { force = true })
+    end
+  end
+end
+
+--- sorts all buffers
+--- @param sort_by string|function
+function M.sort_buffers_by(sort_by)
+  if next(state.buffers) == nil then
+    return utils.echoerr("Unable to find buffers to sort, sorry")
+  end
+
+  require("bufferline.sorters").sort_buffers(sort_by, state.buffers)
+  state.custom_sort = get_buf_ids(state.buffers)
+  local opts = require("bufferline.config").get("options")
+  if opts.persist_buffer_sort then
+    save_positions(state.custom_sort)
+  end
+  refresh()
+end
+
+-----------------------------------------------------------------------------//
+-- UI
+-----------------------------------------------------------------------------//
+
+--- TODO: find a tidier way to do this if possible
 ---@param buffer Buffer
 ---@param hls table<string, table<string, string>>
 ---@return table
@@ -191,41 +414,6 @@ local function get_buffer_highlight(buffer, hls)
   end
 
   return hl
-end
-
---- @param mode string | nil
-local function get_buffers_by_mode(mode)
-  --[[
-      show only relevant buffers depending on the layout of the current tabpage:
-      - In tabs with only one window all buffers are listed.
-      - In tabs with more than one window, only the buffers that are being displayed are listed.
-  --]]
-  if mode == "multiwindow" then
-    local is_single_tab = vim.fn.tabpagenr("$") == 1
-    if is_single_tab then
-      return utils.get_valid_buffers()
-    end
-
-    local tab_wins = api.nvim_tabpage_list_wins(0)
-
-    local valid_wins = 0
-    for _, win_id in ipairs(tab_wins) do
-      -- Check that the window contains a listed buffer, if the buffer isn't
-      -- listed we shouldn't be hiding the remaining buffers because of it
-      -- note this is to stop temporary unlisted buffers like fzf from
-      -- triggering this mode
-      local buf_nr = vim.api.nvim_win_get_buf(win_id)
-      if utils.is_valid(buf_nr) then
-        valid_wins = valid_wins + 1
-      end
-    end
-
-    if valid_wins > 1 then
-      local unique = utils.filter_duplicates(vim.fn.tabpagebuflist())
-      return utils.get_valid_buffers(unique)
-    end
-  end
-  return utils.get_valid_buffers()
 end
 
 -- truncate a string based on number of display columns/cells it occupies
@@ -319,25 +507,25 @@ local function close_icon(buf_id, context)
 
   local symbol = buffer_close_icon .. padding
   local size = strwidth(symbol)
-  return "%"
-    .. buf_id
-    .. "@nvim_bufferline#handle_close_buffer@"
-    .. close_button_hl
-    .. symbol
+  local component = make_clickable(
+    "handle_close_buffer",
+    buf_id,
     -- the %X works as a closing label. @see :h tabline
-    .. "%X",
-    size
+    close_button_hl .. symbol .. "%X"
+  )
+  return component, size
 end
 
---- @param context table
+--- @param context BufferContext
 local function modified_component(context)
   local modified_icon = context.preferences.options.modified_icon
   local modified_section = modified_icon .. padding
   return modified_section, strwidth(modified_section)
 end
 
---- @param context table
-local function indicator_component(context)
+--- @param context BufferContext
+--- @return BufferContext
+local function add_indicator(context)
   local buffer = context.buffer
   local length = context.length
   local component = context.component
@@ -361,10 +549,11 @@ local function indicator_component(context)
     length = length + strwidth(padding)
     component = curr_hl.background .. padding .. component
   end
-  return component, length
+  return context:update({ component = component, length = length })
 end
 
---- @param context table
+--- @param context BufferContext
+--- @return BufferContext
 local function add_prefix(context)
   local component = context.component
   local options = context.preferences.options
@@ -380,10 +569,11 @@ local function add_prefix(context)
     component = icon_highlight .. hl.background .. component
     length = length + strwidth(buffer.icon .. padding)
   end
-  return component, length
+  return context:update({ component = component, length = length })
 end
 
---- @param context table
+--- @param context BufferContext
+--- @return BufferContext
 local function add_suffix(context)
   local component = context.component
   local buffer = context.buffer
@@ -391,20 +581,22 @@ local function add_suffix(context)
   local length = context.length
   local options = context.preferences.options
   local modified, modified_size = modified_component(context)
-
-  if options.show_buffer_close_icons then
-    local close, size = close_icon(buffer.id, context)
-    local suffix = buffer.modified and hl.modified .. modified or close
-    component = component .. hl.background .. suffix
-    length = length + (buffer.modified and modified_size or size)
+  if not options.show_buffer_close_icons then
+    return context
   end
-  return component, length
+
+  local close, size = close_icon(buffer.id, context)
+  local suffix = buffer.modified and hl.modified .. modified or close
+  component = component .. hl.background .. suffix
+  length = length + (buffer.modified and modified_size or size)
+  return context:update({ component = component, length = length })
 end
 
---- TODO We increment the buffer length by the separator although the final
+--- TODO: We increment the buffer length by the separator although the final
 --- buffer will not have a separator so we are technically off by 1
---- @param context table
-local function separator_components(context)
+--- @param context BufferContext
+--- @return BufferContext
+local function add_separators(context)
   local buffer = context.buffer
   local length = context.length
   local hl = context.preferences.highlights
@@ -413,24 +605,28 @@ local function separator_components(context)
   local focused = buffer:current() or buffer:visible()
 
   local right_sep, left_sep = get_separator(focused, style)
-
-  local sep_hl = hl.separator.hl
-  if is_slant(style) then
-    sep_hl = curr_hl.separator
-  end
-
+  local sep_hl = is_slant(style) and curr_hl.separator or hl.separator.hl
   local right_separator = sep_hl .. right_sep
-
   local left_separator = left_sep and (sep_hl .. left_sep) or nil
   length = length + strwidth(right_sep)
-
   if left_sep then
     length = length + strwidth(left_sep)
   end
 
-  return length, left_separator, right_separator
+  return context:update({
+    length = length,
+    separators = {
+      left = left_separator,
+      right = right_separator,
+    },
+  })
 end
 
+-- if we are enforcing regular tab size then all tabs will try and fit
+-- into the maximum tab size. If not we enforce a minimum tab size
+-- and allow tabs to be larger than the max.
+---@param context BufferContext
+---@return number
 local function enforce_regular_tabs(context)
   local _, modified_size = modified_component(context)
   local options = context.preferences.options
@@ -439,19 +635,25 @@ local function enforce_regular_tabs(context)
   local padding_size = strwidth(padding) * 2
   local max_length = options.max_name_length
 
-  -- if we are enforcing regular tab size then all tabs will try and fit
-  -- into the maximum tab size. If not we enforce a minimum tab size
-  -- and allow tabs to be larger then the max otherwise
-  if options.enforce_regular_tabs then
-    -- estimate the maximum allowed size of a filename given that it will be
-    -- padded and prefixed with a file icon
-    max_length = options.tab_size - modified_size - icon_size - padding_size
+  if not options.enforce_regular_tabs then
+    return max_length
   end
-  return max_length
+  -- estimate the maximum allowed size of a filename given that it will be
+  -- padded and prefixed with a file icon
+  return options.tab_size - modified_size - icon_size - padding_size
 end
 
---- @param context table
-local function pad_buffer(context)
+--- @param context BufferContext
+--- @return BufferContext
+local function add_click_action(context)
+  return context:update({
+    component = make_clickable("handle_click", context.buffer.id, context.component),
+  })
+end
+
+--- @param context BufferContext
+--- @return BufferContext
+local function add_padding(context)
   local component = context.component
   local options = context.preferences.options
   local length = context.length
@@ -475,64 +677,65 @@ local function pad_buffer(context)
     component = pad .. component .. pad
     length = length + strwidth(pad) * 2
   end
-  return component, length
+  return context:update({ component = component, length = length })
+end
+
+---@param ctx BufferContext
+---@return BufferContext
+local function get_buffer_name(ctx)
+  local max_length = enforce_regular_tabs(ctx)
+  local filename = truncate_filename(ctx.buffer.filename, max_length)
+  -- escape filenames that contain "%" as this breaks in statusline patterns
+  filename = filename:gsub("%%", "%%%1") .. padding
+  return ctx:update({ component = filename, length = strwidth(filename) })
 end
 
 --- @param preferences table
 --- @param buffer Buffer
---- @return function,number
+--- @return BufferComponent,number
 local function render_buffer(preferences, buffer)
-  local hl = get_buffer_highlight(buffer, preferences.highlights)
-  local ctx = {
-    length = 0,
-    component = "",
-    preferences = preferences,
-    current_highlights = hl,
+  local ctx = Context:new({
     buffer = buffer,
-  }
+    preferences = preferences,
+    current_highlights = get_buffer_highlight(buffer, preferences.highlights),
+  })
 
-  -- Order matter here as this is the sequence which builds up the tab component
-  local max_length = enforce_regular_tabs(ctx)
-  local filename = truncate_filename(buffer.filename, max_length)
-  -- escape filenames that contain "%" as this breaks in statusline patterns
-  filename = filename:gsub("%%", "%%%1")
+  local add_diagnostics = require("bufferline.diagnostics").component
+  local add_duplicates = require("bufferline.duplicates").component
+  local add_numbers = require("bufferline.numbers").component
 
-  ctx.component = filename
-  ctx.length = ctx.length + strwidth(ctx.component)
-  --- apply diagnostics first since we want the highlight
-  --- to only apply to the filename
-  ctx.component, ctx.length = require("bufferline.diagnostics").component(ctx)
-
-  ctx.component = ctx.component .. padding
-  ctx.length = ctx.length + strwidth(padding)
-
-  ctx.component, ctx.length = require("bufferline.duplicates").component(ctx)
-  ctx.component, ctx.length = add_prefix(ctx)
-  ctx.component, ctx.length = pad_buffer(ctx)
-  ctx.component, ctx.length = require("bufferline.numbers").component(ctx)
-  ctx.component = utils.make_clickable(ctx)
-  ctx.component, ctx.length = indicator_component(ctx)
-
-  ctx.component, ctx.length = add_suffix(ctx)
-
-  local length, left_sep, right_sep = separator_components(ctx)
-  ctx.length = length
-
-  -- NOTE: the component is wrapped in an item -> %(content) so
-  -- vim counts each item as one rather than all of its individual
-  -- sub-components.
-  local buffer_component = "%(" .. ctx.component .. "%)"
+  --- Order matter here as this is the sequence which builds up the tab component
+  --- each render function takes the context and returns an updated context with it's
+  --- changes e.g. adding a modified icon to the context component or updating the
+  --- length of the component
+  ctx = utils.compose(
+    get_buffer_name,
+    --- apply diagnostics here since we want the highlight to only apply to the filename
+    add_diagnostics,
+    add_duplicates,
+    add_prefix,
+    add_padding,
+    add_numbers,
+    add_click_action,
+    add_indicator,
+    add_suffix,
+    add_separators
+  )(ctx)
 
   --- We return a function from render buffer as we do not yet have access to
   --- information regarding which buffers will actually be rendered
   --- @param index number
-  --- @param num_of_bufs number
+  --- @param buf_count number
   --- @returns string
-  local function render_fn(index, num_of_bufs)
-    if left_sep then
-      buffer_component = left_sep .. buffer_component .. right_sep
-    elseif index < num_of_bufs then
-      buffer_component = buffer_component .. right_sep
+  local function render_fn(index, buf_count)
+    -- NOTE: the component is wrapped in an item -> %(content) so
+    -- vim counts each item as one rather than all of its individual
+    -- sub-components.
+    local buffer_component = "%(" .. ctx.component .. "%)"
+    if ctx.separators.left then
+      buffer_component = ctx.separators.left .. buffer_component .. ctx.separators.right
+    elseif index < buf_count then
+      buffer_component = buffer_component .. ctx.separators.right
     end
     return buffer_component
   end
@@ -709,55 +912,11 @@ local function render(bufs, tbs, prefs)
   )
 end
 
---- sorts buf_names in place, but doesn't add/remove any values
---- @param buf_nums number[]
---- @param sorted number[]
---- @return number[]
-local function get_updated_buffers(buf_nums, sorted)
-  if not sorted then
-    return buf_nums
-  end
-  local nums = { unpack(buf_nums) }
-  local reverse_lookup_sorted = utils.tbl_reverse_lookup(sorted)
-
-  --- a comparator that sorts buffers by their position in sorted
-  local sort_by_sorted = function(buf_id_1, buf_id_2)
-    local buf_1_rank = reverse_lookup_sorted[buf_id_1]
-    local buf_2_rank = reverse_lookup_sorted[buf_id_2]
-    if not buf_1_rank then
-      return false
-    end
-    if not buf_2_rank then
-      return true
-    end
-    return buf_1_rank < buf_2_rank
-  end
-  table.sort(nums, sort_by_sorted)
-  return nums
-end
-
----Filter the buffers to show based on the user callback passed in
----@param buf_nums integer[]
----@param callback fun(buf: integer, bufs: integer[]): boolean
----@return integer[]
-local function apply_buffer_filter(buf_nums, callback)
-  if type(callback) ~= "function" then
-    return buf_nums
-  end
-  local filtered = {}
-  for _, buf in ipairs(buf_nums) do
-    if callback(buf, buf_nums) then
-      table.insert(filtered, buf)
-    end
-  end
-  return filtered
-end
-
 --- @param preferences table
 --- @return string
 local function bufferline(preferences)
   local options = preferences.options
-  local buf_nums = get_buffers_by_mode(options.view)
+  local buf_nums = utils.get_valid_buffers()
   if options.custom_filter then
     buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
   end
@@ -776,7 +935,7 @@ local function bufferline(preferences)
 
   letters.reset()
   duplicates.reset()
-  state.buffers = {}
+  local buffers = {}
   local all_diagnostics = require("bufferline.diagnostics").get(options)
   local Buffer = require("bufferline.buffers").Buffer
   for i, buf_id in ipairs(buf_nums) do
@@ -788,145 +947,29 @@ local function bufferline(preferences)
       diagnostics = all_diagnostics[buf_id],
       name_formatter = options.name_formatter,
     })
-    duplicates.mark(state.buffers, buf, function(b)
-      b.component, b.length = render_buffer(preferences, b)
-    end)
     buf.letter = letters.get(buf)
-    buf.component, buf.length = render_buffer(preferences, buf)
-    state.buffers[i] = buf
+    buffers[i] = buf
   end
 
   -- if the user has reshuffled the buffers manually don't try and sort them
   if not state.custom_sort then
-    require("bufferline.sorters").sort_buffers(preferences.options.sort_by, state.buffers)
+    require("bufferline.sorters").sort_buffers(preferences.options.sort_by, buffers)
   end
+
+  local deduplicated = duplicates.mark(buffers)
+  --- Assign buffers to state
+  state.buffers = vim.tbl_map(function(buf)
+    buf.component, buf.length = render_buffer(preferences, buf)
+    return buf
+  end, deduplicated)
 
   return render(state.buffers, all_tabs, preferences)
-end
-
---- Open a buffer based on it's visible position in the list
---- unless absolute is specified in which case this will open it based on it place in the full list
---- this is significantly less helpful if you have a lot of buffers open
----@param num number | string
----@param absolute boolean whether or not to use the buffers absolute position or visible positions
-function M.go_to_buffer(num, absolute)
-  num = type(num) == "string" and tonumber(num) or num
-  local list = absolute and state.buffers or state.visible_buffers
-  local buf = list[num]
-  if buf then
-    vim.cmd(fmt("buffer %d", buf.id))
-  end
-end
-
-local function get_current_buf_index()
-  local current = api.nvim_get_current_buf()
-  local index
-
-  for i, buf in ipairs(state.buffers) do
-    if buf.id == current then
-      index = i
-      break
-    end
-  end
-  return index
-end
-
---- @param bufs Buffer[]
---- @return number[]
-local function get_buf_ids(bufs)
-  return vim.tbl_map(function(buf)
-    return buf.id
-  end, bufs)
-end
-
---- @param direction number
-function M.move(direction)
-  local index = get_current_buf_index()
-  if not index then
-    return utils.echoerr("Unable to find buffer to move, sorry")
-  end
-  local next_index = index + direction
-  if next_index >= 1 and next_index <= #state.buffers then
-    local cur_buf = state.buffers[index]
-    local destination_buf = state.buffers[next_index]
-    state.buffers[next_index] = cur_buf
-    state.buffers[index] = destination_buf
-    state.custom_sort = get_buf_ids(state.buffers)
-    local opts = require("bufferline.config").get("options")
-    if opts.persist_buffer_sort then
-      save_positions(state.custom_sort)
-    end
-    refresh()
-  end
-end
-
-function M.cycle(direction)
-  local index = get_current_buf_index()
-  if not index then
-    return
-  end
-  local length = #state.buffers
-  local next_index = index + direction
-
-  if next_index <= length and next_index >= 1 then
-    next_index = index + direction
-  elseif index + direction <= 0 then
-    next_index = length
-  else
-    next_index = 1
-  end
-
-  local next = state.buffers[next_index]
-
-  if not next then
-    return utils.echoerr("This buffer does not exist")
-  end
-
-  vim.cmd("buffer " .. next.id)
-end
-
----@alias direction "'left'" | "'right'"
----Close all buffers to the left or right of the current buffer
----@param direction direction
-function M.close_in_direction(direction)
-  local index = get_current_buf_index()
-  if not index then
-    return
-  end
-  local length = #state.buffers
-  if
-    not (index == length and direction == "right") and not (index == 1 and direction == "left")
-  then
-    local start = direction == "left" and 1 or index + 1
-    local _end = direction == "left" and index - 1 or length
-    ---@type Buffer[]
-    local bufs = vim.list_slice(state.buffers, start, _end)
-    for _, buf in ipairs(bufs) do
-      api.nvim_buf_delete(buf.id, { force = true })
-    end
-  end
 end
 
 function M.toggle_bufferline()
   local opts = require("bufferline.config").get("options")
   local status = (opts.always_show_bufferline or #fn.getbufinfo({ buflisted = 1 }) > 1) and 2 or 0
   vim.o.showtabline = status
-end
-
---- sorts all buffers
---- @param sort_by string|function
-function M.sort_buffers_by(sort_by)
-  if next(state.buffers) == nil then
-    return utils.echoerr("Unable to find buffers to sort, sorry")
-  end
-
-  require("bufferline.sorters").sort_buffers(sort_by, state.buffers)
-  state.custom_sort = get_buf_ids(state.buffers)
-  local opts = require("bufferline.config").get("options")
-  if opts.persist_buffer_sort then
-    save_positions(state.custom_sort)
-  end
-  refresh()
 end
 
 ---@private
@@ -999,10 +1042,10 @@ function M.__load()
   M.toggle_bufferline()
 end
 
----@param prefs BufferlineConfig
-function M.setup(prefs)
-  prefs = prefs or {}
-  require("bufferline.config").set(prefs)
+---@param config BufferlineConfig
+function M.setup(config)
+  config = config or {}
+  require("bufferline.config").set(config)
   if vim.v.vim_did_enter == 1 then
     M.__load()
   else
@@ -1016,15 +1059,6 @@ end
 if utils.is_test() then
   M._state = state
   M._get_current_buf_index = get_current_buf_index
-  M._reset = function()
-    state = {
-      is_picking = false,
-      ---@type Buffer[]
-      buffers = {},
-      current_letters = {},
-      custom_sort = nil,
-    }
-  end
 end
 
 return M

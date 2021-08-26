@@ -72,20 +72,21 @@ local function prefix(buffer, mode, style)
   end
 end
 
---- @param context table
+--- @param context BufferContext
+--- @return BufferContext
 function M.component(context)
   local buffer = context.buffer
   local component = context.component
   local options = context.preferences.options
   local length = context.length
   if options.numbers == "none" then
-    return component, length
+    return context
   end
   local number_prefix = prefix(buffer, options.numbers, options.number_style)
   local number_component = number_prefix .. constants.padding
   component = number_component .. component
   length = length + vim.fn.strwidth(number_component)
-  return component, length
+  return context:update({ component = component, length = length })
 end
 
 return M

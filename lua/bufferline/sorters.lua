@@ -100,6 +100,9 @@ function M.sort_buffers(sort_by, buffers)
   elseif type(sort_by) == "function" then
     table.sort(buffers, sort_by)
   end
+  for index, buf in ipairs(buffers) do
+    buf.ordinal = index
+  end
 end
 
 return M
