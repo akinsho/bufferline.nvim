@@ -8,7 +8,7 @@ local constants = require("bufferline.constants")
 
 ---@alias number_helper fun(num: number): string
 ---@alias numbers_func fun(opts: NumbersFuncOpts): string
----@alias numbers_opt '"superscript"' | '"subscript"' | '"both"' | numbers_func
+---@alias numbers_opt '"buffer_id"' | '"ordinal"' | '"both"' | numbers_func
 
 local M = {}
 
@@ -40,11 +40,20 @@ local subscript_numbers = {
   ["9"] = "₉",
 }
 
+local maps = {
+  superscript = superscript_numbers,
+  subscript = subscript_numbers,
+}
+
 --- convert single or multi-digit strings to {sub|super}script
+--- or return the plain number if there is no corresponding number table
 ---@param map table<string, string>
 ---@param num number
 ---@return string
 local function construct_number(map, num)
+  if not map then
+    return num .. "."
+  end
   num = tostring(num)
   return num:gsub(".", function(c)
     return map[c] or ""
@@ -89,23 +98,15 @@ local function prefix(buffer, mode, style)
 
     local num = ""
     for _, value in ipairs(styles) do
-      local is_ordinal = value == "ordinal"
-      local suffix = both_style[value] --  "superscript"| "subscript" | "none"
-      local suffix_style = is_ordinal and buffer.ordinal or buffer.id
-      if suffix_style == "superscript" then
-        num = num .. construct_number(superscript_numbers, suffix)
-      elseif suffix_style == "subscript" then
-        num = num .. construct_number(subscript_numbers, suffix)
-      else
-        return num .. suffix .. "."
-      end
+      local current = value == "ordinal" and buffer.ordinal or buffer.id
+      num = num .. construct_number(maps[both_style[value]], current)
     end
     return num
-  else
-    local n = mode == "ordinal" and buffer.ordinal or buffer.id
-    local num = style == "superscript" and construct_number(superscript_numbers, n) or n .. "."
-    return num
   end
+
+  local n = mode == "ordinal" and buffer.ordinal or buffer.id
+  local num = construct_number(maps[style], n)
+  return num
 end
 
 --- @param context BufferContext
@@ -123,6 +124,10 @@ function M.component(context)
   component = number_component .. component
   length = length + vim.fn.strwidth(number_component)
   return context:update({ component = component, length = length })
+end
+
+if require("bufferline.utils").is_test() then
+  M.prefix = prefix
 end
 
 return M
