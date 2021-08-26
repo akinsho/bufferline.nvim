@@ -75,12 +75,13 @@ local lower, raise = to_style(subscript_numbers), to_style(superscript_numbers)
 ---@return string
 local function prefix(buffer, mode, style)
   if type(mode) == "function" then
-    local ok, number = pcall(mode, {
+    local opts = {
       ordinal = buffer.ordinal,
       id = buffer.id,
       lower = lower,
       raise = raise,
-    })
+    }
+    local ok, number = pcall(mode, opts)
     if not ok then
       return ""
     end
