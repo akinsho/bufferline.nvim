@@ -70,18 +70,18 @@ local lower, raise = to_style(subscript_numbers), to_style(superscript_numbers)
 
 ---Add a number prefix to the buffer matching a user's preference
 ---@param buffer Buffer
----@param mode numbers_opt
----@param style string[]
+---@param numbers numbers_opt
+---@param numbers_style string[]
 ---@return string
-local function prefix(buffer, mode, style)
-  if type(mode) == "function" then
+local function prefix(buffer, numbers, numbers_style)
+  if type(numbers) == "function" then
     local opts = {
       ordinal = buffer.ordinal,
       id = buffer.id,
       lower = lower,
       raise = raise,
     }
-    local ok, number = pcall(mode, opts)
+    local ok, number = pcall(numbers, opts)
     if not ok then
       return ""
     end
@@ -89,12 +89,12 @@ local function prefix(buffer, mode, style)
   end
   -- if mode is both, numbers will look similar to lightline-bufferline,
   -- buffer_id at top left and ordinal number at bottom right
-  if mode == "both" then
+  if numbers == "both" then
     -- default number_style for mode "both"
     local both = { buffer_id = "none", ordinal = "subscript" }
-    if style ~= "superscript" and type(style) == "table" then
-      both.buffer_id = style[1] and style[1] or both.buffer_id
-      both.ordinal = style[2] and style[2] or both.ordinal
+    if numbers_style ~= "superscript" and type(numbers_style) == "table" then
+      both.buffer_id = numbers_style[1] and numbers_style[1] or both.buffer_id
+      both.ordinal = numbers_style[2] and numbers_style[2] or both.ordinal
     end
 
     local num = ""
@@ -105,8 +105,8 @@ local function prefix(buffer, mode, style)
     return num
   end
 
-  local n = mode == "ordinal" and buffer.ordinal or buffer.id
-  local num = construct_number(maps[style], n)
+  local n = numbers == "ordinal" and buffer.ordinal or buffer.id
+  local num = construct_number(maps[numbers_style], n)
   return num
 end
 
