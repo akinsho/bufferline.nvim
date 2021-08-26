@@ -193,6 +193,7 @@ not track global variables which is the mechanism used to store your sort order.
 require('bufferline').setup {
   options = {
     numbers = "none" | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
+    --- @deprecated, please specify numbers as a function to customize the styling
     number_style = "superscript" | "subscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
     close_command = "bdelete! %d",       -- can be a string | function, see "Mouse actions"
     right_mouse_command = "bdelete! %d", -- can be a string | function, see "Mouse actions"
@@ -353,9 +354,25 @@ Currently this can be specified as either a string of `buffer_id` | `ordinal` or
 This function allows maximum flexibility in determining the appearance of this section
 
 ```lua
-numbers = function(opts)
-  return string.format('%s·%s', opts.raise(opts.id), opts.lower(opts.ordinal))
-end,
+  -- For ⁸·₂
+  numbers = function(opts)
+    return string.format('%s·%s', opts.raise(opts.id), opts.lower(opts.ordinal))
+  end,
+
+  -- For ₈.₂
+  numbers = function(opts)
+    return string.format('%s.%s', opts.lower(opts.id), opts.lower(opts.ordinal))
+  end,
+
+  -- For 2.)8.) - change he order of arguments to change the order in the string
+  numbers = function(opts)
+    return string.format('%s.)%s.)', opts.ordinal, opts.id)
+  end,
+
+  -- For 8|² -
+  numbers = function(opts)
+    return string.format('%s|%s.)', opts.id, opts.raise(opts.ordinal))
+  end,
 ```
 
 ### Sorting
