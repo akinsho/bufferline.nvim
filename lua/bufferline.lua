@@ -912,11 +912,46 @@ local function render(bufs, tbs, prefs)
   )
 end
 
+--- @param mode string | nil
+local function get_buffers_by_mode(mode)
+  --[[
+      show only relevant buffers depending on the layout of the current tabpage:
+      - In tabs with only one window all buffers are listed.
+      - In tabs with more than one window, only the buffers that are being displayed are listed.
+  --]]
+  if mode == "multiwindow" then
+    local is_single_tab = vim.fn.tabpagenr("$") == 1
+    if is_single_tab then
+      return utils.get_valid_buffers()
+    end
+
+    local tab_wins = api.nvim_tabpage_list_wins(0)
+
+    local valid_wins = 0
+    for _, win_id in ipairs(tab_wins) do
+      -- Check that the window contains a listed buffer, if the buffer isn't
+      -- listed we shouldn't be hiding the remaining buffers because of it
+      -- note this is to stop temporary unlisted buffers like fzf from
+      -- triggering this mode
+      local buf_nr = vim.api.nvim_win_get_buf(win_id)
+      if utils.is_valid(buf_nr) then
+        valid_wins = valid_wins + 1
+      end
+    end
+
+    if valid_wins > 1 then
+      local unique = utils.filter_duplicates(vim.fn.tabpagebuflist())
+      return utils.get_valid_buffers(unique)
+    end
+  end
+  return utils.get_valid_buffers()
+end
+
 --- @param preferences table
 --- @return string
 local function bufferline(preferences)
   local options = preferences.options
-  local buf_nums = utils.get_valid_buffers()
+  local buf_nums = get_buffers_by_mode(options.view)
   if options.custom_filter then
     buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
   end
