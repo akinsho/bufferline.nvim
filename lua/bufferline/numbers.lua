@@ -86,20 +86,20 @@ local function prefix(buffer, mode, style)
     end
     return number
   end
-  -- if mode is both, it numbers will look similar lightline-bufferline, buffer_id at top left
-  -- and ordinal number at bottom right, so the user see the buffer number
+  -- if mode is both, numbers will look similar to lightline-bufferline,
+  -- buffer_id at top left and ordinal number at bottom right
   if mode == "both" then
     -- default number_style for mode "both"
-    local both_style = { buffer_id = "none", ordinal = "subscript" }
+    local both = { buffer_id = "none", ordinal = "subscript" }
     if style ~= "superscript" and type(style) == "table" then
-      both_style.buffer_id = style[1] and style[1] or both_style.buffer_id
-      both_style.ordinal = style[2] and style[2] or both_style.ordinal
+      both.buffer_id = style[1] and style[1] or both.buffer_id
+      both.ordinal = style[2] and style[2] or both.ordinal
     end
 
     local num = ""
     for _, value in ipairs(styles) do
       local current = value == "ordinal" and buffer.ordinal or buffer.id
-      num = num .. construct_number(maps[both_style[value]], current)
+      num = num .. construct_number(maps[both[value]], current)
     end
     return num
   end
