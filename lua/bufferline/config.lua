@@ -1,5 +1,7 @@
 local M = {}
 
+local fmt = string.format
+
 local config = {}
 local user_config = {}
 
@@ -35,6 +37,36 @@ local user_config = {}
 ---@field public diagnostics_indicator function?
 ---@field public offsets table[]
 
+local deprecations = {
+  mappings = {
+    message = "please refer to the BufferLineGoToBuffer section of the README",
+    pending = false,
+  },
+  number_style = {
+    message = "please specify 'numbers' as a function instead. See :h bufferline-numbers for details",
+    pending = true,
+  },
+}
+
+---@param options BufferlineOptions
+local function handle_deprecations(options)
+  if not options then
+    return
+  end
+  for key, _ in pairs(options) do
+    local deprecation = deprecations[key]
+    if deprecation then
+      vim.schedule(function()
+        local timeframe = deprecation.pending and "will be" or "has been"
+        vim.notify(
+          fmt("'%s' %s deprecated: %s", key, timeframe, deprecation.message),
+          vim.log.levels.WARN
+        )
+      end)
+    end
+  end
+end
+
 ---Ensure the user has only specified highlight groups that exist
 ---@param prefs BufferlineConfig
 ---@param defaults BufferlineConfig
@@ -42,12 +74,7 @@ local function validate_config(prefs, defaults)
   if not prefs then
     return
   end
-  if prefs.options and prefs.options.mappings then
-    vim.notify(
-      "'mappings' has been deprecated please refer to the BufferLineGoToBuffer section of the README",
-      vim.log.levels.WARN
-    )
-  end
+  handle_deprecations(prefs.options)
   if prefs.highlights then
     local incorrect = {}
     for k, _ in pairs(prefs.highlights) do
