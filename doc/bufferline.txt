@@ -370,7 +370,7 @@ appear but on selecting a buffer it will be closed.
 
 this can also be mapped to something like
 >
-  nnoremap <silent> gD :BufferlinePickClose<CR>
+  nnoremap <silent> gD :BufferLinePickClose<CR>
 >
 
 ==============================================================================
