@@ -119,10 +119,44 @@ This plugin, as the name implies, shows a user their buffers _not tabs_ if you'r
 is please read `:help tabpage`. It does include minimal indicators which show how many tabs you have open and which is focused.
 These are not however part of the bufferline proper and tabs cannot currently replace buffers.
 
-If you are interested in _contributing a PR_ for tab related functionality please raise an issue to discuss.
+Tab indicators can be turned on/off with the `show_tab_indicators` option, which is `false` by default. 
+These indicators can then be configured with the `tab_indicator_style` option, which takes either `tabnr`, `title`, `both`, or a function that accepts a tabpage info dictionary and the name of the most-recently-used window.
 
-**N.B:** please **don't open a feature request** for this. It isn't something I plan on _personally_ implementing but will happily help
-a willing contributor who wants to add this themselves.
+For example, to use a different separator a function like the following can be provided:
+```lua
+options = {
+  tab_indicator_style = function (tab) return tab.tabnr .. "|"  .. tab.name:match("^.+/(.+)$")
+ end
+}
+```
+Or, to display a devicon with `nvim-web-devicons`:
+
+```lua
+tab_indicator_style = function(tab)
+    if not tab.name or tab.name == "" then
+        return "裡"
+    end
+
+    local loaded, webdev_icons
+    if loaded == nil then
+        loaded, webdev_icons = pcall(require, "nvim-web-devicons")
+    end
+
+    if loaded then
+        local icon = webdev_icons.get_icon(tab.name, vim.fn.expand("#"..tab.mru_buf..":e"))
+        if not icon or icon == "" then
+            return tab.name:match("^.+/(.+)$") .. " 裡"
+        else
+            return tab.name:match("^.+/(.+)$") .. " " .. icon
+        end
+    end
+end
+}
+```
+
+Having both the buffer list and tablist can cause a lot of clutter. For this reason, setting `view="multiwindow"` is recommended when working with tab indicators. 
+
+
 
 ## Caveats
 

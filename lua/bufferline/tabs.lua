@@ -15,20 +15,21 @@ local function render(tab, is_active, style, highlights, tab_indicator_style)
   local separator_hl = is_active and h.separator_selected.hl or h.separator.hl
   local separator_component = style == "thick" and "▐" or "▕"
   local separator = separator_hl .. separator_component
+  local bufname
 
-  local bufname = tab.tabnr
-
-  if tab_indicator_style ~= 'tabnr' then
-    bufname = tab.name ~= '' and tab.name or "[No Name]"
-  end
-
-  if tab.name and bufname ~= "[No Name]" then
-    if tab_indicator_style == 'title' then
-      bufname = bufname:match("^.+/(.+)$")
-    elseif tab_indicator_style == 'both' then
-      bufname = tab.tabnr .. ': '  .. bufname:match("^.+/(.+)$")
+  if type(tab_indicator_style) == "function" then
+  -- we have tab.mru_buf and tab.name which is the mru_buf's name for convenience
+    bufname = tab_indicator_style(tab)
+  else
+    if tab_indicator_style == "tabnr" then
+      bufname = tab.tabnr
+    elseif tab.name and tab.name ~= "" then
+      bufname = tab.name:match("^.+/(.+)$")
     else
-      bufname = tab_indicator_style(tab, bufname)
+      bufname = "[No Name]"
+    end
+    if tab_indicator_style == "both" then
+      bufname = tab.tabnr .. ': ' .. bufname
     end
   end
 
@@ -69,7 +70,8 @@ function M.get(style, prefs)
     local is_active_tab = current_tab == tab.tabnr
     local buf = get_mru_buffer(tab)
     tab.name = vim.api.nvim_buf_get_name(buf)
-    local component, length = render(tab, is_active_tab, style, highlights, prefs.options.tab_indicator_option)
+    tab.mru_buf = buf
+    local component, length = render(tab, is_active_tab, style, highlights, prefs.options.tab_indicator_style)
     all_tabs[i] = {
       component = component,
       length = length,
