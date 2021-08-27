@@ -1,6 +1,18 @@
-local constants = require("bufferline/constants")
+local constants = require("bufferline.constants")
+
+---@class NumbersFuncOpts
+---@field ordinal number
+---@field id number
+---@field lower number_helper
+---@field raise number_helper
+
+---@alias number_helper fun(num: number): string
+---@alias numbers_func fun(opts: NumbersFuncOpts): string
+---@alias numbers_opt '"buffer_id"' | '"ordinal"' | '"both"' | numbers_func
 
 local M = {}
+
+local styles = { "buffer_id", "ordinal" }
 
 local superscript_numbers = {
   ["0"] = "⁰",
@@ -28,48 +40,74 @@ local subscript_numbers = {
   ["9"] = "₉",
 }
 
--- from number to the styled number
-local convert_to_styled_num = function(t, n)
-  n = tostring(n)
-  local r = ""
-  for i = 1, #n do
-    r = r .. t[n:sub(i, i)]
+local maps = {
+  superscript = superscript_numbers,
+  subscript = subscript_numbers,
+}
+
+--- convert single or multi-digit strings to {sub|super}script
+--- or return the plain number if there is no corresponding number table
+---@param map table<string, string>
+---@param num number
+---@return string
+local function construct_number(map, num)
+  if not map then
+    return num .. "."
   end
-  return r
+  num = tostring(num)
+  return num:gsub(".", function(c)
+    return map[c] or ""
+  end)
 end
 
-local function prefix(buffer, mode, style)
-  -- if mode is both, it numbers will look similar lightline-bufferline, buffer_id at top left
-  -- and ordinal number at bottom right, so the user see the buffer number
-  if mode == "both" then
+local function to_style(map)
+  return function(num)
+    return construct_number(map, num)
+  end
+end
+
+local lower, raise = to_style(subscript_numbers), to_style(superscript_numbers)
+
+---Add a number prefix to the buffer matching a user's preference
+---@param buffer Buffer
+---@param numbers numbers_opt
+---@param numbers_style string[]
+---@return string
+local function prefix(buffer, numbers, numbers_style)
+  if type(numbers) == "function" then
+    local opts = {
+      ordinal = buffer.ordinal,
+      id = buffer.id,
+      lower = lower,
+      raise = raise,
+    }
+    local ok, number = pcall(numbers, opts)
+    if not ok then
+      return ""
+    end
+    return number
+  end
+  -- if mode is both, numbers will look similar to lightline-bufferline,
+  -- buffer_id at top left and ordinal number at bottom right
+  if numbers == "both" then
     -- default number_style for mode "both"
-    local both_style = { buffer_id = "none", ordinal = "subscript" }
-    if style ~= "superscript" and type(style) == "table" then
-      both_style.buffer_id = style[1] and style[1] or both_style.buffer_id
-      both_style.ordinal = style[2] and style[2] or both_style.ordinal
+    local both = { buffer_id = "none", ordinal = "subscript" }
+    if numbers_style ~= "superscript" and type(numbers_style) == "table" then
+      both.buffer_id = numbers_style[1] and numbers_style[1] or both.buffer_id
+      both.ordinal = numbers_style[2] and numbers_style[2] or both.ordinal
     end
 
     local num = ""
-    for _, v in ipairs({ "buffer_id", "ordinal" }) do
-      local ordinal = v == "ordinal"
-      local s = both_style[v] --  "superscript"| "subscript" | "none"
-      if s == "superscript" then
-        num = num
-          .. convert_to_styled_num(superscript_numbers, ordinal and buffer.ordinal or buffer.id)
-      elseif s == "subscript" then
-        num = num
-          .. convert_to_styled_num(subscript_numbers, ordinal and buffer.ordinal or buffer.id)
-      else -- "none"
-        num = num .. (v == "ordinal" and buffer.ordinal or buffer.id) .. "."
-      end
+    for _, value in ipairs(styles) do
+      local current = value == "ordinal" and buffer.ordinal or buffer.id
+      num = num .. construct_number(maps[both[value]], current)
     end
-
-    return num
-  else
-    local n = mode == "ordinal" and buffer.ordinal or buffer.id
-    local num = style == "superscript" and convert_to_styled_num(superscript_numbers, n) or n .. "."
     return num
   end
+
+  local n = numbers == "ordinal" and buffer.ordinal or buffer.id
+  local num = construct_number(maps[numbers_style], n)
+  return num
 end
 
 --- @param context BufferContext
@@ -87,6 +125,10 @@ function M.component(context)
   component = number_component .. component
   length = length + vim.fn.strwidth(number_component)
   return context:update({ component = component, length = length })
+end
+
+if require("bufferline.utils").is_test() then
+  M.prefix = prefix
 end
 
 return M
