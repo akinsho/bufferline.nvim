@@ -42,8 +42,8 @@ function M.component(ctx)
   local letter = buffer.letter
 
   if options.show_buffer_icons and buffer.icon then
-    local left = string.rep(padding, math.ceil((strwidth(buffer.icon) - 1) / 2))
-    local right = string.rep(padding, math.floor((strwidth(buffer.icon) - 1) / 2))
+    local right = string.rep(padding, math.ceil((strwidth(buffer.icon) - 1) / 2))
+    local left = string.rep(padding, math.floor((strwidth(buffer.icon) - 1) / 2))
     letter = left .. buffer.letter .. right
   end
 
