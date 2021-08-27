@@ -5,21 +5,51 @@ local M = {}
 
 local fmt = string.format
 local fn = vim.fn
+local api = vim.api
 
 function M.is_test()
-  return _G.__TEST
+  return __TEST
 end
 
-function M.join(...)
-  local t = ""
+---Takes a list of items and runs the callback
+---on each updating the initial value
+---@generic T
+---@param accum T
+---@param callback fun(accum:T, item: T): T
+---@return T
+function M.fold(accum, callback, ...)
+  assert(accum and callback, "An initial value and callback must be passed to fold")
   for n = 1, select("#", ...) do
-    local arg = select(n, ...)
-    if type(arg) ~= "string" then
-      arg = tostring(arg)
-    end
-    t = t .. arg
+    accum = callback(accum, select(n, ...))
   end
-  return t
+  return accum
+end
+
+---Add a series of numbers together
+---@vararg number
+---@return number
+function M.sum(...)
+  return M.fold(0, function(accum, item)
+    return accum + item
+  end, ...)
+end
+
+---Variant of some that sums up the display size of characters
+---@vararg string
+---@return number
+function M.measure(...)
+  return M.fold(0, function(accum, item)
+    return accum + api.nvim_strwidth(item)
+  end, ...)
+end
+
+---Concatenate a series of strings together
+---@vararg string
+---@return string
+function M.join(...)
+  return M.fold("", function(accum, item)
+    return accum .. item
+  end, ...)
 end
 
 --- A function which takes n number of functions and

@@ -24,7 +24,7 @@ local state = {
   buffers = {},
   ---@type Buffer[]
   visible_buffers = {},
-  current_letters = {},
+  ---@type number[]
   custom_sort = nil,
 }
 
@@ -562,24 +562,7 @@ local function add_prefix(context)
   local length = context.length
 
   if state.is_picking and buffer.letter then
-    local icon_padding_r = ""
-    local icon_padding_l = ""
-    if options.show_buffer_icons and buffer.icon then
-      icon_padding_r = string.rep(padding, math.ceil((strwidth(buffer.icon) - 1) / 2))
-      icon_padding_l = string.rep(padding, math.floor((strwidth(buffer.icon) - 1) / 2))
-    end
-    component = hl.pick
-      .. icon_padding_l
-      .. buffer.letter
-      .. icon_padding_r
-      .. padding
-      .. hl.background
-      .. component
-    length = length
-      + strwidth(buffer.letter)
-      + strwidth(icon_padding_l)
-      + strwidth(icon_padding_r)
-      + strwidth(padding)
+    component, length = require("bufferline.pick").component(context)
   elseif options.show_buffer_icons and buffer.icon then
     local icon_highlight = highlight_icon(buffer)
     component = icon_highlight .. hl.background .. component
@@ -946,10 +929,10 @@ local function bufferline(preferences)
     end
   end
 
-  local letters = require("bufferline.letters")
+  local pick = require("bufferline.pick")
   local duplicates = require("bufferline.duplicates")
 
-  letters.reset()
+  pick.reset()
   duplicates.reset()
   local buffers = {}
   local all_diagnostics = require("bufferline.diagnostics").get(options)
@@ -963,7 +946,7 @@ local function bufferline(preferences)
       diagnostics = all_diagnostics[buf_id],
       name_formatter = options.name_formatter,
     })
-    buf.letter = letters.get(buf)
+    buf.letter = pick.get(buf)
     buffers[i] = buf
   end
 
