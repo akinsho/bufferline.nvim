@@ -951,7 +951,7 @@ end
 --- @return string
 local function bufferline(preferences)
   local options = preferences.options
-  local buf_nums = get_buffers_by_mode(options.view)
+  local buf_nums = utils.get_valid_buffers()
   if options.custom_filter then
     buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
   end
