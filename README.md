@@ -351,7 +351,13 @@ the tab size and all tabs will be the same length
 
 You can prefix buffer names with either the `ordinal` or `buffer id`, using the `numbers` option.
 Currently this can be specified as either a string of `buffer_id` | `ordinal` or a function
-This function allows maximum flexibility in determining the appearance of this section
+This function allows maximum flexibility in determining the appearance of this section.
+It is passed a table with the following keys:
+
+- `raise` - a helper function to convert the passed number to superscript e.g. `raise(buffer_id)`.
+- `lower` - a helper function to convert the passed number to subscript e.g. `lower(buffer_id)`.
+- `ordinal` - The buffer ordinal number.
+- `buffer_id` - The buffer ID.
 
 ```lua
   -- For ⁸·₂
