@@ -562,12 +562,14 @@ local function add_prefix(context)
   local length = context.length
 
   if state.is_picking and buffer.letter then
-    local icon_padding = ""
+    local icon_padding_r = ""
+    local icon_padding_l = ""
     if options.show_buffer_icons and buffer.icon then
-      icon_padding = string.rep(" ", strwidth(buffer.icon) - 1)
+      icon_padding_r = string.rep(padding, math.ceil((strwidth(buffer.icon) - 1) / 2))
+      icon_padding_l = string.rep(padding, math.floor((strwidth(buffer.icon) - 1) / 2))
     end
-    component = hl.pick .. buffer.letter .. icon_padding .. padding .. hl.background .. component
-    length = length + strwidth(buffer.letter) + strwidth(icon_padding) + strwidth(padding)
+    component = hl.pick .. icon_padding_l .. buffer.letter .. icon_padding_r .. padding .. hl.background .. component
+    length = length + strwidth(buffer.letter) + strwidth(icon_padding_l) + strwidth(icon_padding_r) + strwidth(padding)
   elseif options.show_buffer_icons and buffer.icon then
     local icon_highlight = highlight_icon(buffer)
     component = icon_highlight .. hl.background .. component
