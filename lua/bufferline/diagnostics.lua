@@ -65,7 +65,6 @@ function M.get(opts)
     return setmetatable({}, mt)
   end
   if is_insert() and not opts.diagnostics_update_in_insert then
-    print("insert", vim.inspect(last_diagnostics_result))
     return setmetatable(last_diagnostics_result, mt)
   end
   local diagnostics = vim.lsp.diagnostic.get_all()
