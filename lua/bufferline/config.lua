@@ -458,7 +458,7 @@ local function get_defaults()
       diagnostics = false,
       diagnostics_indicator = nil,
       diagnostics_update_in_insert = true,
-      offsets = {}
+      offsets = {},
     },
     highlights = derive_colors(),
   }
