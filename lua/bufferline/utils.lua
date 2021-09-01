@@ -4,21 +4,69 @@
 local M = {}
 
 local fmt = string.format
+local fn = vim.fn
+local api = vim.api
 
 function M.is_test()
-  return _G.__TEST
+  return __TEST
 end
 
-function M.join(...)
-  local t = ""
+---Takes a list of items and runs the callback
+---on each updating the initial value
+---@generic T
+---@param accum T
+---@param callback fun(accum:T, item: T): T
+---@return T
+function M.fold(accum, callback, ...)
+  assert(accum and callback, "An initial value and callback must be passed to fold")
   for n = 1, select("#", ...) do
-    local arg = select(n, ...)
-    if type(arg) ~= "string" then
-      arg = tostring(arg)
-    end
-    t = t .. arg
+    accum = callback(accum, select(n, ...))
   end
-  return t
+  return accum
+end
+
+---Add a series of numbers together
+---@vararg number
+---@return number
+function M.sum(...)
+  return M.fold(0, function(accum, item)
+    return accum + item
+  end, ...)
+end
+
+---Variant of some that sums up the display size of characters
+---@vararg string
+---@return number
+function M.measure(...)
+  return M.fold(0, function(accum, item)
+    return accum + api.nvim_strwidth(item)
+  end, ...)
+end
+
+---Concatenate a series of strings together
+---@vararg string
+---@return string
+function M.join(...)
+  return M.fold("", function(accum, item)
+    return accum .. item
+  end, ...)
+end
+
+--- A function which takes n number of functions and
+--- passes the result of each function to the next
+---@generic T
+---@return fun(args: T): T
+function M.compose(...)
+  local funcs = { ... }
+  local function recurse(i, ...)
+    if i == #funcs then
+      return funcs[i](...)
+    end
+    return recurse(i + 1, funcs[i](...))
+  end
+  return function(...)
+    return recurse(1, ...)
+  end
 end
 
 -- return a new array containing the concatenation of all of its
@@ -26,6 +74,9 @@ end
 -- parameters have their values shallow-copied to the final array.
 -- Note that userdata and function values are treated as scalar.
 -- https://stackoverflow.com/questions/1410862/concatenation-of-tables-in-lua
+--- @generic T
+--- @vararg any
+--- @return T[]
 function M.array_concat(...)
   local t = {}
   for n = 1, select("#", ...) do
@@ -85,20 +136,6 @@ function M.augroup(definitions)
   end
 end
 
---- @param context table
-function M.make_clickable(context)
-  local mode = context.preferences.options.mode
-  local component = context.component
-  local buf_num = context.buffer.id
-  if not vim.fn.has("tablineat") then
-    return component
-  end
-  -- v:lua does not support function references in vimscript so
-  -- the only way to implement this is using autoload viml functions
-  local fn = mode == "multiwindow" and "handle_win_click" or "handle_click"
-  return "%" .. buf_num .. "@nvim_bufferline#" .. fn .. "@" .. component
-end
-
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
 function M.is_valid(buf_num)
   if not buf_num or buf_num < 1 then
@@ -137,7 +174,38 @@ end
 ---@param hl string?
 function M.echomsg(msg, hl)
   hl = hl or "Title"
-  vim.api.nvim_echo({ { fmt("[nvim-bufferline] %s", msg), hl } }, true, {})
+  vim.api.nvim_echo({ { fmt("[bufferline] %s", msg), hl } }, true, {})
+end
+
+do
+  local loaded, webdev_icons
+  ---Get an icon for a filetype using either nvim-web-devicons or vim-devicons
+  ---if using the lua plugin this also returns the icon's highlights
+  ---@param buf Buffer
+  ---@return string, string?
+  function M.get_icon(buf)
+    if loaded == nil then
+      loaded, webdev_icons = pcall(require, "nvim-web-devicons")
+    end
+    if buf.buftype == "terminal" then
+      -- use an explicit if statement so both values from get icon can be returned
+      -- this does not work if a ternary is used instead as only a single value is returned
+      if not loaded then
+        return ""
+      end
+      return webdev_icons.get_icon(buf.buftype)
+    end
+    if loaded then
+      return webdev_icons.get_icon(
+        fn.fnamemodify(buf.path, ":t"),
+        buf.extension,
+        { default = true }
+      )
+    else
+      local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
+      return devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
+    end
+  end
 end
 
 return M

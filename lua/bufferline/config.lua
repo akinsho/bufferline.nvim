@@ -1,12 +1,14 @@
 local M = {}
 
-local _config = {}
-local _user_config = {}
+local fmt = string.format
+
+local config = {}
+local user_config = {}
 
 ---@class BufferlineOptions
 ---@field public view string
 ---@field public numbers string
----@field public number_style '"superscript"' | '"subscript"'
+---@field public number_style numbers_opt
 ---@field public buffer_close_icon string
 ---@field public modified_icon string
 ---@field public close_icon string
@@ -21,7 +23,7 @@ local _user_config = {}
 ---@field public name_formatter fun(path: string):string
 ---@field public tab_size number
 ---@field public max_name_length number
----@field public mappings boolean
+---@field public mappings boolean DEPRECATED
 ---@field public show_buffer_icons boolean
 ---@field public show_buffer_close_icons boolean
 ---@field public show_close_icon boolean
@@ -36,11 +38,45 @@ local _user_config = {}
 ---@field public diagnostics_update_in_insert boolean
 ---@field public offsets table[]
 
+local deprecations = {
+  mappings = {
+    message = "please refer to the BufferLineGoToBuffer section of the README",
+    pending = false,
+  },
+  number_style = {
+    message = "please specify 'numbers' as a function instead. See :h bufferline-numbers for details",
+    pending = true,
+  },
+}
+
+---@param options BufferlineOptions
+local function handle_deprecations(options)
+  if not options then
+    return
+  end
+  for key, _ in pairs(options) do
+    local deprecation = deprecations[key]
+    if deprecation then
+      vim.schedule(function()
+        local timeframe = deprecation.pending and "will be" or "has been"
+        vim.notify(
+          fmt("'%s' %s deprecated: %s", key, timeframe, deprecation.message),
+          vim.log.levels.WARN
+        )
+      end)
+    end
+  end
+end
+
 ---Ensure the user has only specified highlight groups that exist
----@param prefs table
----@param defaults table
+---@param prefs BufferlineConfig
+---@param defaults BufferlineConfig
 local function validate_config(prefs, defaults)
-  if prefs and prefs.highlights then
+  if not prefs then
+    return
+  end
+  handle_deprecations(prefs.options)
+  if prefs.highlights then
     local incorrect = {}
     for k, _ in pairs(prefs.highlights) do
       if not defaults.highlights[k] then
@@ -84,7 +120,10 @@ local function convert_hl_tables(prefs)
           })
         else
           prefs.highlights[hl][attribute] = nil
-          print(string.format("removing %s as it is not formatted correctly", hl))
+          require("bufferline.utils").echomsg(
+            string.format("removing %s as it is not formatted correctly", hl),
+            "WarningMsg"
+          )
         end
       end
     end
@@ -92,9 +131,9 @@ local function convert_hl_tables(prefs)
 end
 
 ---Merge user preferences with defaults
----@param defaults table
----@param preferences table
----@return table
+---@param defaults BufferlineConfig
+---@param preferences BufferlineConfig
+---@return BufferlineConfig
 local function merge(defaults, preferences)
   -- Combine user preferences with defaults preferring the user's own settings
   if preferences and type(preferences) == "table" then
@@ -441,26 +480,26 @@ end
 --- @return BufferlineConfig
 function M.apply()
   local defaults = get_defaults()
-  validate_config(_user_config, defaults)
-  convert_hl_tables(_user_config)
-  _config = merge(defaults, _user_config)
-  add_highlight_groups(_config.highlights)
-  return _config
+  validate_config(user_config, defaults)
+  convert_hl_tables(user_config)
+  config = merge(defaults, user_config)
+  add_highlight_groups(config.highlights)
+  return config
 end
 
 ---Keep track of a users config for use throughout the plugin as well as ensuring
 ---defaults are set. This is also so we can diff what the user set this is useful
 ---for setting the highlight groups etc. once this has been merged with the defaults
----@param user_config BufferlineConfig
-function M.set(user_config)
-  _user_config = user_config or {}
+---@param conf BufferlineConfig
+function M.set(conf)
+  user_config = conf or {}
 end
 
 ---Update highlight colours when the colour scheme changes
 function M.update_highlights()
-  _config.highlights = merge(derive_colors(), _user_config.highlights or {})
-  add_highlight_groups(_config.highlights)
-  return _config
+  config.highlights = merge(derive_colors(), user_config.highlights or {})
+  add_highlight_groups(config.highlights)
+  return config
 end
 
 ---Get the user's configuration or a key from it
@@ -468,16 +507,16 @@ end
 ---@return any
 function M.get(key)
   if key and type(key) == "string" then
-    return _config[key]
+    return config[key]
   end
-  return _config
+  return config
 end
 
 --- This function is only intended for use in tests
 ---@private
 function M.__reset()
-  _config = {}
-  _user_config = {}
+  config = {}
+  user_config = {}
 end
 
 return M

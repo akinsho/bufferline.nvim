@@ -1,5 +1,5 @@
 <h1 align="center">
-  nvim-bufferline.lua
+  bufferline.nvim
 </h1>
 
 <p align="center">A <i>snazzy</i> 💅 buffer line (with minimal tab integration) for Neovim built using <b>lua</b>.</p>
@@ -29,6 +29,7 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
   - [LSP indicators](#lsp-indicators)
   - [Conditional buffer based LSP indicators](#conditional-buffer-based-lsp-indicators)
   - [Regular tab sizes](#regular-tab-sizes)
+  - [Numbers](#numbers)
   - [Sorting](#sorting)
   - [Sidebar offset](#sidebar-offset-1)
   - [Buffer pick functionality](#buffer-pick-functionality)
@@ -69,9 +70,7 @@ see: `:h bufferline-styling`
 
 Ordinal number and buffer number with a customized number styles.
 
-![both with default style](https://user-images.githubusercontent.com/8133242/113400253-159ea380-93d4-11eb-822c-974d728a6bcf.png)
-
-![both with customized style](https://user-images.githubusercontent.com/8133242/113400265-1a635780-93d4-11eb-8085-adc328385cb5.png)
+![numbers](https://user-images.githubusercontent.com/22454918/130784872-936d4c55-b9dd-413b-871d-7bc66caf8f17.png)
 
 #### Buffer pick
 
@@ -102,7 +101,7 @@ This order can be persisted between sessions (enabled by default).
 
 ```lua
 -- using packer.nvim
-use {'akinsho/nvim-bufferline.lua', requires = 'kyazdani42/nvim-web-devicons'}
+use {'akinsho/bufferline.nvim', requires = 'kyazdani42/nvim-web-devicons'}
 ```
 
 **Vimscript**
@@ -110,8 +109,19 @@ use {'akinsho/nvim-bufferline.lua', requires = 'kyazdani42/nvim-web-devicons'}
 ```vim
 Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
 " Plug 'ryanoasis/vim-devicons' Icons without colours
-Plug 'akinsho/nvim-bufferline.lua'
+Plug 'akinsho/bufferline.nvim'
 ```
+
+## What about Tabs?
+
+This plugin, as the name implies, shows a user their buffers _not tabs_ if you're unclear as to what the difference
+is please read `:help tabpage`. It does include minimal indicators which show how many tabs you have open and which is focused.
+These are not however part of the bufferline proper and tabs cannot currently replace buffers.
+
+If you are interested in _contributing a PR_ for tab related functionality please raise an issue to discuss.
+
+**N.B:** please **don't open a feature request** for this. It isn't something I plan on _personally_ implementing but will happily help
+a willing contributor who wants to add this themselves.
 
 ## Caveats
 
@@ -130,7 +140,7 @@ Plug 'akinsho/nvim-bufferline.lua'
 
 ## Usage
 
-See the docs for details `:h nvim-bufferline.lua`
+See the docs for details `:h bufferline.nvim`
 
 You need to be using `termguicolors` for this plugin to work, as it reads the hex `gui` color values
 of various highlight groups.
@@ -182,9 +192,9 @@ not track global variables which is the mechanism used to store your sort order.
 ```lua
 require('bufferline').setup {
   options = {
-    numbers = "none" | "ordinal" | "buffer_id" | "both",
-    number_style = "superscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
-    mappings = true | false,
+    numbers = "none" | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
+    --- @deprecated, please specify numbers as a function to customize the styling
+    number_style = "superscript" | "subscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
     close_command = "bdelete! %d",       -- can be a string | function, see "Mouse actions"
     right_mouse_command = "bdelete! %d", -- can be a string | function, see "Mouse actions"
     left_mouse_command = "buffer %d",    -- can be a string | function, see "Mouse actions"
@@ -336,6 +346,42 @@ length specified (+ the other indicators).
 If you set `enforce_regular_tabs = true` tabs will be prevented from extending beyond
 the tab size and all tabs will be the same length
 
+### Numbers
+
+![numbers](https://user-images.githubusercontent.com/22454918/130784872-936d4c55-b9dd-413b-871d-7bc66caf8f17.png)
+
+You can prefix buffer names with either the `ordinal` or `buffer id`, using the `numbers` option.
+Currently this can be specified as either a string of `buffer_id` | `ordinal` or a function
+This function allows maximum flexibility in determining the appearance of this section.
+It is passed a table with the following keys:
+
+- `raise` - a helper function to convert the passed number to superscript e.g. `raise(buffer_id)`.
+- `lower` - a helper function to convert the passed number to subscript e.g. `lower(buffer_id)`.
+- `ordinal` - The buffer ordinal number.
+- `buffer_id` - The buffer ID.
+
+```lua
+  -- For ⁸·₂
+  numbers = function(opts)
+    return string.format('%s·%s', opts.raise(opts.id), opts.lower(opts.ordinal))
+  end,
+
+  -- For ₈.₂
+  numbers = function(opts)
+    return string.format('%s.%s', opts.lower(opts.id), opts.lower(opts.ordinal))
+  end,
+
+  -- For 2.)8.) - change he order of arguments to change the order in the string
+  numbers = function(opts)
+    return string.format('%s.)%s.)', opts.ordinal, opts.id)
+  end,
+
+  -- For 8|² -
+  numbers = function(opts)
+    return string.format('%s|%s.)', opts.id, opts.raise(opts.ordinal))
+  end,
+```
+
 ### Sorting
 
 Bufferline allows you to sort the visible buffers by `extension`, `directory` or `tabs`:
@@ -435,6 +481,33 @@ buffer that appears
 
 Likewise, `BufferLinePickClose` closes the buffer instead of viewing it.
 
+### `BufferLineGoToBuffer`
+
+You can select a buffer by it's _visible_ position in the bufferline using the `BufferLineGoToBuffer`
+command. This means that if you have 60 buffers open but only 7 visible in the bufferline
+then using `BufferLineGoToBuffer 4` will go to the 4th visible buffer not necessarily the 5 in the
+absolute list of open buffers.
+
+```
+<- (30) | buf31 | buf32 | buf33 | buf34 | buf35 | buf36 | buf37 (24) ->
+```
+
+Using `BufferLineGoToBuffer 4` will open `buf34` as it is the 4th visible buffer.
+
+This can then be mapped using
+
+```vim
+nnoremap <silent><leader>1 <Cmd>BufferLineGoToBuffer 1<CR>
+nnoremap <silent><leader>2 <Cmd>BufferLineGoToBuffer 2<CR>
+nnoremap <silent><leader>3 <Cmd>BufferLineGoToBuffer 3<CR>
+nnoremap <silent><leader>4 <Cmd>BufferLineGoToBuffer 4<CR>
+nnoremap <silent><leader>5 <Cmd>BufferLineGoToBuffer 5<CR>
+nnoremap <silent><leader>6 <Cmd>BufferLineGoToBuffer 6<CR>
+nnoremap <silent><leader>7 <Cmd>BufferLineGoToBuffer 7<CR>
+nnoremap <silent><leader>8 <Cmd>BufferLineGoToBuffer 8<CR>
+nnoremap <silent><leader>9 <Cmd>BufferLineGoToBuffer 9<CR>
+```
+
 ### Mouse actions
 
 You can configure different type of mouse clicks to behave differently. The current mouse click types are
@@ -460,6 +533,29 @@ another plugin such as [bufdelete.nvim](https://github.com/famiu/bufdelete.nvim)
 left_mouse_command = function(bufnum)
    require('bufdelete').bufdelete(bufnum, true)
 end
+```
+
+### Custom functions
+
+A user can also execute arbitrary functions against a buffer using the
+`buf_exec` function. For example
+
+```lua
+    require('bufferline').buf_exec(
+        4, -- the forth visible buffer from the left
+        user_function -- an arbitrary user function which gets passed the buffer
+    )
+
+    -- e.g.
+    function _G.bdel(num)
+        require('bufferline').buf_exec(num, function(buf, visible_buffers)
+            vim.cmd('bdelete '..buf.id)
+        end
+    end
+
+    vim.cmd [[
+        command -count Bdel <Cmd>lua _G.bdel(<count>)<CR>
+    ]]
 ```
 
 ### Custom area

@@ -8,68 +8,47 @@ function M.reset()
   duplicates = {}
 end
 
-local cache = {}
-setmetatable(cache, { __mode = "v" }) -- make values weak
-
----@param buffers Buffer[]
----@param current Buffer
----@param callback function(Buffer)
-local function mark_duplicates(buffers, current, callback)
-  -- Do not attempt to mark unnamed files
-  if current.path == "" then
-    return
-  end
-  local duplicate = duplicates[current.filename]
-  if not duplicate then
-    duplicates[current.filename] = { current }
-  else
-    local depth = 1
-    local limit = 10
-    for _, buf in ipairs(duplicate) do
-      local buf_depth = 1
-      while current:ancestor(buf_depth) == buf:ancestor(buf_depth) do
-        -- short circuit if we have gone up 10 directories, we don't expect to have
-        -- to look that far to find a non-matching ancestor and we might be looping
-        -- endlessly
-        if buf_depth >= limit then
-          return
-        end
-
-        buf_depth = buf_depth + 1
-      end
-      if buf_depth > depth then
-        depth = buf_depth
-      end
-      buf.duplicated = true
-      buf.prefix_count = buf_depth
-      -- if the buffer is a duplicate we have to redraw it with the new name
-      callback(buf)
-      buffers[buf.ordinal] = buf
-    end
-    current.duplicated = true
-    current.prefix_count = depth
-    table.insert(duplicate, current)
-  end
-end
-
-local function get_key(buffers)
-  return table.concat(
-    vim.tbl_map(function(buf)
-      return buf.filename
-    end, buffers),
-    "-"
-  )
-end
-
 --- This function marks any duplicate buffers granted
 --- the buffer names have changes
-function M.mark(buffers, ...)
-  local value = cache[get_key(buffers)]
-  if value then
-    return
-  else
-    mark_duplicates(buffers, ...)
-  end
+---@param buffers Buffer[]
+---@return Buffer[]
+function M.mark(buffers)
+  return vim.tbl_map(function(current)
+    -- Do not attempt to mark unnamed files
+    if current.path == "" then
+      return current
+    end
+    local duplicate = duplicates[current.filename]
+    if not duplicate then
+      duplicates[current.filename] = { current }
+    else
+      local depth = 1
+      local limit = 10
+      for _, buf in ipairs(duplicate) do
+        local buf_depth = 1
+        while current:ancestor(buf_depth) == buf:ancestor(buf_depth) do
+          -- short circuit if we have gone up 10 directories, we don't expect to have
+          -- to look that far to find a non-matching ancestor and we might be looping
+          -- endlessly
+          if buf_depth >= limit then
+            return
+          end
+
+          buf_depth = buf_depth + 1
+        end
+        if buf_depth > depth then
+          depth = buf_depth
+        end
+        buf.duplicated = true
+        buf.prefix_count = buf_depth
+        buffers[buf.ordinal] = buf
+      end
+      current.duplicated = true
+      current.prefix_count = depth
+      table.insert(duplicate, current)
+    end
+    return current
+  end, buffers)
 end
 
 --- @param dir string
@@ -81,13 +60,13 @@ local function truncate(dir, depth, max_size)
   end
   local marker = "…"
   -- we truncate any section of the ancestor which is too long
-  -- by dividing the alloted space for each section by the depth i.e.
+  -- by dividing the allotted space for each section by the depth i.e.
   -- the amount of ancestors which will be prefixed
   local allowed_size = math.ceil(max_size / depth)
   return dir:sub(0, allowed_size - strwidth(marker)) .. marker
 end
 
---- @param context table
+--- @param context BufferContext
 function M.component(context)
   local buffer = context.buffer
   local component = context.component
@@ -104,7 +83,7 @@ function M.component(context)
     component = hl.duplicate .. dir .. hl.background .. component
     length = length + strwidth(dir)
   end
-  return component, length
+  return context:update({ component = component, length = length })
 end
 
 return M
