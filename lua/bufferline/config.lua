@@ -32,7 +32,8 @@ local _user_config = {}
 ---@field public max_prefix_length number
 ---@field public sort_by string
 ---@field public diagnostics boolean
----@field public diagnostic_indicator function?
+---@field public diagnostics_indicator function?
+---@field public diagnostics_update_in_insert boolean
 ---@field public offsets table[]
 
 ---Ensure the user has only specified highlight groups that exist
@@ -416,8 +417,9 @@ local function get_defaults()
       max_prefix_length = 15,
       sort_by = "id",
       diagnostics = false,
-      diagnostic_indicator = nil,
-      offsets = {},
+      diagnostics_indicator = nil,
+      diagnostics_update_in_insert = true,
+      offsets = {}
     },
     highlights = derive_colors(),
   }

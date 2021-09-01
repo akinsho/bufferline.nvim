@@ -51,6 +51,9 @@ function M.get(opts)
   if is_disabled(opts.diagnostics) then
     return setmetatable({}, mt)
   end
+  if vim.fn.mode(0) == 'i' and not opts.diagnostics_update_in_insert then
+    return setmetatable(last_diagnostics_result, mt)
+  end
   local diagnostics = vim.lsp.diagnostic.get_all()
   local result = {}
   for buf_num, items in pairs(diagnostics) do
@@ -61,6 +64,7 @@ function M.get(opts)
       errors = d.errors,
     }
   end
+  last_diagnostics_result = result
   return setmetatable(result, mt)
 end
 
