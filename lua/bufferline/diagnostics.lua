@@ -15,6 +15,8 @@ setmetatable(severity_name, {
   end,
 })
 
+local last_diagnostics_result = {}
+
 local function get_err_dict(errs)
   local ds = {}
   local max = #severity_name
@@ -48,12 +50,22 @@ local function is_disabled(diagnostics)
   return not diagnostics or diagnostics ~= "nvim_lsp" or not vim.lsp.diagnostic.get_all
 end
 
+local function is_insert() -- insert or replace
+  local mode = vim.api.nvim_get_mode().mode
+  if mode == 'i' or mode == 'ic' or mode == 'ix' 
+    or mode == 'R' or mode == 'Rc' or mode == 'Rx' then
+    return true
+  end
+  return false
+end
+
 ---@param opts table
 function M.get(opts)
   if is_disabled(opts.diagnostics) then
     return setmetatable({}, mt)
   end
-  if vim.fn.mode(0) == 'i' and not opts.diagnostics_update_in_insert then
+  if is_insert() and not opts.diagnostics_update_in_insert then
+    print("insert", vim.inspect(last_diagnostics_result))
     return setmetatable(last_diagnostics_result, mt)
   end
   local diagnostics = vim.lsp.diagnostic.get_all()
