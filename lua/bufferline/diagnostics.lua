@@ -52,11 +52,8 @@ end
 
 local function is_insert() -- insert or replace
   local mode = vim.api.nvim_get_mode().mode
-  if mode == 'i' or mode == 'ic' or mode == 'ix' 
-    or mode == 'R' or mode == 'Rc' or mode == 'Rx' then
-    return true
-  end
-  return false
+  return mode == 'i' or mode == 'ic' or mode == 'ix' 
+    or mode == 'R' or mode == 'Rc' or mode == 'Rx'
 end
 
 ---@param opts table
