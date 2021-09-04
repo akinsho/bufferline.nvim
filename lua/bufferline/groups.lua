@@ -1,15 +1,21 @@
-local M = {}
+local M = { separator = {} }
 
 local api = vim.api
 local fmt = string.format
 local strwidth = api.nvim_strwidth
 local utils = require("bufferline.utils")
+local padding = require("bufferline.constants").padding
 
+local UNGROUPED = "ungrouped"
+
+---@alias GroupSeparator fun(name: string, group:Group, hls: tabl<string, table<string, string>>): string, number
+---@alias GroupSeparators table<string, GroupSeparator>
 ---@alias grouper fun(b: Buffer): boolean
 
 ---@class Group
 ---@field public name string
 ---@field public fn grouper
+---@field public separator GroupSeparators
 ---@field public priority number
 ---@field public highlight table<string, string>
 ---@field public icon string
@@ -33,7 +39,7 @@ end
 ---@param buffers Buffer[]
 function M.group_buffers(buffers)
   return utils.fold({}, function(accum, buf)
-    local name = buf.group and buf.group.name or "ungrouped"
+    local name = buf.group and buf.group.name or UNGROUPED
     accum[name] = accum[name] or {}
     table.insert(accum[name], buf)
     return accum
@@ -52,14 +58,14 @@ function M.component(ctx)
     return ctx
   end
   --- TODO: should there be default icons at all
-  local icon = group.icon and group.icon .. " " or ""
+  local icon = group.icon and group.icon .. padding or ""
   local icon_length = api.nvim_strwidth(icon)
   local component, length = hls[group.name] .. icon .. ctx.component, ctx.length + icon_length
   return ctx:update({ component = component, length = length })
 end
 
---- Add group highlights to the user highlights table
 --- NOTE: this function mutates the user's configuration.
+--- Add group highlights to the user highlights table
 ---@param config BufferlineConfig
 function M.set_hls(config)
   assert(
@@ -74,10 +80,10 @@ function M.set_hls(config)
   for _, group in ipairs(_groups) do
     local hl = group.highlight
     local name = group.name
+    hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
+      guibg = hls.buffer_selected.guibg,
+    })
     if hl and type(hl) == "table" then
-      hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
-        guibg = hls.buffer_selected.guibg,
-      })
       hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, {
         guibg = hls.buffer_visible.guibg,
       })
@@ -129,35 +135,58 @@ function M.names()
   end, opts.groups)
 end
 
+---@type GroupSeparator
+function M.separator.pill(name)
+  local hl_groups = require("bufferline.config").get("highlights")
+  local sep_hl = hl_groups.group_separator.hl
+  local label_hl = hl_groups.group_label.hl
+  local left, right = "█", "█"
+  local indicator = utils.join(padding, sep_hl, left, label_hl, name, sep_hl, right, padding)
+  local length = utils.measure(left, right, name, padding, padding)
+  return indicator, length
+end
+
+---@type GroupSeparator
+function M.separator.tab(name, _, hls)
+  local hl = hls.fill.hl
+  local indicator_hl = hls.buffer.hl
+  local length = strwidth(name) + (4 * strwidth(padding))
+  local indicator = utils.join(hl, padding, indicator_hl, padding, name, padding, hl, padding)
+  return indicator, length
+end
+
 ---Create the visual indicators bookending buffer groups
 ---@param name string
----@param _ Group
+---@param group Group
 ---@return ViewTab
 ---@return ViewTab
-local function get_tab(name, _)
-  if name ~= "ungrouped" then
-    local ViewTab = require("bufferline.view").ViewTab
-    local hl_groups = require("bufferline.config").get("highlights")
-    local hl = hl_groups.fill.hl
-    local sep_hl = hl_groups.group_separator.hl
-    local label_hl = hl_groups.group_label.hl
-    local left, right = "█", "█"
-
-    local group_indicator = " " .. sep_hl .. left .. label_hl .. name .. sep_hl .. right .. " "
-    local group_start = ViewTab:new({
-      length = utils.measure(left, right, name, " ", " "),
-      component = function()
-        return utils.join(hl, group_indicator)
-      end,
-    })
-    local group_end = ViewTab:new({
-      length = strwidth(" "),
-      component = function()
-        return utils.join(hl, " ")
-      end,
-    })
-    return group_start, group_end
+local function get_tab(name, group)
+  if name == UNGROUPED or not group then
+    return
   end
+  local ViewTab = require("bufferline.view").ViewTab
+  local hl_groups = require("bufferline.config").get("highlights")
+
+  group.separator = group.separator or {}
+  group.separator.style = group.separator.style or nil
+  if not group.separator.style then
+    return
+  end
+  local indicator, length = group.separator.style(name, group, hl_groups)
+
+  local group_start = ViewTab:new({
+    length = length,
+    component = function()
+      return indicator
+    end,
+  })
+  local group_end = ViewTab:new({
+    length = strwidth(padding),
+    component = function()
+      return utils.join(hl_groups.fill.hl, padding)
+    end,
+  })
+  return group_start, group_end
 end
 
 ---@param buffers Buffer[]
@@ -168,12 +197,16 @@ function M.add_markers(buffers, groups)
     return buffers
   end
   local res = {}
-  for name, group in pairs(groups) do
-    local group_start, group_end = get_tab(name, group)
-    local list = group
-    if group_start then
-      table.insert(list, 1, group_start)
-      list[#list + 1] = group_end
+  for name, grp_buffers in pairs(groups) do
+    local list = grp_buffers
+    if name ~= UNGROUPED then
+      local group_start, group_end = get_tab(name, grp_buffers[1].group)
+      if group_start then
+        list = { group_start, unpack(list) }
+      end
+      if group_end then
+        list[#list + 1] = group_end
+      end
     end
     vim.list_extend(res, list)
   end
