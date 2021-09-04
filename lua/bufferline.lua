@@ -970,10 +970,15 @@ local function bufferline(preferences)
     buffers[i] = buf
   end
 
-  state.buffers_by_group = groups.group_buffers(buffers)
+  local has_groups = options.groups and #options.groups > 0
+
+  --- FIXME: "ungrouped" buffers should always come after grouped ones
+  if has_groups then
+    state.buffers_by_group, buffers = groups.group_buffers(buffers)
+  end
 
   -- if the user has reshuffled the buffers manually don't try and sort them
-  if not state.custom_sort then
+  if not state.custom_sort and not has_groups then
     require("bufferline.sorters").sort_buffers(preferences.options.sort_by, buffers)
   end
 

@@ -1,6 +1,6 @@
 local M = { separator = {} }
-
 local api = vim.api
+
 local fmt = string.format
 local strwidth = api.nvim_strwidth
 local utils = require("bufferline.utils")
@@ -38,12 +38,13 @@ end
 ---Save the current buffer groups
 ---@param buffers Buffer[]
 function M.group_buffers(buffers)
-  return utils.fold({}, function(accum, buf)
+  local res = utils.fold({}, function(accum, buf)
     local name = buf.group and buf.group.name or UNGROUPED
     accum[name] = accum[name] or {}
     table.insert(accum[name], buf)
     return accum
   end, buffers)
+  return res, utils.array_concat(unpack(vim.tbl_values(res)))
 end
 
 ---Add group styling to the buffer component
