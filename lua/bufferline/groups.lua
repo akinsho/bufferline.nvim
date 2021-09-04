@@ -136,12 +136,12 @@ function M.names()
 end
 
 ---@type GroupSeparator
-function M.separator.pill(name)
-  local hl_groups = require("bufferline.config").get("highlights")
-  local sep_hl = hl_groups.group_separator.hl
-  local label_hl = hl_groups.group_label.hl
+function M.separator.pill(name, _, hls)
+  local bg_hl = hls.fill.hl
+  local sep_hl = hls.group_separator.hl
+  local label_hl = hls.group_label.hl
   local left, right = "█", "█"
-  local indicator = utils.join(padding, sep_hl, left, label_hl, name, sep_hl, right, padding)
+  local indicator = utils.join(bg_hl, padding, sep_hl, left, label_hl, name, sep_hl, right, padding)
   local length = utils.measure(left, right, name, padding, padding)
   return indicator, length
 end
@@ -168,7 +168,8 @@ local function get_tab(name, group)
   local hl_groups = require("bufferline.config").get("highlights")
 
   group.separator = group.separator or {}
-  group.separator.style = group.separator.style or nil
+  --- NOTE: the default buffer group style is the pill
+  group.separator.style = group.separator.style or M.separator.pill
   if not group.separator.style then
     return
   end
