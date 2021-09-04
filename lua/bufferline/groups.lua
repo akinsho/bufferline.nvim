@@ -200,13 +200,11 @@ function M.add_markers(buffers, groups)
   local res = {}
   for name, grp_buffers in pairs(groups) do
     local list = grp_buffers
-    if name ~= UNGROUPED then
+    if name ~= UNGROUPED and #grp_buffers > 0 then
       local group_start, group_end = get_tab(name, grp_buffers[1].group)
       if group_start then
-        list = { group_start, unpack(list) }
-      end
-      if group_end then
-        list[#list + 1] = group_end
+        table.insert(list, 1, group_start)
+        table.insert(list, group_end)
       end
     end
     vim.list_extend(res, list)
