@@ -1,4 +1,4 @@
-local constants = require("bufferline/constants")
+local constants = require("bufferline.constants")
 
 local M = {}
 
@@ -9,21 +9,21 @@ local function tab_click_component(num)
   return "%" .. num .. "T"
 end
 
-local function render(tab, is_active, style, highlights)
+local function render(tabpage, is_active, style, highlights)
   local h = highlights
   local hl = is_active and h.tab_selected.hl or h.tab.hl
   local separator_hl = is_active and h.separator_selected.hl or h.separator.hl
   local separator_component = style == "thick" and "▐" or "▕"
   local separator = separator_hl .. separator_component
-  local name = padding .. padding .. tab.tabnr .. padding
+  local name = padding .. padding .. tabpage.tabnr .. padding
   local length = strwidth(name) + strwidth(separator_component)
-  return hl .. tab_click_component(tab.tabnr) .. name .. separator, length
+  return hl .. tab_click_component(tabpage.tabnr) .. name .. separator, length
 end
 
 --- @param style string
 --- @param prefs table
 function M.get(style, prefs)
-  local all_tabs = {}
+  local tabpages = {}
   local tabs = vim.fn.gettabinfo()
   local current_tab = vim.fn.tabpagenr()
   local highlights = prefs.highlights
@@ -35,14 +35,14 @@ function M.get(style, prefs)
     local is_active_tab = current_tab == tab.tabnr
     local component, length = render(tab, is_active_tab, style, highlights)
 
-    all_tabs[i] = {
+    tabpages[i] = {
       component = component,
       length = length,
       id = tab.tabnr,
       windows = tab.windows,
     }
   end
-  return all_tabs
+  return tabpages
 end
 
 return M

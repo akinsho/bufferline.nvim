@@ -216,6 +216,14 @@ local function derive_colors()
       guifg = comment_fg,
       guibg = separator_background_color,
     },
+    group_separator = {
+      guifg = comment_fg,
+      guibg = separator_background_color,
+    },
+    group_label = {
+      guibg = comment_fg,
+      guifg = separator_background_color,
+    },
     tab = {
       guifg = comment_fg,
       guibg = background_color,

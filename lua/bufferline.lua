@@ -29,6 +29,8 @@ local state = {
   visible_buffers = {},
   ---@type number[]
   custom_sort = nil,
+  ---@type table<string, Buffer>
+  buffers_by_group = {},
 }
 
 -----------------------------------------------------------------------------//
@@ -758,20 +760,23 @@ local function tab_close_button(icon)
   return "%999X" .. component, strwidth(component)
 end
 
+---@param bufs Buffer[]
+---@return ViewTabs
+---@return ViewTabs
+---@return ViewTabs
 local function get_sections(bufs)
-  local Buffers = require("bufferline.buffers").Buffers
-  local current = Buffers:new()
-  local before = Buffers:new()
-  local after = Buffers:new()
+  local ViewTabs = require("bufferline.view").ViewTabs
+  local current = ViewTabs:new()
+  local before = ViewTabs:new()
+  local after = ViewTabs:new()
 
-  for _, buf in ipairs(bufs) do
-    if buf:current() then
-      -- We haven't reached the current buffer yet
-      current:add(buf)
-    elseif current.length == 0 then
-      before:add(buf)
+  for _, view_tab in ipairs(bufs) do
+    if view_tab:current() then
+      current:add(view_tab)
+    elseif current.length == 0 then -- We haven't reached the current buffer yet
+      before:add(view_tab)
     else
-      after:add(buf)
+      after:add(view_tab)
     end
   end
   return before, current, after
@@ -792,9 +797,9 @@ end
 --- section
 --- 4. Re-check the size, if still too long truncate recursively till it fits
 --- 5. Add the number of truncated buffers as an indicator
----@param before Buffers
----@param current Buffers
----@param after Buffers
+---@param before ViewTabs
+---@param current ViewTabs
+---@param after ViewTabs
 ---@param available_width number
 ---@param marker table
 ---@return string
@@ -812,9 +817,9 @@ local function truncate(before, current, after, available_width, marker, visible
   local total_length = before.length + current.length + after.length + markers_length
 
   if available_width >= total_length then
-    visible = utils.array_concat(before.buffers, current.buffers, after.buffers)
-    for index, buf in ipairs(visible) do
-      line = line .. buf.component(index, #visible)
+    visible = utils.array_concat(before.items, current.items, after.items)
+    for index, item in ipairs(visible) do
+      line = line .. item.component(index, #visible)
     end
     return line, marker, visible
     -- if we aren't even able to fit the current buffer into the
@@ -827,7 +832,7 @@ local function truncate(before, current, after, available_width, marker, visible
       before:drop(1)
       marker.left_count = marker.left_count + 1
     else
-      after:drop(#after.buffers)
+      after:drop(#after.items)
       marker.right_count = marker.right_count + 1
     end
     -- drop the markers if the window is too narrow
@@ -842,11 +847,11 @@ local function truncate(before, current, after, available_width, marker, visible
   end
 end
 
---- @param bufs Buffer[]
+--- @param view_tabs Buffer[]
 --- @param tbs table[]
 --- @param prefs table
 --- @return string
-local function render(bufs, tbs, prefs)
+local function render(view_tabs, tbs, prefs)
   local options = prefs.options
   local hl = prefs.highlights
   local right_align = "%="
@@ -887,7 +892,11 @@ local function render(bufs, tbs, prefs)
     - tabs_length
     - close_length
 
-  local before, current, after = get_sections(bufs)
+  if prefs.options.groups then
+    view_tabs = require("bufferline.groups").add_markers(view_tabs, state.buffers_by_group)
+  end
+  local before, current, after = get_sections(view_tabs)
+  --- FIXME: visible buffers should only report the visible buffers/tabpages
   local line, marker, visible_buffers = truncate(before, current, after, available_width, {
     left_count = 0,
     right_count = 0,
@@ -929,7 +938,7 @@ local function bufferline(preferences)
     buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
   end
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
-  local all_tabs = require("bufferline.tabs").get(options.separator_style, preferences)
+  local all_tabs = require("bufferline.tabpages").get(options.separator_style, preferences)
 
   if not options.always_show_bufferline then
     if #buf_nums == 1 then
@@ -957,9 +966,11 @@ local function bufferline(preferences)
       name_formatter = options.name_formatter,
     })
     buf.letter = pick.get(buf)
-    buf.group = groups.get(buf, options.groups)
+    buf.group = groups.find(buf, options.groups)
     buffers[i] = buf
   end
+
+  state.buffers_by_group = groups.group_buffers(buffers)
 
   -- if the user has reshuffled the buffers manually don't try and sort them
   if not state.custom_sort then

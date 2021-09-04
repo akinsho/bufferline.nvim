@@ -15,12 +15,12 @@ end
 ---on each updating the initial value
 ---@generic T
 ---@param accum T
----@param callback fun(accum:T, item: T): T
+---@param callback fun(accum:T, item: T, index: number): T
 ---@return T
-function M.fold(accum, callback, ...)
+function M.fold(accum, callback, list)
   assert(accum and callback, "An initial value and callback must be passed to fold")
-  for n = 1, select("#", ...) do
-    accum = callback(accum, select(n, ...))
+  for i, v in pairs(list) do
+    accum = callback(accum, v, i)
   end
   return accum
 end
@@ -31,7 +31,7 @@ end
 function M.sum(...)
   return M.fold(0, function(accum, item)
     return accum + item
-  end, ...)
+  end, { ... })
 end
 
 ---Variant of some that sums up the display size of characters
@@ -40,7 +40,7 @@ end
 function M.measure(...)
   return M.fold(0, function(accum, item)
     return accum + api.nvim_strwidth(item)
-  end, ...)
+  end, { ... })
 end
 
 ---Concatenate a series of strings together
@@ -49,7 +49,7 @@ end
 function M.join(...)
   return M.fold("", function(accum, item)
     return accum .. item
-  end, ...)
+  end, { ... })
 end
 
 --- A function which takes n number of functions and
