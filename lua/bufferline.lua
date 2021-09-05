@@ -365,11 +365,11 @@ end
 
 --- TODO: find a tidier way to do this if possible
 ---@param buffer Buffer
----@param highlights table<string, table<string, string>>
+---@param config BufferlineConfig
 ---@return table
-local function get_buffer_highlight(buffer, highlights)
+local function get_buffer_highlight(buffer, config)
   local hl = {}
-  local h = highlights
+  local h = config.highlights
 
   if buffer:current() then
     hl.background = h.buffer_selected.hl
@@ -418,7 +418,9 @@ local function get_buffer_highlight(buffer, highlights)
     hl.close_button = h.close_button.hl
   end
 
-  require("bufferline.groups").set_current_hl(buffer, h, hl)
+  if config.options.groups then
+    require("bufferline.groups").set_current_hl(buffer, h, hl)
+  end
 
   return hl
 end
@@ -704,7 +706,7 @@ local function render_buffer(preferences, buffer)
   local ctx = Context:new({
     buffer = buffer,
     preferences = preferences,
-    current_highlights = get_buffer_highlight(buffer, preferences.highlights),
+    current_highlights = get_buffer_highlight(buffer, preferences),
   })
 
   local add_diagnostics = require("bufferline.diagnostics").component
