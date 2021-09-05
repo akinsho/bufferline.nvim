@@ -470,7 +470,7 @@ local function highlight_icon(buffer)
     return icon .. padding
   end
 
-  local prefix = "Bufferline"
+  local prefix = "BufferLine"
   local new_hl = prefix .. hl
   local bg_hl = prefix .. "Background"
   -- TODO: do not depend directly on style names
@@ -885,9 +885,8 @@ local function render(view_tabs, tbs, prefs)
   -- Icons from https://fontawesome.com/cheatsheet
   local left_trunc_icon = options.left_trunc_marker
   local right_trunc_icon = options.right_trunc_marker
-  -- measure the surrounding trunc items: padding + count + padding + icon + padding
-  local left_element_size = strwidth(join(padding, padding, left_trunc_icon, padding, padding))
-  local right_element_size = strwidth(join(padding, padding, right_trunc_icon, padding))
+  local left_element_size = utils.measure(padding, padding, left_trunc_icon, padding, padding)
+  local right_element_size = utils.measure(padding, padding, right_trunc_icon, padding)
 
   local offset_size, left_offset, right_offset = require("bufferline.offset").get(prefs)
   local custom_area_size, left_area, right_area = require("bufferline.custom_area").get(prefs)
@@ -940,7 +939,7 @@ end
 local function bufferline(preferences)
   local options = preferences.options
   local buf_nums = utils.get_valid_buffers()
-  if options.custom_filter then
+  if options and options.custom_filter then
     buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
   end
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
