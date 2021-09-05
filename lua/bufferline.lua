@@ -699,6 +699,10 @@ local function get_buffer_name(ctx)
   return ctx:update({ component = filename, length = strwidth(filename) })
 end
 
+local function identity(...)
+  return ...
+end
+
 --- @param preferences BufferlineConfig
 --- @param buffer Buffer
 --- @return BufferComponent,number
@@ -712,7 +716,7 @@ local function render_buffer(preferences, buffer)
   local add_diagnostics = require("bufferline.diagnostics").component
   local add_duplicates = require("bufferline.duplicates").component
   local add_numbers = require("bufferline.numbers").component
-  local add_group = require("bufferline.groups").component
+  local add_group = buffer.group and require("bufferline.groups").component or identity
 
   --- Order matter here as this is the sequence which builds up the tab component
   --- each render function takes the context and returns an updated context with it's
