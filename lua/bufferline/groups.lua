@@ -35,16 +35,33 @@ function M.find(buffer, groups)
   end
 end
 
+local function generate_sublists(size)
+  local list = {}
+  for i = 1, size do
+    list[i] = {}
+  end
+  return list
+end
+
 ---Save the current buffer groups
+---The aim is to have buffers easily accessible by key as well as a list of sorted and prioritized
+---buffers for things like navigation
 ---@param buffers Buffer[]
-function M.group_buffers(buffers)
-  local res = utils.fold({}, function(accum, buf)
+---@param groups Group[]
+function M.group_buffers(buffers, groups)
+  local list = generate_sublists(#groups + 1)
+  local sublists = utils.fold(list, function(accum, buf)
     local name = buf.group and buf.group.name or UNGROUPED
-    accum[name] = accum[name] or {}
-    table.insert(accum[name], buf)
+    local priority = buf.group and buf.group.priority or #groups + 1
+    local sublist = accum[priority]
+    if not sublist.name then
+      sublist.name = name
+      sublist.priorty = priority
+    end
+    table.insert(sublist, buf)
     return accum
   end, buffers)
-  return res, utils.array_concat(unpack(vim.tbl_values(res)))
+  return sublists, utils.array_concat(unpack(sublists))
 end
 
 ---Add group styling to the buffer component
@@ -192,23 +209,22 @@ local function get_tab(name, group)
 end
 
 ---@param buffers Buffer[]
----@param groups table<string, Buffer[]>
+---@param groups Buffer[][]
 ---@return ViewTab[]
 function M.add_markers(buffers, groups)
   if vim.tbl_isempty(groups) then
     return buffers
   end
   local res = {}
-  for name, grp_buffers in pairs(groups) do
-    local list = grp_buffers
-    if name ~= UNGROUPED and #grp_buffers > 0 then
-      local group_start, group_end = get_tab(name, grp_buffers[1].group)
+  for _, grp in ipairs(groups) do
+    if grp.name ~= UNGROUPED and #grp > 0 then
+      local group_start, group_end = get_tab(grp.name, grp[1].group)
       if group_start then
-        table.insert(list, 1, group_start)
-        table.insert(list, group_end)
+        table.insert(grp, 1, group_start)
+        table.insert(grp, group_end)
       end
     end
-    vim.list_extend(res, list)
+    vim.list_extend(res, grp)
   end
   return res
 end

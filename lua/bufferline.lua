@@ -978,9 +978,8 @@ local function bufferline(preferences)
 
   local has_groups = options.groups and #options.groups > 0
 
-  --- FIXME: "ungrouped" buffers should always come after grouped ones
   if has_groups then
-    state.buffers_by_group, buffers = groups.group_buffers(buffers)
+    state.buffers_by_group, buffers = groups.group_buffers(buffers, options.groups)
   end
 
   -- if the user has reshuffled the buffers manually don't try and sort them
