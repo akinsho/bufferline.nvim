@@ -122,13 +122,10 @@ function M.set_current_hl(buffer, highlights, current_hl)
   if not name then
     return
   end
-  if buffer:current() then
-    current_hl[name] = highlights[fmt("%s_selected", name)].hl
-  elseif buffer:visible() then
-    current_hl[name] = highlights[fmt("%s_visible", name)].hl
-  else
-    current_hl[name] = highlights[name].hl
-  end
+  local hl_name = buffer:current() and fmt("%s_selected", name)
+    or buffer:visible() and fmt("%s_visible", name)
+    or name
+  current_hl[name] = highlights[hl_name].hl
 end
 
 ---Execute a command on each buffer of a group
