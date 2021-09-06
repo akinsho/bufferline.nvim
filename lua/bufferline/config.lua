@@ -491,6 +491,10 @@ local function add_highlight_groups(highlights)
   end
 end
 
+function M.groups_enabled()
+  return config.options.groups and #config.options.groups > 1
+end
+
 --- Merge user config with defaults
 --- @return BufferlineConfig
 function M.apply()
@@ -498,7 +502,7 @@ function M.apply()
   validate_config(user_config, defaults)
   convert_hl_tables(user_config)
   config = merge(defaults, user_config)
-  if config.options.groups then
+  if M.groups_enabled() then
     require("bufferline.groups").setup(config)
   end
   add_highlight_groups(config.highlights)
@@ -516,7 +520,7 @@ end
 ---Update highlight colours when the colour scheme changes
 function M.update_highlights()
   config.highlights = merge(derive_colors(), user_config.highlights or {})
-  if config.options.groups then
+  if M.groups_enabled() then
     require("bufferline.groups").set_hls(config)
   end
   add_highlight_groups(config.highlights)

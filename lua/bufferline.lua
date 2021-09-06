@@ -959,16 +959,16 @@ local function render(buffers, tbs, prefs)
   )
 end
 
---- @param preferences table
+--- @param config table
 --- @return string
-local function bufferline(preferences)
-  local options = preferences.options
+local function bufferline(config)
+  local options = config.options
   local buf_nums = utils.get_valid_buffers()
   if options and options.custom_filter then
     buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
   end
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
-  local all_tabs = require("bufferline.tabpages").get(options.separator_style, preferences)
+  local all_tabs = require("bufferline.tabpages").get(options.separator_style, config)
 
   if not options.always_show_bufferline then
     if #buf_nums == 1 then
@@ -977,10 +977,9 @@ local function bufferline(preferences)
     end
   end
 
-  local has_groups = options.groups and #options.groups > 0
-
   local pick = require("bufferline.pick")
   local duplicates = require("bufferline.duplicates")
+  local has_groups = require("bufferline.config").groups_enabled()
   local groups = has_groups and require("bufferline.groups") or nil
 
   pick.reset()
@@ -1010,17 +1009,17 @@ local function bufferline(preferences)
 
   -- if the user has reshuffled the buffers manually don't try and sort them
   if not state.custom_sort and not has_groups then
-    require("bufferline.sorters").sort_buffers(preferences.options.sort_by, buffers)
+    require("bufferline.sorters").sort_buffers(config.options.sort_by, buffers)
   end
 
   local deduplicated = duplicates.mark(buffers)
   --- Assign buffers to state
   state.buffers = vim.tbl_map(function(buf)
-    buf.component, buf.length = render_buffer(preferences, buf)
+    buf.component, buf.length = render_buffer(config, buf)
     return buf
   end, deduplicated)
 
-  return render(state.buffers, all_tabs, preferences)
+  return render(state.buffers, all_tabs, config)
 end
 
 function M.toggle_bufferline()
