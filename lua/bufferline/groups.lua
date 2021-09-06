@@ -98,10 +98,10 @@ function M.set_hls(config)
   for _, group in ipairs(_groups) do
     local hl = group.highlight
     local name = group.name
-    hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
-      guibg = hls.buffer_selected.guibg,
-    })
     if hl and type(hl) == "table" then
+      hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
+        guibg = hls.buffer_selected.guibg,
+      })
       hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, {
         guibg = hls.buffer_visible.guibg,
       })
