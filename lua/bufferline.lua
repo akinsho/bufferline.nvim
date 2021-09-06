@@ -30,7 +30,7 @@ local state = {
   ---@type number[]
   custom_sort = nil,
   ---@type table<string, Buffer>
-  buffers_by_group = {},
+  tab_views_by_group = {},
 }
 
 -----------------------------------------------------------------------------//
@@ -715,14 +715,14 @@ local function get_buffer_name(ctx)
   return ctx:update({ component = filename, length = strwidth(filename) })
 end
 
---- @param preferences BufferlineConfig
+--- @param config BufferlineConfig
 --- @param buffer Buffer
 --- @return BufferComponent,number
-local function render_buffer(preferences, buffer)
+local function render_buffer(config, buffer)
   local ctx = Context:new({
     buffer = buffer,
-    preferences = preferences,
-    current_highlights = get_buffer_highlight(buffer, preferences),
+    preferences = config,
+    current_highlights = get_buffer_highlight(buffer, config),
   })
 
   local add_diagnostics = require("bufferline.diagnostics").component
@@ -752,18 +752,30 @@ local function render_buffer(preferences, buffer)
   --- We return a function from render buffer as we do not yet have access to
   --- information regarding which buffers will actually be rendered
   --- @param index number
-  --- @param buf_count number
+  --- @param next_item ViewTab
   --- @returns string
-  local function render_fn(index, buf_count)
+  local function render_fn(index, next_item)
     -- NOTE: the component is wrapped in an item -> %(content) so
     -- vim counts each item as one rather than all of its individual
     -- sub-components.
     local buffer_component = "%(" .. ctx.component .. "%)"
-    if ctx.separators.left then
-      buffer_component = ctx.separators.left .. buffer_component .. ctx.separators.right
-    elseif index < buf_count then
-      buffer_component = buffer_component .. ctx.separators.right
+
+    -- if using the non-slanted tab style then we must check if the component is at the end of
+    -- of a section e.g. the end of a group and if so it should not be wrapped with separators
+    -- as it can use those of the next item
+    if not is_slant(config.options.separator_style) and next_item and next_item:end_component() then
+      return buffer_component
     end
+
+    local s = ctx.separators
+    if s.left then
+      return s.left .. buffer_component .. s.right
+    end
+
+    if next_item then
+      return buffer_component .. s.right
+    end
+
     return buffer_component
   end
 
@@ -778,17 +790,17 @@ local function tab_close_button(icon)
   return "%999X" .. component, strwidth(component)
 end
 
----@param bufs Buffer[]
+---@param tabs ViewTab[]
 ---@return ViewTabs
 ---@return ViewTabs
 ---@return ViewTabs
-local function get_sections(bufs)
+local function get_sections(tabs)
   local ViewTabs = require("bufferline.view").ViewTabs
   local current = ViewTabs:new()
   local before = ViewTabs:new()
   local after = ViewTabs:new()
 
-  for _, view_tab in ipairs(bufs) do
+  for _, view_tab in ipairs(tabs) do
     if view_tab:current() then
       current:add(view_tab)
     elseif current.length == 0 then -- We haven't reached the current buffer yet
@@ -837,7 +849,7 @@ local function truncate(before, current, after, available_width, marker, visible
   if available_width >= total_length then
     visible = utils.array_concat(before.items, current.items, after.items)
     for index, item in ipairs(visible) do
-      line = line .. item.component(index, #visible)
+      line = line .. item.component(index, visible[index + 1])
     end
     return line, marker, visible
     -- if we aren't even able to fit the current buffer into the
@@ -865,11 +877,11 @@ local function truncate(before, current, after, available_width, marker, visible
   end
 end
 
---- @param view_tabs Buffer[]
+--- @param buffers Buffer[]
 --- @param tbs table[]
 --- @param prefs table
 --- @return string
-local function render(view_tabs, tbs, prefs)
+local function render(buffers, tbs, prefs)
   local options = prefs.options
   local hl = prefs.highlights
   local right_align = "%="
@@ -909,8 +921,9 @@ local function render(view_tabs, tbs, prefs)
     - tabs_length
     - close_length
 
+  local view_tabs = buffers
   if prefs.options.groups then
-    view_tabs = require("bufferline.groups").add_markers(view_tabs, state.buffers_by_group)
+    view_tabs = require("bufferline.groups").add_markers(view_tabs, state.tab_views_by_group)
   end
   local before, current, after = get_sections(view_tabs)
   --- FIXME: visible buffers should only report the visible buffers/tabpages
@@ -989,7 +1002,7 @@ local function bufferline(preferences)
 
   local has_groups = options.groups and #options.groups > 0
   if has_groups then
-    state.buffers_by_group, buffers = groups.group_buffers(buffers, options.groups)
+    state.tab_views_by_group, buffers = groups.group_buffers(buffers, options.groups)
   end
 
   -- if the user has reshuffled the buffers manually don't try and sort them

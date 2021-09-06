@@ -23,6 +23,7 @@ local M = {}
 ---@field public component BufferComponent
 ---@field public group Group
 ---@field public group_fn string
+---@field public length number the length of the buffer component
 local Buffer = {}
 
 ---create a new buffer class

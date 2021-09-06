@@ -204,12 +204,14 @@ local function get_tab(name, group)
   local indicator, length = group.separator.style(name, group, hl_groups)
 
   local group_start = ViewTab:new({
+    type = "group_start",
     length = length,
     component = function()
       return indicator
     end,
   })
   local group_end = ViewTab:new({
+    type = "group_end",
     length = strwidth(padding),
     component = function()
       return utils.join(hl_groups.fill.hl, padding)
@@ -218,26 +220,29 @@ local function get_tab(name, group)
   return group_start, group_end
 end
 
----@param buffers Buffer[]
+---@param tabs ViewTab[]
 ---@param grouped_buffers Buffer[][]
 ---@return ViewTab[]
-function M.add_markers(buffers, grouped_buffers)
+function M.add_markers(tabs, grouped_buffers)
   if vim.tbl_isempty(grouped_buffers) then
-    return buffers
+    return tabs
   end
-  local res = {}
+  local result = {}
+  local view = require('bufferline.view')
   for _, sublist in ipairs(grouped_buffers) do
+    -- FIXME: this function does a Lot of looping this can maybe be consolidated
+    local view_tabs = view.buffers_to_tabs(sublist)
     if sublist.name ~= UNGROUPED and #sublist > 0 then
       local buf_group = sublist[1].group
       local group_start, group_end = get_tab(sublist.display_name, buf_group)
       if group_start then
-        table.insert(sublist, 1, group_start)
-        table.insert(sublist, group_end)
+        table.insert(view_tabs, 1, group_start)
+        view_tabs[#view_tabs+1] = group_end
       end
     end
-    vim.list_extend(res, sublist)
+    vim.list_extend(result, view_tabs)
   end
-  return res
+  return result
 end
 
 return M
