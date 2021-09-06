@@ -78,7 +78,8 @@ function M.component(ctx)
   --- TODO: should there be default icons at all
   local icon = group.icon and group.icon .. padding or ""
   local icon_length = api.nvim_strwidth(icon)
-  local component, length = hls[group.name] .. icon .. ctx.component, ctx.length + icon_length
+  local hl = hls[group.name] or ""
+  local component, length = hl .. icon .. ctx.component, ctx.length + icon_length
   return ctx:update({ component = component, length = length })
 end
 

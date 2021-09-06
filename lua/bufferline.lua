@@ -418,7 +418,7 @@ local function get_buffer_highlight(buffer, config)
     hl.close_button = h.close_button.hl
   end
 
-  if config.options.groups then
+  if buffer.group and buffer.group.highlight then
     require("bufferline.groups").set_current_hl(buffer, h, hl)
   end
 
