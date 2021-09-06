@@ -13,12 +13,19 @@ local UNGROUPED = "ungrouped"
 ---@alias grouper fun(b: Buffer): boolean
 
 ---@class Group
----@field public name string
+---@field public name string 'formatted name of the group'
+---@field public display_name string original name including special characters
 ---@field public fn grouper
 ---@field public separator GroupSeparators
 ---@field public priority number
 ---@field public highlight table<string, string>
 ---@field public icon string
+
+--- Remove illegal characters from a group name name
+---@param name string
+local function format_name(name)
+  return name:gsub("%s+", "_")
+end
 
 ---Group buffers based on user criteria
 ---@param buffer Buffer
@@ -79,14 +86,16 @@ function M.component(ctx)
   local icon = group.icon and group.icon .. padding or ""
   local icon_length = api.nvim_strwidth(icon)
   local hl = hls[group.name] or ""
-  local component, length = hl .. icon .. ctx.component, ctx.length + icon_length
+  local component, length =
+    hl .. icon .. ctx.component .. hls.buffer.hl,
+    ctx.length + icon_length
   return ctx:update({ component = component, length = length })
 end
 
 --- NOTE: this function mutates the user's configuration.
 --- Add group highlights to the user highlights table
 ---@param config BufferlineConfig
-function M.set_hls(config)
+function M.setup(config)
   assert(
     config and config.options,
     "A user configuration table must be passed in to set group highlights"
@@ -94,10 +103,12 @@ function M.set_hls(config)
   if not config.options.groups then
     return
   end
+
   local hls = config.highlights
-  local _groups = config.options.groups
-  for _, group in ipairs(_groups) do
+  for _, group in ipairs(config.options.groups) do
     local hl = group.highlight
+    group.display_name = group.name
+    group.name = format_name(group.name)
     local name = group.name
     if hl and type(hl) == "table" then
       hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
@@ -207,16 +218,17 @@ local function get_tab(name, group)
 end
 
 ---@param buffers Buffer[]
----@param groups Buffer[][]
+---@param grouped_buffers Buffer[][]
 ---@return ViewTab[]
-function M.add_markers(buffers, groups)
-  if vim.tbl_isempty(groups) then
+function M.add_markers(buffers, grouped_buffers)
+  if vim.tbl_isempty(grouped_buffers) then
     return buffers
   end
   local res = {}
-  for _, grp in ipairs(groups) do
+  for _, grp in ipairs(grouped_buffers) do
     if grp.name ~= UNGROUPED and #grp > 0 then
-      local group_start, group_end = get_tab(grp.name, grp[1].group)
+      local buf_group = grp[1].group
+      local group_start, group_end = get_tab(buf_group.display_name, buf_group)
       if group_start then
         table.insert(grp, 1, group_start)
         table.insert(grp, group_end)

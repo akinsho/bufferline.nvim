@@ -499,7 +499,7 @@ function M.apply()
   convert_hl_tables(user_config)
   config = merge(defaults, user_config)
   if config.options.groups then
-    require("bufferline.groups").set_hls(config)
+    require("bufferline.groups").setup(config)
   end
   add_highlight_groups(config.highlights)
   return config

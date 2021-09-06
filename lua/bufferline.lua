@@ -660,21 +660,38 @@ local function add_click_action(context)
   })
 end
 
+---Add padding to either side of a component
+---@param sides table<'"left"' | '"right"', number>
+---@return function
+local function add_padding(sides)
+  ---@param ctx BufferContext
+  return function (ctx)
+    local left, right = sides.left or 0, sides.right or 0
+    local left_p, right_p = string.rep(padding, left), string.rep(padding, right)
+    local component = left_p .. ctx.component .. right_p
+    return ctx:update({ component = component, length = ctx.length + strwidth(left_p .. right_p) })
+  end
+end
+
+local function identity(...)
+  return ...
+end
+
 --- @param context BufferContext
 --- @return BufferContext
-local function add_padding(context)
+local function add_spacing(context)
   local component = context.component
   local options = context.preferences.options
   local length = context.length
   local buffer = context.buffer
   local hl = context.current_highlights
-  local modified, size = modified_component(context)
-  local modified_padding = string.rep(padding, size)
 
   if not options.show_buffer_close_icons then
     -- If the buffer is modified add an icon, if it isn't pad
     -- the buffer so it doesn't "jump" when it becomes modified i.e. due
     -- to the sudden addition of a new character
+    local modified, size = modified_component(context)
+    local modified_padding = string.rep(padding, size)
     local suffix = buffer.modified and hl.modified .. modified or modified_padding
     component = modified_padding .. context.component .. suffix
     length = context.length + (size * 2)
@@ -682,9 +699,8 @@ local function add_padding(context)
   -- pad each tab smaller than the max tab size to make it consistent
   local difference = options.tab_size - length
   if difference > 0 then
-    local pad = string.rep(padding, math.floor(difference / 2))
-    component = pad .. component .. pad
-    length = length + strwidth(pad) * 2
+    local pad = math.floor(difference / 2)
+    return add_padding({left = pad, right = pad})(context)
   end
   return context:update({ component = component, length = length })
 end
@@ -695,12 +711,8 @@ local function get_buffer_name(ctx)
   local max_length = enforce_regular_tabs(ctx)
   local filename = truncate_filename(ctx.buffer.filename, max_length)
   -- escape filenames that contain "%" as this breaks in statusline patterns
-  filename = filename:gsub("%%", "%%%1") .. padding
+  filename = filename:gsub("%%", "%%%1")
   return ctx:update({ component = filename, length = strwidth(filename) })
-end
-
-local function identity(...)
-  return ...
 end
 
 --- @param preferences BufferlineConfig
@@ -724,13 +736,13 @@ local function render_buffer(preferences, buffer)
   --- length of the component
   ctx = utils.compose(
     get_buffer_name,
-    --- apply diagnostics here since we want the highlight to only apply to the filename
-    add_diagnostics,
     add_group,
+    add_padding({right = 1}),
+    add_diagnostics,
     add_duplicates,
     add_prefix,
     add_numbers,
-    add_padding,
+    add_spacing,
     add_click_action,
     add_indicator,
     add_suffix,
@@ -976,7 +988,6 @@ local function bufferline(preferences)
   end
 
   local has_groups = options.groups and #options.groups > 0
-
   if has_groups then
     state.buffers_by_group, buffers = groups.group_buffers(buffers, options.groups)
   end
