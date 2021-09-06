@@ -56,7 +56,7 @@ end
 ---@param buffers Buffer[]
 ---@param groups Group[]
 function M.group_buffers(buffers, groups)
-  local default_group = {name = UNGROUPED, priority = #groups + 1}
+  local default_group = { name = UNGROUPED, priority = #groups + 1 }
   local list = generate_sublists(#groups + 1)
   local sublists = utils.fold(list, function(accum, buf)
     local group = buf.group or default_group
@@ -87,9 +87,7 @@ function M.component(ctx)
   local icon = group.icon and group.icon .. padding or ""
   local icon_length = api.nvim_strwidth(icon)
   local hl = hls[group.name] or ""
-  local component, length =
-    hl .. icon .. ctx.component .. hls.buffer.hl,
-    ctx.length + icon_length
+  local component, length = hl .. icon .. ctx.component .. hls.buffer.hl, ctx.length + icon_length
   return ctx:update({ component = component, length = length })
 end
 
@@ -228,7 +226,7 @@ function M.add_markers(tabs, grouped_buffers)
     return tabs
   end
   local result = {}
-  local view = require('bufferline.view')
+  local view = require("bufferline.view")
   for _, sublist in ipairs(grouped_buffers) do
     -- FIXME: this function does a Lot of looping this can maybe be consolidated
     local view_tabs = view.buffers_to_tabs(sublist)
@@ -237,7 +235,7 @@ function M.add_markers(tabs, grouped_buffers)
       local group_start, group_end = get_tab(sublist.display_name, buf_group)
       if group_start then
         table.insert(view_tabs, 1, group_start)
-        view_tabs[#view_tabs+1] = group_end
+        view_tabs[#view_tabs + 1] = group_end
       end
     end
     vim.list_extend(result, view_tabs)

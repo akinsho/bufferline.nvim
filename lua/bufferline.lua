@@ -921,12 +921,12 @@ local function render(buffers, tbs, prefs)
     - tabs_length
     - close_length
 
-  local view_tabs = buffers
+  -- FIXME: decide how and when view_tabs should be created
+  local view_tabs = require("bufferline.view").buffers_to_tabs(buffers)
   if prefs.options.groups then
     view_tabs = require("bufferline.groups").add_markers(view_tabs, state.tab_views_by_group)
   end
   local before, current, after = get_sections(view_tabs)
-  --- FIXME: visible buffers should only report the visible buffers/tabpages
   local line, marker, visible_buffers = truncate(before, current, after, available_width, {
     left_count = 0,
     right_count = 0,
@@ -977,9 +977,11 @@ local function bufferline(preferences)
     end
   end
 
+  local has_groups = options.groups and #options.groups > 0
+
   local pick = require("bufferline.pick")
   local duplicates = require("bufferline.duplicates")
-  local groups = require("bufferline.groups")
+  local groups = has_groups and require("bufferline.groups") or nil
 
   pick.reset()
   duplicates.reset()
@@ -996,11 +998,12 @@ local function bufferline(preferences)
       name_formatter = options.name_formatter,
     })
     buf.letter = pick.get(buf)
-    buf.group = groups.find(buf, options.groups)
+    if has_groups then
+      buf.group = groups.find(buf, options.groups)
+    end
     buffers[i] = buf
   end
 
-  local has_groups = options.groups and #options.groups > 0
   if has_groups then
     state.tab_views_by_group, buffers = groups.group_buffers(buffers, options.groups)
   end
