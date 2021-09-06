@@ -665,7 +665,7 @@ end
 ---@return function
 local function add_padding(sides)
   ---@param ctx BufferContext
-  return function (ctx)
+  return function(ctx)
     local left, right = sides.left or 0, sides.right or 0
     local left_p, right_p = string.rep(padding, left), string.rep(padding, right)
     local component = left_p .. ctx.component .. right_p
@@ -700,7 +700,7 @@ local function add_spacing(context)
   local difference = options.tab_size - length
   if difference > 0 then
     local pad = math.floor(difference / 2)
-    return add_padding({left = pad, right = pad})(context)
+    return add_padding({ left = pad, right = pad })(context)
   end
   return context:update({ component = component, length = length })
 end
@@ -737,7 +737,7 @@ local function render_buffer(preferences, buffer)
   ctx = utils.compose(
     get_buffer_name,
     add_group,
-    add_padding({right = 1}),
+    add_padding({ right = 1 }),
     add_diagnostics,
     add_duplicates,
     add_prefix,

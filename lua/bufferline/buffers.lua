@@ -1,14 +1,9 @@
 local fn = vim.fn
---------------------------------
--- Export
---------------------------------
 local M = {}
 
---------------------------------
--- A single buffer
---------------------------------
 ---@alias BufferComponent fun(index: number, buf_count: number): string
 
+-- A single buffer
 ---@class Buffer
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
