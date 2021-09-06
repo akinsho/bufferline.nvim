@@ -184,13 +184,13 @@ end
 ---Create the visual indicators bookending buffer groups
 ---@param name string
 ---@param group Group
----@return ViewTab
----@return ViewTab
+---@return TabView
+---@return TabView
 local function get_tab(name, group)
   if name == UNGROUPED or not group then
     return
   end
-  local ViewTab = require("bufferline.view").ViewTab
+  local TabView = require("bufferline.view").TabView
   local hl_groups = require("bufferline.config").get("highlights")
 
   group.separator = group.separator or {}
@@ -201,14 +201,14 @@ local function get_tab(name, group)
   end
   local indicator, length = group.separator.style(name, group, hl_groups)
 
-  local group_start = ViewTab:new({
+  local group_start = TabView:new({
     type = "group_start",
     length = length,
     component = function()
       return indicator
     end,
   })
-  local group_end = ViewTab:new({
+  local group_end = TabView:new({
     type = "group_end",
     length = strwidth(padding),
     component = function()
@@ -218,9 +218,9 @@ local function get_tab(name, group)
   return group_start, group_end
 end
 
----@param tabs ViewTab[]
+---@param tabs TabView[]
 ---@param grouped_buffers Buffer[][]
----@return ViewTab[]
+---@return TabView[]
 function M.add_markers(tabs, grouped_buffers)
   if vim.tbl_isempty(grouped_buffers) then
     return tabs
@@ -229,16 +229,16 @@ function M.add_markers(tabs, grouped_buffers)
   local view = require("bufferline.view")
   for _, sublist in ipairs(grouped_buffers) do
     -- FIXME: this function does a Lot of looping this can maybe be consolidated
-    local view_tabs = view.buffers_to_tabs(sublist)
+    local tab_views = view.buffers_to_tabs(sublist)
     if sublist.name ~= UNGROUPED and #sublist > 0 then
       local buf_group = sublist[1].group
       local group_start, group_end = get_tab(sublist.display_name, buf_group)
       if group_start then
-        table.insert(view_tabs, 1, group_start)
-        view_tabs[#view_tabs + 1] = group_end
+        table.insert(tab_views, 1, group_start)
+        tab_views[#tab_views + 1] = group_end
       end
     end
-    vim.list_extend(result, view_tabs)
+    vim.list_extend(result, tab_views)
   end
   return result
 end

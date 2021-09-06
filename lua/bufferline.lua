@@ -752,7 +752,7 @@ local function render_buffer(config, buffer)
   --- We return a function from render buffer as we do not yet have access to
   --- information regarding which buffers will actually be rendered
   --- @param index number
-  --- @param next_item ViewTab
+  --- @param next_item TabView
   --- @returns string
   local function render_fn(index, next_item)
     -- NOTE: the component is wrapped in an item -> %(content) so
@@ -790,23 +790,23 @@ local function tab_close_button(icon)
   return "%999X" .. component, strwidth(component)
 end
 
----@param tabs ViewTab[]
----@return ViewTabs
----@return ViewTabs
----@return ViewTabs
+---@param tabs TabView[]
+---@return TabViews
+---@return TabViews
+---@return TabViews
 local function get_sections(tabs)
-  local ViewTabs = require("bufferline.view").ViewTabs
-  local current = ViewTabs:new()
-  local before = ViewTabs:new()
-  local after = ViewTabs:new()
+  local TabViews = require("bufferline.view").TabViews
+  local current = TabViews:new()
+  local before = TabViews:new()
+  local after = TabViews:new()
 
-  for _, view_tab in ipairs(tabs) do
-    if view_tab:current() then
-      current:add(view_tab)
+  for _, tab_view in ipairs(tabs) do
+    if tab_view:current() then
+      current:add(tab_view)
     elseif current.length == 0 then -- We haven't reached the current buffer yet
-      before:add(view_tab)
+      before:add(tab_view)
     else
-      after:add(view_tab)
+      after:add(tab_view)
     end
   end
   return before, current, after
@@ -827,9 +827,9 @@ end
 --- section
 --- 4. Re-check the size, if still too long truncate recursively till it fits
 --- 5. Add the number of truncated buffers as an indicator
----@param before ViewTabs
----@param current ViewTabs
----@param after ViewTabs
+---@param before TabViews
+---@param current TabViews
+---@param after TabViews
 ---@param available_width number
 ---@param marker table
 ---@return string
@@ -921,12 +921,12 @@ local function render(buffers, tbs, prefs)
     - tabs_length
     - close_length
 
-  -- FIXME: decide how and when view_tabs should be created
-  local view_tabs = require("bufferline.view").buffers_to_tabs(buffers)
+  -- FIXME: decide how and when tab_views should be created
+  local tab_views = require("bufferline.view").buffers_to_tabs(buffers)
   if prefs.options.groups then
-    view_tabs = require("bufferline.groups").add_markers(view_tabs, state.tab_views_by_group)
+    tab_views = require("bufferline.groups").add_markers(tab_views, state.tab_views_by_group)
   end
-  local before, current, after = get_sections(view_tabs)
+  local before, current, after = get_sections(tab_views)
   local line, marker, visible_buffers = truncate(before, current, after, available_width, {
     left_count = 0,
     right_count = 0,
