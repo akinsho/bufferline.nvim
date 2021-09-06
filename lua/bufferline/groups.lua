@@ -56,14 +56,15 @@ end
 ---@param buffers Buffer[]
 ---@param groups Group[]
 function M.group_buffers(buffers, groups)
+  local default_group = {name = UNGROUPED, priority = #groups + 1}
   local list = generate_sublists(#groups + 1)
   local sublists = utils.fold(list, function(accum, buf)
-    local name = buf.group and buf.group.name or UNGROUPED
-    local priority = buf.group and buf.group.priority or #groups + 1
-    local sublist = accum[priority]
+    local group = buf.group or default_group
+    local sublist = accum[group.priority]
     if not sublist.name then
-      sublist.name = name
-      sublist.priorty = priority
+      sublist.name = group.name
+      sublist.priorty = group.priority
+      sublist.display_name = group.display_name
     end
     table.insert(sublist, buf)
     return accum
@@ -225,16 +226,16 @@ function M.add_markers(buffers, grouped_buffers)
     return buffers
   end
   local res = {}
-  for _, grp in ipairs(grouped_buffers) do
-    if grp.name ~= UNGROUPED and #grp > 0 then
-      local buf_group = grp[1].group
-      local group_start, group_end = get_tab(buf_group.display_name, buf_group)
+  for _, sublist in ipairs(grouped_buffers) do
+    if sublist.name ~= UNGROUPED and #sublist > 0 then
+      local buf_group = sublist[1].group
+      local group_start, group_end = get_tab(sublist.display_name, buf_group)
       if group_start then
-        table.insert(grp, 1, group_start)
-        table.insert(grp, group_end)
+        table.insert(sublist, 1, group_start)
+        table.insert(sublist, group_end)
       end
     end
-    vim.list_extend(res, grp)
+    vim.list_extend(res, sublist)
   end
   return res
 end
