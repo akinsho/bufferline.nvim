@@ -1,10 +1,6 @@
-_G.__TEST = true
+local utils = require("tests.utils")
 
 -- FIXME: vim.v.vim_did_enter is 0 in all test cases.
-local function vim_enter()
-  vim.cmd("doautocmd VimEnter")
-end
-
 describe("Bufferline tests:", function()
   vim.opt.swapfile = false
   vim.opt.hidden = true
@@ -23,7 +19,7 @@ describe("Bufferline tests:", function()
   describe("render buffer - ", function()
     it("should create corresponding buffers in state", function()
       bufferline.setup()
-      vim_enter()
+      utils.vim_enter()
       vim.cmd("edit test-1.txt")
       vim.cmd("edit test-2.txt")
       local tabline = nvim_bufferline()
@@ -38,7 +34,7 @@ describe("Bufferline tests:", function()
           indicator_icon = icon,
         },
       })
-      vim_enter()
+      utils.vim_enter()
       vim.cmd("edit test.txt")
       local tabline = nvim_bufferline()
       assert.truthy(tabline)
@@ -55,7 +51,7 @@ describe("Bufferline tests:", function()
           end,
         },
       })
-      vim_enter()
+      utils.vim_enter()
       vim.cmd("edit test.txt")
       local tabline = nvim_bufferline()
       assert.truthy(tabline)
@@ -71,7 +67,7 @@ describe("Bufferline tests:", function()
           left_mouse_command = "vertical sbuffer %d",
         },
       })
-      vim_enter()
+      utils.vim_enter()
       bufferline.handle_click(bufnum, "l")
       assert.is_equal(#vim.api.nvim_list_wins(), 2)
     end)
@@ -85,7 +81,7 @@ describe("Bufferline tests:", function()
           end,
         },
       })
-      vim_enter()
+      utils.vim_enter()
       bufferline.handle_click(bufnum, "m")
       assert.is_equal(vim.bo[bufnum].filetype, "test")
     end)
@@ -97,7 +93,7 @@ describe("Bufferline tests:", function()
           right_mouse_command = "setfiletype egg",
         },
       })
-      vim_enter()
+      utils.vim_enter()
       bufferline.handle_click(bufnum, "r")
       assert.is_equal(vim.bo.filetype, "egg")
     end)
@@ -113,7 +109,7 @@ describe("Bufferline tests:", function()
           end,
         },
       })
-      vim_enter()
+      utils.vim_enter()
       bufferline.handle_close_buffer(bufnum)
       assert.is_equal(count, expected)
     end)
