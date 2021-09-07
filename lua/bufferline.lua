@@ -418,7 +418,7 @@ local function get_buffer_highlight(buffer, config)
     hl.close_button = h.close_button.hl
   end
 
-  if buffer.group and buffer.group.highlight then
+  if buffer.group then
     require("bufferline.groups").set_current_hl(buffer, h, hl)
   end
 
@@ -998,7 +998,7 @@ local function bufferline(config)
     })
     buf.letter = pick.get(buf)
     if has_groups then
-      buf.group = groups.find(buf, options.groups)
+      buf.group = groups.get_group_id(buf, options.groups)
     end
     buffers[i] = buf
   end

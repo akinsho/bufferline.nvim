@@ -6,6 +6,9 @@ local strwidth = api.nvim_strwidth
 local utils = require("bufferline.utils")
 local padding = require("bufferline.constants").padding
 
+---@type table<string, Group>
+local user_groups = {}
+
 local UNGROUPED = "ungrouped"
 
 ---@alias GroupSeparator fun(name: string, group:Group, hls: tabl<string, table<string, string>>): string, number
@@ -13,6 +16,7 @@ local UNGROUPED = "ungrouped"
 ---@alias grouper fun(b: Buffer): boolean
 
 ---@class Group
+---@field public id number used for identifying the group in the tabline
 ---@field public name string 'formatted name of the group'
 ---@field public display_name string original name including special characters
 ---@field public fn grouper
@@ -28,16 +32,15 @@ local function format_name(name)
 end
 
 ---Group buffers based on user criteria
+---buffers only carry a copy of the group ID which is then used to retrieve the correct group
 ---@param buffer Buffer
----@param groups Group[]
-function M.find(buffer, groups)
-  if not groups or #groups < 1 then
+function M.get_group_id(buffer)
+  if not user_groups or vim.tbl_isempty(user_groups) then
     return
   end
-  for index, group in ipairs(groups) do
+  for id, group in pairs(user_groups) do
     if type(group.fn) == "function" and group.fn(buffer) then
-      group.priority = group.priority or index
-      return group
+      return id
     end
   end
 end
@@ -54,12 +57,13 @@ end
 ---The aim is to have buffers easily accessible by key as well as a list of sorted and prioritized
 ---buffers for things like navigation
 ---@param buffers Buffer[]
----@param groups Group[]
-function M.group_buffers(buffers, groups)
-  local default_group = { name = UNGROUPED, priority = #groups + 1 }
-  local list = generate_sublists(#groups + 1)
+---@return Buffer[][], Buffer[]
+function M.group_buffers(buffers)
+  local no_of_groups = vim.tbl_count(user_groups)
+  local default_group = { name = UNGROUPED, priority = no_of_groups }
+  local list = generate_sublists(no_of_groups)
   local sublists = utils.fold(list, function(accum, buf)
-    local group = buf.group or default_group
+    local group = user_groups[buf.group] or default_group
     local sublist = accum[group.priority]
     if not sublist.name then
       sublist.name = group.name
@@ -79,7 +83,7 @@ end
 function M.component(ctx)
   local buffer = ctx.buffer
   local hls = ctx.current_highlights
-  local group = buffer.group
+  local group = user_groups[buffer.group]
   if not group then
     return ctx
   end
@@ -104,10 +108,14 @@ function M.setup(config)
   end
 
   local hls = config.highlights
-  for _, group in ipairs(config.options.groups) do
+  for idx, group in ipairs(config.options.groups) do
     local hl = group.highlight
-    group.display_name = group.name
-    group.name = format_name(group.name)
+    user_groups[idx] = vim.tbl_extend("force", group, {
+      id = idx,
+      name = format_name(group.name),
+      priority = group.priority or idx,
+      display_name = group.name,
+    })
     local name = group.name
     if hl and type(hl) == "table" then
       hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
@@ -129,10 +137,11 @@ end
 ---@param highlights table<string, table<string, string>>
 ---@param current_hl table<string, string>
 function M.set_current_hl(buffer, highlights, current_hl)
-  local name = buffer.group and buffer.group.name or nil
-  if not name then
+  local group = user_groups[buffer.group]
+  if not group or not group.name or not group.highlight then
     return
   end
+  local name = group.name
   local hl_name = buffer:current() and fmt("%s_selected", name)
     or buffer:visible() and fmt("%s_visible", name)
     or name
@@ -145,20 +154,20 @@ end
 ---@param callback fun(b: Buffer)
 function M.command(buffers, group_name, callback)
   utils.for_each(buffers, callback, function(buf)
-    return buf.group and group_name and buf.group.name == group_name
+    local buf_group = user_groups[buf.group]
+    return buf_group and group_name and buf_group.name == group_name
   end)
 end
 
 ---Get the names for all bufferline groups
 ---@return string[]
 function M.names()
-  local opts = require("bufferline.config").get("options")
-  if opts.groups == nil then
+  if user_groups == nil then
     return {}
   end
   return vim.tbl_map(function(group)
     return group.name
-  end, opts.groups)
+  end, user_groups)
 end
 
 ---@type GroupSeparator
@@ -183,10 +192,11 @@ end
 
 ---Create the visual indicators bookending buffer groups
 ---@param name string
----@param group Group
+---@param group_id number
 ---@return TabView
 ---@return TabView
-local function get_tab(name, group)
+local function get_tab(name, group_id)
+  local group = user_groups[group_id]
   if name == UNGROUPED or not group then
     return
   end
@@ -227,12 +237,12 @@ function M.add_markers(tabs, grouped_buffers)
   end
   local result = {}
   local view = require("bufferline.view")
+  -- FIXME: this function does a lot of looping this can maybe be consolidated
   for _, sublist in ipairs(grouped_buffers) do
-    -- FIXME: this function does a Lot of looping this can maybe be consolidated
     local tab_views = view.buffers_to_tabs(sublist)
     if sublist.name ~= UNGROUPED and #sublist > 0 then
-      local buf_group = sublist[1].group
-      local group_start, group_end = get_tab(sublist.display_name, buf_group)
+      local buf_group_id = sublist[1].group
+      local group_start, group_end = get_tab(sublist.display_name, buf_group_id)
       if group_start then
         table.insert(tab_views, 1, group_start)
         tab_views[#tab_views + 1] = group_end
