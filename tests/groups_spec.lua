@@ -22,6 +22,22 @@ describe("Group tests - ", function()
     assert.is_equal(vim.tbl_count(groups.user_groups), 2)
   end)
 
+  it("should sanitise invalid names", function()
+    groups.setup({
+      options = {
+        groups = {
+          {
+            name = "test group",
+            matcher = function(buf)
+              return buf.name:includes("dummy")
+            end,
+          },
+        },
+      },
+    })
+    assert.is_equal(groups.user_groups[1].name, "test_group")
+  end)
+
   it("should set highlights on setup", function()
     local config = {
       highlights = {

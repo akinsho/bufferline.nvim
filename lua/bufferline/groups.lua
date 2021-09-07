@@ -32,7 +32,7 @@ local UNGROUPED = "ungrouped"
 --- Remove illegal characters from a group name name
 ---@param name string
 local function format_name(name)
-  return name:gsub("[^%w%s]+", "_")
+  return name:gsub("[^%w]+", "_")
 end
 
 ---Group buffers based on user criteria
