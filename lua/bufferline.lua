@@ -790,14 +790,14 @@ local function tab_close_button(icon)
 end
 
 ---@param tabs TabView[]
----@return TabViews
----@return TabViews
----@return TabViews
+---@return Section
+---@return Section
+---@return Section
 local function get_sections(tabs)
-  local TabViews = require("bufferline.view").TabViews
-  local current = TabViews:new()
-  local before = TabViews:new()
-  local after = TabViews:new()
+  local Section = require("bufferline.entities").Section
+  local current = Section:new()
+  local before = Section:new()
+  local after = Section:new()
 
   for _, tab_view in ipairs(tabs) do
     if tab_view:current() then
@@ -826,9 +826,9 @@ end
 --- section
 --- 4. Re-check the size, if still too long truncate recursively till it fits
 --- 5. Add the number of truncated buffers as an indicator
----@param before TabViews
----@param current TabViews
----@param after TabViews
+---@param before Section
+---@param current Section
+---@param after Section
 ---@param available_width number
 ---@param marker table
 ---@return string
@@ -876,11 +876,11 @@ local function truncate(before, current, after, available_width, marker, visible
   end
 end
 
---- @param buffers Buffer[]
+--- @param tab_views TabView[]
 --- @param tbs table[]
 --- @param prefs table
 --- @return string
-local function render(buffers, tbs, prefs)
+local function render(tab_views, tbs, prefs)
   local options = prefs.options
   local hl = prefs.highlights
   local right_align = "%="
@@ -920,8 +920,6 @@ local function render(buffers, tbs, prefs)
     - tabs_length
     - close_length
 
-  -- FIXME: decide how and when tab_views should be created
-  local tab_views = require("bufferline.view").buffers_to_tabs(buffers)
   if prefs.options.groups then
     local groups = require("bufferline.groups")
     tab_views, state.buffers = groups.add_markers(tab_views, state.buffers_by_group)
@@ -987,11 +985,10 @@ local function bufferline(config)
   ---@type Buffer[]
   local buffers = {}
   local all_diagnostics = require("bufferline.diagnostics").get(options)
-  local Buffer = require("bufferline.buffers").Buffer
+  local Buffer = require("bufferline.entities").Buffer
   for i, buf_id in ipairs(buf_nums) do
-    local name = vim.fn.bufname(buf_id)
     local buf = Buffer:new({
-      path = name,
+      path = vim.fn.bufname(buf_id),
       id = buf_id,
       ordinal = i,
       diagnostics = all_diagnostics[buf_id],

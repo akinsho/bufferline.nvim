@@ -237,7 +237,7 @@ local function get_tab(name, group_id, tab_views)
   if name == UNGROUPED or not group then
     return
   end
-  local TabView = require("bufferline.view").TabView
+  local GroupView = require("bufferline.entities").GroupView
   local hl_groups = require("bufferline.config").get("highlights")
 
   group.separator = group.separator or {}
@@ -248,17 +248,16 @@ local function get_tab(name, group_id, tab_views)
   end
   local count_item = group.hidden and fmt("(%s)", #tab_views) or ""
   local indicator, length = group.separator.style(name, group, hl_groups, count_item)
-
   indicator = require("bufferline.utils").make_clickable("handle_group_click", group.id, indicator)
 
-  local group_start = TabView:new({
+  local group_start = GroupView:new({
     type = "group_start",
     length = length,
     component = function()
       return indicator
     end,
   })
-  local group_end = TabView:new({
+  local group_end = GroupView:new({
     type = "group_end",
     length = strwidth(padding),
     component = function()
@@ -290,12 +289,11 @@ function M.add_markers(tabs, grouped_buffers)
     return tabs
   end
   local result = { bufs = {}, tabs = {} }
-  local view = require("bufferline.view")
   for _, sublist in ipairs(grouped_buffers) do
     local buf_group_id = sublist[1] and sublist[1].group
     local buf_group = user_groups[buf_group_id]
     --- filter out tab views that are hidden
-    local tab_views = not (buf_group and buf_group.hidden) and view.buffers_to_tabs(sublist) or {}
+    local tab_views = not (buf_group and buf_group.hidden) and sublist or {}
     --- Create filtered list of non-hidden buffers
     local buffers = filter_hidden(sublist)
     if sublist.name ~= UNGROUPED and #sublist > 0 then
