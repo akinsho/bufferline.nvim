@@ -52,6 +52,18 @@ function M.join(...)
   end, { ... })
 end
 
+---@generic T
+---@param list T[]
+---@param callback fun(item: T): boolean
+---@return T
+function M.find(list, callback)
+  for _, v in ipairs(list) do
+    if callback(v) then
+      return v
+    end
+  end
+end
+
 --- A function which takes n number of functions and
 --- passes the result of each function to the next
 ---@generic T
@@ -99,10 +111,7 @@ end
 ---@param matcher fun(item: `T`):boolean
 function M.for_each(list, callback, matcher)
   for _, item in ipairs(list) do
-    if matcher == nil then
-      return callback(item)
-    end
-    if matcher(item) then
+    if not matcher or matcher(item) then
       callback(item)
     end
   end

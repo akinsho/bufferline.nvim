@@ -81,6 +81,7 @@ local function refresh()
   vim.cmd("redraw")
 end
 
+---@param bufs number[]
 local function save_positions(bufs)
   local positions = table.concat(bufs, ",")
   vim.g[positions_key] = positions
@@ -1065,12 +1066,18 @@ end
 function M.group_action(name, action)
   assert(name, "A name must be passed to execute a group action")
   local groups = require("bufferline.groups")
+  local group = utils.find(state.tabs_by_group, function(list)
+    return list.name == name
+  end)
   if action == "close" then
-    groups.command(state.tabs, name, function(b)
+    groups.command(group, name, function(b)
       api.nvim_buf_delete(b.id, { force = true })
     end)
+  elseif action == "toggle" then
+    require("bufferline.groups").toggle_hidden(nil, name)
+    refresh()
   elseif type(action) == "function" then
-    groups.command(state.tabs, name, action)
+    groups.command(group, name, action)
   end
 end
 
@@ -1101,6 +1108,12 @@ local function setup_commands()
       nargs = 1,
       name = "BufferLineGroupClose",
       cmd = 'group_action(<q-args>, "close")',
+      complete = "complete_groups",
+    },
+    {
+      nargs = 1,
+      name = "BufferLineGroupToggle",
+      cmd = 'group_action(<q-args>, "toggle")',
       complete = "complete_groups",
     },
   }

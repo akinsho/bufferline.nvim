@@ -164,16 +164,26 @@ end
 ---@param group_name string
 ---@param callback fun(b: Buffer)
 function M.command(buffers, group_name, callback)
-  utils.for_each(buffers, callback, function(buf)
-    local buf_group = user_groups[buf.group]
-    return buf_group and group_name and buf_group.name == group_name
-  end)
+  utils.for_each(buffers, callback)
+end
+
+---@param name string
+---@return Group
+local function group_by_name(name)
+  for _, grp in pairs(user_groups) do
+    if grp.name == name then
+      return grp
+    end
+  end
 end
 
 ---@param group_id number
-function M.toggle_hidden(group_id)
-  local group = user_groups[group_id]
-  group.hidden = not group.hidden
+---@param name string
+function M.toggle_hidden(group_id, name)
+  local group = group_id and user_groups[group_id] or group_by_name(name)
+  if group then
+    group.hidden = not group.hidden
+  end
 end
 
 ---Get the names for all bufferline groups
