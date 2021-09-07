@@ -196,14 +196,22 @@ function M.toggle_hidden(group_id, name)
 end
 
 ---Get the names for all bufferline groups
+---@param include_empty boolean
 ---@return string[]
-function M.names()
+function M.names(include_empty)
   if user_groups == nil then
     return {}
   end
-  return vim.tbl_map(function(group)
-    return group.name
-  end, user_groups)
+  local names = {}
+  for _, group in ipairs(user_groups) do
+    local group_tabs = utils.find(tabs_by_group, function(item)
+      return item.id == group.id
+    end)
+    if include_empty or (group_tabs and #group_tabs > 0) then
+      table.insert(names, group.name)
+    end
+  end
+  return names
 end
 
 ---@param name string,
