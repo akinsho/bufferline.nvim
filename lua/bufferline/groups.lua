@@ -32,7 +32,7 @@ local UNGROUPED = "ungrouped"
 --- Remove illegal characters from a group name name
 ---@param name string
 local function format_name(name)
-  return name:gsub("%s+", "_")
+  return name:gsub("[^%w%s]+", "_")
 end
 
 ---Group buffers based on user criteria
@@ -122,14 +122,14 @@ function M.setup(config)
   local hls = config.highlights
   for idx, group in ipairs(config.options.groups) do
     local hl = group.highlight
+    local name = format_name(group.name)
     user_groups[idx] = vim.tbl_extend("force", group, {
       id = idx,
       hidden = false,
-      name = format_name(group.name),
+      name = name,
       priority = group.priority or idx,
       display_name = group.name,
     })
-    local name = group.name
     if hl and type(hl) == "table" then
       hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
         guibg = hls.buffer_selected.guibg,
