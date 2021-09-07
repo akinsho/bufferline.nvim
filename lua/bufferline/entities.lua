@@ -37,10 +37,9 @@ end
 function TabView:new(t)
   assert(t.type, "all view tabs must have a type")
   self.length = t.length or 0
+  self.focusable = true
   if t.focusable ~= nil then
     self.focusable = t.focusable
-  else
-    self.focusable = true
   end
   self.component = t.component or not_implemented("component")
   setmetatable(t, self)
@@ -120,7 +119,7 @@ function Buffer:new(buf)
   buf.modified = vim.bo[buf.id].modified
   buf.buftype = vim.bo[buf.id].buftype
   buf.extension = fn.fnamemodify(buf.path, ":e")
-  buf.icon, self.icon_highlight = require("bufferline.utils").get_icon(buf)
+  buf.icon, buf.icon_highlight = require("bufferline.utils").get_icon(buf)
   local name = "[No Name]"
   if buf.path and #buf.path > 0 then
     name = fn.fnamemodify(buf.path, ":p:t")
