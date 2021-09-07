@@ -22,6 +22,8 @@ i.e.
 ---@class TabView
 ---@field length number
 ---@field component function
+---@field hidden boolean
+---@field focusable boolean
 ---@field type "'group_end'" | "'group_start'" | "'buffer'"
 local TabView = {}
 
@@ -35,6 +37,11 @@ end
 function TabView:new(t)
   assert(t.type, "all view tabs must have a type")
   self.length = t.length or 0
+  if t.focusable ~= nil then
+    self.focusable = t.focusable
+  else
+    self.focusable = true
+  end
   self.component = t.component or not_implemented("component")
   setmetatable(t, self)
   self.__index = self
@@ -56,21 +63,22 @@ end
 ---@return Buffer
 function TabView:as_buffer()
   if self.type ~= "buffer" then
-    --- TODO: add proper debug log
-    print(fmt("This entity is not a buffer it is a %s", self.type))
+    require("bufferline.utils").log.debug(
+      fmt("[bufferline]: This entity is not a buffer, it is a %s.", self.type)
+    )
     return
   end
   return self
 end
 
-local GroupView = TabView:new({ type = "group" })
+local GroupView = TabView:new({ type = "group", focusable = false })
 
-function GroupView:new(grp)
-  assert(grp, "The type should be passed to a group on create")
-  self.type = grp.type or self.type
-  setmetatable(grp, self)
+function GroupView:new(group)
+  assert(group, "The type should be passed to a group on create")
+  self.type = group.type or self.type
+  setmetatable(group, self)
   self.__index = self
-  return grp
+  return group
 end
 
 function GroupView:current()

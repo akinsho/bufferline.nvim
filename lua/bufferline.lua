@@ -21,14 +21,19 @@ _G.__bufferline = __bufferline or {}
 -----------------------------------------------------------------------------//
 -- State
 -----------------------------------------------------------------------------//
+---@class BufferlineState
+---@field __tabs TabView[]
+---@field __visible_tabs TabView[]
+---@field tabs TabView[]
+---@field visible_tabs TabView[]
+---@field custom_sort number[]
 local state = {
   is_picking = false,
-  ---@type TabView[]
-  tabs = {},
-  ---@type TabView[]
-  visible_tabs = {},
-  ---@type number[]
   custom_sort = nil,
+  __tabs = {},
+  __visible_tabs = {},
+  tabs = {},
+  visible_tabs = {},
 }
 
 -----------------------------------------------------------------------------//
@@ -802,12 +807,14 @@ local function get_sections(tabs)
   local after = Section:new()
 
   for _, tab_view in ipairs(tabs) do
-    if tab_view:current() then
-      current:add(tab_view)
-    elseif current.length == 0 then -- We haven't reached the current buffer yet
-      before:add(tab_view)
-    else
-      after:add(tab_view)
+    if not tab_view.hidden then
+      if tab_view:current() then
+        current:add(tab_view)
+      elseif current.length == 0 then -- We haven't reached the current buffer yet
+        before:add(tab_view)
+      else
+        after:add(tab_view)
+      end
     end
   end
   return before, current, after
@@ -878,6 +885,17 @@ local function truncate(before, current, after, available_width, marker, visible
   end
 end
 
+---@param list TabView[]
+---@return TabView[]
+local function filter_focusable(list)
+  return utils.fold({}, function(accum, item)
+    if item.focusable ~= false then
+      table.insert(accum, item)
+    end
+    return accum
+  end, list)
+end
+
 --- @param tab_views TabView[]
 --- @param tabpages table[]
 --- @param prefs BufferlineConfig
@@ -923,17 +941,24 @@ local function render(tab_views, tabpages, prefs)
     - close_length
 
   if prefs.options.groups then
-    tab_views, state.tabs = require("bufferline.groups").add_markers(tab_views)
+    tab_views = require("bufferline.groups").add_markers(tab_views)
   end
+
   local before, current, after = get_sections(tab_views)
-  local line, marker, visible_buffers = truncate(before, current, after, available_width, {
+  local line, marker, visible_tabs = truncate(before, current, after, available_width, {
     left_count = 0,
     right_count = 0,
     left_element_size = left_element_size,
     right_element_size = right_element_size,
   })
 
-  state.visible_tabs = visible_buffers
+  --- Store full copies of the (visible) tabs
+  state.__tabs = tab_views
+  state.__visible_tabs = visible_tabs
+
+  --- Store copies without focusable elements
+  state.tabs = filter_focusable(tab_views)
+  state.visible_tabs = filter_focusable(visible_tabs)
 
   if marker.left_count > 0 then
     local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
@@ -967,7 +992,7 @@ local function bufferline(config)
     buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
   end
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
-  local all_tabs = require("bufferline.tabpages").get(options.separator_style, config)
+  local tabpages = require("bufferline.tabpages").get(options.separator_style, config)
 
   if not options.always_show_bufferline then
     if #buf_nums == 1 then
@@ -1011,13 +1036,12 @@ local function bufferline(config)
   end
 
   local deduplicated = duplicates.mark(buffers)
-  --- Assign buffers to state
-  state.tabs = vim.tbl_map(function(buf)
+  buffers = vim.tbl_map(function(buf)
     buf.component, buf.length = render_buffer(config, buf)
     return buf
   end, deduplicated)
 
-  return render(state.tabs, all_tabs, config)
+  return render(buffers, tabpages, config)
 end
 
 function M.toggle_bufferline()

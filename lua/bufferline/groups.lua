@@ -286,22 +286,8 @@ local function get_tab(name, group_id, tab_views)
   return group_start, group_end
 end
 
----Remove all hidden buffers from a list
----@param list Buffer[]
----@return Buffer[]
-local function filter_hidden(list)
-  return utils.fold({}, function(accum, buf)
-    if not user_groups[buf.group] or not user_groups[buf.group].hidden then
-      accum[#accum + 1] = buf
-    end
-    return accum
-  end, list)
-end
-
--- FIXME: this function does a lot of looping that can maybe be consolidated
---- This function returns the tabs to be rendered ie. including group marker which
---- should not be selectable as well as a list of all tabs. This is so that
---- we can show all components but navigation ignores unfocusable tabs
+-- FIXME:
+-- 1. this function does a lot of looping that can maybe be consolidated
 ---@param tabs TabView[]
 ---@return TabView[]
 ---@return TabView[]
@@ -309,14 +295,17 @@ function M.add_markers(tabs)
   if vim.tbl_isempty(tabs_by_group) then
     return tabs
   end
-  local result = { bufs = {}, tabs = {} }
+  local result = {}
   for _, sublist in ipairs(tabs_by_group) do
     local buf_group_id = sublist.id
     local buf_group = user_groups[buf_group_id]
     --- filter out tab views that are hidden
-    local tab_views = not (buf_group and buf_group.hidden) and sublist or {}
-    --- Create filtered list of non-hidden buffers
-    local buffers = filter_hidden(sublist)
+    local tab_views = (not buf_group or not buf_group.hidden) and sublist
+      or utils.map(function(t)
+        t.hidden = true
+        return t
+      end, sublist)
+
     if sublist.name ~= UNGROUPED and #sublist > 0 then
       local group_start, group_end = get_tab(sublist.display_name, buf_group_id, sublist)
       if group_start then
@@ -327,10 +316,9 @@ function M.add_markers(tabs)
     --- NOTE: there is no easy way to flatten a list of liss of non-scalar values like these
     ---lists of objects since each object needs to be checked that it is in fact an object
     ---not a list
-    vim.list_extend(result.bufs, buffers)
-    vim.list_extend(result.tabs, tab_views)
+    vim.list_extend(result, tab_views)
   end
-  return result.tabs, result.bufs
+  return result
 end
 
 return M

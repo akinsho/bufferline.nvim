@@ -1,7 +1,7 @@
 ---------------------------------------------------------------------------//
 -- HELPERS
 ---------------------------------------------------------------------------//
-local M = {}
+local M = { log = {} }
 
 local fmt = string.format
 local fn = vim.fn
@@ -9,6 +9,13 @@ local api = vim.api
 
 function M.is_test()
   return __TEST
+end
+
+--- TODO: add proper debug log
+---@param msg string
+function M.log.debug(msg)
+  local info = debug.getinfo(2, "S")
+  print(fmt("[bufferline]: %s\n%s\n%s", msg, info.linedefined, info.short_src))
 end
 
 ---Takes a list of items and runs the callback
@@ -50,6 +57,17 @@ function M.join(...)
   return M.fold("", function(accum, item)
     return accum .. item
   end, { ... })
+end
+
+---@generic T
+---@param callback fun(item: T): T
+---@param list T[]
+---@return T[]
+function M.map(callback, list)
+  return M.fold({}, function(accum, item)
+    table.insert(accum, callback(item))
+    return accum
+  end, list)
 end
 
 ---@generic T
