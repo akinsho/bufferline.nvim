@@ -299,6 +299,9 @@ local function filter_hidden(list)
 end
 
 -- FIXME: this function does a lot of looping that can maybe be consolidated
+--- This function returns the tabs to be rendered ie. including group marker which
+--- should not be selectable as well as a list of all tabs. This is so that
+--- we can show all components but navigation ignores unfocusable tabs
 ---@param tabs TabView[]
 ---@return TabView[]
 ---@return TabView[]

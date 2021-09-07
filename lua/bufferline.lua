@@ -879,10 +879,10 @@ local function truncate(before, current, after, available_width, marker, visible
 end
 
 --- @param tab_views TabView[]
---- @param tbs table[]
---- @param prefs table
+--- @param tabpages table[]
+--- @param prefs BufferlineConfig
 --- @return string
-local function render(tab_views, tbs, prefs)
+local function render(tab_views, tabpages, prefs)
   local options = prefs.options
   local hl = prefs.highlights
   local right_align = "%="
@@ -895,8 +895,8 @@ local function render(tab_views, tbs, prefs)
 
   if options.show_tab_indicators then
     -- Add the length of the tabs + close components to total length
-    if #tbs > 1 then
-      for _, t in pairs(tbs) do
+    if #tabpages > 1 then
+      for _, t in pairs(tabpages) do
         if not vim.tbl_isempty(t) then
           tabs_length = tabs_length + t.length
           tab_components = tab_components .. t.component
@@ -923,8 +923,7 @@ local function render(tab_views, tbs, prefs)
     - close_length
 
   if prefs.options.groups then
-    local groups = require("bufferline.groups")
-    tab_views, state.tabs = groups.add_markers(tab_views, state.tabs_by_group)
+    tab_views, state.tabs = require("bufferline.groups").add_markers(tab_views)
   end
   local before, current, after = get_sections(tab_views)
   local line, marker, visible_buffers = truncate(before, current, after, available_width, {
@@ -980,7 +979,6 @@ local function bufferline(config)
   local pick = require("bufferline.pick")
   local duplicates = require("bufferline.duplicates")
   local has_groups = require("bufferline.config").groups_enabled()
-  local groups = has_groups and require("bufferline.groups") or nil
 
   pick.reset()
   duplicates.reset()
@@ -998,7 +996,7 @@ local function bufferline(config)
     })
     buf.letter = pick.get(buf)
     if has_groups then
-      buf.group = groups.get_group_id(buf, options.groups)
+      buf.group = require("bufferline.groups").get_group_id(buf)
     end
     buffers[i] = buf
   end
@@ -1081,7 +1079,7 @@ end
 ---@param cmd_line string
 ---@param cursor_pos number
 ---@return string[]
-function _G.__bufferline.complete_groups(arg_lead, cmd_line, cursor_pos)
+function __bufferline.complete_groups(arg_lead, cmd_line, cursor_pos)
   return require("bufferline.groups").names()
 end
 
