@@ -11,7 +11,7 @@ local user_groups = {}
 
 local UNGROUPED = "ungrouped"
 
----@alias GroupSeparator fun(name: string, group:Group, hls: tabl<string, table<string, string>>): string, number
+---@alias GroupSeparator fun(name: string, group:Group, hls: table<string, table<string, string>>, count_item: string): string, number
 ---@alias GroupSeparators table<string, GroupSeparator>
 ---@alias grouper fun(b: Buffer): boolean
 
@@ -24,6 +24,7 @@ local UNGROUPED = "ungrouped"
 ---@field public priority number
 ---@field public highlight table<string, string>
 ---@field public icon string
+---@field public hidden boolean
 
 --- Remove illegal characters from a group name name
 ---@param name string
@@ -38,13 +39,15 @@ function M.get_group_id(buffer)
   if not user_groups or vim.tbl_isempty(user_groups) then
     return
   end
+  local ungrouped_id
   for id, group in pairs(user_groups) do
+    ungrouped_id = group.name == UNGROUPED and id or nil
     if type(group.fn) == "function" and group.fn(buffer) then
       return id
     end
   end
   -- Assign the buffer to the ungrouped group since it matches nohing else
-  return vim.tbl_count(user_groups)
+  return ungrouped_id
 end
 
 local function generate_sublists(size)
@@ -69,6 +72,7 @@ function M.group_buffers(buffers)
     if not sublist.name then
       sublist.name = group.name
       sublist.priorty = group.priority
+      sublist.hidden = group.hidden
       sublist.display_name = group.display_name
     end
     table.insert(sublist, buf)
@@ -113,6 +117,7 @@ function M.setup(config)
     local hl = group.highlight
     user_groups[idx] = vim.tbl_extend("force", group, {
       id = idx,
+      hidden = false,
       name = format_name(group.name),
       priority = group.priority or idx,
       display_name = group.name,
@@ -165,6 +170,12 @@ function M.command(buffers, group_name, callback)
   end)
 end
 
+---@param group_id number
+function M.toggle_hidden(group_id)
+  local group = user_groups[group_id]
+  group.hidden = not group.hidden
+end
+
 ---Get the names for all bufferline groups
 ---@return string[]
 function M.names()
@@ -176,32 +187,52 @@ function M.names()
   end, user_groups)
 end
 
----@type GroupSeparator
-function M.separator.pill(name, _, hls)
+---@param name string,
+---@param group Group,
+---@param hls  table<string, table<string, string>>
+---@param count string
+---@return string, number
+function M.separator.pill(name, group, hls, count)
   local bg_hl = hls.fill.hl
   local sep_hl = hls.group_separator.hl
   local label_hl = hls.group_label.hl
   local left, right = "█", "█"
-  local indicator = utils.join(bg_hl, padding, sep_hl, left, label_hl, name, sep_hl, right, padding)
-  local length = utils.measure(left, right, name, padding, padding)
+  local indicator = utils.join(
+    bg_hl,
+    padding,
+    sep_hl,
+    left,
+    label_hl,
+    name,
+    count,
+    sep_hl,
+    right,
+    padding
+  )
+  local length = utils.measure(left, right, name, count, padding, padding)
   return indicator, length
 end
 
----@type GroupSeparator
-function M.separator.tab(name, _, hls)
+---@param name string,
+---@param group Group,
+---@param hls  table<string, table<string, string>>
+---@param count string
+---@return string, number
+function M.separator.tab(name, group, hls, count)
   local hl = hls.fill.hl
   local indicator_hl = hls.buffer.hl
-  local length = strwidth(name) + (4 * strwidth(padding))
-  local indicator = utils.join(hl, padding, indicator_hl, padding, name, padding, hl, padding)
+  local length = utils.measure(name, string.rep(padding, 4), count)
+  local indicator = utils.join(hl, padding, indicator_hl, padding, name, count, hl, padding)
   return indicator, length
 end
 
 ---Create the visual indicators bookending buffer groups
 ---@param name string
 ---@param group_id number
+---@param tab_views TabView[]
 ---@return TabView
 ---@return TabView
-local function get_tab(name, group_id)
+local function get_tab(name, group_id, tab_views)
   local group = user_groups[group_id]
   if name == UNGROUPED or not group then
     return
@@ -215,7 +246,10 @@ local function get_tab(name, group_id)
   if not group.separator.style then
     return
   end
-  local indicator, length = group.separator.style(name, group, hl_groups)
+  local count_item = group.hidden and fmt("(%s)", #tab_views) or ""
+  local indicator, length = group.separator.style(name, group, hl_groups, count_item)
+
+  indicator = require("bufferline.utils").make_clickable("handle_group_click", group.id, indicator)
 
   local group_start = TabView:new({
     type = "group_start",
@@ -234,29 +268,50 @@ local function get_tab(name, group_id)
   return group_start, group_end
 end
 
+---Remove all hidden buffers from a list
+---@param list Buffer[]
+---@return Buffer[]
+local function filter_hidden(list)
+  return utils.fold({}, function(accum, buf)
+    if not user_groups[buf.group] or not user_groups[buf.group].hidden then
+      accum[#accum + 1] = buf
+    end
+    return accum
+  end, list)
+end
+
+-- FIXME: this function does a lot of looping that can maybe be consolidated
 ---@param tabs TabView[]
 ---@param grouped_buffers Buffer[][]
+---@return TabView[]
 ---@return TabView[]
 function M.add_markers(tabs, grouped_buffers)
   if vim.tbl_isempty(grouped_buffers) then
     return tabs
   end
-  local result = {}
+  local result = { bufs = {}, tabs = {} }
   local view = require("bufferline.view")
-  -- FIXME: this function does a lot of looping this can maybe be consolidated
   for _, sublist in ipairs(grouped_buffers) do
-    local tab_views = view.buffers_to_tabs(sublist)
+    local buf_group_id = sublist[1] and sublist[1].group
+    local buf_group = user_groups[buf_group_id]
+    --- filter out tab views that are hidden
+    local tab_views = not (buf_group and buf_group.hidden) and view.buffers_to_tabs(sublist) or {}
+    --- Create filtered list of non-hidden buffers
+    local buffers = filter_hidden(sublist)
     if sublist.name ~= UNGROUPED and #sublist > 0 then
-      local buf_group_id = sublist[1].group
-      local group_start, group_end = get_tab(sublist.display_name, buf_group_id)
+      local group_start, group_end = get_tab(sublist.display_name, buf_group_id, sublist)
       if group_start then
         table.insert(tab_views, 1, group_start)
         tab_views[#tab_views + 1] = group_end
       end
     end
-    vim.list_extend(result, tab_views)
+    --- NOTE: there is no easy way to flatten a list of liss of non-scalar values like these
+    ---lists of objects since each object needs to be checked that it is in fact an object
+    ---not a list
+    vim.list_extend(result.bufs, buffers)
+    vim.list_extend(result.tabs, tab_views)
   end
-  return result
+  return result.tabs, result.bufs
 end
 
 return M

@@ -19,7 +19,7 @@ end
 ---@return T
 function M.fold(accum, callback, list)
   assert(accum and callback, "An initial value and callback must be passed to fold")
-  for i, v in pairs(list) do
+  for i, v in ipairs(list) do
     accum = callback(accum, v, i)
   end
   return accum
@@ -222,6 +222,17 @@ do
       return devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
     end
   end
+end
+
+---Add click action to a component
+---@param func_name string
+---@param id number
+---@param component string
+---@return string
+function M.make_clickable(func_name, id, component)
+  -- v:lua does not support function references in vimscript so
+  -- the only way to implement this is using autoload vimscript functions
+  return "%" .. id .. "@nvim_bufferline#" .. func_name .. "@" .. component
 end
 
 return M

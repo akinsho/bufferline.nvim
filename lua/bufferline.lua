@@ -147,17 +147,6 @@ end
 -- User commands
 ---------------------------------------------------------------------------//
 
----Add click action to a component
----@param func_name string
----@param buf number
----@param component string
----@return string
-local function make_clickable(func_name, buf, component)
-  -- v:lua does not support function references in vimscript so
-  -- the only way to implement this is using autoload vimscript functions
-  return "%" .. buf .. "@nvim_bufferline#" .. func_name .. "@" .. component
-end
-
 ---Handle a user "command" which can be a string or a function
 ---@param command string|function
 ---@param buf_id string
@@ -170,6 +159,12 @@ local function handle_user_command(command, buf_id)
   elseif type(command) == "string" then
     vim.cmd(fmt(command, buf_id))
   end
+end
+
+---@param group_id number
+function M.handle_group_click(group_id)
+  require("bufferline.groups").toggle_hidden(group_id)
+  refresh()
 end
 
 ---@param buf_id number
@@ -517,7 +512,7 @@ local function close_icon(buf_id, context)
 
   local symbol = buffer_close_icon .. padding
   local size = strwidth(symbol)
-  local component = make_clickable(
+  local component = require("bufferline.utils").make_clickable(
     "handle_close_buffer",
     buf_id,
     -- the %X works as a closing label. @see :h tabline
@@ -656,7 +651,11 @@ end
 --- @return BufferContext
 local function add_click_action(context)
   return context:update({
-    component = make_clickable("handle_click", context.buffer.id, context.component),
+    component = require("bufferline.utils").make_clickable(
+      "handle_click",
+      context.buffer.id,
+      context.component
+    ),
   })
 end
 
@@ -924,7 +923,8 @@ local function render(buffers, tbs, prefs)
   -- FIXME: decide how and when tab_views should be created
   local tab_views = require("bufferline.view").buffers_to_tabs(buffers)
   if prefs.options.groups then
-    tab_views = require("bufferline.groups").add_markers(tab_views, state.buffers_by_group)
+    local groups = require("bufferline.groups")
+    tab_views, state.buffers = groups.add_markers(tab_views, state.buffers_by_group)
   end
   local before, current, after = get_sections(tab_views)
   local line, marker, visible_buffers = truncate(before, current, after, available_width, {
