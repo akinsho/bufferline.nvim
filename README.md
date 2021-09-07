@@ -28,6 +28,7 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
 - [Feature overview](#feature-overview)
   - [LSP indicators](#lsp-indicators)
   - [Conditional buffer based LSP indicators](#conditional-buffer-based-lsp-indicators)
+  - [Groups](#groups)
   - [Regular tab sizes](#regular-tab-sizes)
   - [Numbers](#numbers)
   - [Sorting](#sorting)
@@ -336,6 +337,52 @@ end
 
 The first bufferline shows `diagnostic.lua` as the currently opened `current` buffer. It has LSP reported errors, but they don't show up in the bufferline.
 The second bufferline shows `500-nvim-bufferline.lua` as the currently opened `current` buffer. Because the 'faulty' `diagnostic.lua` buffer has now transitioned from `current` to `visible`, the LSP indicator does show up.
+
+### Groups
+
+![groups](https://user-images.githubusercontent.com/22454918/132225763-1bfeb6cb-40e1-414b-8355-05726778b8b8.png)
+
+The buffers this plugin shows can be grouped based on a users configuration. Groups are a way of allowing a user to visual related buffers in clusters
+as well as operating on them together e.g. by clicking the group indicator all grouped buffers can be hidden. They are partially inspired by
+google chrome's tabs as well as centaur tab's groups.
+
+In order to group buffers specify a list of groups in your config e.g.
+
+```lua
+groups = {
+  {
+    name = "Tests" -- Mandatory
+    highlight = {gui = "underline", guisp = "blue"} -- Optional
+    priority = 2 -- determines where it will appear relative to other groups (Optional)
+    icon = "" -- Optional
+    fn = function(buf) -- Mandatory
+      return buf.filename:match('%_test') or buf.filename:match('%_spec')
+    end,
+  }
+  {
+    name = "Docs"
+    highlight = {gui = "undercurl", guisp = "green"}
+    fn = function(buf)
+      return buf.filename:match('%.md') or buf.filename:match('%.txt')
+    end,
+    separator = { -- Optional
+      style = require('bufferline.groups').separator.tab
+    },
+  }
+}
+```
+
+Grouped buffers can also be interacted with using `BufferLineGroupClose <tab>` which will close all buffers in this group
+or using the `require('bufferline').group_action` functionality.
+
+e.g.
+```lua
+function _G.__group_open()
+  require('bufferline').group_action(<GROUP_NAME>, function(buf)
+    vim.cmd('vsplit '..buf.path)
+  end)
+end
+```
 
 ### Regular tab sizes
 
