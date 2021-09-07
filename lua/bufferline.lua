@@ -29,8 +29,6 @@ local state = {
   visible_tabs = {},
   ---@type number[]
   custom_sort = nil,
-  ---@type TabView[][]
-  tabs_by_group = {},
 }
 
 -----------------------------------------------------------------------------//
@@ -1006,7 +1004,7 @@ local function bufferline(config)
   end
 
   if has_groups then
-    state.tabs_by_group, buffers = groups.group_buffers(buffers, options.groups)
+    buffers = require("bufferline.groups").sort_by_groups(buffers)
   end
 
   -- if the user has reshuffled the buffers manually don't try and sort them
@@ -1060,24 +1058,22 @@ local function setup_autocommands(preferences)
   utils.augroup({ BufferlineColors = autocommands })
 end
 
+---@alias group_actions '"close"' | '"toggle"'
 ---Execute an action on a group of buffers
 ---@param name string
----@param action 'close' | fun(b: Buffer)
+---@param action group_actions | fun(b: Buffer)
 function M.group_action(name, action)
   assert(name, "A name must be passed to execute a group action")
   local groups = require("bufferline.groups")
-  local group = utils.find(state.tabs_by_group, function(list)
-    return list.name == name
-  end)
   if action == "close" then
-    groups.command(group, name, function(b)
+    groups.command(name, function(b)
       api.nvim_buf_delete(b.id, { force = true })
     end)
   elseif action == "toggle" then
     require("bufferline.groups").toggle_hidden(nil, name)
     refresh()
   elseif type(action) == "function" then
-    groups.command(group, name, action)
+    groups.command(name, action)
   end
 end
 

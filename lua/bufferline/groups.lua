@@ -9,6 +9,9 @@ local padding = require("bufferline.constants").padding
 ---@type table<string, Group>
 local user_groups = {}
 
+---@type TabView[][]
+local tabs_by_group = {}
+
 local UNGROUPED = "ungrouped"
 
 ---@alias GroupSeparator fun(name: string, group:Group, hls: table<string, table<string, string>>, count_item: string): string, number
@@ -58,18 +61,21 @@ local function generate_sublists(size)
   return list
 end
 
----Save the current buffer groups
----The aim is to have buffers easily accessible by key as well as a list of sorted and prioritized
----buffers for things like navigation
+--- Save the current buffer groups
+--- The aim is to have buffers easily accessible by key as well as a list of sorted and prioritized
+--- buffers for things like navigation. This function takes advantage of lua's ability
+--- to sort string keys as well as numerical keys in a table, this way each sublist has
+--- not only the group information but contains it's buffers
 ---@param buffers Buffer[]
----@return Buffer[][], Buffer[]
-function M.group_buffers(buffers)
+---@return Buffer[]
+function M.sort_by_groups(buffers)
   local no_of_groups = vim.tbl_count(user_groups)
   local list = generate_sublists(no_of_groups)
   local sublists = utils.fold(list, function(accum, buf)
     local group = user_groups[buf.group]
     local sublist = accum[group.priority]
     if not sublist.name then
+      sublist.id = group.id
       sublist.name = group.name
       sublist.priorty = group.priority
       sublist.hidden = group.hidden
@@ -78,7 +84,8 @@ function M.group_buffers(buffers)
     table.insert(sublist, buf)
     return accum
   end, buffers)
-  return sublists, utils.array_concat(unpack(sublists))
+  tabs_by_group = sublists
+  return utils.array_concat(unpack(sublists))
 end
 
 ---Add group styling to the buffer component
@@ -160,11 +167,13 @@ function M.set_current_hl(buffer, highlights, current_hl)
 end
 
 ---Execute a command on each buffer of a group
----@param buffers Buffer[]
 ---@param group_name string
 ---@param callback fun(b: Buffer)
-function M.command(buffers, group_name, callback)
-  utils.for_each(buffers, callback)
+function M.command(group_name, callback)
+  local group = utils.find(tabs_by_group, function(list)
+    return list.name == group_name
+  end)
+  utils.for_each(group, callback)
 end
 
 ---@param name string
@@ -291,16 +300,15 @@ end
 
 -- FIXME: this function does a lot of looping that can maybe be consolidated
 ---@param tabs TabView[]
----@param grouped_buffers Buffer[][]
 ---@return TabView[]
 ---@return TabView[]
-function M.add_markers(tabs, grouped_buffers)
-  if vim.tbl_isempty(grouped_buffers) then
+function M.add_markers(tabs)
+  if vim.tbl_isempty(tabs_by_group) then
     return tabs
   end
   local result = { bufs = {}, tabs = {} }
-  for _, sublist in ipairs(grouped_buffers) do
-    local buf_group_id = sublist[1] and sublist[1].group
+  for _, sublist in ipairs(tabs_by_group) do
+    local buf_group_id = sublist.id
     local buf_group = user_groups[buf_group_id]
     --- filter out tab views that are hidden
     local tab_views = not (buf_group and buf_group.hidden) and sublist or {}
