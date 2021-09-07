@@ -22,8 +22,6 @@ _G.__bufferline = __bufferline or {}
 -- State
 -----------------------------------------------------------------------------//
 ---@class BufferlineState
----@field __tabs TabView[]
----@field __visible_tabs TabView[]
 ---@field tabs TabView[]
 ---@field visible_tabs TabView[]
 ---@field custom_sort number[]
@@ -887,9 +885,9 @@ end
 
 ---@param list TabView[]
 ---@return TabView[]
-local function filter_focusable(list)
+local function filter_invisible(list)
   return utils.fold({}, function(accum, item)
-    if item.focusable ~= false then
+    if item.focusable ~= false and not item.hidden then
       table.insert(accum, item)
     end
     return accum
@@ -952,13 +950,9 @@ local function render(tab_views, tabpages, prefs)
     right_element_size = right_element_size,
   })
 
-  --- Store full copies of the (visible) tabs
-  state.__tabs = tab_views
-  state.__visible_tabs = visible_tabs
-
-  --- Store copies without focusable elements
-  state.tabs = filter_focusable(tab_views)
-  state.visible_tabs = filter_focusable(visible_tabs)
+  --- Store copies without focusable/hidden elements
+  state.tabs = filter_invisible(tab_views)
+  state.visible_tabs = filter_invisible(visible_tabs)
 
   if marker.left_count > 0 then
     local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
