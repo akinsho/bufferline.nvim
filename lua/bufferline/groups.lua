@@ -19,7 +19,7 @@ local UNGROUPED = "ungrouped"
 ---@field public id number used for identifying the group in the tabline
 ---@field public name string 'formatted name of the group'
 ---@field public display_name string original name including special characters
----@field public fn grouper
+---@field public matcher grouper
 ---@field public separator GroupSeparators
 ---@field public priority number
 ---@field public highlight table<string, string>
@@ -42,7 +42,7 @@ function M.get_group_id(buffer)
   local ungrouped_id
   for id, group in pairs(user_groups) do
     ungrouped_id = group.name == UNGROUPED and id or nil
-    if type(group.fn) == "function" and group.fn(buffer) then
+    if type(group.matcher) == "function" and group.matcher(buffer) then
       return id
     end
   end
