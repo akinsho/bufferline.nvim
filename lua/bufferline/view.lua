@@ -13,9 +13,9 @@ local TabView = {}
 
 function TabView:new(t)
   self.__index = self
-  assert(t.type, 'all view tabs must have a type')
-  assert(t.component, 'all view tabs must have a component')
-  assert(t.length, 'all view tabs must have a length')
+  assert(t.type, "all view tabs must have a type")
+  assert(t.component, "all view tabs must have a component")
+  assert(t.length, "all view tabs must have a length")
   return setmetatable(t, self)
 end
 
@@ -34,7 +34,7 @@ end
 ---Convert a buffer to a TabView
 ---@param buf Buffer
 function TabView:from_buffer(buf)
-  assert(buf, string.format('A buffer must be passed in: %s', vim.inspect(buf)))
+  assert(buf, string.format("A buffer must be passed in: %s", vim.inspect(buf)))
   return TabView:new({
     item = buf,
     type = "buffer",
@@ -61,7 +61,7 @@ end
 ---@field length number
 local TabViews = {}
 
----create a segment of view tabs
+---Create a segment of tab views
 ---@param n TabViews
 ---@return TabViews
 function TabViews:new(n)

@@ -15,6 +15,7 @@ local user_config = {}
 ---@field public modified_icon string
 ---@field public close_icon string
 ---@field public close_command string
+---@field public custom_filter fun(buf: number, bufnums: number[]): boolean
 ---@field public left_mouse_command string | function
 ---@field public right_mouse_command string | function
 ---@field public middle_mouse_command string | function
