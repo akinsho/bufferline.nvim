@@ -14,6 +14,7 @@ Settings...............................: |bufferline-settings|
 Styling................................: |bufferline-styling|
 Numbers................................: |bufferline-numbers|
 LSP Diagnostics........................: |bufferline-diagnostics|
+Groups.................................: |bufferline-groups|
 Sorting................................: |bufferline-sorting|
 Filtering..............................: |bufferline-filtering|
 Commands...............................: |bufferline-commands|
@@ -82,6 +83,7 @@ The available settings are: >
             diagnostics_indicator = function(count, level)
               return "("..count..")"
             end
+            groups = {} -- see :h bufferline-groups for details
             show_buffer_icons = true | false,
             show_buffer_close_icons = true | false,
             show_close_icon = true | false,
@@ -179,6 +181,58 @@ a custom function in your setup.
 The highlighting for the filename if there is an error can be changed by
 replacing the highlights for `error`, `error_visible`, `error_selected`,
 `warning`, `warning_visible`, `warning_selected`.
+
+==============================================================================
+GROUPS                                                      *bufferline-groups*
+
+The buffers this plugin shows can be grouped based on a users configuration.
+Groups are a way of allowing a user to visual related buffers in clusters as
+well as operating on them together e.g. by clicking the group indicator all
+grouped buffers can be hidden. They are partially inspired by google chrome's
+tabs as well as centaur tab's groups.
+
+In order to group buffers specify a list of groups in your config e.g.
+
+>
+    groups = {
+        {
+            name = "Tests" -- Mandatory
+            highlight = {gui = "underline", guisp = "blue"} -- Optional
+            priority = 2 -- determines where it will appear relative to other groups (Optional)
+            icon = "" -- Optional
+            matcher = function(buf) -- Mandatory
+            return buf.filename:match('%_test') or buf.filename:match('%_spec')
+            end,
+        }
+        {
+            name = "Docs"
+            highlight = {gui = "undercurl", guisp = "green"}
+            matcher = function(buf)
+            return buf.filename:match('%.md') or buf.filename:match('%.txt')
+            end,
+            separator = { -- Optional
+            style = require('bufferline.groups').separator.tab
+            },
+        }
+    }
+<
+
+Grouped buffers can also be interacted with using `BufferLineGroupClose <tab>`
+which will close all buffers in this group or using the
+`require('bufferline').group_action` functionality.
+
+e.g.
+>
+    function _G.__group_open()
+        require('bufferline').group_action(<GROUP_NAME>, function(buf)
+            vim.cmd('vsplit '..buf.path)
+        end)
+    end
+<
+
+Buffers in a group can also be hidden using the `BufferLineGroupToggle <tab>`
+which will hide all buffers matching that group in the bufferline till they
+it is toggled back to visible.
 
 ==============================================================================
 REGULAR TAB SIZES                                  *bufferline-regular-tabs*

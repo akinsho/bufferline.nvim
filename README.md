@@ -385,6 +385,14 @@ function _G.__group_open()
 end
 ```
 
+#### Toggling groups
+
+![bufferline_group_toggle](https://user-images.githubusercontent.com/22454918/132410772-0a4c0b95-63bb-4281-8a4e-a652458c3f0f.gif)
+
+Buffers in a group can also be hidden using the `BufferLineGroupToggle <tab>`
+which will hide all buffers matching that group in the bufferline till they
+it is toggled back to visible.
+
 ### Regular tab sizes
 
 Generally this plugin enforces a minimum tab size so that the buffer line
