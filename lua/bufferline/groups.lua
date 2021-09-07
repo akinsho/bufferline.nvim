@@ -84,7 +84,11 @@ function M.sort_by_groups(buffers)
     table.insert(sublist, buf)
     return accum
   end, buffers)
-  tabs_by_group = sublists
+  --- FIXME: I specifically update the existing value rather than replace it so it is update in tests
+  --- although a second loop should not be necessary, but I'm too tired to debug this
+  for i, l in ipairs(sublists) do
+    tabs_by_group[i] = l
+  end
   return utils.array_concat(unpack(sublists))
 end
 
@@ -327,6 +331,11 @@ function M.add_markers(tabs)
     vim.list_extend(result, tab_views)
   end
   return result
+end
+
+if utils.is_test() then
+  M.user_groups = user_groups
+  M.tabs_by_group = tabs_by_group
 end
 
 return M
