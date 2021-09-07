@@ -23,37 +23,37 @@ _G.__bufferline = __bufferline or {}
 -----------------------------------------------------------------------------//
 local state = {
   is_picking = false,
-  ---@type Buffer[]
-  buffers = {},
-  ---@type Buffer[]
-  visible_buffers = {},
+  ---@type TabView[]
+  tabs = {},
+  ---@type TabView[]
+  visible_tabs = {},
   ---@type number[]
   custom_sort = nil,
-  ---@type Buffer[][]
-  buffers_by_group = {},
+  ---@type TabView[][]
+  tabs_by_group = {},
 }
 
 -----------------------------------------------------------------------------//
 -- Context
 -----------------------------------------------------------------------------//
 
----@class BufferContext
+---@class RenderContext
 ---@field length number
 ---@field component string
 ---@field preferences BufferlineConfig
 ---@field current_highlights table<string, table<string, string>>
----@field buffer Buffer
+---@field tab TabView
 ---@field separators table<string, string>
----@type BufferContext
+---@type RenderContext
 local Context = {}
 
----@param ctx BufferContext
----@return BufferContext
+---@param ctx RenderContext
+---@return RenderContext
 function Context:new(ctx)
-  assert(ctx.buffer, "A buffer is required to create a context")
+  assert(ctx.tab, "A tab view entity is required to create a context")
   assert(ctx.preferences, "The user's preferences are required to create a context")
   self.length = ctx.length or 0
-  self.buffer = ctx.buffer
+  self.tab = ctx.tab
   self.preferences = ctx.preferences
   self.component = ctx.component or ""
   self.separators = ctx.component or { left = "", right = "" }
@@ -61,8 +61,8 @@ function Context:new(ctx)
   return setmetatable(ctx, self)
 end
 
----@param o BufferContext
----@return BufferContext
+---@param o RenderContext
+---@return RenderContext
 function Context:update(o)
   for k, v in pairs(o) do
     if v ~= nil then
@@ -199,9 +199,9 @@ end
 ---@param index number
 ---@param func fun(num: number)
 function M.buf_exec(index, func)
-  local target = state.visible_buffers[index]
+  local target = state.visible_tabs[index]
   if target and type(func) == "function" then
-    func(target, state.visible_buffers)
+    func(target, state.visible_tabs)
   end
 end
 
@@ -213,8 +213,9 @@ local function select_buffer_apply(func)
 
   local char = vim.fn.getchar()
   local letter = vim.fn.nr2char(char)
-  for _, buf in pairs(state.buffers) do
-    if letter == buf.letter then
+  for _, item in pairs(state.tabs) do
+    local buf = item:as_buffer()
+    if buf and letter == buf.letter then
       func(buf.id)
     end
   end
@@ -242,7 +243,7 @@ end
 ---@param absolute boolean whether or not to use the buffers absolute position or visible positions
 function M.go_to_buffer(num, absolute)
   num = type(num) == "string" and tonumber(num) or num
-  local list = absolute and state.buffers or state.visible_buffers
+  local list = absolute and state.tabs or state.visible_tabs
   local buf = list[num]
   if buf then
     vim.cmd(fmt("buffer %d", buf.id))
@@ -253,8 +254,9 @@ local function get_current_buf_index()
   local current = api.nvim_get_current_buf()
   local index
 
-  for i, buf in ipairs(state.buffers) do
-    if buf.id == current then
+  for i, item in ipairs(state.tabs) do
+    local buf = item:as_buffer()
+    if buf and buf.id == current then
       index = i
       break
     end
@@ -277,12 +279,12 @@ function M.move(direction)
     return utils.echoerr("Unable to find buffer to move, sorry")
   end
   local next_index = index + direction
-  if next_index >= 1 and next_index <= #state.buffers then
-    local cur_buf = state.buffers[index]
-    local destination_buf = state.buffers[next_index]
-    state.buffers[next_index] = cur_buf
-    state.buffers[index] = destination_buf
-    state.custom_sort = get_buf_ids(state.buffers)
+  if next_index >= 1 and next_index <= #state.tabs then
+    local cur_buf = state.tabs[index]
+    local destination_buf = state.tabs[next_index]
+    state.tabs[next_index] = cur_buf
+    state.tabs[index] = destination_buf
+    state.custom_sort = get_buf_ids(state.tabs)
     local opts = require("bufferline.config").get("options")
     if opts.persist_buffer_sort then
       save_positions(state.custom_sort)
@@ -296,7 +298,7 @@ function M.cycle(direction)
   if not index then
     return
   end
-  local length = #state.buffers
+  local length = #state.tabs
   local next_index = index + direction
 
   if next_index <= length and next_index >= 1 then
@@ -307,7 +309,8 @@ function M.cycle(direction)
     next_index = 1
   end
 
-  local next = state.buffers[next_index]
+  local item = state.tabs[next_index]
+  local next = item:as_buffer()
 
   if not next then
     return utils.echoerr("This buffer does not exist")
@@ -324,14 +327,14 @@ function M.close_in_direction(direction)
   if not index then
     return
   end
-  local length = #state.buffers
+  local length = #state.tabs
   if
     not (index == length and direction == "right") and not (index == 1 and direction == "left")
   then
     local start = direction == "left" and 1 or index + 1
     local _end = direction == "left" and index - 1 or length
     ---@type Buffer[]
-    local bufs = vim.list_slice(state.buffers, start, _end)
+    local bufs = vim.list_slice(state.tabs, start, _end)
     for _, buf in ipairs(bufs) do
       api.nvim_buf_delete(buf.id, { force = true })
     end
@@ -341,12 +344,12 @@ end
 --- sorts all buffers
 --- @param sort_by string|function
 function M.sort_buffers_by(sort_by)
-  if next(state.buffers) == nil then
+  if next(state.tabs) == nil then
     return utils.echoerr("Unable to find buffers to sort, sorry")
   end
 
-  require("bufferline.sorters").sort_buffers(sort_by, state.buffers)
-  state.custom_sort = get_buf_ids(state.buffers)
+  require("bufferline.sorters").sort_buffers(sort_by, state.tabs)
+  state.custom_sort = get_buf_ids(state.tabs)
   local opts = require("bufferline.config").get("options")
   if opts.persist_buffer_sort then
     save_positions(state.custom_sort)
@@ -521,17 +524,17 @@ local function close_icon(buf_id, context)
   return component, size
 end
 
---- @param context BufferContext
+--- @param context RenderContext
 local function modified_component(context)
   local modified_icon = context.preferences.options.modified_icon
   local modified_section = modified_icon .. padding
   return modified_section, strwidth(modified_section)
 end
 
---- @param context BufferContext
---- @return BufferContext
+--- @param context RenderContext
+--- @return RenderContext
 local function add_indicator(context)
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local length = context.length
   local component = context.component
   local hl = context.preferences.highlights
@@ -557,12 +560,12 @@ local function add_indicator(context)
   return context:update({ component = component, length = length })
 end
 
---- @param context BufferContext
---- @return BufferContext
+--- @param context RenderContext
+--- @return RenderContext
 local function add_prefix(context)
   local component = context.component
   local options = context.preferences.options
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local hl = context.current_highlights
   local length = context.length
 
@@ -576,11 +579,11 @@ local function add_prefix(context)
   return context:update({ component = component, length = length })
 end
 
---- @param context BufferContext
---- @return BufferContext
+--- @param context RenderContext
+--- @return RenderContext
 local function add_suffix(context)
   local component = context.component
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local hl = context.current_highlights
   local length = context.length
   local options = context.preferences.options
@@ -598,10 +601,10 @@ end
 
 --- TODO: We increment the buffer length by the separator although the final
 --- buffer will not have a separator so we are technically off by 1
---- @param context BufferContext
---- @return BufferContext
+--- @param context RenderContext
+--- @return RenderContext
 local function add_separators(context)
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local length = context.length
   local hl = context.preferences.highlights
   local style = context.preferences.options.separator_style
@@ -629,12 +632,12 @@ end
 -- if we are enforcing regular tab size then all tabs will try and fit
 -- into the maximum tab size. If not we enforce a minimum tab size
 -- and allow tabs to be larger than the max.
----@param context BufferContext
+---@param context RenderContext
 ---@return number
 local function enforce_regular_tabs(context)
   local _, modified_size = modified_component(context)
   local options = context.preferences.options
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local icon_size = strwidth(buffer.icon)
   local padding_size = strwidth(padding) * 2
   local max_length = options.max_name_length
@@ -647,13 +650,13 @@ local function enforce_regular_tabs(context)
   return options.tab_size - modified_size - icon_size - padding_size
 end
 
---- @param context BufferContext
---- @return BufferContext
+--- @param context RenderContext
+--- @return RenderContext
 local function add_click_action(context)
   return context:update({
     component = require("bufferline.utils").make_clickable(
       "handle_click",
-      context.buffer.id,
+      context.tab:as_buffer().id,
       context.component
     ),
   })
@@ -663,7 +666,7 @@ end
 ---@param sides table<'"left"' | '"right"', number>
 ---@return function
 local function add_padding(sides)
-  ---@param ctx BufferContext
+  ---@param ctx RenderContext
   return function(ctx)
     local left, right = sides.left or 0, sides.right or 0
     local left_p, right_p = string.rep(padding, left), string.rep(padding, right)
@@ -676,13 +679,13 @@ local function identity(...)
   return ...
 end
 
---- @param context BufferContext
---- @return BufferContext
+--- @param context RenderContext
+--- @return RenderContext
 local function add_spacing(context)
   local component = context.component
   local options = context.preferences.options
   local length = context.length
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local hl = context.current_highlights
 
   if not options.show_buffer_close_icons then
@@ -704,11 +707,11 @@ local function add_spacing(context)
   return context:update({ component = component, length = length })
 end
 
----@param ctx BufferContext
----@return BufferContext
+---@param ctx RenderContext
+---@return RenderContext
 local function get_buffer_name(ctx)
   local max_length = enforce_regular_tabs(ctx)
-  local filename = truncate_filename(ctx.buffer.filename, max_length)
+  local filename = truncate_filename(ctx.tab:as_buffer().filename, max_length)
   -- escape filenames that contain "%" as this breaks in statusline patterns
   filename = filename:gsub("%%", "%%%1")
   return ctx:update({ component = filename, length = strwidth(filename) })
@@ -719,7 +722,7 @@ end
 --- @return BufferComponent,number
 local function render_buffer(config, buffer)
   local ctx = Context:new({
-    buffer = buffer,
+    tab = buffer,
     preferences = config,
     current_highlights = get_buffer_highlight(buffer, config),
   })
@@ -922,7 +925,7 @@ local function render(tab_views, tbs, prefs)
 
   if prefs.options.groups then
     local groups = require("bufferline.groups")
-    tab_views, state.buffers = groups.add_markers(tab_views, state.buffers_by_group)
+    tab_views, state.tabs = groups.add_markers(tab_views, state.tabs_by_group)
   end
   local before, current, after = get_sections(tab_views)
   local line, marker, visible_buffers = truncate(before, current, after, available_width, {
@@ -932,7 +935,7 @@ local function render(tab_views, tbs, prefs)
     right_element_size = right_element_size,
   })
 
-  state.visible_buffers = visible_buffers
+  state.visible_tabs = visible_buffers
 
   if marker.left_count > 0 then
     local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
@@ -1002,7 +1005,7 @@ local function bufferline(config)
   end
 
   if has_groups then
-    state.buffers_by_group, buffers = groups.group_buffers(buffers, options.groups)
+    state.tabs_by_group, buffers = groups.group_buffers(buffers, options.groups)
   end
 
   -- if the user has reshuffled the buffers manually don't try and sort them
@@ -1012,12 +1015,12 @@ local function bufferline(config)
 
   local deduplicated = duplicates.mark(buffers)
   --- Assign buffers to state
-  state.buffers = vim.tbl_map(function(buf)
+  state.tabs = vim.tbl_map(function(buf)
     buf.component, buf.length = render_buffer(config, buf)
     return buf
   end, deduplicated)
 
-  return render(state.buffers, all_tabs, config)
+  return render(state.tabs, all_tabs, config)
 end
 
 function M.toggle_bufferline()
@@ -1063,11 +1066,11 @@ function M.group_action(name, action)
   assert(name, "A name must be passed to execute a group action")
   local groups = require("bufferline.groups")
   if action == "close" then
-    groups.command(state.buffers, name, function(b)
+    groups.command(state.tabs, name, function(b)
       api.nvim_buf_delete(b.id, { force = true })
     end)
   elseif type(action) == "function" then
-    groups.command(state.buffers, name, action)
+    groups.command(state.tabs, name, action)
   end
 end
 

@@ -53,6 +53,16 @@ function TabView:end_component()
   return self.type == "group_end"
 end
 
+---@return Buffer
+function TabView:as_buffer()
+  if self.type ~= "buffer" then
+    --- TODO: add proper debug log
+    print(fmt("This entity is not a buffer it is a %s", self.type))
+    return
+  end
+  return self
+end
+
 local GroupView = TabView:new({ type = "group" })
 
 function GroupView:new(grp)

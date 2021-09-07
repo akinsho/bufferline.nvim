@@ -77,7 +77,7 @@ function M.get(opts)
   return setmetatable(result, mt)
 end
 
----@param context BufferContext
+---@param context RenderContext
 function M.component(context)
   local opts = context.preferences.options
   if is_disabled(opts.diagnostics) then
@@ -86,14 +86,15 @@ function M.component(context)
 
   local user_indicator = opts.diagnostics_indicator
   local highlights = context.current_highlights
-  local diagnostics = context.buffer.diagnostics
+  local buf = context.tab:as_buffer()
+  local diagnostics = buf.diagnostics
   if diagnostics.count < 1 then
     return context
   end
 
   local indicator = " (" .. diagnostics.count .. ")"
   if user_indicator and type(user_indicator) == "function" then
-    local ctx = { buffer = context.buffer }
+    local ctx = { buffer = buf }
     indicator = user_indicator(diagnostics.count, diagnostics.level, diagnostics.errors, ctx)
   end
 

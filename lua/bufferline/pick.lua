@@ -29,12 +29,12 @@ function M.get(buf)
   end
 end
 
----@param ctx BufferContext
+---@param ctx RenderContext
 function M.component(ctx)
   local padding = require("bufferline.constants").padding
   local utils = require("bufferline.utils")
 
-  local buffer = ctx.buffer
+  local buffer = ctx.tab:as_buffer()
   local length = ctx.length
   local component = ctx.component
   local options = ctx.preferences.options

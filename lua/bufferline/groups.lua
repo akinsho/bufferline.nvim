@@ -82,11 +82,11 @@ function M.group_buffers(buffers)
 end
 
 ---Add group styling to the buffer component
----@param ctx BufferContext
+---@param ctx RenderContext
 ---@return string
 ---@return number
 function M.component(ctx)
-  local buffer = ctx.buffer
+  local buffer = ctx.tab:as_buffer()
   local hls = ctx.current_highlights
   local group = user_groups[buffer.group]
   if not group then

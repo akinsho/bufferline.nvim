@@ -110,10 +110,10 @@ local function prefix(buffer, numbers, numbers_style)
   return num
 end
 
---- @param context BufferContext
---- @return BufferContext
+--- @param context RenderContext
+--- @return RenderContext
 function M.component(context)
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local component = context.component
   local options = context.preferences.options
   local length = context.length
