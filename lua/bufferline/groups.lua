@@ -43,6 +43,8 @@ function M.get_group_id(buffer)
       return id
     end
   end
+  -- Assign the buffer to the ungrouped group since it matches nohing else
+  return vim.tbl_count(user_groups)
 end
 
 local function generate_sublists(size)
@@ -60,10 +62,9 @@ end
 ---@return Buffer[][], Buffer[]
 function M.group_buffers(buffers)
   local no_of_groups = vim.tbl_count(user_groups)
-  local default_group = { name = UNGROUPED, priority = no_of_groups }
   local list = generate_sublists(no_of_groups)
   local sublists = utils.fold(list, function(accum, buf)
-    local group = user_groups[buf.group] or default_group
+    local group = user_groups[buf.group]
     local sublist = accum[group.priority]
     if not sublist.name then
       sublist.name = group.name
@@ -129,6 +130,11 @@ function M.setup(config)
       })
     end
   end
+  local no_of_groups = #config.options.groups
+  user_groups[no_of_groups + 1] = {
+    name = UNGROUPED,
+    priority = no_of_groups + 1,
+  }
 end
 
 --- Add the current highlight for a specific buffer
