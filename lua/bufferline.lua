@@ -29,8 +29,8 @@ local state = {
   visible_buffers = {},
   ---@type number[]
   custom_sort = nil,
-  ---@type table<string, Buffer>
-  tab_views_by_group = {},
+  ---@type Buffer[][]
+  buffers_by_group = {},
 }
 
 -----------------------------------------------------------------------------//
@@ -924,7 +924,7 @@ local function render(buffers, tbs, prefs)
   -- FIXME: decide how and when tab_views should be created
   local tab_views = require("bufferline.view").buffers_to_tabs(buffers)
   if prefs.options.groups then
-    tab_views = require("bufferline.groups").add_markers(tab_views, state.tab_views_by_group)
+    tab_views = require("bufferline.groups").add_markers(tab_views, state.buffers_by_group)
   end
   local before, current, after = get_sections(tab_views)
   local line, marker, visible_buffers = truncate(before, current, after, available_width, {
@@ -959,7 +959,7 @@ local function render(buffers, tbs, prefs)
   )
 end
 
---- @param config table
+--- @param config BufferlineConfig
 --- @return string
 local function bufferline(config)
   local options = config.options
@@ -984,6 +984,7 @@ local function bufferline(config)
 
   pick.reset()
   duplicates.reset()
+  ---@type Buffer[]
   local buffers = {}
   local all_diagnostics = require("bufferline.diagnostics").get(options)
   local Buffer = require("bufferline.buffers").Buffer
@@ -1004,7 +1005,7 @@ local function bufferline(config)
   end
 
   if has_groups then
-    state.tab_views_by_group, buffers = groups.group_buffers(buffers, options.groups)
+    state.buffers_by_group, buffers = groups.group_buffers(buffers, options.groups)
   end
 
   -- if the user has reshuffled the buffers manually don't try and sort them
