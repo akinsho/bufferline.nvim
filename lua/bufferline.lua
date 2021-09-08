@@ -28,8 +28,14 @@ _G.__bufferline = __bufferline or {}
 local state = {
   is_picking = false,
   custom_sort = nil,
-  tabs = {},
-  visible_tabs = {},
+  tabs = {
+    ---@type TabView[]
+    complete = {},
+  },
+  visible_tabs = {
+    ---@type TabView[]
+    complete = {},
+  },
 }
 
 -----------------------------------------------------------------------------//
@@ -250,18 +256,19 @@ function M.go_to_buffer(num, absolute)
   end
 end
 
-local function get_current_buf_index()
+---@param opts table
+---@return number
+---@return Buffer
+local function get_current_buf_index(opts)
+  opts = opts or { include_hidden = false }
+  local list = opts.include_hidden and state.tabs.complete or state.tabs
   local current = api.nvim_get_current_buf()
-  local index
-
-  for i, item in ipairs(state.tabs) do
+  for index, item in ipairs(list) do
     local buf = item:as_buffer()
     if buf and buf.id == current then
-      index = i
-      break
+      return index, buf
     end
   end
-  return index
 end
 
 --- @param bufs Buffer[]
@@ -949,8 +956,16 @@ local function render(tab_views, tabpages, prefs)
   })
 
   --- Store copies without focusable/hidden elements
-  state.tabs = filter_invisible(tab_views)
-  state.visible_tabs = filter_invisible(visible_tabs)
+  --- in the main body of the table as well as the full unfiltered
+  --- list in the complete key within this field
+  state.tabs = {
+    complete = tab_views,
+    unpack(filter_invisible(tab_views)),
+  }
+  state.visible_tabs = {
+    complete = visible_tabs,
+    unpack(filter_invisible(visible_tabs)),
+  }
 
   if marker.left_count > 0 then
     local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
@@ -1013,7 +1028,7 @@ local function bufferline(config)
     })
     buf.letter = pick.get(buf)
     if has_groups then
-      buf.group = require("bufferline.groups").get_group_id(buf)
+      buf.group = require("bufferline.groups").set_id(buf)
     end
     buffers[i] = buf
   end
@@ -1069,6 +1084,14 @@ local function setup_autocommands(preferences)
     })
   end
 
+  if options.groups and options.groups.toggle_hidden_on_enter then
+    table.insert(autocommands, {
+      "BufEnter",
+      "*",
+      "lua require'bufferline'.show_hidden_group()",
+    })
+  end
+
   utils.augroup({ BufferlineColors = autocommands })
 end
 
@@ -1088,6 +1111,18 @@ function M.group_action(name, action)
     refresh()
   elseif type(action) == "function" then
     groups.command(name, action)
+  end
+end
+
+function M.show_hidden_group()
+  local _, buf = get_current_buf_index({ include_hidden = true })
+  if not buf then
+    return
+  end
+  local groups = require("bufferline.groups")
+  local group = groups.get_by_id(buf.group)
+  if group.hidden then
+    groups.set_hidden(group.id, false)
   end
 end
 

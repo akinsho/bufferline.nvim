@@ -38,7 +38,7 @@ end
 ---Group buffers based on user criteria
 ---buffers only carry a copy of the group ID which is then used to retrieve the correct group
 ---@param buffer Buffer
-function M.get_group_id(buffer)
+function M.set_id(buffer)
   if not user_groups or vim.tbl_isempty(user_groups) then
     return
   end
@@ -51,6 +51,12 @@ function M.get_group_id(buffer)
   end
   -- Assign the buffer to the ungrouped group since it matches nohing else
   return ungrouped_id
+end
+
+---@param id number
+---@return Group
+function M.get_by_id(id)
+  return user_groups[id]
 end
 
 local function generate_sublists(size)
@@ -187,6 +193,16 @@ local function group_by_name(name)
     if grp.name == name then
       return grp
     end
+  end
+end
+
+---@param id string
+---@param value boolean
+function M.set_hidden(id, value)
+  assert(id, "You must pass in a group ID to set its state")
+  local grp = user_groups[id]
+  if grp then
+    grp.hidden = value
   end
 end
 
