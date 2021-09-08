@@ -10,11 +10,13 @@ describe("Group tests - ", function()
     groups.setup({
       options = {
         groups = {
-          {
-            name = "test-group",
-            matcher = function(buf)
-              return buf.name:includes("dummy")
-            end,
+          items = {
+            {
+              name = "test-group",
+              matcher = function(buf)
+                return buf.name:includes("dummy")
+              end,
+            },
           },
         },
       },
@@ -26,11 +28,13 @@ describe("Group tests - ", function()
     groups.setup({
       options = {
         groups = {
-          {
-            name = "test group",
-            matcher = function(buf)
-              return buf.name:includes("dummy")
-            end,
+          items = {
+            {
+              name = "test group",
+              matcher = function(buf)
+                return buf.name:includes("dummy")
+              end,
+            },
           },
         },
       },
@@ -56,12 +60,14 @@ describe("Group tests - ", function()
       },
       options = {
         groups = {
-          {
-            name = "test-group",
-            highlight = { guifg = "red" },
-            matcher = function(buf)
-              return buf.name:includes("dummy")
-            end,
+          items = {
+            {
+              name = "test-group",
+              highlight = { guifg = "red" },
+              matcher = function(buf)
+                return buf.name:includes("dummy")
+              end,
+            },
           },
         },
       },
@@ -78,11 +84,13 @@ describe("Group tests - ", function()
     groups.setup({
       options = {
         groups = {
-          {
-            name = "test-group",
-            matcher = function(buf)
-              return buf.name:includes("dummy")
-            end,
+          items = {
+            {
+              name = "test-group",
+              matcher = function(buf)
+                return buf.name:includes("dummy")
+              end,
+            },
           },
         },
       },
