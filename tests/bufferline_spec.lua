@@ -24,7 +24,7 @@ describe("Bufferline tests:", function()
       vim.cmd("edit test-2.txt")
       local tabline = nvim_bufferline()
       assert.truthy(tabline)
-      assert.is.equal(vim.tbl_count(bufferline._state.tabs), 2)
+      assert.is.equal(#bufferline._state.tabs, 2)
     end)
 
     it("should allow configuring the indicator icon", function()
@@ -141,7 +141,7 @@ describe("Bufferline tests:", function()
       vim.cmd("edit e.txt")
       nvim_bufferline()
 
-      assert.is.equal(5, vim.tbl_count(bufferline._state.tabs))
+      assert.is.equal(5, #bufferline._state.tabs)
 
       local bufs = vim.api.nvim_list_bufs()
       assert.is_equal(5, #bufs)

@@ -59,11 +59,11 @@ function TabView:end_component()
   return self.type == "group_end"
 end
 
----@return Buffer
+---@return Buffer?
 function TabView:as_buffer()
   if self.type ~= "buffer" then
     require("bufferline.utils").log.debug(
-      fmt("[bufferline]: This entity is not a buffer, it is a %s.", self.type)
+      fmt("This entity is not a buffer, it is a %s.", self.type)
     )
     return
   end
