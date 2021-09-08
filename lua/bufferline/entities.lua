@@ -15,6 +15,8 @@ i.e.
 - An end_component method - to indicate if the component represents the end of a block
 - [length] - the size of the string component minus highlights which don't render
 - [type] - a string enum representing the type of an entity
+
+* this list is not exhaustive
 --]]
 
 --- The base class that represents a visual tab in the tabline
@@ -29,9 +31,7 @@ local TabView = {}
 
 ---@param field string
 local function not_implemented(field)
-  return function()
-    error(fmt("%s is not implemented yet", field))
-  end
+  error(fmt("%s is not implemented yet", field))
 end
 
 function TabView:new(t)
@@ -41,7 +41,9 @@ function TabView:new(t)
   if t.focusable ~= nil then
     self.focusable = t.focusable
   end
-  self.component = t.component or not_implemented("component")
+  self.component = t.component or function()
+    not_implemented("component")
+  end
   setmetatable(t, self)
   self.__index = self
   return t
@@ -50,7 +52,7 @@ end
 -- TODO: this should be handled based on the type of entity
 -- e.g. a buffer should report if it's current but other things shouldn't
 function TabView:current()
-  not_implemented("current")()
+  not_implemented("current")
 end
 
 ---Determine if the current view tab should be treated as the end of a section
@@ -74,6 +76,7 @@ local GroupView = TabView:new({ type = "group", focusable = false })
 
 function GroupView:new(group)
   assert(group, "The type should be passed to a group on create")
+  assert(group.component, "a group MUST have a component")
   self.type = group.type or self.type
   setmetatable(group, self)
   self.__index = self
