@@ -24,18 +24,16 @@ _G.__bufferline = __bufferline or {}
 ---@class BufferlineState
 ---@field tabs TabView[]
 ---@field visible_tabs TabView[]
+---@field __tabs TabView[]
+---@field __visible_tabs TabView[]
 ---@field custom_sort number[]
 local state = {
   is_picking = false,
   custom_sort = nil,
-  tabs = {
-    ---@type TabView[]
-    complete = {},
-  },
-  visible_tabs = {
-    ---@type TabView[]
-    complete = {},
-  },
+  __tabs = {},
+  __visible_tabs = {},
+  tabs = {},
+  visible_tabs = {},
 }
 
 -----------------------------------------------------------------------------//
@@ -219,7 +217,7 @@ local function select_buffer_apply(func)
 
   local char = vim.fn.getchar()
   local letter = vim.fn.nr2char(char)
-  for _, item in pairs(state.tabs) do
+  for _, item in ipairs(state.tabs) do
     local buf = item:as_buffer()
     if buf and letter == buf.letter then
       func(buf.id)
@@ -261,7 +259,7 @@ end
 ---@return Buffer
 local function get_current_buf_index(opts)
   opts = opts or { include_hidden = false }
-  local list = opts.include_hidden and state.tabs.complete or state.tabs
+  local list = opts.include_hidden and state.__tabs or state.tabs
   local current = api.nvim_get_current_buf()
   for index, item in ipairs(list) do
     local buf = item:as_buffer()
@@ -955,17 +953,13 @@ local function render(tab_views, tabpages, prefs)
     right_element_size = right_element_size,
   })
 
+  --- store the full unfiltered lists
+  state.__tabs = tab_views
+  state.__visible_tabs = visible_tabs
+
   --- Store copies without focusable/hidden elements
-  --- in the main body of the table as well as the full unfiltered
-  --- list in the complete key within this field
-  state.tabs = {
-    complete = tab_views,
-    unpack(filter_invisible(tab_views)),
-  }
-  state.visible_tabs = {
-    complete = visible_tabs,
-    unpack(filter_invisible(visible_tabs)),
-  }
+  state.tabs = filter_invisible(tab_views)
+  state.visible_tabs = filter_invisible(visible_tabs)
 
   if marker.left_count > 0 then
     local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
