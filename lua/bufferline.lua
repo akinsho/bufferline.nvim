@@ -899,11 +899,11 @@ end
 
 --- @param tab_views TabView[]
 --- @param tabpages table[]
---- @param prefs BufferlineConfig
+--- @param config BufferlineConfig
 --- @return string
-local function render(tab_views, tabpages, prefs)
-  local options = prefs.options
-  local hl = prefs.highlights
+local function render(tab_views, tabpages, config)
+  local options = config.options
+  local hl = config.highlights
   local right_align = "%="
   local tab_components = ""
   local close, close_length = "", 0
@@ -932,8 +932,8 @@ local function render(tab_views, tabpages, prefs)
   local left_element_size = utils.measure(padding, padding, left_trunc_icon, padding, padding)
   local right_element_size = utils.measure(padding, padding, right_trunc_icon, padding)
 
-  local offset_size, left_offset, right_offset = require("bufferline.offset").get(prefs)
-  local custom_area_size, left_area, right_area = require("bufferline.custom_area").get(prefs)
+  local offset_size, left_offset, right_offset = require("bufferline.offset").get(config)
+  local custom_area_size, left_area, right_area = require("bufferline.custom_area").get(config)
 
   local available_width = vim.o.columns
     - custom_area_size
@@ -941,7 +941,7 @@ local function render(tab_views, tabpages, prefs)
     - tabs_length
     - close_length
 
-  if prefs.options.groups then
+  if config:enabled("groups") then
     tab_views = require("bufferline.groups").add_markers(tab_views)
   end
 
@@ -1004,7 +1004,7 @@ local function bufferline(config)
 
   local pick = require("bufferline.pick")
   local duplicates = require("bufferline.duplicates")
-  local has_groups = require("bufferline.config").groups_enabled()
+  local has_groups = config:enabled("groups")
 
   pick.reset()
   duplicates.reset()
@@ -1078,7 +1078,7 @@ local function setup_autocommands(preferences)
     })
   end
 
-  if options.groups and options.groups.toggle_hidden_on_enter then
+  if options.groups.options.toggle_hidden_on_enter then
     table.insert(autocommands, {
       "BufEnter",
       "*",

@@ -42,15 +42,14 @@ function M.set_id(buffer)
   if not user_groups or vim.tbl_isempty(user_groups) then
     return
   end
-  local ungrouped_id
   for id, group in pairs(user_groups) do
-    ungrouped_id = group.name == UNGROUPED and id or nil
     if type(group.matcher) == "function" and group.matcher(buffer) then
       return id
     end
+    if group.name == UNGROUPED then
+      return id
+    end
   end
-  -- Assign the buffer to the ungrouped group since it matches nohing else
-  return ungrouped_id
 end
 
 ---@param id number
@@ -121,16 +120,13 @@ end
 --- Add group highlights to the user highlights table
 ---@param config BufferlineConfig
 function M.setup(config)
-  assert(
-    config and config.options,
-    "A user configuration table must be passed in to set group highlights"
-  )
-  if not config.options.groups then
+  if not config then
     return
   end
 
   local hls = config.highlights
-  for idx, group in ipairs(config.options.groups) do
+  local groups = config.options.groups.items
+  for idx, group in ipairs(groups) do
     local hl = group.highlight
     local name = format_name(group.name)
     user_groups[idx] = vim.tbl_extend("force", group, {
@@ -152,7 +148,7 @@ function M.setup(config)
       })
     end
   end
-  local no_of_groups = #config.options.groups
+  local no_of_groups = #groups
   user_groups[no_of_groups + 1] = {
     name = UNGROUPED,
     priority = no_of_groups + 1,

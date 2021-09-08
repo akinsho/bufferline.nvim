@@ -4,11 +4,16 @@ local fmt = string.format
 
 ---@type BufferlineConfig
 local config = {}
----@type BufferlineConfig
-local user_config = {}
 
 ---@class DebugOpts
 ---@field logging boolean
+
+---@class GroupOptions
+---@field toggle_hidden_on_enter boolean re-open hidden groups on bufenter
+
+---@class GroupOpts
+---@field options GroupOptions
+---@field items Group[]
 
 ---@class BufferlineOptions
 ---@field public view string
@@ -44,7 +49,28 @@ local user_config = {}
 ---@field public diagnostics_indicator function?
 ---@field public diagnostics_update_in_insert boolean
 ---@field public offsets table[]
----@field public groups Group[]
+---@field public groups GroupOpts
+
+---@type BufferlineConfig
+local Config = {}
+
+function Config:new(o)
+  assert(o, "User options must be passed in")
+  self.__index = self
+  setmetatable(o, self)
+  return o
+end
+
+---Combine user preferences with defaults preferring the user's own settings
+---@param defaults BufferlineConfig
+---@return BufferlineConfig
+function Config:merge(defaults)
+  if defaults and type(defaults) == "table" then
+    self.options = vim.tbl_deep_extend("keep", self.options or {}, defaults.options or {})
+    self.highlights = vim.tbl_deep_extend("keep", self.highlights or {}, defaults.highlights or {})
+  end
+  return self
+end
 
 local deprecations = {
   mappings = {
@@ -77,16 +103,12 @@ local function handle_deprecations(options)
 end
 
 ---Ensure the user has only specified highlight groups that exist
----@param prefs BufferlineConfig
 ---@param defaults BufferlineConfig
-local function validate_config(prefs, defaults)
-  if not prefs then
-    return
-  end
-  handle_deprecations(prefs.options)
-  if prefs.highlights then
+function Config:validate(defaults)
+  handle_deprecations(self.options)
+  if self.highlights then
     local incorrect = {}
-    for k, _ in pairs(prefs.highlights) do
+    for k, _ in pairs(self.highlights) do
       if not defaults.highlights[k] then
         table.insert(incorrect, k)
       end
@@ -113,21 +135,20 @@ local function validate_config(prefs, defaults)
 end
 
 --- Convert highlights specified as tables to the correct existing colours
----@param prefs BufferlineConfig
-local function convert_hl_tables(prefs)
-  if not prefs or not prefs.highlights or vim.tbl_isempty(prefs.highlights) then
+function Config:convert_highlights()
+  if not self or not self.highlights or vim.tbl_isempty(self.highlights) then
     return
   end
-  for hl, attributes in pairs(prefs.highlights) do
+  for hl, attributes in pairs(self.highlights) do
     for attribute, value in pairs(attributes) do
       if type(value) == "table" then
         if value.highlight and value.attribute then
-          prefs.highlights[hl][attribute] = require("bufferline.colors").get_hex({
+          self.highlights[hl][attribute] = require("bufferline.colors").get_hex({
             name = value.highlight,
             attribute = value.attribute,
           })
         else
-          prefs.highlights[hl][attribute] = nil
+          self.highlights[hl][attribute] = nil
           require("bufferline.utils").echomsg(
             string.format("removing %s as it is not formatted correctly", hl),
             "WarningMsg"
@@ -138,16 +159,14 @@ local function convert_hl_tables(prefs)
   end
 end
 
----Merge user preferences with defaults
----@param defaults BufferlineConfig
----@param preferences BufferlineConfig
----@return BufferlineConfig
-local function merge(defaults, preferences)
-  -- Combine user preferences with defaults preferring the user's own settings
-  if preferences and type(preferences) == "table" then
-    preferences = vim.tbl_deep_extend("force", defaults, preferences)
+---Check if a specific feature is enabled
+---@param feature '"groups"'
+---@return boolean
+function Config:enabled(feature)
+  if feature == "groups" then
+    return self.options.groups.items and #self.options.groups.items >= 1
   end
-  return preferences
+  return false
 end
 
 ---Derive the colors for the bufferline
@@ -481,7 +500,12 @@ local function get_defaults()
       diagnostics_indicator = nil,
       diagnostics_update_in_insert = true,
       offsets = {},
-      groups = nil,
+      groups = {
+        items = nil,
+        options = {
+          toggle_hidden_on_enter = true,
+        },
+      },
       debug = {
         logging = false,
       },
@@ -500,18 +524,14 @@ local function add_highlight_groups(highlights)
   end
 end
 
-function M.groups_enabled()
-  return config.options.groups and #config.options.groups > 1
-end
-
 --- Merge user config with defaults
 --- @return BufferlineConfig
 function M.apply()
   local defaults = get_defaults()
-  validate_config(user_config, defaults)
-  convert_hl_tables(user_config)
-  config = merge(defaults, user_config)
-  if M.groups_enabled() then
+  config:validate(defaults)
+  config:convert_highlights()
+  config:merge(defaults)
+  if config:enabled("groups") then
     require("bufferline.groups").setup(config)
   end
   add_highlight_groups(config.highlights)
@@ -523,13 +543,13 @@ end
 ---for setting the highlight groups etc. once this has been merged with the defaults
 ---@param conf BufferlineConfig
 function M.set(conf)
-  user_config = conf or {}
+  config = Config:new(conf or {})
 end
 
 ---Update highlight colours when the colour scheme changes
 function M.update_highlights()
-  config.highlights = merge(derive_colors(), user_config.highlights or {})
-  if M.groups_enabled() then
+  config:merge({ highlights = derive_colors() })
+  if config:enabled("groups") then
     require("bufferline.groups").set_hls(config)
   end
   add_highlight_groups(config.highlights)
@@ -549,8 +569,7 @@ end
 --- This function is only intended for use in tests
 ---@private
 function M.__reset()
-  config = {}
-  user_config = {}
+  config = nil
 end
 
 return M
