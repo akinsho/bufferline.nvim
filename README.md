@@ -221,7 +221,7 @@ require('bufferline').setup {
     max_name_length = 18,
     max_prefix_length = 15, -- prefix used when a buffer is de-duplicated
     tab_size = 18,
-    diagnostics = false | "nvim_lsp",
+    diagnostics = false | "nvim_lsp" | "coc",
     diagnostics_update_in_insert = false,
     diagnostics_indicator = function(count, level, diagnostics_dict, context)
       return "("..count..")"
@@ -266,7 +266,7 @@ require('bufferline').setup {
 
 ### LSP indicators
 
-By setting `diagnostics = "nvim_lsp"` you will get an indicator in the bufferline for a given tab if it has any errors
+By setting `diagnostics = "nvim_lsp" | "coc"` you will get an indicator in the bufferline for a given tab if it has any errors
 This will allow you to tell at a glance if a particular buffer has errors. Currently only the native neovim lsp is
 supported, mainly because it has the easiest API for fetching all errors for all buffers (with an attached lsp client).
 
