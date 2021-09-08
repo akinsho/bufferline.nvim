@@ -7,8 +7,12 @@ local config = {}
 ---@type BufferlineConfig
 local user_config = {}
 
+---@class DebugOpts
+---@field logging boolean
+
 ---@class BufferlineOptions
 ---@field public view string
+---@field public debug DebugOpts
 ---@field public numbers string
 ---@field public number_style numbers_opt
 ---@field public buffer_close_icon string
@@ -477,6 +481,10 @@ local function get_defaults()
       diagnostics_indicator = nil,
       diagnostics_update_in_insert = true,
       offsets = {},
+      groups = nil,
+      debug = {
+        logging = false,
+      },
     },
     highlights = derive_colors(),
   }

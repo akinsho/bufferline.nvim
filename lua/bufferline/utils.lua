@@ -8,14 +8,23 @@ local fn = vim.fn
 local api = vim.api
 
 function M.is_test()
+  ---@diagnostic disable-next-line: undefined-global
   return __TEST
 end
 
---- TODO: add proper debug log
+---@return boolean
+local function check_logging()
+  ---@type BufferlineOptions
+  local config = require("bufferline.config").get('options')
+  return config.debug.logging
+end
+
 ---@param msg string
 function M.log.debug(msg)
-  local info = debug.getinfo(2, "S")
-  print(fmt("[bufferline]: %s\n%s\n%s", msg, info.linedefined, info.short_src))
+  if check_logging() then
+    local info = debug.getinfo(2, "S")
+    print(fmt("[bufferline]: %s\n%s\n%s", msg, info.linedefined, info.short_src))
+  end
 end
 
 ---Takes a list of items and runs the callback
