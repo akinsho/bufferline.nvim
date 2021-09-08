@@ -560,6 +560,9 @@ end
 ---@param key string?
 ---@return any
 function M.get(key)
+  if not config then
+    return
+  end
   if key and type(key) == "string" then
     return config[key]
   end

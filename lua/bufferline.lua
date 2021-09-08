@@ -1057,11 +1057,15 @@ function M.__apply_colors()
   require("bufferline.highlights").set_all(current_prefs.highlights)
 end
 
-local function setup_autocommands(preferences)
-  local options = preferences.options or {}
+---@param config BufferlineConfig
+local function setup_autocommands(config)
+  local options = config.options
   local autocommands = {
     { "ColorScheme", "*", [[lua require('bufferline').__apply_colors()]] },
   }
+  if not options or vim.tbl_isempty(options) then
+    return
+  end
   if options.persist_buffer_sort then
     table.insert(autocommands, {
       "SessionLoadPost",
@@ -1078,7 +1082,7 @@ local function setup_autocommands(preferences)
     })
   end
 
-  if options.groups.options.toggle_hidden_on_enter then
+  if config:enabled("groups") and options.groups.options.toggle_hidden_on_enter then
     table.insert(autocommands, {
       "BufEnter",
       "*",
