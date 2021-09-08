@@ -1,4 +1,5 @@
 describe("Group tests - ", function()
+  local utils = require("tests.utils")
   local groups
 
   before_each(function()
@@ -105,5 +106,40 @@ describe("Group tests - ", function()
     assert.equal(sorted[#sorted].filename, "file-2.txt")
 
     assert.is_equal(vim.tbl_count(groups.tabs_by_group), 2)
+  end)
+
+  it("should add group markers", function()
+    local config = {
+      highlights = {},
+      options = {
+        groups = {
+          items = {
+            {
+              name = "test-group",
+              matcher = function(buf)
+                return buf.filename:includes("dummy")
+              end,
+            },
+          },
+        },
+      },
+    }
+    require("bufferline").setup(config)
+    utils.vim_enter()
+    groups.setup(config)
+    local tabs = {
+      { filename = "dummy-1.txt", group = 1, type = "buffer" },
+      { filename = "dummy-2.txt", group = 1, type = "buffer" },
+      { filename = "file-2.txt", group = 2, type = "buffer" },
+    }
+    local sorted = groups.sort_by_groups(tabs)
+    assert.is_false(vim.tbl_isempty(groups.tabs_by_group))
+    tabs = groups.add_markers(sorted)
+    assert.equal(#tabs, 5)
+    local g_start = tabs[1]
+    local g_end = tabs[4]
+    assert.is_equal(g_start.type, 'group_start')
+    assert.is_equal(g_end.type, 'group_end')
+    assert.is_truthy(g_start.component():match('test%-group'))
   end)
 end)
