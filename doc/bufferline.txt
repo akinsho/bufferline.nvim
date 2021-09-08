@@ -186,9 +186,9 @@ replacing the highlights for `error`, `error_visible`, `error_selected`,
 GROUPS                                                      *bufferline-groups*
 
 The buffers this plugin shows can be grouped based on a users configuration.
-Groups are a way of allowing a user to visual related buffers in clusters as
+Groups are a way of allowing a user to visualize related buffers in clusters as
 well as operating on them together e.g. by clicking the group indicator all
-grouped buffers can be hidden. They are partially inspired by google chrome's
+grouped buffers can be hidden. They are partially inspired by google chrome's,
 tabs as well as centaur tab's groups.
 
 In order to group buffers specify a list of groups in your config e.g.
