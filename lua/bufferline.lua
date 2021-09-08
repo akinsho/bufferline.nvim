@@ -28,8 +28,6 @@ _G.__bufferline = __bufferline or {}
 local state = {
   is_picking = false,
   custom_sort = nil,
-  __tabs = {},
-  __visible_tabs = {},
   tabs = {},
   visible_tabs = {},
 }
