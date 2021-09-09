@@ -178,7 +178,7 @@ end
 ---@return boolean
 function Config:enabled(feature)
   if feature == "groups" then
-    return self.options.groups.items and #self.options.groups.items >= 1
+    return self.options.groups and self.options.groups.items and #self.options.groups.items >= 1
   end
   return false
 end
