@@ -6,7 +6,13 @@ local padding = require("bufferline.constants").padding
 
 local UNGROUPED = "ungrouped"
 
-local M = { separator = {} }
+local M = {
+  separator = {},
+  ---@type table<string, Group>
+  builtin = {},
+}
+
+M.builtin.ungrouped = { name = "ungrouped" }
 
 local state = {
   ---@type table<string, Group>
@@ -128,7 +134,7 @@ function M.setup(config)
     -- on the final iteration of the loop
     if index == #groups and not accum.ungrouped_seen then
       local last_position = index + 1
-      accum.list[last_position] = enrich_group(last_position, { name = UNGROUPED })
+      accum.list[last_position] = enrich_group(last_position, M.builtin.ungrouped)
     end
 
     if hl and type(hl) == "table" then
