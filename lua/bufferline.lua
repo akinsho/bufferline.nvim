@@ -798,7 +798,7 @@ end
 ---@return Section
 ---@return Section
 local function get_sections(tabs)
-  local Section = require("bufferline.entities").Section
+  local Section = require("bufferline.models").Section
   local current = Section:new()
   local before = Section:new()
   local after = Section:new()
@@ -1022,7 +1022,7 @@ local function bufferline(config)
   ---@type Buffer[]
   local buffers = {}
   local all_diagnostics = require("bufferline.diagnostics").get(options)
-  local Buffer = require("bufferline.entities").Buffer
+  local Buffer = require("bufferline.models").Buffer
   for i, buf_id in ipairs(buf_nums) do
     local buf = Buffer:new({
       path = vim.fn.bufname(buf_id),

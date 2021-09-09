@@ -278,7 +278,7 @@ local function get_tab(name, group_id, tab_views)
   if name == UNGROUPED or not group then
     return
   end
-  local GroupView = require("bufferline.entities").GroupView
+  local GroupView = require("bufferline.models").GroupView
   local hl_groups = require("bufferline.config").get("highlights")
 
   group.separator = group.separator or {}

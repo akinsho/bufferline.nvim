@@ -7,7 +7,7 @@ local fmt = string.format
 -----------------------------------------------------------------------------//
 -- Entitites
 -----------------------------------------------------------------------------//
-This file contains all the differnt kinds of entities that are show in the tabline
+This file contains all the differnt kinds of entities that are shown in the tabline
 They are all subtypes of TabViews which specifies the base interface for all types
 i.e.
 - A [component] - which is a function that returns the string to be rendered
