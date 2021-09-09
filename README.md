@@ -14,6 +14,7 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
 - [Features](#features)
   - [Alternate styling](#alternate-styling)
   - [LSP error indicators](#lsp-error-indicators)
+  - [Buffer groups](#buffer-groups)
   - [Sidebar offset](#sidebar-offset)
   - [Buffer numbers](#buffer-numbers)
   - [Buffer pick](#buffer-pick)
@@ -60,6 +61,10 @@ see: `:h bufferline-styling`
 ![LSP error](https://user-images.githubusercontent.com/22454918/111993085-1d299700-8b0e-11eb-96eb-c1c289e36b08.png)
 
 **NOTE:** This only works with neovim's native lsp.
+
+#### Buffer Groups
+
+![bufferline_group_toggle](https://user-images.githubusercontent.com/22454918/132410772-0a4c0b95-63bb-4281-8a4e-a652458c3f0f.gif)
 
 #### Sidebar offset
 
@@ -377,7 +382,7 @@ groups = {
 }
 ```
 
-### Ordering groups
+#### Ordering groups
 
 Groups are ordered by their position in the `items` list, the first group shows at the start of the bufferline and so on.
 You might want to order groups _around_ the un-grouped buffers e.g. `| group 1 | buf 1 (ungrouped) | buf 2 (ungrouped) | group 2 |`.
@@ -394,8 +399,17 @@ groups = {
 }
 ```
 
-Grouped buffers can also be interacted with using `BufferLineGroupClose <tab>` which will close all buffers in this group
-or using the `require('bufferline').group_action` functionality.
+#### Group commands
+
+![bufferline_group_toggle](https://user-images.githubusercontent.com/22454918/132410772-0a4c0b95-63bb-4281-8a4e-a652458c3f0f.gif)
+
+Grouped buffers can also be interacted with using a few commands namely
+These commands can be <kbd>tab</kbd> completed to open a list of the current groups.
+
+- `:BufferLineGroupClose` <tab> - which will close all buffers in this group
+- `:BufferLineGroupToggle` <tab> - which will hide or show a group
+
+Grouped buffers can also be interacted with using the `require('bufferline').group_action` API.
 
 e.g.
 
@@ -406,14 +420,6 @@ function _G.__group_open()
   end)
 end
 ```
-
-#### Toggling groups
-
-![bufferline_group_toggle](https://user-images.githubusercontent.com/22454918/132410772-0a4c0b95-63bb-4281-8a4e-a652458c3f0f.gif)
-
-Buffers in a group can also be hidden using the `BufferLineGroupToggle <tab>`
-which will hide all buffers matching that group in the bufferline till they
-it is toggled back to visible.
 
 ### Regular tab sizes
 

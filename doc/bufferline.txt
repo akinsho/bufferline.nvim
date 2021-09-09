@@ -244,9 +244,15 @@ built-in so you can achieve the order above using
   }
 <
 
-Grouped buffers can also be interacted with using `BufferLineGroupClose <tab>`
-which will close all buffers in this group or using the
-`require('bufferline').group_action` functionality.
+==============================================================================
+GROUP COMMANDS                                     *bufferline-group-commands*
+
+Grouped buffers can also be interacted with using a few commands namely
+* `:BufferLineGroupClose` <tab> - which will close all buffers in this group
+* `:BufferLineGroupToggle` <tab> - which will hide or show a group
+
+Other group related functionality can be implemented using the
+`require('bufferline').group_action` API.
 
 e.g.
 >
@@ -256,11 +262,6 @@ e.g.
         end)
     end
 <
-
-Buffers in a group can also be hidden using the `BufferLineGroupToggle <tab>`
-which will hide all buffers matching that group in the bufferline till they
-it is toggled back to visible.
-
 ==============================================================================
 REGULAR TAB SIZES                                  *bufferline-regular-tabs*
 
