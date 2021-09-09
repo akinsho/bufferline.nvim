@@ -14,6 +14,7 @@ Settings...............................: |bufferline-settings|
 Styling................................: |bufferline-styling|
 Numbers................................: |bufferline-numbers|
 LSP Diagnostics........................: |bufferline-diagnostics|
+Groups.................................: |bufferline-groups|
 Sorting................................: |bufferline-sorting|
 Filtering..............................: |bufferline-filtering|
 Commands...............................: |bufferline-commands|
@@ -82,6 +83,7 @@ The available settings are: >
             diagnostics_indicator = function(count, level)
               return "("..count..")"
             end
+            groups = {} -- see :h bufferline-groups for details
             show_buffer_icons = true | false,
             show_buffer_close_icons = true | false,
             show_close_icon = true | false,
@@ -180,6 +182,86 @@ The highlighting for the filename if there is an error can be changed by
 replacing the highlights for `error`, `error_visible`, `error_selected`,
 `warning`, `warning_visible`, `warning_selected`.
 
+==============================================================================
+GROUPS                                                      *bufferline-groups*
+
+The buffers this plugin shows can be grouped based on a users configuration.
+Groups are a way of allowing a user to visualize related buffers in clusters as
+well as operating on them together e.g. by clicking the group indicator all
+grouped buffers can be hidden. They are partially inspired by google chrome's,
+tabs as well as centaur tab's groups.
+
+In order to group buffers specify a list of groups in your config e.g.
+>
+  groups = {
+    options = {
+      toggle_hidden_on_enter = true -- when you re-enter a hidden group this options re-opens that group so the buffer is visible
+    },
+    items = {
+      {
+        name = "Tests" -- Mandatory
+        highlight = {gui = "underline", guisp = "blue"} -- Optional
+        priority = 2 -- determines where it will appear relative to other groups (Optional)
+        icon = "" -- Optional
+        matcher = function(buf) -- Mandatory
+          return buf.filename:match('%_test') or buf.filename:match('%_spec')
+        end,
+      }
+      {
+        name = "Docs"
+        highlight = {gui = "undercurl", guisp = "green"}
+        matcher = function(buf)
+          return buf.filename:match('%.md') or buf.filename:match('%.txt')
+        end,
+        separator = { -- Optional
+          style = require('bufferline.groups').separator.tab
+        },
+      }
+    }
+  }
+<
+
+==============================================================================
+ORDERING GROUPS                                   *bufferline-ordering-groups*
+
+Groups are ordered by their position in the `items` list, the first group shows
+at the start of the bufferline and so on. You might want to order groups
+around the un-grouped buffers e.g.
+>
+    | group 1 | buf 1 (ungrouped) | buf 2 (ungrouped) | group 2 |
+<
+In this case built-in groups are provided (for now just the `ungrouped`)
+built-in so you can achieve the order above using
+
+>
+  local groups = require('bufferline.groups')
+  groups = {
+    items = {
+      {name = "group 1", ... },
+      groups.builtin.ungrouped, -- the ungrouped buffers will be in the middle of the grouped ones
+      {name = "group 2", ...},
+    }
+  }
+<
+
+==============================================================================
+GROUP COMMANDS                                     *bufferline-group-commands*
+
+Grouped buffers can also be interacted with using a few commands namely
+* `:BufferLineGroupClose` <tab> - which will close all buffers in this group
+* `:BufferLineGroupToggle` <tab> - which will hide or show a group
+
+Other group related functionality can be implemented using the
+`require('bufferline').group_action` API.
+
+e.g.
+>
+    function _G.__group_open()
+        require('bufferline').group_action(<GROUP_NAME>, function(buf)
+            vim.cmd('vsplit '..buf.path)
+        end)
+    end
+<
 ==============================================================================
 REGULAR TAB SIZES                                  *bufferline-regular-tabs*
 

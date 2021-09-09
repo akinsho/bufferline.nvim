@@ -14,6 +14,7 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
 - [Features](#features)
   - [Alternate styling](#alternate-styling)
   - [LSP error indicators](#lsp-error-indicators)
+  - [Buffer groups](#buffer-groups)
   - [Sidebar offset](#sidebar-offset)
   - [Buffer numbers](#buffer-numbers)
   - [Buffer pick](#buffer-pick)
@@ -28,6 +29,7 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
 - [Feature overview](#feature-overview)
   - [LSP indicators](#lsp-indicators)
   - [Conditional buffer based LSP indicators](#conditional-buffer-based-lsp-indicators)
+  - [Groups](#groups)
   - [Regular tab sizes](#regular-tab-sizes)
   - [Numbers](#numbers)
   - [Sorting](#sorting)
@@ -59,6 +61,10 @@ see: `:h bufferline-styling`
 ![LSP error](https://user-images.githubusercontent.com/22454918/111993085-1d299700-8b0e-11eb-96eb-c1c289e36b08.png)
 
 **NOTE:** This only works with neovim's native lsp.
+
+#### Buffer Groups
+
+![bufferline_group_toggle](https://user-images.githubusercontent.com/22454918/132410772-0a4c0b95-63bb-4281-8a4e-a652458c3f0f.gif)
 
 #### Sidebar offset
 
@@ -336,6 +342,84 @@ end
 
 The first bufferline shows `diagnostic.lua` as the currently opened `current` buffer. It has LSP reported errors, but they don't show up in the bufferline.
 The second bufferline shows `500-nvim-bufferline.lua` as the currently opened `current` buffer. Because the 'faulty' `diagnostic.lua` buffer has now transitioned from `current` to `visible`, the LSP indicator does show up.
+
+### Groups (Experimental)
+
+![groups](https://user-images.githubusercontent.com/22454918/132225763-1bfeb6cb-40e1-414b-8355-05726778b8b8.png)
+
+The buffers this plugin shows can be grouped based on a users configuration. Groups are a way of allowing a user to visualize related buffers in clusters
+as well as operating on them together e.g. by clicking the group indicator all grouped buffers can be hidden. They are partially inspired by
+google chrome's tabs as well as centaur tab's groups.
+
+In order to group buffers specify a list of groups in your config e.g.
+
+```lua
+groups = {
+  options = {
+    toggle_hidden_on_enter = true -- when you re-enter a hidden group this options re-opens that group so the buffer is visible
+  },
+  items = {
+    {
+      name = "Tests" -- Mandatory
+      highlight = {gui = "underline", guisp = "blue"} -- Optional
+      priority = 2 -- determines where it will appear relative to other groups (Optional)
+      icon = "" -- Optional
+      matcher = function(buf) -- Mandatory
+        return buf.filename:match('%_test') or buf.filename:match('%_spec')
+      end,
+    }
+    {
+      name = "Docs"
+      highlight = {gui = "undercurl", guisp = "green"}
+      matcher = function(buf)
+        return buf.filename:match('%.md') or buf.filename:match('%.txt')
+      end,
+      separator = { -- Optional
+        style = require('bufferline.groups').separator.tab
+      },
+    }
+  }
+}
+```
+
+#### Ordering groups
+
+Groups are ordered by their position in the `items` list, the first group shows at the start of the bufferline and so on.
+You might want to order groups _around_ the un-grouped buffers e.g. `| group 1 | buf 1 (ungrouped) | buf 2 (ungrouped) | group 2 |`.
+In this case builtin groups are provided (for now just the `ungrouped`) builtin so you can achieve the order above using
+
+```lua
+local groups = require('bufferline.groups')
+groups = {
+  items = {
+    {name = "group 1", ... },
+    groups.builtin.ungrouped, -- the ungrouped buffers will be in the middle of the grouped ones
+    {name = "group 2", ...},
+  }
+}
+```
+
+#### Group commands
+
+![bufferline_group_toggle](https://user-images.githubusercontent.com/22454918/132410772-0a4c0b95-63bb-4281-8a4e-a652458c3f0f.gif)
+
+Grouped buffers can also be interacted with using a few commands namely
+These commands can be <kbd>tab</kbd> completed to open a list of the current groups.
+
+- `:BufferLineGroupClose` <tab> - which will close all buffers in this group
+- `:BufferLineGroupToggle` <tab> - which will hide or show a group
+
+Grouped buffers can also be interacted with using the `require('bufferline').group_action` API.
+
+e.g.
+
+```lua
+function _G.__group_open()
+  require('bufferline').group_action(<GROUP_NAME>, function(buf)
+    vim.cmd('vsplit '..buf.path)
+  end)
+end
+```
 
 ### Regular tab sizes
 

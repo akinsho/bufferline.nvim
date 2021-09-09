@@ -1,26 +1,50 @@
 ---------------------------------------------------------------------------//
 -- HELPERS
 ---------------------------------------------------------------------------//
-local M = {}
+local M = { log = {} }
 
 local fmt = string.format
 local fn = vim.fn
 local api = vim.api
 
 function M.is_test()
+  ---@diagnostic disable-next-line: undefined-global
   return __TEST
+end
+
+---@return boolean
+local function check_logging()
+  ---@type BufferlineOptions
+  local config = require("bufferline.config").get("options")
+  return config.debug.logging
+end
+
+---@param msg string
+function M.log.debug(msg)
+  if check_logging() then
+    local info = debug.getinfo(2, "S")
+    print(fmt("[bufferline]: %s\n%s\n%s", msg, info.linedefined, info.short_src))
+  end
+end
+
+---Takes all args and passes them on untouched
+---@generic A
+---@return A
+function M.identity(...)
+  return ...
 end
 
 ---Takes a list of items and runs the callback
 ---on each updating the initial value
 ---@generic T
 ---@param accum T
----@param callback fun(accum:T, item: T): T
+---@param callback fun(accum:T, item: T, index: number): T
+---@param list T[]
 ---@return T
-function M.fold(accum, callback, ...)
+function M.fold(accum, callback, list)
   assert(accum and callback, "An initial value and callback must be passed to fold")
-  for n = 1, select("#", ...) do
-    accum = callback(accum, select(n, ...))
+  for i, v in ipairs(list) do
+    accum = callback(accum, v, i)
   end
   return accum
 end
@@ -31,7 +55,7 @@ end
 function M.sum(...)
   return M.fold(0, function(accum, item)
     return accum + item
-  end, ...)
+  end, { ... })
 end
 
 ---Variant of some that sums up the display size of characters
@@ -40,7 +64,7 @@ end
 function M.measure(...)
   return M.fold(0, function(accum, item)
     return accum + api.nvim_strwidth(item)
-  end, ...)
+  end, { ... })
 end
 
 ---Concatenate a series of strings together
@@ -49,7 +73,30 @@ end
 function M.join(...)
   return M.fold("", function(accum, item)
     return accum .. item
-  end, ...)
+  end, { ... })
+end
+
+---@generic T
+---@param callback fun(item: T): T
+---@param list T[]
+---@return T[]
+function M.map(callback, list)
+  return M.fold({}, function(accum, item)
+    table.insert(accum, callback(item))
+    return accum
+  end, list)
+end
+
+---@generic T
+---@param list T[]
+---@param callback fun(item: T): boolean
+---@return T
+function M.find(list, callback)
+  for _, v in ipairs(list) do
+    if callback(v) then
+      return v
+    end
+  end
 end
 
 --- A function which takes n number of functions and
@@ -90,6 +137,19 @@ function M.array_concat(...)
     end
   end
   return t
+end
+
+---Execute a callback for each item or only those that match if a matcher is passed
+---@generic T
+---@param list T[]
+---@param callback fun(item: `T`)
+---@param matcher fun(item: `T`):boolean
+function M.for_each(list, callback, matcher)
+  for _, item in ipairs(list) do
+    if not matcher or matcher(item) then
+      callback(item)
+    end
+  end
 end
 
 --- @param array table
@@ -206,6 +266,17 @@ do
       return devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
     end
   end
+end
+
+---Add click action to a component
+---@param func_name string
+---@param id number
+---@param component string
+---@return string
+function M.make_clickable(func_name, id, component)
+  -- v:lua does not support function references in vimscript so
+  -- the only way to implement this is using autoload vimscript functions
+  return "%" .. id .. "@nvim_bufferline#" .. func_name .. "@" .. component
 end
 
 return M

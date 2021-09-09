@@ -1,5 +1,3 @@
-_G.__TEST = true
-
 describe("Number tests: ", function()
   local prefix = require("bufferline.numbers").prefix
   local test_buf = {

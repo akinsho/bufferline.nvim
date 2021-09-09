@@ -66,9 +66,9 @@ local function truncate(dir, depth, max_size)
   return dir:sub(0, allowed_size - strwidth(marker)) .. marker
 end
 
---- @param context BufferContext
+--- @param context RenderContext
 function M.component(context)
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local component = context.component
   local options = context.preferences.options
   local hl = context.current_highlights

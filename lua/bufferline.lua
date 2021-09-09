@@ -15,40 +15,48 @@ local positions_key = constants.positions_key
 
 local M = {}
 
+--- Global namespace for callbacks and other use cases such as commandline completion functions
+_G.__bufferline = __bufferline or {}
+
 -----------------------------------------------------------------------------//
 -- State
 -----------------------------------------------------------------------------//
+---@class BufferlineState
+---@field tabs TabView[]
+---@field visible_tabs TabView[]
+---@field __tabs TabView[]
+---@field __visible_tabs TabView[]
+---@field custom_sort number[]
 local state = {
   is_picking = false,
-  ---@type Buffer[]
-  buffers = {},
-  ---@type Buffer[]
-  visible_buffers = {},
-  ---@type number[]
   custom_sort = nil,
+  __tabs = {},
+  __visible_tabs = {},
+  tabs = {},
+  visible_tabs = {},
 }
 
 -----------------------------------------------------------------------------//
 -- Context
 -----------------------------------------------------------------------------//
 
----@class BufferContext
+---@class RenderContext
 ---@field length number
 ---@field component string
 ---@field preferences BufferlineConfig
 ---@field current_highlights table<string, table<string, string>>
----@field buffer Buffer
+---@field tab TabView
 ---@field separators table<string, string>
----@type BufferContext
+---@type RenderContext
 local Context = {}
 
----@param ctx BufferContext
----@return BufferContext
+---@param ctx RenderContext
+---@return RenderContext
 function Context:new(ctx)
-  assert(ctx.buffer, "A buffer is required to create a context")
+  assert(ctx.tab, "A tab view entity is required to create a context")
   assert(ctx.preferences, "The user's preferences are required to create a context")
   self.length = ctx.length or 0
-  self.buffer = ctx.buffer
+  self.tab = ctx.tab
   self.preferences = ctx.preferences
   self.component = ctx.component or ""
   self.separators = ctx.component or { left = "", right = "" }
@@ -56,8 +64,8 @@ function Context:new(ctx)
   return setmetatable(ctx, self)
 end
 
----@param o BufferContext
----@return BufferContext
+---@param o RenderContext
+---@return RenderContext
 function Context:update(o)
   for k, v in pairs(o) do
     if v ~= nil then
@@ -76,6 +84,7 @@ local function refresh()
   vim.cmd("redraw")
 end
 
+---@param bufs number[]
 local function save_positions(bufs)
   local positions = table.concat(bufs, ",")
   vim.g[positions_key] = positions
@@ -142,17 +151,6 @@ end
 -- User commands
 ---------------------------------------------------------------------------//
 
----Add click action to a component
----@param func_name string
----@param buf number
----@param component string
----@return string
-local function make_clickable(func_name, buf, component)
-  -- v:lua does not support function references in vimscript so
-  -- the only way to implement this is using autoload vimscript functions
-  return "%" .. buf .. "@nvim_bufferline#" .. func_name .. "@" .. component
-end
-
 ---Handle a user "command" which can be a string or a function
 ---@param command string|function
 ---@param buf_id string
@@ -165,6 +163,12 @@ local function handle_user_command(command, buf_id)
   elseif type(command) == "string" then
     vim.cmd(fmt(command, buf_id))
   end
+end
+
+---@param group_id number
+function M.handle_group_click(group_id)
+  require("bufferline.groups").toggle_hidden(group_id)
+  refresh()
 end
 
 ---@param buf_id number
@@ -199,9 +203,9 @@ end
 ---@param index number
 ---@param func fun(num: number)
 function M.buf_exec(index, func)
-  local target = state.visible_buffers[index]
+  local target = state.visible_tabs[index]
   if target and type(func) == "function" then
-    func(target, state.visible_buffers)
+    func(target, state.visible_tabs)
   end
 end
 
@@ -213,8 +217,9 @@ local function select_buffer_apply(func)
 
   local char = vim.fn.getchar()
   local letter = vim.fn.nr2char(char)
-  for _, buf in pairs(state.buffers) do
-    if letter == buf.letter then
+  for _, item in ipairs(state.tabs) do
+    local buf = item:as_buffer()
+    if buf and letter == buf.letter then
       func(buf.id)
     end
   end
@@ -242,24 +247,26 @@ end
 ---@param absolute boolean whether or not to use the buffers absolute position or visible positions
 function M.go_to_buffer(num, absolute)
   num = type(num) == "string" and tonumber(num) or num
-  local list = absolute and state.buffers or state.visible_buffers
+  local list = absolute and state.tabs or state.visible_tabs
   local buf = list[num]
   if buf then
     vim.cmd(fmt("buffer %d", buf.id))
   end
 end
 
-local function get_current_buf_index()
+---@param opts table
+---@return number
+---@return Buffer
+local function get_current_buf_index(opts)
+  opts = opts or { include_hidden = false }
+  local list = opts.include_hidden and state.__tabs or state.tabs
   local current = api.nvim_get_current_buf()
-  local index
-
-  for i, buf in ipairs(state.buffers) do
-    if buf.id == current then
-      index = i
-      break
+  for index, item in ipairs(list) do
+    local buf = item:as_buffer()
+    if buf and buf.id == current then
+      return index, buf
     end
   end
-  return index
 end
 
 --- @param bufs Buffer[]
@@ -277,12 +284,12 @@ function M.move(direction)
     return utils.echoerr("Unable to find buffer to move, sorry")
   end
   local next_index = index + direction
-  if next_index >= 1 and next_index <= #state.buffers then
-    local cur_buf = state.buffers[index]
-    local destination_buf = state.buffers[next_index]
-    state.buffers[next_index] = cur_buf
-    state.buffers[index] = destination_buf
-    state.custom_sort = get_buf_ids(state.buffers)
+  if next_index >= 1 and next_index <= #state.tabs then
+    local cur_buf = state.tabs[index]
+    local destination_buf = state.tabs[next_index]
+    state.tabs[next_index] = cur_buf
+    state.tabs[index] = destination_buf
+    state.custom_sort = get_buf_ids(state.tabs)
     local opts = require("bufferline.config").get("options")
     if opts.persist_buffer_sort then
       save_positions(state.custom_sort)
@@ -296,7 +303,7 @@ function M.cycle(direction)
   if not index then
     return
   end
-  local length = #state.buffers
+  local length = #state.tabs
   local next_index = index + direction
 
   if next_index <= length and next_index >= 1 then
@@ -307,7 +314,8 @@ function M.cycle(direction)
     next_index = 1
   end
 
-  local next = state.buffers[next_index]
+  local item = state.tabs[next_index]
+  local next = item:as_buffer()
 
   if not next then
     return utils.echoerr("This buffer does not exist")
@@ -324,14 +332,14 @@ function M.close_in_direction(direction)
   if not index then
     return
   end
-  local length = #state.buffers
+  local length = #state.tabs
   if
     not (index == length and direction == "right") and not (index == 1 and direction == "left")
   then
     local start = direction == "left" and 1 or index + 1
     local _end = direction == "left" and index - 1 or length
     ---@type Buffer[]
-    local bufs = vim.list_slice(state.buffers, start, _end)
+    local bufs = vim.list_slice(state.tabs, start, _end)
     for _, buf in ipairs(bufs) do
       api.nvim_buf_delete(buf.id, { force = true })
     end
@@ -341,12 +349,12 @@ end
 --- sorts all buffers
 --- @param sort_by string|function
 function M.sort_buffers_by(sort_by)
-  if next(state.buffers) == nil then
+  if next(state.tabs) == nil then
     return utils.echoerr("Unable to find buffers to sort, sorry")
   end
 
-  require("bufferline.sorters").sort_buffers(sort_by, state.buffers)
-  state.custom_sort = get_buf_ids(state.buffers)
+  require("bufferline.sorters").sort_buffers(sort_by, state.tabs)
+  state.custom_sort = get_buf_ids(state.tabs)
   local opts = require("bufferline.config").get("options")
   if opts.persist_buffer_sort then
     save_positions(state.custom_sort)
@@ -360,11 +368,11 @@ end
 
 --- TODO: find a tidier way to do this if possible
 ---@param buffer Buffer
----@param hls table<string, table<string, string>>
+---@param config BufferlineConfig
 ---@return table
-local function get_buffer_highlight(buffer, hls)
+local function get_buffer_highlight(buffer, config)
   local hl = {}
-  local h = hls
+  local h = config.highlights
 
   if buffer:current() then
     hl.background = h.buffer_selected.hl
@@ -411,6 +419,10 @@ local function get_buffer_highlight(buffer, hls)
     hl.info = h.info.hl
     hl.info_diagnostic = h.info_diagnostic.hl
     hl.close_button = h.close_button.hl
+  end
+
+  if buffer.group then
+    require("bufferline.groups").set_current_hl(buffer, h, hl)
   end
 
   return hl
@@ -461,7 +473,7 @@ local function highlight_icon(buffer)
     return icon .. padding
   end
 
-  local prefix = "Bufferline"
+  local prefix = "BufferLine"
   local new_hl = prefix .. hl
   local bg_hl = prefix .. "Background"
   -- TODO: do not depend directly on style names
@@ -474,8 +486,9 @@ local function highlight_icon(buffer)
   end
   local guifg = colors.get_hex({ name = hl, attribute = "fg" })
   local guibg = colors.get_hex({ name = bg_hl, attribute = "bg" })
-  require("bufferline.highlights").set_one(new_hl, { guibg = guibg, guifg = guifg })
-  return "%#" .. new_hl .. "#" .. icon .. padding .. "%*"
+  local H = require("bufferline.highlights")
+  H.set_one(new_hl, { guibg = guibg, guifg = guifg })
+  return H.hl(new_hl) .. icon .. padding .. "%*"
 end
 
 ---Determine if the separator style is one of the slant options
@@ -507,7 +520,7 @@ local function close_icon(buf_id, context)
 
   local symbol = buffer_close_icon .. padding
   local size = strwidth(symbol)
-  local component = make_clickable(
+  local component = require("bufferline.utils").make_clickable(
     "handle_close_buffer",
     buf_id,
     -- the %X works as a closing label. @see :h tabline
@@ -516,17 +529,17 @@ local function close_icon(buf_id, context)
   return component, size
 end
 
---- @param context BufferContext
+--- @param context RenderContext
 local function modified_component(context)
   local modified_icon = context.preferences.options.modified_icon
   local modified_section = modified_icon .. padding
   return modified_section, strwidth(modified_section)
 end
 
---- @param context BufferContext
---- @return BufferContext
+--- @param context RenderContext
+--- @return RenderContext
 local function add_indicator(context)
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local length = context.length
   local component = context.component
   local hl = context.preferences.highlights
@@ -552,12 +565,12 @@ local function add_indicator(context)
   return context:update({ component = component, length = length })
 end
 
---- @param context BufferContext
---- @return BufferContext
+--- @param context RenderContext
+--- @return RenderContext
 local function add_prefix(context)
   local component = context.component
   local options = context.preferences.options
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local hl = context.current_highlights
   local length = context.length
 
@@ -571,11 +584,11 @@ local function add_prefix(context)
   return context:update({ component = component, length = length })
 end
 
---- @param context BufferContext
---- @return BufferContext
+--- @param context RenderContext
+--- @return RenderContext
 local function add_suffix(context)
   local component = context.component
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local hl = context.current_highlights
   local length = context.length
   local options = context.preferences.options
@@ -593,10 +606,10 @@ end
 
 --- TODO: We increment the buffer length by the separator although the final
 --- buffer will not have a separator so we are technically off by 1
---- @param context BufferContext
---- @return BufferContext
+--- @param context RenderContext
+--- @return RenderContext
 local function add_separators(context)
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local length = context.length
   local hl = context.preferences.highlights
   local style = context.preferences.options.separator_style
@@ -624,12 +637,12 @@ end
 -- if we are enforcing regular tab size then all tabs will try and fit
 -- into the maximum tab size. If not we enforce a minimum tab size
 -- and allow tabs to be larger than the max.
----@param context BufferContext
+---@param context RenderContext
 ---@return number
 local function enforce_regular_tabs(context)
   local _, modified_size = modified_component(context)
   local options = context.preferences.options
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local icon_size = strwidth(buffer.icon)
   local padding_size = strwidth(padding) * 2
   local max_length = options.max_name_length
@@ -642,29 +655,46 @@ local function enforce_regular_tabs(context)
   return options.tab_size - modified_size - icon_size - padding_size
 end
 
---- @param context BufferContext
---- @return BufferContext
+--- @param context RenderContext
+--- @return RenderContext
 local function add_click_action(context)
   return context:update({
-    component = make_clickable("handle_click", context.buffer.id, context.component),
+    component = require("bufferline.utils").make_clickable(
+      "handle_click",
+      context.tab:as_buffer().id,
+      context.component
+    ),
   })
 end
 
---- @param context BufferContext
---- @return BufferContext
-local function add_padding(context)
+---Add padding to either side of a component
+---@param sides table<'"left"' | '"right"', number>
+---@return function
+local function add_padding(sides)
+  ---@param ctx RenderContext
+  return function(ctx)
+    local left, right = sides.left or 0, sides.right or 0
+    local left_p, right_p = string.rep(padding, left), string.rep(padding, right)
+    local component = left_p .. ctx.component .. right_p
+    return ctx:update({ component = component, length = ctx.length + strwidth(left_p .. right_p) })
+  end
+end
+
+--- @param context RenderContext
+--- @return RenderContext
+local function add_spacing(context)
   local component = context.component
   local options = context.preferences.options
   local length = context.length
-  local buffer = context.buffer
+  local buffer = context.tab:as_buffer()
   local hl = context.current_highlights
-  local modified, size = modified_component(context)
-  local modified_padding = string.rep(padding, size)
 
   if not options.show_buffer_close_icons then
     -- If the buffer is modified add an icon, if it isn't pad
     -- the buffer so it doesn't "jump" when it becomes modified i.e. due
     -- to the sudden addition of a new character
+    local modified, size = modified_component(context)
+    local modified_padding = string.rep(padding, size)
     local suffix = buffer.modified and hl.modified .. modified or modified_padding
     component = modified_padding .. context.component .. suffix
     length = context.length + (size * 2)
@@ -672,36 +702,36 @@ local function add_padding(context)
   -- pad each tab smaller than the max tab size to make it consistent
   local difference = options.tab_size - length
   if difference > 0 then
-    local pad = string.rep(padding, math.floor(difference / 2))
-    component = pad .. component .. pad
-    length = length + strwidth(pad) * 2
+    local pad = math.floor(difference / 2)
+    return add_padding({ left = pad, right = pad })(context)
   end
   return context:update({ component = component, length = length })
 end
 
----@param ctx BufferContext
----@return BufferContext
+---@param ctx RenderContext
+---@return RenderContext
 local function get_buffer_name(ctx)
   local max_length = enforce_regular_tabs(ctx)
-  local filename = truncate_filename(ctx.buffer.filename, max_length)
+  local filename = truncate_filename(ctx.tab:as_buffer().filename, max_length)
   -- escape filenames that contain "%" as this breaks in statusline patterns
-  filename = filename:gsub("%%", "%%%1") .. padding
+  filename = filename:gsub("%%", "%%%1")
   return ctx:update({ component = filename, length = strwidth(filename) })
 end
 
---- @param preferences table
+--- @param config BufferlineConfig
 --- @param buffer Buffer
 --- @return BufferComponent,number
-local function render_buffer(preferences, buffer)
+local function render_buffer(config, buffer)
   local ctx = Context:new({
-    buffer = buffer,
-    preferences = preferences,
-    current_highlights = get_buffer_highlight(buffer, preferences.highlights),
+    tab = buffer,
+    preferences = config,
+    current_highlights = get_buffer_highlight(buffer, config),
   })
 
   local add_diagnostics = require("bufferline.diagnostics").component
   local add_duplicates = require("bufferline.duplicates").component
   local add_numbers = require("bufferline.numbers").component
+  local add_group = buffer.group and require("bufferline.groups").component or utils.identity
 
   --- Order matter here as this is the sequence which builds up the tab component
   --- each render function takes the context and returns an updated context with it's
@@ -709,12 +739,13 @@ local function render_buffer(preferences, buffer)
   --- length of the component
   ctx = utils.compose(
     get_buffer_name,
-    --- apply diagnostics here since we want the highlight to only apply to the filename
+    add_group,
+    add_padding({ right = 1 }),
     add_diagnostics,
     add_duplicates,
     add_prefix,
     add_numbers,
-    add_padding,
+    add_spacing,
     add_click_action,
     add_indicator,
     add_suffix,
@@ -724,18 +755,30 @@ local function render_buffer(preferences, buffer)
   --- We return a function from render buffer as we do not yet have access to
   --- information regarding which buffers will actually be rendered
   --- @param index number
-  --- @param buf_count number
+  --- @param next_item TabView
   --- @returns string
-  local function render_fn(index, buf_count)
+  local function render_fn(index, next_item)
     -- NOTE: the component is wrapped in an item -> %(content) so
     -- vim counts each item as one rather than all of its individual
     -- sub-components.
     local buffer_component = "%(" .. ctx.component .. "%)"
-    if ctx.separators.left then
-      buffer_component = ctx.separators.left .. buffer_component .. ctx.separators.right
-    elseif index < buf_count then
-      buffer_component = buffer_component .. ctx.separators.right
+
+    -- if using the non-slanted tab style then we must check if the component is at the end of
+    -- of a section e.g. the end of a group and if so it should not be wrapped with separators
+    -- as it can use those of the next item
+    if not is_slant(config.options.separator_style) and next_item and next_item:end_component() then
+      return buffer_component
     end
+
+    local s = ctx.separators
+    if s.left then
+      return s.left .. buffer_component .. s.right
+    end
+
+    if next_item then
+      return buffer_component .. s.right
+    end
+
     return buffer_component
   end
 
@@ -750,20 +793,25 @@ local function tab_close_button(icon)
   return "%999X" .. component, strwidth(component)
 end
 
-local function get_sections(bufs)
-  local Buffers = require("bufferline.buffers").Buffers
-  local current = Buffers:new()
-  local before = Buffers:new()
-  local after = Buffers:new()
+---@param tabs TabView[]
+---@return Section
+---@return Section
+---@return Section
+local function get_sections(tabs)
+  local Section = require("bufferline.entities").Section
+  local current = Section:new()
+  local before = Section:new()
+  local after = Section:new()
 
-  for _, buf in ipairs(bufs) do
-    if buf:current() then
-      -- We haven't reached the current buffer yet
-      current:add(buf)
-    elseif current.length == 0 then
-      before:add(buf)
-    else
-      after:add(buf)
+  for _, tab_view in ipairs(tabs) do
+    if not tab_view.hidden then
+      if tab_view:current() then
+        current:add(tab_view)
+      elseif current.length == 0 then -- We haven't reached the current buffer yet
+        before:add(tab_view)
+      else
+        after:add(tab_view)
+      end
     end
   end
   return before, current, after
@@ -784,15 +832,16 @@ end
 --- section
 --- 4. Re-check the size, if still too long truncate recursively till it fits
 --- 5. Add the number of truncated buffers as an indicator
----@param before Buffers
----@param current Buffers
----@param after Buffers
+---@param before Section
+---@param current Section
+---@param after Section
 ---@param available_width number
 ---@param marker table
 ---@return string
 ---@return table
 ---@return Buffer[]
 local function truncate(before, current, after, available_width, marker, visible)
+  visible = visible or {}
   local line = ""
 
   local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)
@@ -803,9 +852,9 @@ local function truncate(before, current, after, available_width, marker, visible
   local total_length = before.length + current.length + after.length + markers_length
 
   if available_width >= total_length then
-    visible = utils.array_concat(before.buffers, current.buffers, after.buffers)
-    for index, buf in ipairs(visible) do
-      line = line .. buf.component(index, #visible)
+    visible = utils.array_concat(before.items, current.items, after.items)
+    for index, item in ipairs(visible) do
+      line = line .. item.component(index, visible[index + 1])
     end
     return line, marker, visible
     -- if we aren't even able to fit the current buffer into the
@@ -818,7 +867,7 @@ local function truncate(before, current, after, available_width, marker, visible
       before:drop(1)
       marker.left_count = marker.left_count + 1
     else
-      after:drop(#after.buffers)
+      after:drop(#after.items)
       marker.right_count = marker.right_count + 1
     end
     -- drop the markers if the window is too narrow
@@ -833,13 +882,37 @@ local function truncate(before, current, after, available_width, marker, visible
   end
 end
 
---- @param bufs Buffer[]
---- @param tbs table[]
---- @param prefs table
+---@param list TabView[]
+---@return TabView[]
+local function filter_invisible(list)
+  return utils.fold({}, function(accum, item)
+    if item.focusable ~= false and not item.hidden then
+      table.insert(accum, item)
+    end
+    return accum
+  end, list)
+end
+
+---sort a list of tabviews using a sort function
+---@param list TabView[]
+---@return TabView[]
+local function sorter(list)
+  -- if the user has reshuffled the buffers manually don't try and sort them
+  if state.custom_sort then
+    return list
+  end
+  local options = require("bufferline.config").get("options")
+  require("bufferline.sorters").sort_buffers(options.sort_by, list)
+  return list
+end
+
+--- @param tab_views TabView[]
+--- @param tabpages table[]
+--- @param config BufferlineConfig
 --- @return string
-local function render(bufs, tbs, prefs)
-  local options = prefs.options
-  local hl = prefs.highlights
+local function render(tab_views, tabpages, config)
+  local options = config.options
+  local hl = config.highlights
   local right_align = "%="
   local tab_components = ""
   local close, close_length = "", 0
@@ -850,8 +923,8 @@ local function render(bufs, tbs, prefs)
 
   if options.show_tab_indicators then
     -- Add the length of the tabs + close components to total length
-    if #tbs > 1 then
-      for _, t in pairs(tbs) do
+    if #tabpages > 1 then
+      for _, t in pairs(tabpages) do
         if not vim.tbl_isempty(t) then
           tabs_length = tabs_length + t.length
           tab_components = tab_components .. t.component
@@ -865,12 +938,11 @@ local function render(bufs, tbs, prefs)
   -- Icons from https://fontawesome.com/cheatsheet
   local left_trunc_icon = options.left_trunc_marker
   local right_trunc_icon = options.right_trunc_marker
-  -- measure the surrounding trunc items: padding + count + padding + icon + padding
-  local left_element_size = strwidth(join(padding, padding, left_trunc_icon, padding, padding))
-  local right_element_size = strwidth(join(padding, padding, right_trunc_icon, padding))
+  local left_element_size = utils.measure(padding, padding, left_trunc_icon, padding, padding)
+  local right_element_size = utils.measure(padding, padding, right_trunc_icon, padding)
 
-  local offset_size, left_offset, right_offset = require("bufferline.offset").get(prefs)
-  local custom_area_size, left_area, right_area = require("bufferline.custom_area").get(prefs)
+  local offset_size, left_offset, right_offset = require("bufferline.offset").get(config)
+  local custom_area_size, left_area, right_area = require("bufferline.custom_area").get(config)
 
   local available_width = vim.o.columns
     - custom_area_size
@@ -878,15 +950,27 @@ local function render(bufs, tbs, prefs)
     - tabs_length
     - close_length
 
-  local before, current, after = get_sections(bufs)
-  local line, marker, visible_buffers = truncate(before, current, after, available_width, {
+  if config:enabled("groups") then
+    tab_views = require("bufferline.groups").render(tab_views, sorter)
+  else
+    tab_views = sorter(tab_views)
+  end
+
+  local before, current, after = get_sections(tab_views)
+  local line, marker, visible_tabs = truncate(before, current, after, available_width, {
     left_count = 0,
     right_count = 0,
     left_element_size = left_element_size,
     right_element_size = right_element_size,
   })
 
-  state.visible_buffers = visible_buffers
+  --- store the full unfiltered lists
+  state.__tabs = tab_views
+  state.__visible_tabs = visible_tabs
+
+  --- Store copies without focusable/hidden elements
+  state.tabs = filter_invisible(tab_views)
+  state.visible_tabs = filter_invisible(visible_tabs)
 
   if marker.left_count > 0 then
     local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
@@ -911,16 +995,16 @@ local function render(bufs, tbs, prefs)
   )
 end
 
---- @param preferences table
+--- @param config BufferlineConfig
 --- @return string
-local function bufferline(preferences)
-  local options = preferences.options
+local function bufferline(config)
+  local options = config.options
   local buf_nums = utils.get_valid_buffers()
-  if options.custom_filter then
+  if options and options.custom_filter then
     buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
   end
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
-  local all_tabs = require("bufferline.tabs").get(options.separator_style, preferences)
+  local tabpages = require("bufferline.tabpages").get(options.separator_style, config)
 
   if not options.always_show_bufferline then
     if #buf_nums == 1 then
@@ -931,38 +1015,36 @@ local function bufferline(preferences)
 
   local pick = require("bufferline.pick")
   local duplicates = require("bufferline.duplicates")
+  local has_groups = config:enabled("groups")
 
   pick.reset()
   duplicates.reset()
+  ---@type Buffer[]
   local buffers = {}
   local all_diagnostics = require("bufferline.diagnostics").get(options)
-  local Buffer = require("bufferline.buffers").Buffer
+  local Buffer = require("bufferline.entities").Buffer
   for i, buf_id in ipairs(buf_nums) do
-    local name = vim.fn.bufname(buf_id)
     local buf = Buffer:new({
-      path = name,
+      path = vim.fn.bufname(buf_id),
       id = buf_id,
       ordinal = i,
       diagnostics = all_diagnostics[buf_id],
       name_formatter = options.name_formatter,
     })
     buf.letter = pick.get(buf)
+    if has_groups then
+      buf.group = require("bufferline.groups").set_id(buf)
+    end
     buffers[i] = buf
   end
 
-  -- if the user has reshuffled the buffers manually don't try and sort them
-  if not state.custom_sort then
-    require("bufferline.sorters").sort_buffers(preferences.options.sort_by, buffers)
-  end
-
   local deduplicated = duplicates.mark(buffers)
-  --- Assign buffers to state
-  state.buffers = vim.tbl_map(function(buf)
-    buf.component, buf.length = render_buffer(preferences, buf)
+  buffers = vim.tbl_map(function(buf)
+    buf.component, buf.length = render_buffer(config, buf)
     return buf
   end, deduplicated)
 
-  return render(state.buffers, all_tabs, preferences)
+  return render(buffers, tabpages, config)
 end
 
 function M.toggle_bufferline()
@@ -977,11 +1059,15 @@ function M.__apply_colors()
   require("bufferline.highlights").set_all(current_prefs.highlights)
 end
 
-local function setup_autocommands(preferences)
-  local options = preferences.options or {}
+---@param config BufferlineConfig
+local function setup_autocommands(config)
+  local options = config.options
   local autocommands = {
     { "ColorScheme", "*", [[lua require('bufferline').__apply_colors()]] },
   }
+  if not options or vim.tbl_isempty(options) then
+    return
+  end
   if options.persist_buffer_sort then
     table.insert(autocommands, {
       "SessionLoadPost",
@@ -998,7 +1084,54 @@ local function setup_autocommands(preferences)
     })
   end
 
+  if config:enabled("groups") and options.groups.options.toggle_hidden_on_enter then
+    table.insert(autocommands, {
+      "BufEnter",
+      "*",
+      "lua require'bufferline'.show_hidden_group()",
+    })
+  end
+
   utils.augroup({ BufferlineColors = autocommands })
+end
+
+---@alias group_actions '"close"' | '"toggle"'
+---Execute an action on a group of buffers
+---@param name string
+---@param action group_actions | fun(b: Buffer)
+function M.group_action(name, action)
+  assert(name, "A name must be passed to execute a group action")
+  local groups = require("bufferline.groups")
+  if action == "close" then
+    groups.command(name, function(b)
+      api.nvim_buf_delete(b.id, { force = true })
+    end)
+  elseif action == "toggle" then
+    require("bufferline.groups").toggle_hidden(nil, name)
+    refresh()
+  elseif type(action) == "function" then
+    groups.command(name, action)
+  end
+end
+
+function M.show_hidden_group()
+  local _, buf = get_current_buf_index({ include_hidden = true })
+  if not buf then
+    return
+  end
+  local groups = require("bufferline.groups")
+  local group = groups.get_by_id(buf.group)
+  if group.hidden then
+    groups.set_hidden(group.id, false)
+  end
+end
+
+---@param arg_lead string
+---@param cmd_line string
+---@param cursor_pos number
+---@return string[]
+function __bufferline.complete_groups(arg_lead, cmd_line, cursor_pos)
+  return require("bufferline.groups").names()
 end
 
 local function setup_commands()
@@ -1016,10 +1149,27 @@ local function setup_commands()
     { name = "BufferLineSortByRelativeDirectory", cmd = 'sort_buffers_by("relative_directory")' },
     { name = "BufferLineSortByTabs", cmd = 'sort_buffers_by("tabs")' },
     { name = "BufferLineGoToBuffer", cmd = "go_to_buffer(<q-args>)", nargs = 1 },
+    {
+      nargs = 1,
+      name = "BufferLineGroupClose",
+      cmd = 'group_action(<q-args>, "close")',
+      complete = "complete_groups",
+    },
+    {
+      nargs = 1,
+      name = "BufferLineGroupToggle",
+      cmd = 'group_action(<q-args>, "toggle")',
+      complete = "complete_groups",
+    },
   }
   for _, cmd in ipairs(cmds) do
     local nargs = cmd.nargs and fmt("-nargs=%d", cmd.nargs) or ""
-    vim.cmd(fmt('command! %s %s lua require("bufferline").%s', nargs, cmd.name, cmd.cmd))
+    local complete = cmd.complete
+        and fmt("-complete=customlist,v:lua.__bufferline.%s", cmd.complete)
+      or ""
+    vim.cmd(
+      fmt('command! %s %s %s lua require("bufferline").%s', nargs, complete, cmd.name, cmd.cmd)
+    )
   end
 end
 
