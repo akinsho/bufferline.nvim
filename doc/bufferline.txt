@@ -192,29 +192,56 @@ grouped buffers can be hidden. They are partially inspired by google chrome's,
 tabs as well as centaur tab's groups.
 
 In order to group buffers specify a list of groups in your config e.g.
+>
+  groups = {
+    options = {
+      toggle_hidden_on_enter = true -- when you re-enter a hidden group this options re-opens that group so the buffer is visible
+    },
+    items = {
+      {
+        name = "Tests" -- Mandatory
+        highlight = {gui = "underline", guisp = "blue"} -- Optional
+        priority = 2 -- determines where it will appear relative to other groups (Optional)
+        icon = "" -- Optional
+        matcher = function(buf) -- Mandatory
+          return buf.filename:match('%_test') or buf.filename:match('%_spec')
+        end,
+      }
+      {
+        name = "Docs"
+        highlight = {gui = "undercurl", guisp = "green"}
+        matcher = function(buf)
+          return buf.filename:match('%.md') or buf.filename:match('%.txt')
+        end,
+        separator = { -- Optional
+          style = require('bufferline.groups').separator.tab
+        },
+      }
+    }
+  }
+<
+
+==============================================================================
+ORDERING GROUPS                                   *bufferline-ordering-groups*
+
+Groups are ordered by their position the `items` list, the first group shows
+at the start of the bufferline and so on. You might want to order groups
+around the un-grouped buffers e.g.
+>
+    | group 1 | buf 1 (ungrouped) | buf 2 (ungrouped) | group 2 |
+<
+In this case built-in groups are provided (for now just the `ungrouped`)
+built-in so you can achieve the order above using
 
 >
-    groups = {
-        {
-            name = "Tests" -- Mandatory
-            highlight = {gui = "underline", guisp = "blue"} -- Optional
-            priority = 2 -- determines where it will appear relative to other groups (Optional)
-            icon = "" -- Optional
-            matcher = function(buf) -- Mandatory
-            return buf.filename:match('%_test') or buf.filename:match('%_spec')
-            end,
-        }
-        {
-            name = "Docs"
-            highlight = {gui = "undercurl", guisp = "green"}
-            matcher = function(buf)
-            return buf.filename:match('%.md') or buf.filename:match('%.txt')
-            end,
-            separator = { -- Optional
-            style = require('bufferline.groups').separator.tab
-            },
-        }
+  local groups = require('bufferline.groups')
+  groups = {
+    items = {
+      {name = "group 1", ... },
+      groups.builtin.ungrouped, -- the ungrouped buffers will be in the middle of the grouped ones
+      {name = "group 2", ...},
     }
+  }
 <
 
 Grouped buffers can also be interacted with using `BufferLineGroupClose <tab>`
