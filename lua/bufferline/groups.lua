@@ -114,10 +114,11 @@ local function enrich_group(index, group)
 end
 
 ---Add highlight groups for a group
+---@param name string
 ---@param group Group
 ---@param hls BufferlineHighlights
-local function set_group_highlights(group, hls)
-  local hl, name = group.highlight, group.name
+local function set_group_highlights(name, group, hls)
+  local hl = group.highlight
   if not hl or type(hl) ~= "table" then
     return
   end
@@ -162,7 +163,7 @@ function M.setup(config)
       accum.list[last_position] = enrich_group(last_position, M.builtin.ungrouped)
     end
 
-    set_group_highlights(group, hls)
+    set_group_highlights(name, group, hls)
 
     return accum
   end, groups)

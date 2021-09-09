@@ -60,6 +60,10 @@ describe("Group tests - ", function()
           guifg = "black",
           guibg = "white",
         },
+        fill = {
+          guifg = "Red",
+          guibg = "Green",
+        },
       },
       options = {
         groups = {
