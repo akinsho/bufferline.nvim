@@ -113,6 +113,33 @@ local function enrich_group(index, group)
   })
 end
 
+---Add highlight groups for a group
+---@param group Group
+---@param hls BufferlineHighlights
+local function set_group_highlights(group, hls)
+  local hl, name = group.highlight, group.name
+  if not hl or type(hl) ~= "table" then
+    return
+  end
+  hls[fmt("%s_separator", name)] = {
+    guifg = hl.guifg or hl.guisp or hls.group_separator.guifg,
+    guibg = hls.fill.guibg,
+  }
+  hls[fmt("%s_label", name)] = {
+    guifg = hls.fill.guibg,
+    guibg = hl.guifg or hl.guisp or hls.group_separator.guifg,
+  }
+  hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
+    guibg = hls.buffer_selected.guibg,
+  })
+  hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, {
+    guibg = hls.buffer_visible.guibg,
+  })
+  hls[name] = vim.tbl_extend("keep", hl, {
+    guibg = hls.buffer.guibg,
+  })
+end
+
 --- NOTE: this function mutates the user's configuration.
 --- Add group highlights to the user highlights table
 ---@param config BufferlineConfig
@@ -124,9 +151,7 @@ function M.setup(config)
   local hls = config.highlights
   local groups = config.options.groups.items
   local result = utils.fold({ ungrouped_seen = false, list = {} }, function(accum, group, index)
-    local hl = group.highlight
     local name = format_name(group.name)
-
     accum.ungrouped_seen = accum.ungrouped_seen or name == UNGROUPED
     accum.list[index] = enrich_group(index, group)
 
@@ -137,17 +162,8 @@ function M.setup(config)
       accum.list[last_position] = enrich_group(last_position, M.builtin.ungrouped)
     end
 
-    if hl and type(hl) == "table" then
-      hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
-        guibg = hls.buffer_selected.guibg,
-      })
-      hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, {
-        guibg = hls.buffer_visible.guibg,
-      })
-      hls[name] = vim.tbl_extend("keep", hl, {
-        guibg = hls.buffer.guibg,
-      })
-    end
+    set_group_highlights(group, hls)
+
     return accum
   end, groups)
   state.user_groups = result.list
@@ -235,8 +251,9 @@ end
 ---@return string, number
 function M.separator.pill(name, group, hls, count)
   local bg_hl = hls.fill.hl
-  local sep_hl = hls.group_separator.hl
-  local label_hl = hls.group_label.hl
+  local sep_grp, label_grp = hls[fmt("%s_separator", name)], hls[fmt("%s_label", name)]
+  local sep_hl = sep_grp and sep_grp.hl or hls.group_separator.hl
+  local label_hl = label_grp and label_grp.hl or hls.group_label.hl
   local left, right = "█", "█"
   local indicator = utils.join(
     bg_hl,
