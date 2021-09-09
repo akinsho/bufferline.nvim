@@ -98,7 +98,7 @@ describe("Group tests - ", function()
         },
       },
     })
-    local sorted = groups.sort_by_groups({
+    local sorted, tabs_by_group = groups.sort_by_groups({
       Buffer:new({ filename = "dummy-1.txt", group = 1 }),
       Buffer:new({ filename = "dummy-2.txt", group = 1 }),
       Buffer:new({ filename = "file-2.txt", group = 2 }),
@@ -107,7 +107,7 @@ describe("Group tests - ", function()
     assert.equal(sorted[1]:as_buffer().filename, "dummy-1.txt")
     assert.equal(sorted[#sorted]:as_buffer().filename, "file-2.txt")
 
-    assert.is_equal(vim.tbl_count(groups.state.tabs_by_group), 2)
+    assert.is_equal(vim.tbl_count(tabs_by_group), 2)
   end)
 
   it("should add group markers", function()
@@ -134,9 +134,9 @@ describe("Group tests - ", function()
       Buffer:new({ filename = "dummy-2.txt", group = 1 }),
       Buffer:new({ filename = "file-2.txt", group = 2 }),
     }
-    local sorted = groups.sort_by_groups(tabs)
-    assert.is_false(vim.tbl_isempty(groups.state.tabs_by_group))
-    tabs = groups.add_markers(sorted)
+    tabs = groups.add_markers(tabs, function(t)
+      return t
+    end)
     assert.equal(#tabs, 5)
     local g_start = tabs[1]
     local g_end = tabs[4]

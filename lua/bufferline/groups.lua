@@ -375,6 +375,7 @@ end
 
 if utils.is_test() then
   M.state = state
+  M.sort_by_groups = sort_by_groups
 end
 
 return M
