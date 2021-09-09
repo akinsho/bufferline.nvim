@@ -30,19 +30,8 @@ i.e.
 local TabView = {}
 
 ---@param field string
----@param obj table
-local function not_implemented(field, obj)
-  local msg = fmt(
-    [[
-entity:
-%s
-=================
-%s
-  ]],
-    obj,
-    debug.traceback('Stack trace:')
-  )
-  require("bufferline.utils").log.debug(msg)
+local function not_implemented(field)
+  require("bufferline.utils").log.debug(debug.traceback("Stack trace:"))
   error(fmt("%s is not implemented yet", field))
 end
 
@@ -54,7 +43,7 @@ function TabView:new(t)
     self.focusable = t.focusable
   end
   self.component = t.component or function()
-    not_implemented("component", self)
+    not_implemented("component")
   end
   setmetatable(t, self)
   self.__index = self
