@@ -1027,13 +1027,13 @@ local function bufferline(config)
     buffers[i] = buf
   end
 
-  if has_groups then
-    buffers = require("bufferline.groups").sort_by_groups(buffers)
+  -- if the user has reshuffled the buffers manually don't try and sort them
+  if not state.custom_sort then
+    require("bufferline.sorters").sort_buffers(config.options.sort_by, buffers)
   end
 
-  -- if the user has reshuffled the buffers manually don't try and sort them
-  if not state.custom_sort and not has_groups then
-    require("bufferline.sorters").sort_buffers(config.options.sort_by, buffers)
+  if has_groups then
+    buffers = require("bufferline.groups").sort_by_groups(buffers)
   end
 
   local deduplicated = duplicates.mark(buffers)
