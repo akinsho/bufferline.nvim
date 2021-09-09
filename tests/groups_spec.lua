@@ -144,4 +144,57 @@ describe("Group tests - ", function()
     assert.is_equal(g_end.type, "group_end")
     assert.is_truthy(g_start.component():match("test%-group"))
   end)
+
+  it("should sort each group individually", function()
+    local config = {
+      highlights = {},
+      options = {
+        groups = {
+          items = {
+            {
+              name = "A",
+              matcher = function(buf)
+                return buf.filename:match("%.txt")
+              end,
+            },
+            {
+              name = "B",
+              matcher = function(buf)
+                return buf.filename:match("%.js")
+              end,
+            },
+            {
+              name = "C",
+              matcher = function(buf)
+                return buf.filename:match("%.dart")
+              end,
+            },
+          },
+        },
+      },
+    }
+    require("bufferline").setup(config)
+    utils.vim_enter()
+    groups.setup(config)
+    local tabs = {
+      Buffer:new({ filename = "b.txt", group = 1 }),
+      Buffer:new({ filename = "a.txt", group = 1 }),
+      Buffer:new({ filename = "d.txt", group = 2 }),
+      Buffer:new({ filename = "c.txt", group = 2 }),
+      Buffer:new({ filename = "h.txt", group = 3 }),
+      Buffer:new({ filename = "g.txt", group = 3 }),
+    }
+    tabs = groups.render(tabs, function(t)
+      table.sort(t, function(a, b)
+        return a.filename < b.filename
+      end)
+      return t
+    end)
+    assert.is_equal(tabs[2]:as_buffer().filename, "a.txt")
+    assert.is_equal(tabs[3]:as_buffer().filename, "b.txt")
+    assert.is_equal(tabs[6]:as_buffer().filename, "c.txt")
+    assert.is_equal(tabs[7]:as_buffer().filename, "d.txt")
+    assert.is_equal(tabs[10]:as_buffer().filename, "g.txt")
+    assert.is_equal(tabs[11]:as_buffer().filename, "h.txt")
+  end)
 end)
