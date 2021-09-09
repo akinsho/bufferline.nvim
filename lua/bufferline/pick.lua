@@ -48,7 +48,7 @@ function M.component(ctx)
   end
 
   component = utils.join(hl.pick, letter, padding, hl.background, component)
-  length = utils.sum(length, strwidth(buffer.letter), strwidth(padding))
+  length = utils.sum(length, strwidth(letter), strwidth(padding))
   return component, length
 end
 
