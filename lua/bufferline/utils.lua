@@ -27,6 +27,13 @@ function M.log.debug(msg)
   end
 end
 
+---Takes all args and passes them on untouched
+---@generic A
+---@return A
+function M.identity(...)
+  return ...
+end
+
 ---Takes a list of items and runs the callback
 ---on each updating the initial value
 ---@generic T

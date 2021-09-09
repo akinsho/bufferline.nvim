@@ -680,10 +680,6 @@ local function add_padding(sides)
   end
 end
 
-local function identity(...)
-  return ...
-end
-
 --- @param context RenderContext
 --- @return RenderContext
 local function add_spacing(context)
@@ -735,7 +731,7 @@ local function render_buffer(config, buffer)
   local add_diagnostics = require("bufferline.diagnostics").component
   local add_duplicates = require("bufferline.duplicates").component
   local add_numbers = require("bufferline.numbers").component
-  local add_group = buffer.group and require("bufferline.groups").component or identity
+  local add_group = buffer.group and require("bufferline.groups").component or utils.identity
 
   --- Order matter here as this is the sequence which builds up the tab component
   --- each render function takes the context and returns an updated context with it's
