@@ -1,5 +1,7 @@
+local utils = require("tests.utils")
+local Buffer = utils.MockBuffer
+
 describe("Group tests - ", function()
-  local utils = require("tests.utils")
   local groups
 
   before_each(function()
@@ -97,13 +99,13 @@ describe("Group tests - ", function()
       },
     })
     local sorted = groups.sort_by_groups({
-      { filename = "dummy-1.txt", group = 1 },
-      { filename = "dummy-2.txt", group = 1 },
-      { filename = "file-2.txt", group = 2 },
+      Buffer:new({ filename = "dummy-1.txt", group = 1 }),
+      Buffer:new({ filename = "dummy-2.txt", group = 1 }),
+      Buffer:new({ filename = "file-2.txt", group = 2 }),
     })
     assert.is_equal(#sorted, 3)
-    assert.equal(sorted[1].filename, "dummy-1.txt")
-    assert.equal(sorted[#sorted].filename, "file-2.txt")
+    assert.equal(sorted[1]:as_buffer().filename, "dummy-1.txt")
+    assert.equal(sorted[#sorted]:as_buffer().filename, "file-2.txt")
 
     assert.is_equal(vim.tbl_count(groups.state.tabs_by_group), 2)
   end)
@@ -128,9 +130,9 @@ describe("Group tests - ", function()
     utils.vim_enter()
     groups.setup(config)
     local tabs = {
-      { filename = "dummy-1.txt", group = 1, type = "buffer" },
-      { filename = "dummy-2.txt", group = 1, type = "buffer" },
-      { filename = "file-2.txt", group = 2, type = "buffer" },
+      Buffer:new({ filename = "dummy-1.txt", group = 1 }),
+      Buffer:new({ filename = "dummy-2.txt", group = 1 }),
+      Buffer:new({ filename = "file-2.txt", group = 2 }),
     }
     local sorted = groups.sort_by_groups(tabs)
     assert.is_false(vim.tbl_isempty(groups.state.tabs_by_group))
@@ -138,8 +140,8 @@ describe("Group tests - ", function()
     assert.equal(#tabs, 5)
     local g_start = tabs[1]
     local g_end = tabs[4]
-    assert.is_equal(g_start.type, 'group_start')
-    assert.is_equal(g_end.type, 'group_end')
-    assert.is_truthy(g_start.component():match('test%-group'))
+    assert.is_equal(g_start.type, "group_start")
+    assert.is_equal(g_end.type, "group_end")
+    assert.is_truthy(g_start.component():match("test%-group"))
   end)
 end)
