@@ -336,9 +336,10 @@ end
 -- FIXME:
 -- 1. this function does a lot of looping that can maybe be consolidated
 ---@param tabs TabView[]
+---@param sorter fun(list: TabView[]):TabView[]
 ---@return TabView[]
 ---@return TabView[]
-function M.add_markers(tabs)
+function M.add_markers(tabs, sorter)
   if vim.tbl_isempty(state.tabs_by_group) then
     return tabs
   end
@@ -354,6 +355,8 @@ function M.add_markers(tabs)
       t.hidden = buf_group and buf_group.hidden
       return t
     end, sublist)
+    --- Sort *each* group, TODO: in the future each group should be able to have it's own sorter
+    tab_views = sorter(tab_views)
 
     if sublist.name ~= UNGROUPED and #sublist > 0 then
       local group_start, group_end = get_tab(sublist.display_name, buf_group_id, sublist)

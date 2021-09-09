@@ -897,6 +897,19 @@ local function filter_invisible(list)
   end, list)
 end
 
+---sort a list of tabviews using a sort function
+---@param list TabView[]
+---@return TabView[]
+local function sorter(list)
+  -- if the user has reshuffled the buffers manually don't try and sort them
+  if state.custom_sort then
+    return list
+  end
+  local options = require("bufferline.config").get("options")
+  require("bufferline.sorters").sort_buffers(options.sort_by, list)
+  return list
+end
+
 --- @param tab_views TabView[]
 --- @param tabpages table[]
 --- @param config BufferlineConfig
@@ -942,7 +955,10 @@ local function render(tab_views, tabpages, config)
     - close_length
 
   if config:enabled("groups") then
-    tab_views = require("bufferline.groups").add_markers(tab_views)
+    tab_views = require("bufferline.groups").sort_by_groups(tab_views)
+    tab_views = require("bufferline.groups").add_markers(tab_views, sorter)
+  else
+    tab_views = sorter(tab_views)
   end
 
   local before, current, after = get_sections(tab_views)
@@ -1025,15 +1041,6 @@ local function bufferline(config)
       buf.group = require("bufferline.groups").set_id(buf)
     end
     buffers[i] = buf
-  end
-
-  -- if the user has reshuffled the buffers manually don't try and sort them
-  if not state.custom_sort then
-    require("bufferline.sorters").sort_buffers(config.options.sort_by, buffers)
-  end
-
-  if has_groups then
-    buffers = require("bufferline.groups").sort_by_groups(buffers)
   end
 
   local deduplicated = duplicates.mark(buffers)
