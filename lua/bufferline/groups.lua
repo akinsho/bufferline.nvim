@@ -73,37 +73,6 @@ local function generate_sublists(size)
   return list
 end
 
---- Save the current buffer groups
---- The aim is to have buffers easily accessible by key as well as a list of sorted and prioritized
---- buffers for things like navigation. This function takes advantage of lua's ability
---- to sort string keys as well as numerical keys in a table, this way each sublist has
---- not only the group information but contains it's buffers
----@param tabs TabView[]
----@return TabView[]
-function M.sort_by_groups(tabs)
-  local no_of_groups = vim.tbl_count(state.user_groups)
-  local sorted = {}
-  local clustered = generate_sublists(no_of_groups)
-  for index, tab in ipairs(tabs) do
-    local buf = tab:as_buffer()
-    if buf then
-      local group = state.user_groups[buf.group]
-      local sublist = clustered[group.priority]
-      if not sublist.name then
-        sublist.id = group.id
-        sublist.name = group.name
-        sublist.priorty = group.priority
-        sublist.hidden = group.hidden
-        sublist.display_name = group.display_name
-      end
-      table.insert(sublist, { id = buf.id, index = index })
-      table.insert(sorted, buf)
-    end
-  end
-  state.tabs_by_group = clustered
-  return sorted
-end
-
 ---Add group styling to the buffer component
 ---@param ctx RenderContext
 ---@return string
@@ -333,13 +302,41 @@ local function get_tab(name, group_id, tab_views)
   return group_start, group_end
 end
 
+--- The aim is to have buffers easily accessible by key as well as a list of sorted and prioritized
+--- buffers for things like navigation. This function takes advantage of lua's ability
+--- to sort string keys as well as numerical keys in a table, this way each sublist has
+--- not only the group information but contains it's buffers
+---@param tabs TabView[]
+---@return TabView[]
+local function sort_by_groups(tabs)
+  local sorted = {}
+  local clustered = generate_sublists(vim.tbl_count(state.user_groups))
+  for index, tab in ipairs(tabs) do
+    local buf = tab:as_buffer()
+    if buf then
+      local group = state.user_groups[buf.group]
+      local sublist = clustered[group.priority]
+      if not sublist.name then
+        sublist.id = group.id
+        sublist.name = group.name
+        sublist.priorty = group.priority
+        sublist.hidden = group.hidden
+        sublist.display_name = group.display_name
+      end
+      table.insert(sublist, { id = buf.id, index = index })
+      table.insert(sorted, buf)
+    end
+  end
+  return sorted, clustered
+end
+
 -- FIXME:
 -- 1. this function does a lot of looping that can maybe be consolidated
 ---@param tabs TabView[]
 ---@param sorter fun(list: TabView[]):TabView[]
 ---@return TabView[]
----@return TabView[]
-function M.add_markers(tabs, sorter)
+function M.render(tabs, sorter)
+  tabs, state.tabs_by_group = sort_by_groups(tabs)
   if vim.tbl_isempty(state.tabs_by_group) then
     return tabs
   end

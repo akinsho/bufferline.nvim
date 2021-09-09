@@ -955,8 +955,7 @@ local function render(tab_views, tabpages, config)
     - close_length
 
   if config:enabled("groups") then
-    tab_views = require("bufferline.groups").sort_by_groups(tab_views)
-    tab_views = require("bufferline.groups").add_markers(tab_views, sorter)
+    tab_views = require("bufferline.groups").render(tab_views, sorter)
   else
     tab_views = sorter(tab_views)
   end

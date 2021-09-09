@@ -134,7 +134,7 @@ describe("Group tests - ", function()
       Buffer:new({ filename = "dummy-2.txt", group = 1 }),
       Buffer:new({ filename = "file-2.txt", group = 2 }),
     }
-    tabs = groups.add_markers(tabs, function(t)
+    tabs = groups.render(tabs, function(t)
       return t
     end)
     assert.equal(#tabs, 5)
