@@ -368,9 +368,9 @@ function M.render(tabs, sorter)
         tab_views[#tab_views + 1] = group_end
       end
     end
-    --- NOTE: there is no easy way to flatten a list of liss of non-scalar values like these
-    ---lists of objects since each object needs to be checked that it is in fact an object
-    ---not a list
+    --- NOTE: there is no easy way to flatten a list of lists of non-scalar values like these
+    --- lists of objects since each object needs to be checked that it is in fact an object
+    --- not a list
     vim.list_extend(result, tab_views)
   end
   return result

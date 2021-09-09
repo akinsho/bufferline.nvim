@@ -379,7 +379,7 @@ groups = {
 
 ### Ordering groups
 
-Groups are ordered by their position the `items` list, the first group shows at the start of the bufferline and so on.
+Groups are ordered by their position in the `items` list, the first group shows at the start of the bufferline and so on.
 You might want to order groups _around_ the un-grouped buffers e.g. `| group 1 | buf 1 (ungrouped) | buf 2 (ungrouped) | group 2 |`.
 In this case builtin groups are provided (for now just the `ungrouped`) builtin so you can achieve the order above using
 

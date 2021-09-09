@@ -224,7 +224,7 @@ In order to group buffers specify a list of groups in your config e.g.
 ==============================================================================
 ORDERING GROUPS                                   *bufferline-ordering-groups*
 
-Groups are ordered by their position the `items` list, the first group shows
+Groups are ordered by their position in the `items` list, the first group shows
 at the start of the bufferline and so on. You might want to order groups
 around the un-grouped buffers e.g.
 >
