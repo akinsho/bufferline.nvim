@@ -42,14 +42,16 @@ function M.set_id(buffer)
   if not user_groups or vim.tbl_isempty(user_groups) then
     return
   end
+  local ungrouped_id
   for id, group in pairs(user_groups) do
+    if group.name == UNGROUPED then
+      ungrouped_id = group.id
+    end
     if type(group.matcher) == "function" and group.matcher(buffer) then
       return id
     end
-    if group.name == UNGROUPED then
-      return id
-    end
   end
+  return ungrouped_id
 end
 
 ---@param id number
@@ -126,9 +128,19 @@ function M.setup(config)
 
   local hls = config.highlights
   local groups = config.options.groups.items
+
+  --- FIXME: find a better way to determine if the user specified an ungrouped group
+  --- and if so assign it to user_groups or add properties to their assignment
+  local ungrouped_specified = false
+
   for idx, group in ipairs(groups) do
     local hl = group.highlight
     local name = format_name(group.name)
+
+    if name == UNGROUPED then
+      ungrouped_specified = true
+    end
+
     user_groups[idx] = vim.tbl_extend("force", group, {
       id = idx,
       hidden = false,
@@ -148,11 +160,15 @@ function M.setup(config)
       })
     end
   end
-  local no_of_groups = #groups
-  user_groups[no_of_groups + 1] = {
-    name = UNGROUPED,
-    priority = no_of_groups + 1,
-  }
+  if not ungrouped_specified then
+    local last_position = #groups + 1
+    user_groups[last_position] = {
+      id = last_position,
+      name = UNGROUPED,
+      hidden = false,
+      priority = last_position,
+    }
+  end
 end
 
 --- Add the current highlight for a specific buffer
