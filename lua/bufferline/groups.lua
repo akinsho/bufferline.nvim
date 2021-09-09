@@ -19,7 +19,7 @@ local state = {
   tabs_by_group = {},
 }
 
----@alias GroupSeparator fun(name: string, group:Group, hls: table<string, table<string, string>>, count_item: string): string, number
+---@alias GroupSeparator fun(name: string, group:Group, hls: BufferlineHLGroup, count_item: string): string, number
 ---@alias GroupSeparators table<string, GroupSeparator>
 ---@alias grouper fun(b: Buffer): boolean
 

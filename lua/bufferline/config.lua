@@ -2,19 +2,6 @@ local M = {}
 
 local fmt = string.format
 
----@type BufferlineConfig
-local config = {}
-
----@class DebugOpts
----@field logging boolean
-
----@class GroupOptions
----@field toggle_hidden_on_enter boolean re-open hidden groups on bufenter
-
----@class GroupOpts
----@field options GroupOptions
----@field items Group[]
-
 ---@class BufferlineOptions
 ---@field public view string
 ---@field public debug DebugOpts
@@ -50,6 +37,33 @@ local config = {}
 ---@field public diagnostics_update_in_insert boolean
 ---@field public offsets table[]
 ---@field public groups GroupOpts
+
+---@class BufferlineHLGroup
+---@field guifg string
+---@field guibg string
+---@field guisp string
+---@field gui string
+---@field hl string
+---@field hl_name string
+
+---@alias BufferlineHighlights table<string, BufferlineHLGroup>
+
+---@class BufferlineConfig
+---@field public options BufferlineOptions
+---@field public highlights BufferlineHighlights
+
+---@type BufferlineConfig
+local config = {}
+
+---@class DebugOpts
+---@field logging boolean
+
+---@class GroupOptions
+---@field toggle_hidden_on_enter boolean re-open hidden groups on bufenter
+
+---@class GroupOpts
+---@field options GroupOptions
+---@field items Group[]
 
 ---@type BufferlineConfig
 local Config = {}
@@ -453,10 +467,6 @@ local function derive_colors()
   }
 end
 
----@class BufferlineConfig
----@field public options BufferlineOptions
----@field public highlights table<string,table>
-
 -- Ideally this plugin should generate a beautiful tabline a little similar
 -- to what you would get on other editors. The aim is that the default should
 -- be so nice it's what anyone using this plugin sticks with. It should ideally
@@ -558,15 +568,14 @@ end
 
 ---Get the user's configuration or a key from it
 ---@param key string?
----@return any
+---@return BufferlineConfig
+---@overload fun(key: '"options"'): BufferlineOptions
+---@overload fun(key: '"highlights"'): BufferlineHighlights
 function M.get(key)
   if not config then
     return
   end
-  if key and type(key) == "string" then
-    return config[key]
-  end
-  return config
+  return config[key] or config
 end
 
 --- This function is only intended for use in tests
