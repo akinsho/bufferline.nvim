@@ -1,18 +1,18 @@
-local M = { separator = {} }
 local api = vim.api
-
 local fmt = string.format
 local strwidth = api.nvim_strwidth
 local utils = require("bufferline.utils")
 local padding = require("bufferline.constants").padding
 
----@type table<string, Group>
-local user_groups = {}
-
----@type TabView[][]
-local tabs_by_group = {}
-
 local UNGROUPED = "ungrouped"
+
+local M = {
+  ---@type table<string, Group>
+  user_groups = {},
+  ---@type TabView[][]
+  tabs_by_group = {},
+  separator = {},
+}
 
 ---@alias GroupSeparator fun(name: string, group:Group, hls: table<string, table<string, string>>, count_item: string): string, number
 ---@alias GroupSeparators table<string, GroupSeparator>
@@ -39,11 +39,11 @@ end
 ---buffers only carry a copy of the group ID which is then used to retrieve the correct group
 ---@param buffer Buffer
 function M.set_id(buffer)
-  if not user_groups or vim.tbl_isempty(user_groups) then
+  if not M.user_groups or vim.tbl_isempty(M.user_groups) then
     return
   end
   local ungrouped_id
-  for id, group in pairs(user_groups) do
+  for id, group in pairs(M.user_groups) do
     if group.name == UNGROUPED then
       ungrouped_id = group.id
     end
@@ -57,7 +57,7 @@ end
 ---@param id number
 ---@return Group
 function M.get_by_id(id)
-  return user_groups[id]
+  return M.user_groups[id]
 end
 
 local function generate_sublists(size)
@@ -76,10 +76,10 @@ end
 ---@param buffers Buffer[]
 ---@return Buffer[]
 function M.sort_by_groups(buffers)
-  local no_of_groups = vim.tbl_count(user_groups)
+  local no_of_groups = vim.tbl_count(M.user_groups)
   local list = generate_sublists(no_of_groups)
   local sublists = utils.fold(list, function(accum, buf)
-    local group = user_groups[buf.group]
+    local group = M.user_groups[buf.group]
     local sublist = accum[group.priority]
     if not sublist.name then
       sublist.id = group.id
@@ -91,11 +91,7 @@ function M.sort_by_groups(buffers)
     table.insert(sublist, buf)
     return accum
   end, buffers)
-  --- FIXME: I specifically update the existing value rather than replace it so it is update in tests
-  --- although a second loop should not be necessary, but I'm too tired to debug this
-  for i, l in ipairs(sublists) do
-    tabs_by_group[i] = l
-  end
+  M.tabs_by_group = sublists
   return utils.array_concat(unpack(sublists))
 end
 
@@ -106,7 +102,7 @@ end
 function M.component(ctx)
   local buffer = ctx.tab:as_buffer()
   local hls = ctx.current_highlights
-  local group = user_groups[buffer.group]
+  local group = M.user_groups[buffer.group]
   if not group then
     return ctx
   end
@@ -116,6 +112,21 @@ function M.component(ctx)
   local hl = hls[group.name] or ""
   local component, length = hl .. icon .. ctx.component .. hls.buffer.hl, ctx.length + icon_length
   return ctx:update({ component = component, length = length })
+end
+
+---Add extra metadata to each group
+---@param index number
+---@param group Group
+---@return Group
+local function enrich_group(index, group)
+  group = group or { priority = index }
+  return vim.tbl_extend("force", group, {
+    id = index,
+    hidden = false,
+    name = format_name(group.name),
+    display_name = group.name,
+    priority = group.priority or index,
+  })
 end
 
 --- NOTE: this function mutates the user's configuration.
@@ -128,26 +139,20 @@ function M.setup(config)
 
   local hls = config.highlights
   local groups = config.options.groups.items
-
-  --- FIXME: find a better way to determine if the user specified an ungrouped group
-  --- and if so assign it to user_groups or add properties to their assignment
-  local ungrouped_specified = false
-
-  for idx, group in ipairs(groups) do
+  local result = utils.fold({ ungrouped_seen = false, list = {} }, function(accum, group, index)
     local hl = group.highlight
     local name = format_name(group.name)
 
-    if name == UNGROUPED then
-      ungrouped_specified = true
+    accum.ungrouped_seen = accum.ungrouped_seen or name == UNGROUPED
+    accum.list[index] = enrich_group(index, group)
+
+    -- track if the user has specified an ungrouped group because if they haven't we must add one
+    -- on the final iteration of the loop
+    if index == #groups and not accum.ungrouped_seen then
+      local last_position = index + 1
+      accum.list[last_position] = enrich_group(last_position, { name = UNGROUPED })
     end
 
-    user_groups[idx] = vim.tbl_extend("force", group, {
-      id = idx,
-      hidden = false,
-      name = name,
-      priority = group.priority or idx,
-      display_name = group.name,
-    })
     if hl and type(hl) == "table" then
       hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
         guibg = hls.buffer_selected.guibg,
@@ -159,16 +164,9 @@ function M.setup(config)
         guibg = hls.buffer.guibg,
       })
     end
-  end
-  if not ungrouped_specified then
-    local last_position = #groups + 1
-    user_groups[last_position] = {
-      id = last_position,
-      name = UNGROUPED,
-      hidden = false,
-      priority = last_position,
-    }
-  end
+    return accum
+  end, groups)
+  M.user_groups = result.list
 end
 
 --- Add the current highlight for a specific buffer
@@ -177,7 +175,7 @@ end
 ---@param highlights table<string, table<string, string>>
 ---@param current_hl table<string, string>
 function M.set_current_hl(buffer, highlights, current_hl)
-  local group = user_groups[buffer.group]
+  local group = M.user_groups[buffer.group]
   if not group or not group.name or not group.highlight then
     return
   end
@@ -192,7 +190,7 @@ end
 ---@param group_name string
 ---@param callback fun(b: Buffer)
 function M.command(group_name, callback)
-  local group = utils.find(tabs_by_group, function(list)
+  local group = utils.find(M.tabs_by_group, function(list)
     return list.name == group_name
   end)
   utils.for_each(group, callback)
@@ -201,7 +199,7 @@ end
 ---@param name string
 ---@return Group
 local function group_by_name(name)
-  for _, grp in pairs(user_groups) do
+  for _, grp in pairs(M.user_groups) do
     if grp.name == name then
       return grp
     end
@@ -212,7 +210,7 @@ end
 ---@param value boolean
 function M.set_hidden(id, value)
   assert(id, "You must pass in a group ID to set its state")
-  local grp = user_groups[id]
+  local grp = M.user_groups[id]
   if grp then
     grp.hidden = value
   end
@@ -221,7 +219,7 @@ end
 ---@param group_id number
 ---@param name string
 function M.toggle_hidden(group_id, name)
-  local group = group_id and user_groups[group_id] or group_by_name(name)
+  local group = group_id and M.user_groups[group_id] or group_by_name(name)
   if group then
     group.hidden = not group.hidden
   end
@@ -231,12 +229,12 @@ end
 ---@param include_empty boolean
 ---@return string[]
 function M.names(include_empty)
-  if user_groups == nil then
+  if M.user_groups == nil then
     return {}
   end
   local names = {}
-  for _, group in ipairs(user_groups) do
-    local group_tabs = utils.find(tabs_by_group, function(item)
+  for _, group in ipairs(M.user_groups) do
+    local group_tabs = utils.find(M.tabs_by_group, function(item)
       return item.id == group.id
     end)
     if include_empty or (group_tabs and #group_tabs > 0) then
@@ -292,7 +290,7 @@ end
 ---@return TabView
 ---@return TabView
 local function get_tab(name, group_id, tab_views)
-  local group = user_groups[group_id]
+  local group = M.user_groups[group_id]
   if name == UNGROUPED or not group then
     return
   end
@@ -332,13 +330,13 @@ end
 ---@return TabView[]
 ---@return TabView[]
 function M.add_markers(tabs)
-  if vim.tbl_isempty(tabs_by_group) then
+  if vim.tbl_isempty(M.tabs_by_group) then
     return tabs
   end
   local result = {}
-  for _, sublist in ipairs(tabs_by_group) do
+  for _, sublist in ipairs(M.tabs_by_group) do
     local buf_group_id = sublist.id
-    local buf_group = user_groups[buf_group_id]
+    local buf_group = M.user_groups[buf_group_id]
     --- filter out tab views that are hidden
     local tab_views = (not buf_group or not buf_group.hidden) and sublist
       or utils.map(function(t)
@@ -359,11 +357,6 @@ function M.add_markers(tabs)
     vim.list_extend(result, tab_views)
   end
   return result
-end
-
-if utils.is_test() then
-  M.user_groups = user_groups
-  M.tabs_by_group = tabs_by_group
 end
 
 return M

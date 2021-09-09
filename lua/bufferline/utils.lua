@@ -15,7 +15,7 @@ end
 ---@return boolean
 local function check_logging()
   ---@type BufferlineOptions
-  local config = require("bufferline.config").get('options')
+  local config = require("bufferline.config").get("options")
   return config.debug.logging
 end
 
@@ -32,6 +32,7 @@ end
 ---@generic T
 ---@param accum T
 ---@param callback fun(accum:T, item: T, index: number): T
+---@param list T[]
 ---@return T
 function M.fold(accum, callback, list)
   assert(accum and callback, "An initial value and callback must be passed to fold")
