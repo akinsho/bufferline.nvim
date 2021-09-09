@@ -22,7 +22,7 @@ describe("Group tests - ", function()
         },
       },
     })
-    assert.is_equal(vim.tbl_count(groups.user_groups), 2)
+    assert.is_equal(vim.tbl_count(groups.state.user_groups), 2)
   end)
 
   it("should sanitise invalid names", function()
@@ -40,7 +40,7 @@ describe("Group tests - ", function()
         },
       },
     })
-    assert.is_equal(groups.user_groups[1].name, "test_group")
+    assert.is_equal(groups.state.user_groups[1].name, "test_group")
   end)
 
   it("should set highlights on setup", function()
@@ -105,7 +105,7 @@ describe("Group tests - ", function()
     assert.equal(sorted[1].filename, "dummy-1.txt")
     assert.equal(sorted[#sorted].filename, "file-2.txt")
 
-    assert.is_equal(vim.tbl_count(groups.tabs_by_group), 2)
+    assert.is_equal(vim.tbl_count(groups.state.tabs_by_group), 2)
   end)
 
   it("should add group markers", function()
@@ -133,7 +133,7 @@ describe("Group tests - ", function()
       { filename = "file-2.txt", group = 2, type = "buffer" },
     }
     local sorted = groups.sort_by_groups(tabs)
-    assert.is_false(vim.tbl_isempty(groups.tabs_by_group))
+    assert.is_false(vim.tbl_isempty(groups.state.tabs_by_group))
     tabs = groups.add_markers(sorted)
     assert.equal(#tabs, 5)
     local g_start = tabs[1]

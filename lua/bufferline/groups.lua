@@ -6,12 +6,13 @@ local padding = require("bufferline.constants").padding
 
 local UNGROUPED = "ungrouped"
 
-local M = {
+local M = { separator = {} }
+
+local state = {
   ---@type table<string, Group>
   user_groups = {},
   ---@type TabView[][]
   tabs_by_group = {},
-  separator = {},
 }
 
 ---@alias GroupSeparator fun(name: string, group:Group, hls: table<string, table<string, string>>, count_item: string): string, number
@@ -39,11 +40,11 @@ end
 ---buffers only carry a copy of the group ID which is then used to retrieve the correct group
 ---@param buffer Buffer
 function M.set_id(buffer)
-  if not M.user_groups or vim.tbl_isempty(M.user_groups) then
+  if not state.user_groups or vim.tbl_isempty(state.user_groups) then
     return
   end
   local ungrouped_id
-  for id, group in pairs(M.user_groups) do
+  for id, group in pairs(state.user_groups) do
     if group.name == UNGROUPED then
       ungrouped_id = group.id
     end
@@ -57,7 +58,7 @@ end
 ---@param id number
 ---@return Group
 function M.get_by_id(id)
-  return M.user_groups[id]
+  return state.user_groups[id]
 end
 
 local function generate_sublists(size)
@@ -76,10 +77,10 @@ end
 ---@param buffers Buffer[]
 ---@return Buffer[]
 function M.sort_by_groups(buffers)
-  local no_of_groups = vim.tbl_count(M.user_groups)
+  local no_of_groups = vim.tbl_count(state.user_groups)
   local list = generate_sublists(no_of_groups)
   local sublists = utils.fold(list, function(accum, buf)
-    local group = M.user_groups[buf.group]
+    local group = state.user_groups[buf.group]
     local sublist = accum[group.priority]
     if not sublist.name then
       sublist.id = group.id
@@ -91,7 +92,7 @@ function M.sort_by_groups(buffers)
     table.insert(sublist, buf)
     return accum
   end, buffers)
-  M.tabs_by_group = sublists
+  state.tabs_by_group = sublists
   return utils.array_concat(unpack(sublists))
 end
 
@@ -102,7 +103,7 @@ end
 function M.component(ctx)
   local buffer = ctx.tab:as_buffer()
   local hls = ctx.current_highlights
-  local group = M.user_groups[buffer.group]
+  local group = state.user_groups[buffer.group]
   if not group then
     return ctx
   end
@@ -166,7 +167,7 @@ function M.setup(config)
     end
     return accum
   end, groups)
-  M.user_groups = result.list
+  state.user_groups = result.list
 end
 
 --- Add the current highlight for a specific buffer
@@ -175,7 +176,7 @@ end
 ---@param highlights table<string, table<string, string>>
 ---@param current_hl table<string, string>
 function M.set_current_hl(buffer, highlights, current_hl)
-  local group = M.user_groups[buffer.group]
+  local group = state.user_groups[buffer.group]
   if not group or not group.name or not group.highlight then
     return
   end
@@ -190,7 +191,7 @@ end
 ---@param group_name string
 ---@param callback fun(b: Buffer)
 function M.command(group_name, callback)
-  local group = utils.find(M.tabs_by_group, function(list)
+  local group = utils.find(state.tabs_by_group, function(list)
     return list.name == group_name
   end)
   utils.for_each(group, callback)
@@ -199,7 +200,7 @@ end
 ---@param name string
 ---@return Group
 local function group_by_name(name)
-  for _, grp in pairs(M.user_groups) do
+  for _, grp in pairs(state.user_groups) do
     if grp.name == name then
       return grp
     end
@@ -210,7 +211,7 @@ end
 ---@param value boolean
 function M.set_hidden(id, value)
   assert(id, "You must pass in a group ID to set its state")
-  local grp = M.user_groups[id]
+  local grp = state.user_groups[id]
   if grp then
     grp.hidden = value
   end
@@ -219,7 +220,7 @@ end
 ---@param group_id number
 ---@param name string
 function M.toggle_hidden(group_id, name)
-  local group = group_id and M.user_groups[group_id] or group_by_name(name)
+  local group = group_id and state.user_groups[group_id] or group_by_name(name)
   if group then
     group.hidden = not group.hidden
   end
@@ -229,12 +230,12 @@ end
 ---@param include_empty boolean
 ---@return string[]
 function M.names(include_empty)
-  if M.user_groups == nil then
+  if state.user_groups == nil then
     return {}
   end
   local names = {}
-  for _, group in ipairs(M.user_groups) do
-    local group_tabs = utils.find(M.tabs_by_group, function(item)
+  for _, group in ipairs(state.user_groups) do
+    local group_tabs = utils.find(state.tabs_by_group, function(item)
       return item.id == group.id
     end)
     if include_empty or (group_tabs and #group_tabs > 0) then
@@ -290,7 +291,7 @@ end
 ---@return TabView
 ---@return TabView
 local function get_tab(name, group_id, tab_views)
-  local group = M.user_groups[group_id]
+  local group = state.user_groups[group_id]
   if name == UNGROUPED or not group then
     return
   end
@@ -330,13 +331,13 @@ end
 ---@return TabView[]
 ---@return TabView[]
 function M.add_markers(tabs)
-  if vim.tbl_isempty(M.tabs_by_group) then
+  if vim.tbl_isempty(state.tabs_by_group) then
     return tabs
   end
   local result = {}
-  for _, sublist in ipairs(M.tabs_by_group) do
+  for _, sublist in ipairs(state.tabs_by_group) do
     local buf_group_id = sublist.id
-    local buf_group = M.user_groups[buf_group_id]
+    local buf_group = state.user_groups[buf_group_id]
     --- filter out tab views that are hidden
     local tab_views = (not buf_group or not buf_group.hidden) and sublist
       or utils.map(function(t)
@@ -357,6 +358,10 @@ function M.add_markers(tabs)
     vim.list_extend(result, tab_views)
   end
   return result
+end
+
+if utils.is_test() then
+  M.state = state
 end
 
 return M
