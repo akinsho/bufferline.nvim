@@ -11,7 +11,11 @@ local M = { separator = {} }
 local state = {
   ---@type table<string, Group>
   user_groups = {},
-  ---@type TabView[][]
+  --- Represents a list of maps of type `{id = buf_id, index = position in list}`
+  --- so that rather than storing the tabs we store their positions
+  --- with an easy way to look them up later.
+  --- e.g. `[[group 1, {id = 12, index = 1}, {id = 10, index 2}], [group 2, {id = 5, index = 3}]]`
+  ---@type table<string,number>[][]
   tabs_by_group = {},
 }
 
@@ -74,26 +78,30 @@ end
 --- buffers for things like navigation. This function takes advantage of lua's ability
 --- to sort string keys as well as numerical keys in a table, this way each sublist has
 --- not only the group information but contains it's buffers
----@param buffers Buffer[]
----@return Buffer[]
-function M.sort_by_groups(buffers)
+---@param tabs TabView[]
+---@return TabView[]
+function M.sort_by_groups(tabs)
   local no_of_groups = vim.tbl_count(state.user_groups)
-  local list = generate_sublists(no_of_groups)
-  local sublists = utils.fold(list, function(accum, buf)
-    local group = state.user_groups[buf.group]
-    local sublist = accum[group.priority]
-    if not sublist.name then
-      sublist.id = group.id
-      sublist.name = group.name
-      sublist.priorty = group.priority
-      sublist.hidden = group.hidden
-      sublist.display_name = group.display_name
+  local sorted = {}
+  local clustered = generate_sublists(no_of_groups)
+  for index, tab in ipairs(tabs) do
+    local buf = tab:as_buffer()
+    if buf then
+      local group = state.user_groups[buf.group]
+      local sublist = clustered[group.priority]
+      if not sublist.name then
+        sublist.id = group.id
+        sublist.name = group.name
+        sublist.priorty = group.priority
+        sublist.hidden = group.hidden
+        sublist.display_name = group.display_name
+      end
+      table.insert(sublist, { id = buf.id, index = index })
+      table.insert(sorted, buf)
     end
-    table.insert(sublist, buf)
-    return accum
-  end, buffers)
-  state.tabs_by_group = sublists
-  return utils.array_concat(unpack(sublists))
+  end
+  state.tabs_by_group = clustered
+  return sorted
 end
 
 ---Add group styling to the buffer component
@@ -338,12 +346,14 @@ function M.add_markers(tabs)
   for _, sublist in ipairs(state.tabs_by_group) do
     local buf_group_id = sublist.id
     local buf_group = state.user_groups[buf_group_id]
-    --- filter out tab views that are hidden
-    local tab_views = (not buf_group or not buf_group.hidden) and sublist
-      or utils.map(function(t)
-        t.hidden = true
-        return t
-      end, sublist)
+    --- convert our tabs by group which is essentially and index of tab positions and ids
+    --- to the actual tab by pulling the full value out of the tab map
+    local tab_views = utils.map(function(map)
+      local t = tabs[map.index]
+      --- filter out tab views that are hidden
+      t.hidden = buf_group and buf_group.hidden
+      return t
+    end, sublist)
 
     if sublist.name ~= UNGROUPED and #sublist > 0 then
       local group_start, group_end = get_tab(sublist.display_name, buf_group_id, sublist)
