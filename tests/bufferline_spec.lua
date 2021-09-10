@@ -59,6 +59,56 @@ describe("Bufferline tests:", function()
     end)
   end)
 
+  describe("Snapshots - ", function()
+    local snapshots = {
+      "       a.txt       ▕       b.txt       ▕▎      c.txt         ",
+      "       a.txt      ▕       b.txt      ▕▎      c.txt        ",
+      "       a.txt              b.txt              c.txt         "
+    }
+    it("should add correct padding if close icons are present", function()
+      bufferline.setup()
+      utils.vim_enter()
+      vim.cmd("file! a.txt")
+      vim.cmd("edit b.txt")
+      vim.cmd("edit c.txt")
+      local tabline = nvim_bufferline()
+      assert.is_truthy(tabline)
+      local snapshot = utils.format_tabline(tabline)
+      assert.is_equal(snapshot, snapshots[1])
+    end)
+
+    it("should add correct padding if close icons are absent", function()
+      bufferline.setup({
+        options = {
+          show_buffer_close_icons = false,
+        },
+      })
+      utils.vim_enter()
+      vim.cmd("file! a.txt")
+      vim.cmd("edit b.txt")
+      vim.cmd("edit c.txt")
+      local tabline = nvim_bufferline()
+      assert.is_truthy(tabline)
+      local snapshot = utils.format_tabline(tabline)
+      assert.is_equal(snapshot, snapshots[2])
+    end)
+    it('should show the correct separators', function()
+      bufferline.setup({
+        options = {
+          separator_style = 'slant'
+        },
+      })
+      utils.vim_enter()
+      vim.cmd("file! a.txt")
+      vim.cmd("edit b.txt")
+      vim.cmd("edit c.txt")
+      local tabline = nvim_bufferline()
+      assert.is_truthy(tabline)
+      local snapshot = utils.format_tabline(tabline)
+      assert.is_equal(snapshot, snapshots[3])
+    end)
+  end)
+
   describe("clicking - ", function()
     it("should left handle mouse clicks correctly", function()
       local bufnum = vim.api.nvim_get_current_buf()

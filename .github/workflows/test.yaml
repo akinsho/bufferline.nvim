@@ -27,6 +27,9 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ~/.local/share/nvim/site/pack/vendor/start/plenary.nvim
           ln -s $(pwd) ~/.local/share/nvim/site/pack/vendor/start
+      - name: Add icons
+        run: |
+          git clone --depth 1 https://github.com/kyazdani42/nvim-web-devicons ~/.local/share/nvim/site/pack/vendor/start/nvim-web-devicons
       - name: Run tests
         run: |
           curl -OL https://raw.githubusercontent.com/norcalli/bot-ci/master/scripts/github-actions-setup.sh
