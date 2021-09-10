@@ -143,7 +143,7 @@ end
 
 ---@param highlights BufferlineHighlights
 function M.reset_highlights(highlights)
-  utils.for_each(state.user_groups, function (item)
+  utils.for_each(state.user_groups, function(item)
     set_group_highlights(item.name, item, highlights)
   end)
 end
