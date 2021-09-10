@@ -47,13 +47,58 @@ local mt = {
 }
 
 local function is_disabled(diagnostics)
-  return not diagnostics or diagnostics ~= "nvim_lsp" or not vim.lsp.diagnostic.get_all
+  if
+    not diagnostics
+    or not vim.tbl_contains({ "nvim_lsp", "coc" }, diagnostics)
+    or (diagnostics == "nvim_lsp" and not vim.lsp.diagnostic.get_all)
+    or (diagnostics == "coc" and vim.g.coc_service_initialized ~= 1)
+  then
+    return true
+  end
+  return false
 end
 
 local function is_insert() -- insert or replace
   local mode = vim.api.nvim_get_mode().mode
   return mode == "i" or mode == "ic" or mode == "ix" or mode == "R" or mode == "Rc" or mode == "Rx"
 end
+
+local get_diagnostics = {
+  nvim_lsp = function()
+    return vim.lsp.diagnostic.get_all()
+  end,
+
+  coc = (function()
+    local diagnostics = {}
+    local function refresh_cb(err, res)
+      if err ~= vim.NIL then
+        return
+      end
+      res = type(res) == "table" and res or {}
+
+      local result = {}
+      local bufname2bufnr = {}
+      for _, diagnostic in ipairs(res) do
+        local bufname = diagnostic.file
+        local bufnr = bufname2bufnr[bufname]
+        if not bufnr then
+          bufnr = fn.bufnr(bufname)
+          bufname2bufnr[bufname] = bufnr
+        end
+
+        if bufnr ~= -1 then
+          result[bufnr] = result[bufnr] or {}
+          table.insert(result[bufnr], { severity = diagnostic.level })
+        end
+      end
+      diagnostics = result
+    end
+    return function()
+      fn.CocActionAsync("diagnosticList", refresh_cb)
+      return diagnostics
+    end
+  end)(),
+}
 
 ---@param opts table
 function M.get(opts)
@@ -63,7 +108,7 @@ function M.get(opts)
   if is_insert() and not opts.diagnostics_update_in_insert then
     return setmetatable(last_diagnostics_result, mt)
   end
-  local diagnostics = vim.lsp.diagnostic.get_all()
+  local diagnostics = get_diagnostics[opts.diagnostics]()
   local result = {}
   for buf_num, items in pairs(diagnostics) do
     local d = get_err_dict(items)

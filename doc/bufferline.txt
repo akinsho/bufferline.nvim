@@ -79,7 +79,7 @@ The available settings are: >
             max_name_length = 18,
             max_prefix_length = 15, -- prefix used when a buffer is deduplicated
             tab_size = 18,
-            diagnostics = false | "nvim_lsp"
+            diagnostics = false | "nvim_lsp" | "coc"
             diagnostics_indicator = function(count, level)
               return "("..count..")"
             end
@@ -155,7 +155,7 @@ It is passed a table with the following keys:
 ==============================================================================
 LSP DIAGNOSTICS                                         *bufferline-diagnostics*
 
-By setting `diagnostics = "nvim_lsp"` you will get an indicator in the
+By setting `diagnostics = "nvim_lsp" | "coc"` you will get an indicator in the
 bufferline for a given tab if it has any errors This will allow you to
 tell at a glance if a particular buffer has errors. Currently only the
 native neovim lsp is supported, mainly because it has the easiest API for
