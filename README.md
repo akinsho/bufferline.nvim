@@ -60,8 +60,6 @@ see: `:h bufferline-styling`
 
 ![LSP error](https://user-images.githubusercontent.com/22454918/111993085-1d299700-8b0e-11eb-96eb-c1c289e36b08.png)
 
-**NOTE:** This only works with neovim's native lsp.
-
 #### Buffer Groups
 
 ![bufferline_group_toggle](https://user-images.githubusercontent.com/22454918/132410772-0a4c0b95-63bb-4281-8a4e-a652458c3f0f.gif)
