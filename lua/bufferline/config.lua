@@ -77,11 +77,13 @@ end
 
 ---Combine user preferences with defaults preferring the user's own settings
 ---@param defaults BufferlineConfig
+---@param opts table<string, boolean>
 ---@return BufferlineConfig
-function Config:merge(defaults)
+function Config:merge(defaults, opts)
+  local mode = (opts and opts.override) and "force" or "keep"
   if defaults and type(defaults) == "table" then
-    self.options = vim.tbl_deep_extend("keep", self.options or {}, defaults.options or {})
-    self.highlights = vim.tbl_deep_extend("keep", self.highlights or {}, defaults.highlights or {})
+    self.options = vim.tbl_deep_extend(mode, self.options or {}, defaults.options or {})
+    self.highlights = vim.tbl_deep_extend(mode, self.highlights or {}, defaults.highlights or {})
   end
   return self
 end
@@ -558,9 +560,9 @@ end
 
 ---Update highlight colours when the colour scheme changes
 function M.update_highlights()
-  config:merge({ highlights = derive_colors() })
+  config:merge({ highlights = derive_colors() }, { override = true })
   if config:enabled("groups") then
-    require("bufferline.groups").set_hls(config)
+    require("bufferline.groups").reset_highlights(config.highlights)
   end
   add_highlight_groups(config.highlights)
   return config

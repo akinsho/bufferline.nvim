@@ -141,6 +141,13 @@ local function set_group_highlights(name, group, hls)
   })
 end
 
+---@param highlights BufferlineHighlights
+function M.reset_highlights(highlights)
+  utils.for_each(state.user_groups, function (item)
+    set_group_highlights(item.name, item, highlights)
+  end)
+end
+
 --- NOTE: this function mutates the user's configuration.
 --- Add group highlights to the user highlights table
 ---@param config BufferlineConfig
