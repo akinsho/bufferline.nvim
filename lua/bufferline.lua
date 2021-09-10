@@ -667,16 +667,34 @@ local function add_click_action(context)
   })
 end
 
+---@class PadOpts
+---@field left number?
+---@field right number?
+---@field component string
+---@field length number
+
 ---Add padding to either side of a component
----@param sides table<'"left"' | '"right"', number>
----@return function
+---@param opts PadOpts
+---@return string, number
+local function pad(opts)
+  local left, right = opts.left or 0, opts.right or 0
+  local left_p, right_p = string.rep(padding, left), string.rep(padding, right)
+  local padded = left_p .. opts.component .. right_p
+  return padded, strwidth(left_p) + strwidth(right_p) + opts.length
+end
+
+---@param sides table<'"right"' | '"left"',  number>
+---@return fun(ctx: RenderContext): RenderContext
 local function add_padding(sides)
   ---@param ctx RenderContext
   return function(ctx)
-    local left, right = sides.left or 0, sides.right or 0
-    local left_p, right_p = string.rep(padding, left), string.rep(padding, right)
-    local component = left_p .. ctx.component .. right_p
-    return ctx:update({ component = component, length = ctx.length + strwidth(left_p .. right_p) })
+    local component, length = pad({
+      left = sides.left,
+      right = sides.right,
+      component = ctx.component,
+      length = ctx.length,
+    })
+    return ctx:update({ component = component, length = length })
   end
 end
 
@@ -702,8 +720,8 @@ local function add_spacing(context)
   -- pad each tab smaller than the max tab size to make it consistent
   local difference = options.tab_size - length
   if difference > 0 then
-    local pad = math.floor(difference / 2)
-    return add_padding({ left = pad, right = pad })(context)
+    local size = math.floor(difference / 2)
+    component, length = pad({ left = size, right = size, component = component, length = length })
   end
   return context:update({ component = component, length = length })
 end
