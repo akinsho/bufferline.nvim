@@ -71,6 +71,10 @@ local Config = {}
 function Config:new(o)
   assert(o, "User options must be passed in")
   self.__index = self
+  -- save a copy of the user's preferences so we can reference exactly what they
+  -- wanted after the config and defaults have been merged. Do this using a copy
+  -- so that reference isn't unintentionally mutated
+  self.__original = vim.deepcopy(o)
   setmetatable(o, self)
   return o
 end
@@ -80,11 +84,15 @@ end
 ---@param opts table<string, boolean>
 ---@return BufferlineConfig
 function Config:merge(defaults, opts)
+  assert(defaults and type(defaults) == "table", "A valid config table must be passed to merge")
   local mode = (opts and opts.override) and "force" or "keep"
-  if defaults and type(defaults) == "table" then
-    self.options = vim.tbl_deep_extend(mode, self.options or {}, defaults.options or {})
-    self.highlights = vim.tbl_deep_extend(mode, self.highlights or {}, defaults.highlights or {})
-  end
+  self.options = vim.tbl_deep_extend("keep", self.options or {}, defaults.options or {})
+  self.highlights = vim.tbl_deep_extend(
+    mode,
+    self.highlights or {},
+    defaults.highlights or {},
+    self.__original.highlights or {}
+  )
   return self
 end
 
@@ -186,7 +194,7 @@ function Config:enabled(feature)
 end
 
 ---Derive the colors for the bufferline
----@return table
+---@return BufferlineHighlights
 local function derive_colors()
   local colors = require("bufferline.colors")
   local hex = colors.get_hex
