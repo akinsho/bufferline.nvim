@@ -41,5 +41,18 @@ describe("Config tests", function()
       local under_test = config.apply()
       assert.equal(under_test.highlights.info.guifg, whitesmoke:lower())
     end)
+
+    it('should update highlights on colorscheme change', function()
+      config.set({
+        highlights = {
+          buffer_selected = {
+            guifg = "red"
+          }
+        }
+      })
+      local conf = config.apply()
+      conf = config.update_highlights()
+      assert.is_equal(conf.highlights.buffer_selected.guifg, "red")
+    end)
   end)
 end)
