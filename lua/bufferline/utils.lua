@@ -205,24 +205,6 @@ function M.is_valid(buf_num)
   return vim.bo[buf_num].buflisted and exists
 end
 
---- @param bufs table | nil
-function M.get_valid_buffers(bufs)
-  local buf_nums = bufs or vim.api.nvim_list_bufs()
-  local valid_bufs = {}
-
-  -- NOTE: In lua in order to iterate an array, indices should
-  -- not contain gaps otherwise "ipairs" will stop at the first gap
-  -- i.e the indices should be contiguous
-  local count = 0
-  for _, buf in ipairs(buf_nums) do
-    if M.is_valid(buf) then
-      count = count + 1
-      valid_bufs[count] = buf
-    end
-  end
-  return valid_bufs
-end
-
 ---Print an error message to the commandline
 ---@param msg string
 function M.echoerr(msg)
