@@ -2,6 +2,16 @@ local M = {}
 
 local fmt = string.format
 
+---@class DebugOpts
+---@field logging boolean
+
+---@class GroupOptions
+---@field toggle_hidden_on_enter boolean re-open hidden groups on bufenter
+
+---@class GroupOpts
+---@field options GroupOptions
+---@field items Group[]
+
 ---@class BufferlineOptions
 ---@field public view string
 ---@field public debug DebugOpts
@@ -52,25 +62,49 @@ local fmt = string.format
 ---@field public options BufferlineOptions
 ---@field public highlights BufferlineHighlights
 
+--- Convert highlights specified as tables to the correct existing colours
+---@param highlights BufferlineHighlights
+local function convert_highlights(highlights)
+  local updated = {}
+  if not highlights or vim.tbl_isempty(highlights) then
+    return
+  end
+  for hl, attributes in pairs(highlights) do
+    updated[hl] = updated[hl] or attributes
+    for attribute, value in pairs(attributes) do
+      if type(value) == "table" then
+        if value.highlight and value.attribute then
+          updated[hl][attribute] = require("bufferline.colors").get_hex({
+            name = value.highlight,
+            attribute = value.attribute,
+          })
+        else
+          updated[hl][attribute] = nil
+          require("bufferline.utils").echomsg(
+            string.format("removing %s as it is not formatted correctly", hl),
+            "WarningMsg"
+          )
+        end
+      end
+    end
+  end
+  return updated
+end
+
+---The local class instance of the merged user's configuration
+---this includes all default values and highlights filled out
 ---@type BufferlineConfig
 local config = {}
 
----@class DebugOpts
----@field logging boolean
-
----@class GroupOptions
----@field toggle_hidden_on_enter boolean re-open hidden groups on bufenter
-
----@class GroupOpts
----@field options GroupOptions
----@field items Group[]
-
+---The class definition for the user configuration
 ---@type BufferlineConfig
 local Config = {}
 
 function Config:new(o)
   assert(o, "User options must be passed in")
   self.__index = self
+  -- convert highlight link syntax to resolved highlight colors
+  o.highlights = convert_highlights(o.highlights)
   -- save a copy of the user's preferences so we can reference exactly what they
   -- wanted after the config and defaults have been merged. Do this using a copy
   -- so that reference isn't unintentionally mutated
@@ -155,31 +189,6 @@ function Config:validate(defaults)
       "Please check the README for all valid highlights",
     })
     require("bufferline.utils").echomsg(msg, "WarningMsg")
-  end
-end
-
---- Convert highlights specified as tables to the correct existing colours
-function Config:convert_highlights()
-  if not self or not self.highlights or vim.tbl_isempty(self.highlights) then
-    return
-  end
-  for hl, attributes in pairs(self.highlights) do
-    for attribute, value in pairs(attributes) do
-      if type(value) == "table" then
-        if value.highlight and value.attribute then
-          self.highlights[hl][attribute] = require("bufferline.colors").get_hex({
-            name = value.highlight,
-            attribute = value.attribute,
-          })
-        else
-          self.highlights[hl][attribute] = nil
-          require("bufferline.utils").echomsg(
-            string.format("removing %s as it is not formatted correctly", hl),
-            "WarningMsg"
-          )
-        end
-      end
-    end
   end
 end
 
@@ -549,7 +558,6 @@ end
 function M.apply()
   local defaults = get_defaults()
   config:validate(defaults)
-  config:convert_highlights()
   config:merge(defaults)
   if config:enabled("groups") then
     require("bufferline.groups").setup(config)
