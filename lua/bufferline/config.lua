@@ -61,6 +61,7 @@ local fmt = string.format
 ---@class BufferlineConfig
 ---@field public options BufferlineOptions
 ---@field public highlights BufferlineHighlights
+---@field private original BufferlineConfig original copy of user preferences
 
 --- Convert highlights specified as tables to the correct existing colours
 ---@param highlights BufferlineHighlights
@@ -106,7 +107,7 @@ function Config:new(o)
   -- save a copy of the user's preferences so we can reference exactly what they
   -- wanted after the config and defaults have been merged. Do this using a copy
   -- so that reference isn't unintentionally mutated
-  self.__original = vim.deepcopy(o)
+  self.original = vim.deepcopy(o)
   setmetatable(o, self)
   return o
 end
@@ -117,14 +118,14 @@ end
 ---@return BufferlineConfig
 function Config:merge(defaults, opts)
   assert(defaults and type(defaults) == "table", "A valid config table must be passed to merge")
-  local mode = (opts and opts.override) and "force" or "keep"
   self.options = vim.tbl_deep_extend("keep", self.options or {}, defaults.options or {})
 
-  -- convert highlight link syntax to resolved highlight colors
-  local user, current =
-    convert_highlights(self.__original.highlights), convert_highlights(self.highlights)
-
-  self.highlights = vim.tbl_deep_extend(mode, current, defaults.highlights, user)
+  self.highlights = vim.tbl_deep_extend(
+    "force",
+    defaults.highlights,
+    -- convert highlight link syntax to resolved highlight colors
+    convert_highlights(self.original.highlights)
+  )
   return self
 end
 
@@ -574,7 +575,7 @@ end
 
 ---Update highlight colours when the colour scheme changes
 function M.update_highlights()
-  config:merge({ highlights = derive_colors() }, { override = true })
+  config:merge({ highlights = derive_colors() })
   if config:enabled("groups") then
     require("bufferline.groups").reset_highlights(config.highlights)
   end
