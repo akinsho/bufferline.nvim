@@ -67,7 +67,7 @@ local fmt = string.format
 local function convert_highlights(highlights)
   local updated = {}
   if not highlights or vim.tbl_isempty(highlights) then
-    return
+    return updated
   end
   for hl, attributes in pairs(highlights) do
     updated[hl] = updated[hl] or attributes
@@ -103,8 +103,6 @@ local Config = {}
 function Config:new(o)
   assert(o, "User options must be passed in")
   self.__index = self
-  -- convert highlight link syntax to resolved highlight colors
-  o.highlights = convert_highlights(o.highlights)
   -- save a copy of the user's preferences so we can reference exactly what they
   -- wanted after the config and defaults have been merged. Do this using a copy
   -- so that reference isn't unintentionally mutated
@@ -121,12 +119,12 @@ function Config:merge(defaults, opts)
   assert(defaults and type(defaults) == "table", "A valid config table must be passed to merge")
   local mode = (opts and opts.override) and "force" or "keep"
   self.options = vim.tbl_deep_extend("keep", self.options or {}, defaults.options or {})
-  self.highlights = vim.tbl_deep_extend(
-    mode,
-    self.highlights or {},
-    defaults.highlights or {},
-    self.__original.highlights or {}
-  )
+
+  -- convert highlight link syntax to resolved highlight colors
+  local user, current =
+    convert_highlights(self.__original.highlights), convert_highlights(self.highlights)
+
+  self.highlights = vim.tbl_deep_extend(mode, current, defaults.highlights, user)
   return self
 end
 
