@@ -66,12 +66,13 @@ local fmt = string.format
 --- Convert highlights specified as tables to the correct existing colours
 ---@param highlights BufferlineHighlights
 local function convert_highlights(highlights)
-  local updated = {}
   if not highlights or vim.tbl_isempty(highlights) then
-    return updated
+    return {}
   end
+  -- we deep copy the highlights table as assigning the attributes
+  -- will only pass the references so will mutate the original table otherwise
+  local updated = vim.deepcopy(highlights)
   for hl, attributes in pairs(highlights) do
-    updated[hl] = updated[hl] or attributes
     for attribute, value in pairs(attributes) do
       if type(value) == "table" then
         if value.highlight and value.attribute then
