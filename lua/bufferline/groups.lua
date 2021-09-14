@@ -39,6 +39,7 @@ local state = {
 ---@field public highlight table<string, string>
 ---@field public icon string
 ---@field public hidden boolean
+---@field auto_close boolean when leaving the group automatically close it
 
 --- Remove illegal characters from a group name name
 ---@param name string

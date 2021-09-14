@@ -1102,11 +1102,17 @@ local function setup_autocommands(config)
     })
   end
 
-  if config:enabled("groups") and options.groups.options.toggle_hidden_on_enter then
+  if config:enabled("groups") then
+    table.insert(autocommands, {
+      "BufReadPre",
+      "*",
+      "++once",
+      "lua vim.schedule(require'bufferline'.handle_group_enter)",
+    })
     table.insert(autocommands, {
       "BufEnter",
       "*",
-      "lua require'bufferline'.show_hidden_group()",
+      "lua require'bufferline'.handle_group_enter()",
     })
   end
 
@@ -1132,16 +1138,25 @@ function M.group_action(name, action)
   end
 end
 
-function M.show_hidden_group()
+function M.handle_group_enter()
+  local options = require("bufferline.config").get("options")
   local _, buf = get_current_buf_index({ include_hidden = true })
   if not buf then
     return
   end
   local groups = require("bufferline.groups")
-  local group = groups.get_by_id(buf.group)
-  if group.hidden then
-    groups.set_hidden(group.id, false)
+  local current_group = groups.get_by_id(buf.group)
+  if options.groups.options.toggle_hidden_on_enter then
+    if current_group.hidden then
+      groups.set_hidden(current_group.id, false)
+    end
   end
+  utils.for_each(state.tabs, function(tab)
+    local group = groups.get_by_id(tab.group)
+    if group and group.auto_close and group.id ~= current_group.id then
+      groups.set_hidden(group.id, true)
+    end
+  end)
 end
 
 ---@param arg_lead string

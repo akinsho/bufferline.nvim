@@ -59,7 +59,7 @@ end
 ---Determine if the current view tab should be treated as the end of a section
 ---@return boolean
 function TabView:end_component()
-  return self.type == "group_end" or self.type == "group_start"
+  return self.type:match("group")
 end
 
 ---@return Buffer?
