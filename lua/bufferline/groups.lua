@@ -252,13 +252,13 @@ function M.names(include_empty)
   return names
 end
 
----@param name string,
 ---@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
 ---@return string, number
-function M.separator.pill(name, group, hls, count)
+function M.separator.pill(group, hls, count)
   local bg_hl = hls.fill.hl
+  local name, display_name = group.name, group.display_name
   local sep_grp, label_grp = hls[fmt("%s_separator", name)], hls[fmt("%s_label", name)]
   local sep_hl = sep_grp and sep_grp.hl or hls.group_separator.hl
   local label_hl = label_grp and label_grp.hl or hls.group_label.hl
@@ -269,13 +269,13 @@ function M.separator.pill(name, group, hls, count)
     sep_hl,
     left,
     label_hl,
-    name,
+    display_name,
     count,
     sep_hl,
     right,
     padding
   )
-  local length = utils.measure(left, right, name, count, padding, padding)
+  local length = utils.measure(left, right, display_name, count, padding, padding)
   return indicator, length
 end
 
@@ -293,14 +293,13 @@ function M.separator.tab(name, group, hls, count)
 end
 
 ---Create the visual indicators bookending buffer groups
----@param name string
 ---@param group_id number
 ---@param tab_views TabView[]
 ---@return TabView
 ---@return TabView
-local function get_tab(name, group_id, tab_views)
+local function get_tab(group_id, tab_views)
   local group = state.user_groups[group_id]
-  if name == UNGROUPED or not group then
+  if not group or group.name == UNGROUPED then
     return
   end
   local GroupView = require("bufferline.models").GroupView
@@ -313,7 +312,7 @@ local function get_tab(name, group_id, tab_views)
     return
   end
   local count_item = group.hidden and fmt("(%s)", #tab_views) or ""
-  local indicator, length = group.separator.style(name, group, hl_groups, count_item)
+  local indicator, length = group.separator.style(group, hl_groups, count_item)
   indicator = require("bufferline.utils").make_clickable("handle_group_click", group.id, indicator)
 
   local group_start = GroupView:new({
@@ -387,7 +386,7 @@ function M.render(tabs, sorter)
     tab_views = sorter(tab_views)
 
     if sublist.name ~= UNGROUPED and #sublist > 0 then
-      local group_start, group_end = get_tab(sublist.display_name, buf_group_id, sublist)
+      local group_start, group_end = get_tab(buf_group_id, sublist)
       if group_start then
         table.insert(tab_views, 1, group_start)
         tab_views[#tab_views + 1] = group_end
