@@ -1,5 +1,6 @@
 local M = {}
 
+local api = vim.api
 local fn = vim.fn
 local fmt = string.format
 
@@ -123,10 +124,12 @@ function Buffer:new(buf)
   buf.modified = vim.bo[buf.id].modified
   buf.buftype = vim.bo[buf.id].buftype
   buf.extension = fn.fnamemodify(buf.path, ":e")
-  buf.icon, buf.icon_highlight = require("bufferline.utils").get_icon(buf)
+  local is_directory = fn.isdirectory(buf.path) > 0
+  buf.icon, buf.icon_highlight = require("bufferline.utils").get_icon(buf, is_directory)
   local name = "[No Name]"
   if buf.path and #buf.path > 0 then
-    name = fn.fnamemodify(buf.path, ":p:t")
+    name = fn.fnamemodify(buf.path, ":t")
+    name = is_directory and name .. "/" or name
     if buf.name_formatter and type(buf.name_formatter) == "function" then
       name = buf.name_formatter({ name = name, path = buf.path, bufnr = buf.id }) or name
     end
@@ -146,7 +149,7 @@ end
 -- FIXME: this does not work if the same buffer is open in multiple window
 -- maybe do something with win_findbuf(bufnr('%'))
 function Buffer:current()
-  return fn.winbufnr(0) == self.id
+  return api.nvim_win_get_buf(api.nvim_get_current_win()) == self.id
 end
 
 function Buffer:visible()

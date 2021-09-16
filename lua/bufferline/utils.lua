@@ -231,35 +231,30 @@ function M.echomsg(msg, hl)
   vim.api.nvim_echo({ { fmt("[bufferline] %s", msg), hl } }, true, {})
 end
 
-do
-  local loaded, webdev_icons
-  ---Get an icon for a filetype using either nvim-web-devicons or vim-devicons
-  ---if using the lua plugin this also returns the icon's highlights
-  ---@param buf Buffer
-  ---@return string, string?
-  function M.get_icon(buf)
-    if loaded == nil then
-      loaded, webdev_icons = pcall(require, "nvim-web-devicons")
-    end
-    if buf.buftype == "terminal" then
-      -- use an explicit if statement so both values from get icon can be returned
-      -- this does not work if a ternary is used instead as only a single value is returned
-      if not loaded then
-        return ""
-      end
-      return webdev_icons.get_icon(buf.buftype)
-    end
-    if loaded then
-      return webdev_icons.get_icon(
-        fn.fnamemodify(buf.path, ":t"),
-        buf.extension,
-        { default = true }
-      )
-    else
-      local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
-      return devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
-    end
+---Get an icon for a filetype using either nvim-web-devicons or vim-devicons
+---if using the lua plugin this also returns the icon's highlights
+---@param buf Buffer
+---@param is_directory boolean
+---@return string, string?
+function M.get_icon(buf, is_directory)
+  local loaded, webdev_icons = pcall(require, "nvim-web-devicons")
+  if is_directory then
+    local hl = loaded and "DevIconDefault" or nil
+    return "", hl
   end
+  if buf.buftype == "terminal" then
+    -- NOTE: use an explicit if statement so both values from get icon can be returned
+    -- this does not work if a ternary is used instead as only a single value is returned
+    if not loaded then
+      return ""
+    end
+    return webdev_icons.get_icon(buf.buftype)
+  end
+  if loaded then
+    return webdev_icons.get_icon(fn.fnamemodify(buf.path, ":t"), buf.extension, { default = true })
+  end
+  local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
+  return devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
 end
 
 ---Add click action to a component
