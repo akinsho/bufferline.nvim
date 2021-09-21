@@ -131,15 +131,9 @@ local function set_group_highlights(name, group, hls)
     guifg = hls.fill.guibg,
     guibg = hl.guifg or hl.guisp or hls.group_separator.guifg,
   }
-  hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, {
-    guibg = hls.buffer_selected.guibg,
-  })
-  hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, {
-    guibg = hls.buffer_visible.guibg,
-  })
-  hls[name] = vim.tbl_extend("keep", hl, {
-    guibg = hls.buffer.guibg,
-  })
+  hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, hls.buffer_selected)
+  hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, hls.buffer_visible)
+  hls[name] = vim.tbl_extend("keep", hl, hls.buffer)
 end
 
 ---@param highlights BufferlineHighlights
