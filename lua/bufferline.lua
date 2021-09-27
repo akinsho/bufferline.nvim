@@ -428,38 +428,6 @@ local function get_buffer_highlight(buffer, config)
   return hl
 end
 
--- truncate a string based on number of display columns/cells it occupies
--- so that multibyte characters are not broken up mid character
----@param str string
----@param col_limit number
----@return string
-local function truncate_by_cell(str, col_limit)
-  if str and str:len() == strwidth(str) then
-    return fn.strcharpart(str, 0, col_limit)
-  end
-  local short = fn.strcharpart(str, 0, col_limit)
-  if api.nvim_strwidth(short) > col_limit then
-    while api.nvim_strwidth(short) > col_limit do
-      short = fn.strcharpart(short, 0, fn.strchars(short) - 1)
-    end
-  end
-  return short
-end
-
-local function truncate_filename(filename, word_limit)
-  local trunc_symbol = "…"
-  if api.nvim_strwidth(filename) <= word_limit then
-    return filename
-  end
-  -- truncate nicely by seeing if we can drop the extension first
-  -- to make things fit if not then truncate abruptly
-  local without_prefix = fn.fnamemodify(filename, ":t:r")
-  if api.nvim_strwidth(without_prefix) < word_limit then
-    return without_prefix .. trunc_symbol
-  end
-  return truncate_by_cell(filename, word_limit - 1) .. trunc_symbol
-end
-
 --- @param buffer Buffer
 --- @return string
 local function highlight_icon(buffer)
@@ -730,7 +698,7 @@ end
 ---@return RenderContext
 local function get_buffer_name(ctx)
   local max_length = enforce_regular_tabs(ctx)
-  local filename = truncate_filename(ctx.tab:as_buffer().filename, max_length)
+  local filename = utils.truncate_filename(ctx.tab:as_buffer().filename, max_length)
   -- escape filenames that contain "%" as this breaks in statusline patterns
   filename = filename:gsub("%%", "%%%1")
   return ctx:update({ component = filename, length = strwidth(filename) })

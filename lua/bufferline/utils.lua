@@ -268,4 +268,36 @@ function M.make_clickable(func_name, id, component)
   return "%" .. id .. "@nvim_bufferline#" .. func_name .. "@" .. component
 end
 
+-- truncate a string based on number of display columns/cells it occupies
+-- so that multibyte characters are not broken up mid character
+---@param str string
+---@param col_limit number
+---@return string
+local function truncate_by_cell(str, col_limit)
+  if str and str:len() == api.nvim_strwidth(str) then
+    return fn.strcharpart(str, 0, col_limit)
+  end
+  local short = fn.strcharpart(str, 0, col_limit)
+  if api.nvim_strwidth(short) > col_limit then
+    while api.nvim_strwidth(short) > col_limit do
+      short = fn.strcharpart(short, 0, fn.strchars(short) - 1)
+    end
+  end
+  return short
+end
+
+function M.truncate_filename(filename, word_limit)
+  local trunc_symbol = "…"
+  if api.nvim_strwidth(filename) <= word_limit then
+    return filename
+  end
+  -- truncate nicely by seeing if we can drop the extension first
+  -- to make things fit if not then truncate abruptly
+  local without_prefix = fn.fnamemodify(filename, ":t:r")
+  if api.nvim_strwidth(without_prefix) < word_limit then
+    return without_prefix .. trunc_symbol
+  end
+  return truncate_by_cell(filename, word_limit - 1) .. trunc_symbol
+end
+
 return M
