@@ -10,7 +10,7 @@ describe("Sorters - ", function()
     assert.same(ids, { 2, 3, 8, 12 })
   end)
 
-  it("should sort by tabs correctly", function()
+  it("should sort by components correctly", function()
     vim.cmd("e file1.txt")
     vim.cmd("tabnew file2.txt")
     vim.cmd("tabnew file3.txt")

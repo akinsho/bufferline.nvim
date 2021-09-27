@@ -24,7 +24,7 @@ describe("Bufferline tests:", function()
       vim.cmd("edit test-2.txt")
       local tabline = nvim_bufferline()
       assert.truthy(tabline)
-      assert.is.equal(#bufferline._state.tabs, 2)
+      assert.is.equal(#bufferline._state.components, 2)
     end)
 
     it("should allow configuring the indicator icon", function()
@@ -63,7 +63,7 @@ describe("Bufferline tests:", function()
     local snapshots = {
       "       a.txt       ▕       b.txt       ▕▎      c.txt         ",
       "       a.txt      ▕       b.txt      ▕▎      c.txt        ",
-      "       a.txt              b.txt              c.txt         "
+      "       a.txt              b.txt              c.txt         ",
     }
     it("should add correct padding if close icons are present", function()
       bufferline.setup()
@@ -92,10 +92,10 @@ describe("Bufferline tests:", function()
       local snapshot = utils.format_tabline(tabline)
       assert.is_equal(snapshot, snapshots[2])
     end)
-    it('should show the correct separators', function()
+    it("should show the correct separators", function()
       bufferline.setup({
         options = {
-          separator_style = 'slant'
+          separator_style = "slant",
         },
       })
       utils.vim_enter()
@@ -193,7 +193,7 @@ describe("Bufferline tests:", function()
       vim.cmd("edit e.txt")
       nvim_bufferline()
 
-      assert.is.equal(5, #bufferline._state.tabs)
+      assert.is.equal(5, #bufferline._state.components)
 
       local bufs = vim.api.nvim_list_bufs()
       assert.is_equal(5, #bufs)

@@ -22,18 +22,18 @@ _G.__bufferline = __bufferline or {}
 -- State
 -----------------------------------------------------------------------------//
 ---@class BufferlineState
----@field tabs TabView[]
----@field visible_tabs TabView[]
----@field __tabs TabView[]
----@field __visible_tabs TabView[]
+---@field components Component[]
+---@field visible_components Component[]
+---@field __components Component[]
+---@field __visible_components Component[]
 ---@field custom_sort number[]
 local state = {
   is_picking = false,
   custom_sort = nil,
-  __tabs = {},
-  __visible_tabs = {},
-  tabs = {},
-  visible_tabs = {},
+  __components = {},
+  __visible_components = {},
+  components = {},
+  visible_components = {},
 }
 
 -----------------------------------------------------------------------------//
@@ -45,7 +45,7 @@ local state = {
 ---@field component string
 ---@field preferences BufferlineConfig
 ---@field current_highlights table<string, table<string, string>>
----@field tab TabView
+---@field tab Component
 ---@field separators table<string, string>
 ---@type RenderContext
 local Context = {}
@@ -203,9 +203,9 @@ end
 ---@param index number
 ---@param func fun(num: number)
 function M.buf_exec(index, func)
-  local target = state.visible_tabs[index]
+  local target = state.visible_components[index]
   if target and type(func) == "function" then
-    func(target, state.visible_tabs)
+    func(target, state.visible_components)
   end
 end
 
@@ -217,7 +217,7 @@ local function select_buffer_apply(func)
 
   local char = vim.fn.getchar()
   local letter = vim.fn.nr2char(char)
-  for _, item in ipairs(state.tabs) do
+  for _, item in ipairs(state.components) do
     local buf = item:as_buffer()
     if buf and letter == buf.letter then
       func(buf.id)
@@ -247,7 +247,7 @@ end
 ---@param absolute boolean whether or not to use the buffers absolute position or visible positions
 function M.go_to_buffer(num, absolute)
   num = type(num) == "string" and tonumber(num) or num
-  local list = absolute and state.tabs or state.visible_tabs
+  local list = absolute and state.components or state.visible_components
   local buf = list[num]
   if buf then
     vim.cmd(fmt("buffer %d", buf.id))
@@ -259,7 +259,7 @@ end
 ---@return Buffer
 local function get_current_buf_index(opts)
   opts = opts or { include_hidden = false }
-  local list = opts.include_hidden and state.__tabs or state.tabs
+  local list = opts.include_hidden and state.__components or state.components
   local current = api.nvim_get_current_buf()
   for index, item in ipairs(list) do
     local buf = item:as_buffer()
@@ -284,12 +284,12 @@ function M.move(direction)
     return utils.echoerr("Unable to find buffer to move, sorry")
   end
   local next_index = index + direction
-  if next_index >= 1 and next_index <= #state.tabs then
-    local cur_buf = state.tabs[index]
-    local destination_buf = state.tabs[next_index]
-    state.tabs[next_index] = cur_buf
-    state.tabs[index] = destination_buf
-    state.custom_sort = get_buf_ids(state.tabs)
+  if next_index >= 1 and next_index <= #state.components then
+    local cur_buf = state.components[index]
+    local destination_buf = state.components[next_index]
+    state.components[next_index] = cur_buf
+    state.components[index] = destination_buf
+    state.custom_sort = get_buf_ids(state.components)
     local opts = require("bufferline.config").get("options")
     if opts.persist_buffer_sort then
       save_positions(state.custom_sort)
@@ -303,7 +303,7 @@ function M.cycle(direction)
   if not index then
     return
   end
-  local length = #state.tabs
+  local length = #state.components
   local next_index = index + direction
 
   if next_index <= length and next_index >= 1 then
@@ -314,7 +314,7 @@ function M.cycle(direction)
     next_index = 1
   end
 
-  local item = state.tabs[next_index]
+  local item = state.components[next_index]
   local next = item:as_buffer()
 
   if not next then
@@ -332,14 +332,14 @@ function M.close_in_direction(direction)
   if not index then
     return
   end
-  local length = #state.tabs
+  local length = #state.components
   if
     not (index == length and direction == "right") and not (index == 1 and direction == "left")
   then
     local start = direction == "left" and 1 or index + 1
     local _end = direction == "left" and index - 1 or length
     ---@type Buffer[]
-    local bufs = vim.list_slice(state.tabs, start, _end)
+    local bufs = vim.list_slice(state.components, start, _end)
     for _, buf in ipairs(bufs) do
       api.nvim_buf_delete(buf.id, { force = true })
     end
@@ -349,12 +349,12 @@ end
 --- sorts all buffers
 --- @param sort_by string|function
 function M.sort_buffers_by(sort_by)
-  if next(state.tabs) == nil then
+  if next(state.components) == nil then
     return utils.echoerr("Unable to find buffers to sort, sorry")
   end
 
-  require("bufferline.sorters").sort_buffers(sort_by, state.tabs)
-  state.custom_sort = get_buf_ids(state.tabs)
+  require("bufferline.sorters").sort_buffers(sort_by, state.components)
+  state.custom_sort = get_buf_ids(state.components)
   local opts = require("bufferline.config").get("options")
   if opts.persist_buffer_sort then
     save_positions(state.custom_sort)
@@ -634,9 +634,9 @@ local function add_separators(context)
   })
 end
 
--- if we are enforcing regular tab size then all tabs will try and fit
+-- if we are enforcing regular tab size then all components will try and fit
 -- into the maximum tab size. If not we enforce a minimum tab size
--- and allow tabs to be larger than the max.
+-- and allow components to be larger than the max.
 ---@param context RenderContext
 ---@return number
 local function enforce_regular_tabs(context)
@@ -773,7 +773,7 @@ local function render_buffer(config, buffer)
   --- We return a function from render buffer as we do not yet have access to
   --- information regarding which buffers will actually be rendered
   --- @param index number
-  --- @param next_item TabView
+  --- @param next_item Component
   --- @returns string
   local function render_fn(index, next_item)
     -- NOTE: the component is wrapped in an item -> %(content) so
@@ -784,7 +784,7 @@ local function render_buffer(config, buffer)
     -- if using the non-slanted tab style then we must check if the component is at the end of
     -- of a section e.g. the end of a group and if so it should not be wrapped with separators
     -- as it can use those of the next item
-    if not is_slant(config.options.separator_style) and next_item and next_item:end_component() then
+    if not is_slant(config.options.separator_style) and next_item and next_item:is_end() then
       return buffer_component
     end
 
@@ -811,17 +811,17 @@ local function tab_close_button(icon)
   return "%999X" .. component, strwidth(component)
 end
 
----@param tabs TabView[]
+---@param components Component[]
 ---@return Section
 ---@return Section
 ---@return Section
-local function get_sections(tabs)
+local function get_sections(components)
   local Section = require("bufferline.models").Section
   local current = Section:new()
   local before = Section:new()
   local after = Section:new()
 
-  for _, tab_view in ipairs(tabs) do
+  for _, tab_view in ipairs(components) do
     if not tab_view.hidden then
       if tab_view:current() then
         current:add(tab_view)
@@ -900,8 +900,8 @@ local function truncate(before, current, after, available_width, marker, visible
   end
 end
 
----@param list TabView[]
----@return TabView[]
+---@param list Component[]
+---@return Component[]
 local function filter_invisible(list)
   return utils.fold({}, function(accum, item)
     if item.focusable ~= false and not item.hidden then
@@ -911,9 +911,9 @@ local function filter_invisible(list)
   end, list)
 end
 
----sort a list of tabviews using a sort function
----@param list TabView[]
----@return TabView[]
+---sort a list of components using a sort function
+---@param list Component[]
+---@return Component[]
 local function sorter(list)
   -- if the user has reshuffled the buffers manually don't try and sort them
   if state.custom_sort then
@@ -924,11 +924,11 @@ local function sorter(list)
   return list
 end
 
---- @param tab_views TabView[]
+--- @param components Component[]
 --- @param tabpages table[]
 --- @param config BufferlineConfig
 --- @return string
-local function render(tab_views, tabpages, config)
+local function render(components, tabpages, config)
   local options = config.options
   local hl = config.highlights
   local right_align = "%="
@@ -969,13 +969,13 @@ local function render(tab_views, tabpages, config)
     - close_length
 
   if config:enabled("groups") then
-    tab_views = require("bufferline.groups").render(tab_views, sorter)
+    components = require("bufferline.groups").render(components, sorter)
   else
-    tab_views = sorter(tab_views)
+    components = sorter(components)
   end
 
-  local before, current, after = get_sections(tab_views)
-  local line, marker, visible_tabs = truncate(before, current, after, available_width, {
+  local before, current, after = get_sections(components)
+  local line, marker, visible_components = truncate(before, current, after, available_width, {
     left_count = 0,
     right_count = 0,
     left_element_size = left_element_size,
@@ -983,12 +983,12 @@ local function render(tab_views, tabpages, config)
   })
 
   --- store the full unfiltered lists
-  state.__tabs = tab_views
-  state.__visible_tabs = visible_tabs
+  state.__components = components
+  state.__visible_components = visible_components
 
   --- Store copies without focusable/hidden elements
-  state.tabs = filter_invisible(tab_views)
-  state.visible_tabs = filter_invisible(visible_tabs)
+  state.components = filter_invisible(components)
+  state.visible_components = filter_invisible(visible_components)
 
   if marker.left_count > 0 then
     local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
@@ -1151,7 +1151,7 @@ function M.handle_group_enter()
       groups.set_hidden(current_group.id, false)
     end
   end
-  utils.for_each(state.tabs, function(tab)
+  utils.for_each(state.components, function(tab)
     local group = groups.get_by_id(tab.group)
     if group and group.auto_close and group.id ~= current_group.id then
       groups.set_hidden(group.id, true)

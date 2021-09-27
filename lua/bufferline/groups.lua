@@ -18,11 +18,11 @@ local state = {
   ---@type table<string, Group>
   user_groups = {},
   --- Represents a list of maps of type `{id = buf_id, index = position in list}`
-  --- so that rather than storing the tabs we store their positions
+  --- so that rather than storing the components we store their positions
   --- with an easy way to look them up later.
   --- e.g. `[[group 1, {id = 12, index = 1}, {id = 10, index 2}], [group 2, {id = 5, index = 3}]]`
   ---@type table<string,number>[][]
-  tabs_by_group = {},
+  components_by_group = {},
 }
 
 ---@alias GroupSeparator fun(name: string, group:Group, hls: BufferlineHLGroup, count_item: string): string, number
@@ -193,7 +193,7 @@ end
 ---@param group_name string
 ---@param callback fun(b: Buffer)
 function M.command(group_name, callback)
-  local group = utils.find(state.tabs_by_group, function(list)
+  local group = utils.find(state.components_by_group, function(list)
     return list.name == group_name
   end)
   utils.for_each(group, callback)
@@ -237,10 +237,10 @@ function M.names(include_empty)
   end
   local names = {}
   for _, group in ipairs(state.user_groups) do
-    local group_tabs = utils.find(state.tabs_by_group, function(item)
+    local group_components = utils.find(state.components_by_group, function(item)
       return item.id == group.id
     end)
-    if include_empty or (group_tabs and #group_tabs > 0) then
+    if include_empty or (group_components and #group_components > 0) then
       table.insert(names, group.name)
     end
   end
@@ -289,10 +289,10 @@ end
 
 ---Create the visual indicators bookending buffer groups
 ---@param group_id number
----@param tab_views TabView[]
----@return TabView
----@return TabView
-local function get_tab(group_id, tab_views)
+---@param components Component[]
+---@return Component
+---@return Component
+local function get_tab(group_id, components)
   local group = state.user_groups[group_id]
   if not group or group.name == UNGROUPED then
     return
@@ -306,7 +306,7 @@ local function get_tab(group_id, tab_views)
   if not group.separator.style then
     return
   end
-  local count_item = group.hidden and fmt("(%s)", #tab_views) or ""
+  local count_item = group.hidden and fmt("(%s)", #components) or ""
   local indicator, length = group.separator.style(group, hl_groups, count_item)
   indicator = require("bufferline.utils").make_clickable("handle_group_click", group.id, indicator)
 
@@ -331,12 +331,12 @@ end
 --- buffers for things like navigation. This function takes advantage of lua's ability
 --- to sort string keys as well as numerical keys in a table, this way each sublist has
 --- not only the group information but contains it's buffers
----@param tabs TabView[]
----@return TabView[]
-local function sort_by_groups(tabs)
+---@param components Component[]
+---@return Component[]
+local function sort_by_groups(components)
   local sorted = {}
   local clustered = generate_sublists(vim.tbl_count(state.user_groups))
-  for index, tab in ipairs(tabs) do
+  for index, tab in ipairs(components) do
     local buf = tab:as_buffer()
     if buf then
       local group = state.user_groups[buf.group]
@@ -357,40 +357,40 @@ end
 
 -- FIXME:
 -- 1. this function does a lot of looping that can maybe be consolidated
----@param tabs TabView[]
----@param sorter fun(list: TabView[]):TabView[]
----@return TabView[]
-function M.render(tabs, sorter)
-  tabs, state.tabs_by_group = sort_by_groups(tabs)
-  if vim.tbl_isempty(state.tabs_by_group) then
-    return tabs
+---@param components Component[]
+---@param sorter fun(list: Component[]):Component[]
+---@return Component[]
+function M.render(components, sorter)
+  components, state.components_by_group = sort_by_groups(components)
+  if vim.tbl_isempty(state.components_by_group) then
+    return components
   end
   local result = {}
-  for _, sublist in ipairs(state.tabs_by_group) do
+  for _, sublist in ipairs(state.components_by_group) do
     local buf_group_id = sublist.id
     local buf_group = state.user_groups[buf_group_id]
-    --- convert our tabs by group which is essentially and index of tab positions and ids
+    --- convert our components by group which is essentially and index of tab positions and ids
     --- to the actual tab by pulling the full value out of the tab map
-    local tab_views = utils.map(function(map)
-      local t = tabs[map.index]
+    local items = utils.map(function(map)
+      local t = components[map.index]
       --- filter out tab views that are hidden
       t.hidden = buf_group and buf_group.hidden
       return t
     end, sublist)
     --- Sort *each* group, TODO: in the future each group should be able to have it's own sorter
-    tab_views = sorter(tab_views)
+    items = sorter(items)
 
     if sublist.name ~= UNGROUPED and #sublist > 0 then
       local group_start, group_end = get_tab(buf_group_id, sublist)
       if group_start then
-        table.insert(tab_views, 1, group_start)
-        tab_views[#tab_views + 1] = group_end
+        table.insert(items, 1, group_start)
+        items[#items + 1] = group_end
       end
     end
     --- NOTE: there is no easy way to flatten a list of lists of non-scalar values like these
     --- lists of objects since each object needs to be checked that it is in fact an object
     --- not a list
-    vim.list_extend(result, tab_views)
+    vim.list_extend(result, items)
   end
   return result
 end

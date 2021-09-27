@@ -6,10 +6,10 @@ local fmt = string.format
 
 --[[
 -----------------------------------------------------------------------------//
--- Entitites
+-- Models
 -----------------------------------------------------------------------------//
-This file contains all the differnt kinds of entities that are shown in the tabline
-They are all subtypes of TabViews which specifies the base interface for all types
+This file contains all the different kinds of entities that are shown in the tabline
+They are all subtypes of Components which specifies the base interface for all types
 i.e.
 - A [component] - which is a function that returns the string to be rendered
 - A current method - to indicate if the entity is selected (if possible)
@@ -22,13 +22,13 @@ i.e.
 
 --- The base class that represents a visual tab in the tabline
 --- i.e. not necessarily representative of a vim tab or buffer
----@class TabView
+---@class Component
 ---@field length number
 ---@field component function
 ---@field hidden boolean
 ---@field focusable boolean
 ---@field type "'group_end'" | "'group_start'" | "'buffer'"
-local TabView = {}
+local Component = {}
 
 ---@param field string
 local function not_implemented(field)
@@ -36,8 +36,8 @@ local function not_implemented(field)
   error(fmt("%s is not implemented yet", field))
 end
 
-function TabView:new(t)
-  assert(t.type, "all view tabs must have a type")
+function Component:new(t)
+  assert(t.type, "all components must have a type")
   self.length = t.length or 0
   self.focusable = true
   if t.focusable ~= nil then
@@ -53,18 +53,18 @@ end
 
 -- TODO: this should be handled based on the type of entity
 -- e.g. a buffer should report if it's current but other things shouldn't
-function TabView:current()
+function Component:current()
   not_implemented("current")
 end
 
 ---Determine if the current view tab should be treated as the end of a section
 ---@return boolean
-function TabView:end_component()
+function Component:is_end()
   return self.type:match("group")
 end
 
 ---@return Buffer?
-function TabView:as_buffer()
+function Component:as_buffer()
   if self.type ~= "buffer" then
     require("bufferline.utils").log.debug(
       fmt("This entity is not a buffer, it is a %s.", self.type)
@@ -74,7 +74,7 @@ function TabView:as_buffer()
   return self
 end
 
-local GroupView = TabView:new({ type = "group", focusable = false })
+local GroupView = Component:new({ type = "group", focusable = false })
 
 function GroupView:new(group)
   assert(group, "The type should be passed to a group on create")
@@ -92,7 +92,7 @@ end
 ---@alias BufferComponent fun(index: number, buf_count: number): string
 
 -- A single buffer class
--- this extends the [TabView] class
+-- this extends the [Component] class
 ---@class Buffer
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
@@ -113,7 +113,7 @@ end
 ---@field public group Group
 ---@field public group_fn string
 ---@field public length number the length of the buffer component
-local Buffer = TabView:new({ type = "buffer" })
+local Buffer = Component:new({ type = "buffer" })
 
 ---create a new buffer class
 ---@param buf Buffer
@@ -178,7 +178,7 @@ function Buffer:ancestor(depth, formatter)
 end
 
 ---@class Section
----@field items TabView[]
+---@field items Component[]
 ---@field length number
 local Section = {}
 

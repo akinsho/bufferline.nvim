@@ -87,7 +87,7 @@ describe("Group tests - ", function()
     assert.equal(config.highlights.test_group.guifg, "red")
   end)
 
-  it("should sort tabs by groups", function()
+  it("should sort components by groups", function()
     groups.setup({
       options = {
         groups = {
@@ -102,7 +102,7 @@ describe("Group tests - ", function()
         },
       },
     })
-    local sorted, tabs_by_group = groups.sort_by_groups({
+    local sorted, components_by_group = groups.sort_by_groups({
       Buffer:new({ filename = "dummy-1.txt", group = 1 }),
       Buffer:new({ filename = "dummy-2.txt", group = 1 }),
       Buffer:new({ filename = "file-2.txt", group = 2 }),
@@ -111,7 +111,7 @@ describe("Group tests - ", function()
     assert.equal(sorted[1]:as_buffer().filename, "dummy-1.txt")
     assert.equal(sorted[#sorted]:as_buffer().filename, "file-2.txt")
 
-    assert.is_equal(vim.tbl_count(tabs_by_group), 2)
+    assert.is_equal(vim.tbl_count(components_by_group), 2)
   end)
 
   it("should add group markers", function()
@@ -133,17 +133,17 @@ describe("Group tests - ", function()
     require("bufferline").setup(config)
     utils.vim_enter()
     groups.setup(config)
-    local tabs = {
+    local components = {
       Buffer:new({ filename = "dummy-1.txt", group = 1 }),
       Buffer:new({ filename = "dummy-2.txt", group = 1 }),
       Buffer:new({ filename = "file-2.txt", group = 2 }),
     }
-    tabs = groups.render(tabs, function(t)
+    components = groups.render(components, function(t)
       return t
     end)
-    assert.equal(#tabs, 5)
-    local g_start = tabs[1]
-    local g_end = tabs[4]
+    assert.equal(#components, 5)
+    local g_start = components[1]
+    local g_end = components[4]
     assert.is_equal(g_start.type, "group_start")
     assert.is_equal(g_end.type, "group_end")
     assert.is_truthy(g_start.component():match("test%-group"))
@@ -180,7 +180,7 @@ describe("Group tests - ", function()
     require("bufferline").setup(config)
     utils.vim_enter()
     groups.setup(config)
-    local tabs = {
+    local components = {
       Buffer:new({ filename = "b.txt", group = 1 }),
       Buffer:new({ filename = "a.txt", group = 1 }),
       Buffer:new({ filename = "d.txt", group = 2 }),
@@ -188,17 +188,17 @@ describe("Group tests - ", function()
       Buffer:new({ filename = "h.txt", group = 3 }),
       Buffer:new({ filename = "g.txt", group = 3 }),
     }
-    tabs = groups.render(tabs, function(t)
+    components = groups.render(components, function(t)
       table.sort(t, function(a, b)
         return a.filename < b.filename
       end)
       return t
     end)
-    assert.is_equal(tabs[2]:as_buffer().filename, "a.txt")
-    assert.is_equal(tabs[3]:as_buffer().filename, "b.txt")
-    assert.is_equal(tabs[6]:as_buffer().filename, "c.txt")
-    assert.is_equal(tabs[7]:as_buffer().filename, "d.txt")
-    assert.is_equal(tabs[10]:as_buffer().filename, "g.txt")
-    assert.is_equal(tabs[11]:as_buffer().filename, "h.txt")
+    assert.is_equal(components[2]:as_buffer().filename, "a.txt")
+    assert.is_equal(components[3]:as_buffer().filename, "b.txt")
+    assert.is_equal(components[6]:as_buffer().filename, "c.txt")
+    assert.is_equal(components[7]:as_buffer().filename, "d.txt")
+    assert.is_equal(components[10]:as_buffer().filename, "g.txt")
+    assert.is_equal(components[11]:as_buffer().filename, "h.txt")
   end)
 end)
