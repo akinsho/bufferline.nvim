@@ -66,8 +66,8 @@ local function guess_window_highlight(win_id, attribute, match)
     return
   end
   local parts = vim.split(hl, ",")
-  for _, part in ipairs(parts) do
-    local grp, hl_name = unpack(vim.split(part, ":"))
+  for i = #parts, 1, -1 do
+    local grp, hl_name = unpack(vim.split(parts[i], ":"))
     if grp and grp:match(match) then
       return hl_name
     end
