@@ -228,6 +228,12 @@ local function select_buffer_apply(func)
   refresh()
 end
 
+function M.split_buffer_with_pick()
+  select_buffer_apply(function(buf_id)
+    vim.cmd("vertical sb" .. buf_id)
+  end)
+end
+
 function M.pick_buffer()
   select_buffer_apply(function(buf_id)
     vim.cmd("buffer " .. buf_id)
@@ -1138,6 +1144,7 @@ end
 local function setup_commands()
   local cmds = {
     { name = "BufferLinePick", cmd = "pick_buffer()" },
+    { name = "BufferLinePickSplit", cmd = "split_buffer_with_pick()" },
     { name = "BufferLinePickClose", cmd = "close_buffer_with_pick()" },
     { name = "BufferLineCycleNext", cmd = "cycle(1)" },
     { name = "BufferLineCyclePrev", cmd = "cycle(-1)" },
