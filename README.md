@@ -530,7 +530,7 @@ offsets = {
 
 The `filetype` is used to check whether a particular window is a match, the `text` is _optional_ and will show above the window if specified.
 `text` can be either a string or a function which should also return a string. See the example below.
-_NOTE:_ to figure out correct `filetype` go into the tree buffer and run `echo &filetype` and it will print correct `filetype` to be used.
+_NOTE:_ to find the `filetype` of a side panel go into the buffer and run `:echo &filetype` to print its `filetype.
 
 ```lua
 offsets = {
