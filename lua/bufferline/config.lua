@@ -201,6 +201,8 @@ function Config:enabled(feature)
   return false
 end
 
+local nightly = vim.fn.has("nvim-0.6") > 0
+
 ---Derive the colors for the bufferline
 ---@return BufferlineHighlights
 local function derive_colors()
@@ -218,20 +220,24 @@ local function derive_colors()
   local normal_bg = hex({ name = "Normal", attribute = "bg" })
   local string_fg = hex({ name = "String", attribute = "fg" })
 
+  local error_hl = nightly and "DiagnosticError" or "LspDiagnosticsDefaultError"
+  local warning_hl = nightly and "DiagnosticWarn" or "LspDiagnosticsDefaultWarning"
+  local info_hl = nightly and "DiagnosticInfo" or "LspDiagnosticsDefaultInformation"
+
   local error_fg = hex({
-    name = "LspDiagnosticsDefaultError",
+    name = error_hl,
     attribute = "fg",
     fallback = { name = "Error", attribute = "fg" },
   })
 
   local warning_fg = hex({
-    name = "LspDiagnosticsDefaultWarning",
+    name = warning_hl,
     attribute = "fg",
     fallback = { name = "WarningMsg", attribute = "fg" },
   })
 
   local info_fg = hex({
-    name = "LspDiagnosticsDefaultInformation",
+    name = info_hl,
     attribute = "fg",
     fallback = { name = "Normal", attribute = "fg" },
   })
