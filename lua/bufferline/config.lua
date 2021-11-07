@@ -319,7 +319,7 @@ local function derive_colors()
     buffer_selected = {
       guifg = normal_fg,
       guibg = normal_bg,
-      gui = "bold,italic",
+      gui = "bold",
     },
     diagnostic = {
       guifg = comment_diagnostic_fg,
