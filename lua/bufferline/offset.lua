@@ -49,7 +49,7 @@ local function get_section_text(size, highlight, offset)
     end
     text = string.rep(" ", left) .. text .. string.rep(" ", right)
   end
-  return highlight .. text
+  return highlight .. text .. ""
 end
 
 ---A heuristic to attempt to derive a windows background color from a winhighlight
