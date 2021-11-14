@@ -223,6 +223,7 @@ local function derive_colors()
   local error_hl = nightly and "DiagnosticError" or "LspDiagnosticsDefaultError"
   local warning_hl = nightly and "DiagnosticWarn" or "LspDiagnosticsDefaultWarning"
   local info_hl = nightly and "DiagnosticInfo" or "LspDiagnosticsDefaultInformation"
+  local hint_hl = nightly and "DiagnosticHint" or "LspDiagnosticsDefaultHint"
 
   local error_fg = hex({
     name = error_hl,
@@ -240,6 +241,12 @@ local function derive_colors()
     name = info_hl,
     attribute = "fg",
     fallback = { name = "Normal", attribute = "fg" },
+  })
+
+  local hint_fg = hex({
+    name = hint_hl,
+    attribute = "fg",
+    fallback = { name = "SpecialComment", attribute = "fg" },
   })
 
   local tabline_sel_bg = hex({
@@ -269,6 +276,7 @@ local function derive_colors()
   -- diagnostic colors by default are a few shades darker
   local normal_diagnostic_fg = shade(normal_fg, diagnostic_shading)
   local comment_diagnostic_fg = shade(comment_fg, diagnostic_shading)
+  local hint_diagnostic_fg = shade(hint_fg, diagnostic_shading)
   local info_diagnostic_fg = shade(info_fg, diagnostic_shading)
   local warning_diagnostic_fg = shade(warning_fg, diagnostic_shading)
   local error_diagnostic_fg = shade(error_fg, diagnostic_shading)
@@ -339,6 +347,36 @@ local function derive_colors()
       guifg = normal_diagnostic_fg,
       guibg = normal_bg,
       gui = "bold,italic",
+    },
+    hint = {
+      guifg = comment_fg,
+      guisp = hint_fg,
+      guibg = background_color,
+    },
+    hint_visible = {
+      guifg = comment_fg,
+      guibg = visible_bg,
+    },
+    hint_selected = {
+      guifg = hint_fg,
+      guibg = normal_bg,
+      gui = "bold,italic",
+      guisp = hint_fg,
+    },
+    hint_diagnostic = {
+      guifg = comment_diagnostic_fg,
+      guisp = hint_diagnostic_fg,
+      guibg = background_color,
+    },
+    hint_diagnostic_visible = {
+      guifg = comment_diagnostic_fg,
+      guibg = visible_bg,
+    },
+    hint_diagnostic_selected = {
+      guifg = hint_diagnostic_fg,
+      guibg = normal_bg,
+      gui = "bold,italic",
+      guisp = hint_diagnostic_fg,
     },
     info = {
       guifg = comment_fg,

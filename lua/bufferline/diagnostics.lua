@@ -6,7 +6,8 @@ local severity_name = {
   [1] = "error",
   [2] = "warning",
   [3] = "info",
-  [4] = "other",
+  [4] = "hint",
+  [5] = "other",
 }
 
 setmetatable(severity_name, {
