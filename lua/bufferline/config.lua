@@ -246,7 +246,7 @@ local function derive_colors()
   local hint_fg = hex({
     name = hint_hl,
     attribute = "fg",
-    fallback = { name = "SpecialComment", attribute = "fg" },
+    fallback = { name = "Directory", attribute = "fg" },
   })
 
   local tabline_sel_bg = hex({
