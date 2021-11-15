@@ -388,6 +388,8 @@ local function get_buffer_highlight(buffer, config)
     hl.warning_diagnostic = h.warning_diagnostic_selected.hl
     hl.info = h.info_selected.hl
     hl.info_diagnostic = h.info_diagnostic_selected.hl
+    hl.hint = h.hint_selected.hl
+    hl.hint_diagnostic = h.hint_diagnostic_selected.hl
     hl.close_button = h.close_button_selected.hl
   elseif buffer:visible() then
     hl.background = h.buffer_visible.hl
@@ -403,6 +405,8 @@ local function get_buffer_highlight(buffer, config)
     hl.warning_diagnostic = h.warning_diagnostic_visible.hl
     hl.info = h.info_visible.hl
     hl.info_diagnostic = h.info_diagnostic_visible.hl
+    hl.hint = h.hint_visible.hl
+    hl.hint_diagnostic = h.hint_diagnostic_visible.hl
     hl.close_button = h.close_button_visible.hl
   else
     hl.background = h.background.hl
@@ -418,6 +422,8 @@ local function get_buffer_highlight(buffer, config)
     hl.warning_diagnostic = h.warning_diagnostic.hl
     hl.info = h.info.hl
     hl.info_diagnostic = h.info_diagnostic.hl
+    hl.hint = h.hint.hl
+    hl.hint_diagnostic = h.hint_diagnostic.hl
     hl.close_button = h.close_button.hl
   end
 
