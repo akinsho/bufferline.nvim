@@ -51,7 +51,7 @@ local function is_disabled(diagnostics)
   if
     not diagnostics
     or not vim.tbl_contains({ "nvim_lsp", "coc" }, diagnostics)
-    or (diagnostics == "nvim_lsp" and not vim.lsp.diagnostic.get_all)
+    or (diagnostics == "nvim_lsp" and not vim.diagnostic.get)
     or (diagnostics == "coc" and vim.g.coc_service_initialized ~= 1)
   then
     return true
@@ -66,7 +66,7 @@ end
 
 local get_diagnostics = {
   nvim_lsp = function()
-    return vim.lsp.diagnostic.get_all()
+    return vim.diagnostic.get()
   end,
 
   coc = (function()
