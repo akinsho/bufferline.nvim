@@ -1,3 +1,5 @@
+local utils = require("bufferline.utils")
+
 local M = {}
 
 local fn = vim.fn
@@ -51,8 +53,8 @@ local function is_disabled(diagnostics)
   if
     not diagnostics
     or not vim.tbl_contains({ "nvim_lsp", "coc" }, diagnostics)
-    or (diagnostics == "nvim_lsp" and vim.fn.has('nvim-0.7') and not vim.diagnostic.get) -- <-- Anything 0.7+
-    or (diagnostics == "nvim_lsp" and not vim.fn.has('nvim-0.7') and not vim.lsp.diagnostic.get) -- <- Anything below 0.7
+    or (diagnostics == "nvim_lsp" and utils.is_truthy(vim.fn.has('nvim-0.7')) and not vim.diagnostic.get) -- <-- Anything 0.7+
+    or (diagnostics == "nvim_lsp" and not utils.is_truthy(vim.fn.has('nvim-0.7')) and not vim.lsp.diagnostic.get) -- <- Anything below 0.7
     or (diagnostics == "coc" and vim.g.coc_service_initialized ~= 1)
   then
     return true
@@ -67,7 +69,7 @@ end
 
 local get_diagnostics = {
   nvim_lsp = function()
-    if vim.fn.has('nvim-0.7') then
+    if utils.is_truthy(vim.fn.has('nvim-0.7')) then
       return vim.diagnostic.get()
     else
       return vim.lsp.diagnostic.get()
