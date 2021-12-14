@@ -301,7 +301,13 @@ function M.truncate_filename(filename, word_limit)
 end
 
 function M.is_truthy(value)
-  return value ~= nil and value ~= false and value ~= 0 and value ~= "" and value ~= "0" and value ~= "false" and value ~= "nil"
-end 
+  return value ~= nil
+    and value ~= false
+    and value ~= 0
+    and value ~= ""
+    and value ~= "0"
+    and value ~= "false"
+    and value ~= "nil"
+end
 
 return M
