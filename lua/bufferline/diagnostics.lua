@@ -1,3 +1,5 @@
+local utils = require("bufferline.utils")
+
 local M = {}
 
 local fn = vim.fn
@@ -47,11 +49,15 @@ local mt = {
   end,
 }
 
+local is_nightly = utils.is_truthy(fn.has("nvim-0.7"))
+local is_valid_version = utils.is_truthy(fn.has("nvim-0.5"))
+
 local function is_disabled(diagnostics)
   if
     not diagnostics
     or not vim.tbl_contains({ "nvim_lsp", "coc" }, diagnostics)
-    or (diagnostics == "nvim_lsp" and not vim.lsp.diagnostic.get_all)
+    -- check if the current nvim version is one that will have either vim.diagnostics or vim.lsp.diagnostics
+    or (diagnostics == "nvim_lsp" and not is_valid_version)
     or (diagnostics == "coc" and vim.g.coc_service_initialized ~= 1)
   then
     return true
@@ -66,6 +72,10 @@ end
 
 local get_diagnostics = {
   nvim_lsp = function()
+    if is_nightly then
+      return vim.diagnostic.get()
+    end
+    ---@diagnostic disable-next-line: deprecated
     return vim.lsp.diagnostic.get_all()
   end,
 

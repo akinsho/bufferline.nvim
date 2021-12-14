@@ -300,4 +300,8 @@ function M.truncate_filename(filename, word_limit)
   return truncate_by_cell(filename, word_limit - 1) .. trunc_symbol
 end
 
+function M.is_truthy(value)
+  return value ~= nil and value ~= false and value ~= 0 and value ~= "" and value ~= "0" and value ~= "false" and value ~= "nil"
+end 
+
 return M
