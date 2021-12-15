@@ -74,7 +74,7 @@ local get_diagnostics = {
   nvim_lsp = function()
     if is_nightly then
       local results = {}
-      diagnostics = vim.diagnostic.get()
+      local diagnostics = vim.diagnostic.get()
 
       for _, d in pairs(diagnostics) do
         if not results[d.bufnr] then
