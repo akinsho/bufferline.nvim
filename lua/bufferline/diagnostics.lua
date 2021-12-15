@@ -78,7 +78,7 @@ local get_diagnostics = {
 
       for _, d in pairs(diagnostics) do
         if not results[d.bufnr] then
-           results[d.bufnr] = {}
+          results[d.bufnr] = {}
         end
 
         table.insert(results[d.bufnr], d)
