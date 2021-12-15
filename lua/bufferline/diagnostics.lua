@@ -73,7 +73,18 @@ end
 local get_diagnostics = {
   nvim_lsp = function()
     if is_nightly then
-      return vim.diagnostic.get()
+      results = {}
+      diagnostics = vim.diagnostic.get()
+
+      for _, d in pairs(diagnostics) do
+        if not results[d.bufnr] then
+           results[d.bufnr] = {}
+        end
+
+        table.insert(results[d.bufnr], d)
+      end
+
+      return results
     end
     ---@diagnostic disable-next-line: deprecated
     return vim.lsp.diagnostic.get_all()
