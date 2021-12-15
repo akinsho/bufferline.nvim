@@ -73,7 +73,7 @@ end
 local get_diagnostics = {
   nvim_lsp = function()
     if is_nightly then
-      results = {}
+      local results = {}
       diagnostics = vim.diagnostic.get()
 
       for _, d in pairs(diagnostics) do
