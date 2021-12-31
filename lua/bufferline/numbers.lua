@@ -121,7 +121,10 @@ function M.component(context)
     return context
   end
   local number_prefix = prefix(buffer, options.numbers, options.number_style)
-  local number_component = number_prefix .. constants.padding
+  local number_component = ""
+  if number_prefix ~= "" then
+    number_component = number_prefix .. constants.padding
+  end
   component = number_component .. component
   length = length + vim.fn.strwidth(number_component)
   return context:update({ component = component, length = length })
