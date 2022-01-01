@@ -72,7 +72,8 @@ end
 
 local get_diagnostics = {
   nvim_lsp = function()
-    if is_nightly then
+    local is_get_all_deprected = utils.is_truthy(fn.has("nvim-0.6.1"))
+    if is_get_all_deprected then
       local results = {}
       local diagnostics = vim.diagnostic.get()
 
