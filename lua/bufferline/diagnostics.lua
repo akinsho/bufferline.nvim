@@ -72,7 +72,7 @@ end
 
 local get_diagnostics = {
   nvim_lsp = function()
-    if is_nightly then
+    if utils.is_truthy(fn.has("nvim-0.6.1")) then
       local results = {}
       local diagnostics = vim.diagnostic.get()
 
