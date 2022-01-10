@@ -323,7 +323,7 @@ end
 </details>
 
 The highlighting for the file name if there is an error can be changed by replacing the highlights for
-see `:h bufferline-lua-highlights`.
+see `:h bufferline-highlights`.
 
 ### Conditional buffer based LSP indicators
 
