@@ -246,7 +246,7 @@ require('bufferline').setup {
         return true
       end
       -- filter out by it's index number in list (don't show first buffer)
-      if buf_numbers[1] ~= buf_numbers then
+      if buf_numbers[1] ~= buf_number then
         return true
       end
     end,
