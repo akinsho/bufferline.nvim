@@ -522,7 +522,7 @@ local function add_indicator(context)
   local style = options.separator_style
 
   if buffer:current() then
-    local indicator = " "
+    local indicator = ""
     local symbol = indicator
     if not is_slant(style) then
       symbol = options.indicator_icon
