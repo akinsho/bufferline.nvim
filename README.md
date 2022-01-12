@@ -659,10 +659,11 @@ to be shown in a list of tables. For example:
 custom_areas = {
   right = function()
     local result = {}
-    local error = vim.lsp.diagnostic.get_count(0, [[Error]])
-    local warning = vim.lsp.diagnostic.get_count(0, [[Warning]])
-    local info = vim.lsp.diagnostic.get_count(0, [[Information]])
-    local hint = vim.lsp.diagnostic.get_count(0, [[Hint]])
+    local seve = vim.diagnostic.severity
+    local error = #vim.diagnostic.get(0, {severity = seve.ERROR})
+    local warning = #vim.diagnostic.get(0, {severity = seve.WARN})
+    local info = #vim.diagnostic.get(0, {severity = seve.INFO})
+    local hint = #vim.diagnostic.get(0, {severity = seve.HINT})
 
     if error ~= 0 then
       table.insert(result, {text = "  " .. error, guifg = "#EC5241"})
