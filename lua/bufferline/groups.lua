@@ -128,6 +128,7 @@ local function set_group_highlights(name, group, hls)
     guibg = hls.fill.guibg,
   }
   hls[fmt("%s_label", name)] = {
+    gui = hl.gui or "none",
     guifg = hls.fill.guibg,
     guibg = hl.guifg or hl.guisp or hls.group_separator.guifg,
   }
