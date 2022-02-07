@@ -1,3 +1,4 @@
+local bit = require("bit")
 local constants = require("bufferline.constants")
 local utils = require("bufferline.utils")
 
