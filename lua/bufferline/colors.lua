@@ -1,5 +1,6 @@
 local M = {}
 
+local bit = require("bit")
 local fmt = string.format
 
 ---Convert a hex color to rgb
