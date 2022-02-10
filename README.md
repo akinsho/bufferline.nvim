@@ -369,9 +369,9 @@ groups = {
       matcher = function(buf) -- Mandatory
         return buf.filename:match('%_test') or buf.filename:match('%_spec')
       end,
-    }
+    },
     {
-      name = "Docs"
+      name = "Docs",
       highlight = {gui = "undercurl", guisp = "green"},
       auto_close = false,  -- whether or not close this group if it doesn't contain the current buffer
       matcher = function(buf)
