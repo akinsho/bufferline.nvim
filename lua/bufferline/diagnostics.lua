@@ -91,33 +91,40 @@ local get_diagnostics = {
   end,
 
   coc = (function()
-    local diagnostics = {}
-    local function refresh_cb(err, res)
-      if err ~= vim.NIL then
-        return
-      end
-      res = type(res) == "table" and res or {}
+    local _initialized = false
+    local function _init_coc()
+      _initialized = true
 
-      local result = {}
-      local bufname2bufnr = {}
-      for _, diagnostic in ipairs(res) do
-        local bufname = diagnostic.file
-        local bufnr = bufname2bufnr[bufname]
-        if not bufnr then
-          bufnr = fn.bufnr(bufname)
-          bufname2bufnr[bufname] = bufnr
-        end
-
-        if bufnr ~= -1 then
-          result[bufnr] = result[bufnr] or {}
-          table.insert(result[bufnr], { severity = diagnostic.level })
-        end
-      end
-      diagnostics = result
+      vim.cmd([[
+       autocmd User CocDiagnosticChange lua pcall(vim.fn.CocActionAsync, 'diagnosticList',
+      \ function(err, res)
+      \   if err ~= vim.NIL then
+      \     return
+      \   end
+      \   res = type(res) == "table" and res or {}
+      \   local result = {}
+      \   local bufname2bufnr = {}
+      \   for _, diagnostic in ipairs(res) do
+      \     local bufname = diagnostic.file
+      \     local bufnr = bufname2bufnr[bufname]
+      \     if not bufnr then
+      \       bufnr = vim.fn.bufnr(bufname)
+      \       bufname2bufnr[bufname] = bufnr
+      \     end
+      \     if bufnr ~= -1 then
+      \       result[bufnr] = result[bufnr] or {}
+      \       table.insert(result[bufnr], { severity = diagnostic.level })
+      \     end
+      \   end
+      \ vim.g.___coc_diagnostics_for_bufferline___ = result
+      \ end)
+       ]])
     end
     return function()
-      fn.CocActionAsync("diagnosticList", refresh_cb)
-      return diagnostics
+      if not _initialized then
+        _init_coc()
+      end
+      return vim.g.___coc_diagnostics_for_bufferline___ or {}
     end
   end)(),
 }
