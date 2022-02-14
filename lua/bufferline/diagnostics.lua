@@ -93,7 +93,7 @@ local get_diagnostics = {
   coc = (function()
     local diagnostics = {}
 
-    _G.___refresh_coc_diagnostics_for_bufferline___ = function()
+    function M.refresh_coc_diagnostics()
       pcall(fn.CocActionAsync, "diagnosticList", function(err, res)
         if err ~= vim.NIL then
           return
@@ -117,7 +117,9 @@ local get_diagnostics = {
       end)
     end
 
-    vim.cmd([[autocmd User CocDiagnosticChange lua ___refresh_coc_diagnostics_for_bufferline___()]])
+    vim.cmd(
+      [[autocmd User CocDiagnosticChange lua require('bufferline.diagnostics').refresh_coc_diagnostics()]]
+    )
 
     return function()
       return diagnostics
