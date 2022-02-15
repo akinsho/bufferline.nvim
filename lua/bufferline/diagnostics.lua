@@ -92,31 +92,36 @@ local get_diagnostics = {
 
   coc = (function()
     local diagnostics = {}
-    local function refresh_cb(err, res)
-      if err ~= vim.NIL then
-        return
-      end
-      res = type(res) == "table" and res or {}
 
-      local result = {}
-      local bufname2bufnr = {}
-      for _, diagnostic in ipairs(res) do
-        local bufname = diagnostic.file
-        local bufnr = bufname2bufnr[bufname]
-        if not bufnr then
-          bufnr = fn.bufnr(bufname)
-          bufname2bufnr[bufname] = bufnr
+    function M.refresh_coc_diagnostics()
+      pcall(fn.CocActionAsync, "diagnosticList", function(err, res)
+        if err ~= vim.NIL then
+          return
         end
-
-        if bufnr ~= -1 then
-          result[bufnr] = result[bufnr] or {}
-          table.insert(result[bufnr], { severity = diagnostic.level })
+        res = type(res) == "table" and res or {}
+        local result = {}
+        local bufname2bufnr = {}
+        for _, diagnostic in ipairs(res) do
+          local bufname = diagnostic.file
+          local bufnr = bufname2bufnr[bufname]
+          if not bufnr then
+            bufnr = vim.fn.bufnr(bufname)
+            bufname2bufnr[bufname] = bufnr
+          end
+          if bufnr ~= -1 then
+            result[bufnr] = result[bufnr] or {}
+            table.insert(result[bufnr], { severity = diagnostic.level })
+          end
         end
-      end
-      diagnostics = result
+        diagnostics = result
+      end)
     end
+
+    vim.cmd(
+      [[autocmd User CocDiagnosticChange lua require('bufferline.diagnostics').refresh_coc_diagnostics()]]
+    )
+
     return function()
-      fn.CocActionAsync("diagnosticList", refresh_cb)
       return diagnostics
     end
   end)(),
