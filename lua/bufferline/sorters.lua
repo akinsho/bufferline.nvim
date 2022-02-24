@@ -43,6 +43,11 @@ end
 --- @param buf_a Buffer
 --- @param buf_b Buffer
 local function sort_by_id(buf_a, buf_b)
+  if not buf_a and buf_b then
+    return true
+  elseif buf_a and not buf_b then
+    return false
+  end
   return buf_a.id < buf_b.id
 end
 
