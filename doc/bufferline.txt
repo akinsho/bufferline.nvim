@@ -55,6 +55,7 @@ The available settings are: >
     require"bufferline".setup{
         options = {
             mode = "buffers", -- can also be set to "tabs" to see tabpages
+            themable = false -- whether or not the highlights for this plugin can be overriden.
             numbers = "none" | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
             --- @deprecated, please specify numbers as a function to customize the styling
             number_style = "superscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
@@ -822,6 +823,30 @@ highlight command. See `:h highlight` .
         };
     }
 <
+
+==============================================================================
+COLORSCHEME DEVELOPMENT                                           *bufferline-colorscheme-development*
+
+Bufferline was initially developed to work without external highlight
+configuration by colorschemes. It takes default highlights from neovim and
+adapts these for it's usage. The highlight groups it uses are
+The `->` represents the fallback chain for a highlight.
+
+`Normal`
+`String`
+`DiagnosticError` -> `LspDiagnosticsDefaultError`
+`DiagnosticWarn` -> `LspDiagnosticsDefaultWarn` -> `WarningMsg`
+`DiagnosticHint` -> `LspDiagnosticsDefaultHint` -> `Directory`
+`DiagnosticInfo` -> `LspDiagnosticsDefaultInfo` -> `Normal`
+`TabLineSel` -> `WildMenu`
+
+If the above groups are correctly highlighted then bufferline should appear
+as intended where it can be i.e. sufficient contrast etc.
+
+If however a colorscheme intends to override bufferline highlight groups
+a user can set the `themable` option in their bufferline config to `true`.
+This will change bufferline's highlights to use the `default` keyword
+so they can be more easily overriden if that is the user's preference.
 
 ==============================================================================
 ISSUES							*bufferline-issues*

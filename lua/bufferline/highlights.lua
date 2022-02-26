@@ -54,10 +54,14 @@ function M.set_one(name, opts)
       table.insert(hls, fmt("%s=%s", key, value))
     end
   end
-  local success, err = pcall(vim.cmd, fmt("highlight! %s %s", name, table.concat(hls, " ")))
-  if not success then
+  local themable = require("bufferline.config").get("options").themable
+  local ok, rsp = pcall(
+    vim.cmd,
+    fmt("highlight %s %s %s", themable and "default" or "", name, table.concat(hls, " "))
+  )
+  if not ok then
     utils.notify(
-      fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, err),
+      fmt("Failed setting %s  highlight, something isn't configured correctly: %s", name, rsp),
       utils.E
     )
   end
