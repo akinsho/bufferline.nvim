@@ -289,18 +289,18 @@ local function truncate_by_cell(str, col_limit)
   return short
 end
 
-function M.truncate_filename(filename, word_limit)
+function M.truncate_name(name, word_limit)
   local trunc_symbol = "…"
-  if api.nvim_strwidth(filename) <= word_limit then
-    return filename
+  if api.nvim_strwidth(name) <= word_limit then
+    return name
   end
   -- truncate nicely by seeing if we can drop the extension first
   -- to make things fit if not then truncate abruptly
-  local without_prefix = fn.fnamemodify(filename, ":t:r")
+  local without_prefix = fn.fnamemodify(name, ":t:r")
   if api.nvim_strwidth(without_prefix) < word_limit then
     return without_prefix .. trunc_symbol
   end
-  return truncate_by_cell(filename, word_limit - 1) .. trunc_symbol
+  return truncate_by_cell(name, word_limit - 1) .. trunc_symbol
 end
 
 function M.is_truthy(value)

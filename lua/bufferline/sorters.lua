@@ -19,7 +19,7 @@ end
 --- @param buf_a Buffer
 --- @param buf_b Buffer
 local function sort_by_extension(buf_a, buf_b)
-  return fnamemodify(buf_a.filename, ":e") < fnamemodify(buf_b.filename, ":e")
+  return fnamemodify(buf_a.name, ":e") < fnamemodify(buf_b.name, ":e")
 end
 
 --- @param buf_a Buffer

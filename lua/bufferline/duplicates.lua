@@ -20,9 +20,9 @@ function M.mark(buffers)
     if current.path == "" then
       return current
     end
-    local duplicate = duplicates[current.filename]
+    local duplicate = duplicates[current.name]
     if not duplicate then
-      duplicates[current.filename] = { current }
+      duplicates[current.name] = { current }
     else
       local depth = 1
       local limit = 10

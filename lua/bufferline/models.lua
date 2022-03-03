@@ -137,7 +137,7 @@ end
 ---@field public path string the full path to the file
 ---@field public name_formatter function? dictates how the name should be shown
 ---@field public id integer the buffer number
----@field public filename string the visible name for the file
+---@deprecated public filename string the visible name for the file
 ---@field public icon string the icon
 ---@field public icon_highlight string
 ---@field public diagnostics table
@@ -178,7 +178,8 @@ function Buffer:new(buf)
       name = buf.name_formatter({ name = name, path = buf.path, bufnr = buf.id }) or name
     end
   end
-  buf.filename = name
+  buf.name = name
+  buf.filename = name -- TODO: remove this field
   setmetatable(buf, self)
   self.__index = self
   return buf

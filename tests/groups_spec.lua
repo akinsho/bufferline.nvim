@@ -103,13 +103,13 @@ describe("Group tests - ", function()
       },
     })
     local sorted, components_by_group = groups.sort_by_groups({
-      Buffer:new({ filename = "dummy-1.txt", group = 1 }),
-      Buffer:new({ filename = "dummy-2.txt", group = 1 }),
-      Buffer:new({ filename = "file-2.txt", group = 2 }),
+      Buffer:new({ name = "dummy-1.txt", group = 1 }),
+      Buffer:new({ name = "dummy-2.txt", group = 1 }),
+      Buffer:new({ name = "file-2.txt", group = 2 }),
     })
     assert.is_equal(#sorted, 3)
-    assert.equal(sorted[1]:as_buffer().filename, "dummy-1.txt")
-    assert.equal(sorted[#sorted]:as_buffer().filename, "file-2.txt")
+    assert.equal(sorted[1]:as_buffer().name, "dummy-1.txt")
+    assert.equal(sorted[#sorted]:as_buffer().name, "file-2.txt")
 
     assert.is_equal(vim.tbl_count(components_by_group), 2)
   end)
@@ -123,7 +123,7 @@ describe("Group tests - ", function()
             {
               name = "test-group",
               matcher = function(buf)
-                return buf.filename:includes("dummy")
+                return buf.name:includes("dummy")
               end,
             },
           },
@@ -134,9 +134,9 @@ describe("Group tests - ", function()
     utils.vim_enter()
     groups.setup(config)
     local components = {
-      Buffer:new({ filename = "dummy-1.txt", group = 1 }),
-      Buffer:new({ filename = "dummy-2.txt", group = 1 }),
-      Buffer:new({ filename = "file-2.txt", group = 2 }),
+      Buffer:new({ name = "dummy-1.txt", group = 1 }),
+      Buffer:new({ name = "dummy-2.txt", group = 1 }),
+      Buffer:new({ name = "file-2.txt", group = 2 }),
     }
     components = groups.render(components, function(t)
       return t
@@ -158,19 +158,19 @@ describe("Group tests - ", function()
             {
               name = "A",
               matcher = function(buf)
-                return buf.filename:match("%.txt")
+                return buf.name:match("%.txt")
               end,
             },
             {
               name = "B",
               matcher = function(buf)
-                return buf.filename:match("%.js")
+                return buf.name:match("%.js")
               end,
             },
             {
               name = "C",
               matcher = function(buf)
-                return buf.filename:match("%.dart")
+                return buf.name:match("%.dart")
               end,
             },
           },
@@ -181,24 +181,24 @@ describe("Group tests - ", function()
     utils.vim_enter()
     groups.setup(config)
     local components = {
-      Buffer:new({ filename = "b.txt", group = 1 }),
-      Buffer:new({ filename = "a.txt", group = 1 }),
-      Buffer:new({ filename = "d.txt", group = 2 }),
-      Buffer:new({ filename = "c.txt", group = 2 }),
-      Buffer:new({ filename = "h.txt", group = 3 }),
-      Buffer:new({ filename = "g.txt", group = 3 }),
+      Buffer:new({ name = "b.txt", group = 1 }),
+      Buffer:new({ name = "a.txt", group = 1 }),
+      Buffer:new({ name = "d.txt", group = 2 }),
+      Buffer:new({ name = "c.txt", group = 2 }),
+      Buffer:new({ name = "h.txt", group = 3 }),
+      Buffer:new({ name = "g.txt", group = 3 }),
     }
     components = groups.render(components, function(t)
       table.sort(t, function(a, b)
-        return a.filename < b.filename
+        return a.name < b.name
       end)
       return t
     end)
-    assert.is_equal(components[2]:as_buffer().filename, "a.txt")
-    assert.is_equal(components[3]:as_buffer().filename, "b.txt")
-    assert.is_equal(components[6]:as_buffer().filename, "c.txt")
-    assert.is_equal(components[7]:as_buffer().filename, "d.txt")
-    assert.is_equal(components[10]:as_buffer().filename, "g.txt")
-    assert.is_equal(components[11]:as_buffer().filename, "h.txt")
+    assert.is_equal(components[2]:as_buffer().name, "a.txt")
+    assert.is_equal(components[3]:as_buffer().name, "b.txt")
+    assert.is_equal(components[6]:as_buffer().name, "c.txt")
+    assert.is_equal(components[7]:as_buffer().name, "d.txt")
+    assert.is_equal(components[10]:as_buffer().name, "g.txt")
+    assert.is_equal(components[11]:as_buffer().name, "h.txt")
   end)
 end)

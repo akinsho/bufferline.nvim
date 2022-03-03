@@ -410,10 +410,10 @@ end
 ---@return RenderContext
 local function get_name(ctx)
   local max_length = get_max_length(ctx)
-  local filename = utils.truncate_filename(ctx.tab.name, max_length)
+  local name = utils.truncate_name(ctx.tab.name, max_length)
   -- escape filenames that contain "%" as this breaks in statusline patterns
-  filename = filename:gsub("%%", "%%%1")
-  return ctx:update({ component = filename, length = strwidth(filename) })
+  name = name:gsub("%%", "%%%1")
+  return ctx:update({ component = name, length = strwidth(name) })
 end
 
 --- @param context RenderContext

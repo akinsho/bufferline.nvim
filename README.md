@@ -367,7 +367,7 @@ groups = {
       priority = 2, -- determines where it will appear relative to other groups (Optional)
       icon = "", -- Optional
       matcher = function(buf) -- Mandatory
-        return buf.filename:match('%_test') or buf.filename:match('%_spec')
+        return buf.name:match('%_test') or buf.name:match('%_spec')
       end,
     },
     {
@@ -375,7 +375,7 @@ groups = {
       highlight = {gui = "undercurl", guisp = "green"},
       auto_close = false,  -- whether or not close this group if it doesn't contain the current buffer
       matcher = function(buf)
-        return buf.filename:match('%.md') or buf.filename:match('%.txt')
+        return buf.name:match('%.md') or buf.name:match('%.txt')
       end,
       separator = { -- Optional
         style = require('bufferline.groups').separator.tab
