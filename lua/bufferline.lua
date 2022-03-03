@@ -1,5 +1,11 @@
-local constants = require("bufferline.constants")
 local utils = require("bufferline.utils")
+local groups = require("bufferline.groups")
+local config = require("bufferline.config")
+local sorters = require("bufferline.sorters")
+local buffers = require("bufferline.buffers")
+local tabpages = require("bufferline.tabpages")
+local constants = require("bufferline.constants")
+local highlights = require("bufferline.highlights")
 
 local api = vim.api
 local fn = vim.fn
@@ -167,13 +173,13 @@ end
 
 ---@param group_id number
 function M.handle_group_click(group_id)
-  require("bufferline.groups").toggle_hidden(group_id)
+  groups.toggle_hidden(group_id)
   refresh()
 end
 
 ---@param buf_id number
 function M.handle_close_buffer(buf_id)
-  local options = require("bufferline.config").get("options")
+  local options = config.get("options")
   local close = options.close_command
   handle_user_command(close, buf_id)
 end
@@ -188,7 +194,7 @@ end
 ---@param id number
 ---@param button string
 function M.handle_click(id, button)
-  local options = require("bufferline.config").get("options")
+  local options = config.get("options")
   local cmds = {
     r = "right_mouse_command",
     l = "left_mouse_command",
@@ -290,7 +296,7 @@ function M.move(direction)
     state.components[next_index] = cur_buf
     state.components[index] = destination_buf
     state.custom_sort = get_buf_ids(state.components)
-    local opts = require("bufferline.config").get("options")
+    local opts = config.get("options")
     if opts.persist_buffer_sort then
       save_positions(state.custom_sort)
     end
@@ -353,9 +359,9 @@ function M.sort_buffers_by(sort_by)
     return utils.echoerr("Unable to find buffers to sort, sorry")
   end
 
-  require("bufferline.sorters").sort_buffers(sort_by, state.components)
+  sorters.sort_buffers(sort_by, state.components)
   state.custom_sort = get_buf_ids(state.components)
-  local opts = require("bufferline.config").get("options")
+  local opts = config.get("options")
   if opts.persist_buffer_sort then
     save_positions(state.custom_sort)
   end
@@ -1040,20 +1046,20 @@ local function bufferline(config)
 end
 
 function M.toggle_bufferline()
-  local opts = require("bufferline.config").get("options")
+  local opts = config.get("options")
   local status = (opts.always_show_bufferline or #fn.getbufinfo({ buflisted = 1 }) > 1) and 2 or 0
   vim.o.showtabline = status
 end
 
 ---@private
 function M.__apply_colors()
-  local current_prefs = require("bufferline.config").update_highlights()
-  require("bufferline.highlights").set_all(current_prefs.highlights)
+  local current_prefs = config.update_highlights()
+  highlights.set_all(current_prefs.highlights)
 end
 
----@param config BufferlineConfig
-local function setup_autocommands(config)
-  local options = config.options
+---@param conf BufferlineConfig
+local function setup_autocommands(conf)
+  local options = conf.options
   local autocommands = {
     { "ColorScheme", "*", [[lua require('bufferline').__apply_colors()]] },
   }
@@ -1076,7 +1082,7 @@ local function setup_autocommands(config)
     })
   end
 
-  if config:enabled("groups") then
+  if conf:enabled("groups") then
     table.insert(autocommands, {
       "BufReadPre",
       "*",
@@ -1099,13 +1105,12 @@ end
 ---@param action group_actions | fun(b: Buffer)
 function M.group_action(name, action)
   assert(name, "A name must be passed to execute a group action")
-  local groups = require("bufferline.groups")
   if action == "close" then
     groups.command(name, function(b)
       api.nvim_buf_delete(b.id, { force = true })
     end)
   elseif action == "toggle" then
-    require("bufferline.groups").toggle_hidden(nil, name)
+    groups.toggle_hidden(nil, name)
     refresh()
   elseif type(action) == "function" then
     groups.command(name, action)
@@ -1113,12 +1118,11 @@ function M.group_action(name, action)
 end
 
 function M.handle_group_enter()
-  local options = require("bufferline.config").get("options")
+  local options = config.get("options")
   local _, buf = get_current_buf_index({ include_hidden = true })
   if not buf then
     return
   end
-  local groups = require("bufferline.groups")
   local current_group = groups.get_by_id(buf.group)
   if options.groups.options.toggle_hidden_on_enter then
     if current_group.hidden then
@@ -1137,8 +1141,9 @@ end
 ---@param cmd_line string
 ---@param cursor_pos number
 ---@return string[]
+---@diagnostic disable-next-line: unused-local
 function __bufferline.complete_groups(arg_lead, cmd_line, cursor_pos)
-  return require("bufferline.groups").names()
+  return groups.names()
 end
 
 local function setup_commands()
@@ -1187,10 +1192,9 @@ end
 
 ---@private
 function M.__load()
-  local config = require("bufferline.config")
   local preferences = config.apply()
   -- on loading (and reloading) the plugin's config reset all the highlights
-  require("bufferline.highlights").set_all(preferences.highlights)
+  highlights.set_all(preferences.highlights)
   -- TODO: don't reapply commands and autocommands if load has already been called
   setup_commands()
   setup_autocommands(preferences)
@@ -1198,10 +1202,10 @@ function M.__load()
   M.toggle_bufferline()
 end
 
----@param config BufferlineConfig
-function M.setup(config)
-  config = config or {}
-  require("bufferline.config").set(config)
+---@param conf BufferlineConfig
+function M.setup(conf)
+  conf = conf or {}
+  config.set(conf)
   if vim.v.vim_did_enter == 1 then
     M.__load()
   else
