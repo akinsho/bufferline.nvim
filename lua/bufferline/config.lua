@@ -12,7 +12,10 @@ local fmt = string.format
 ---@field options GroupOptions
 ---@field items Group[]
 
+---@alias BufferlineMode "'tabs'" | "'buffers'"
+
 ---@class BufferlineOptions
+---@field public mode BufferlineMode
 ---@field public view string
 ---@field public debug DebugOpts
 ---@field public numbers string
@@ -199,6 +202,18 @@ function Config:enabled(feature)
     return self.options.groups and self.options.groups.items and #self.options.groups.items >= 1
   end
   return false
+end
+
+function Config:mode()
+  return self.options.mode
+end
+
+function Config:is_bufferline()
+  return self:mode() == "buffers"
+end
+
+function Config:is_tabline()
+  return self:mode() == "tabs"
 end
 
 local nightly = vim.fn.has("nvim-0.6") > 0
@@ -538,7 +553,7 @@ local function get_defaults()
   return {
     ---@type BufferlineOptions
     options = {
-      view = "default",
+      mode = "tabs",
       numbers = "none",
       number_style = "superscript",
       buffer_close_icon = "",
@@ -645,4 +660,6 @@ function M.__reset()
   config = nil
 end
 
-return M
+return setmetatable(M, {
+  __index = config,
+})
