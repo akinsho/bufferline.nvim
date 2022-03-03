@@ -102,9 +102,10 @@ local function sort_buffers(sort_by, elements)
     table.sort(elements, sort_by_relative_directory)
   elseif sort_by == "id" then
     table.sort(elements, sort_by_id)
-    --- FIXME: this does not work for tab mode
   elseif sort_by == "tabs" then
-    table.sort(elements, sort_by_tabs)
+    --- FIXME: rather than sampling the first element and assuming that
+    --- find a more general way to provide that information or implement this search
+    table.sort(elements, elements[1].type == "tab" and sort_by_id or sort_by_tabs)
   elseif type(sort_by) == "function" then
     table.sort(elements, sort_by)
   end
