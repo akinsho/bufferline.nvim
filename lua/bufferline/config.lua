@@ -553,7 +553,7 @@ local function get_defaults()
   return {
     ---@type BufferlineOptions
     options = {
-      mode = "tabs",
+      mode = "buffers",
       numbers = "none",
       number_style = "superscript",
       buffer_close_icon = "",
@@ -661,5 +661,7 @@ function M.__reset()
 end
 
 return setmetatable(M, {
-  __index = config,
+  __index = function(_, k)
+    return config[k]
+  end,
 })

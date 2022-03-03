@@ -137,6 +137,7 @@ end
 ---@field public path string the full path to the file
 ---@field public name_formatter function? dictates how the name should be shown
 ---@field public id integer the buffer number
+---@field public name string the visible name for the file
 ---@deprecated public filename string the visible name for the file
 ---@field public icon string the icon
 ---@field public icon_highlight string
