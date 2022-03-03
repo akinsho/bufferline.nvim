@@ -27,7 +27,7 @@ i.e.
 ---@field component function
 ---@field hidden boolean
 ---@field focusable boolean
----@field type "'group_end'" | "'group_start'" | "'buffer'"
+---@field type "'group_end'" | "'group_start'" | "'buffer'" | "'tabpage'"
 local Component = {}
 
 ---@param field string
@@ -87,6 +87,44 @@ end
 
 function GroupView:current()
   return false
+end
+
+---@class Tabpage
+---@field public id number
+---@field public buf number
+---@field public icon string
+---@field public name string
+---@field public letter string
+---@field public modified boolean
+---@field public modifiable boolean
+---@field public extension string the file extension
+---@field public path string the full path to the file
+local Tabpage = Component:new({ type = "tab" })
+
+function Tabpage:new(tab)
+  tab.name = fn.fnamemodify(tab.path, ":t")
+  tab.modifiable = vim.bo[tab.buf].modifiable
+  tab.modified = vim.bo[tab.buf].modified
+  tab.buftype = vim.bo[tab.buf].buftype
+  tab.extension = fn.fnamemodify(tab.path, ":e")
+  tab.icon, tab.icon_highlight = require("bufferline.utils").get_icon({
+    directory = fn.isdirectory(tab.path) > 0,
+    path = tab.path,
+    extension = tab.extension,
+    type = tab.buftype,
+  })
+  setmetatable(tab, self)
+  self.__index = self
+  return tab
+end
+
+function Tabpage:current()
+  return api.nvim_get_current_tabpage() == self.id
+end
+
+--- NOTE: A visible tab page is the current tab page
+function Tabpage:visible()
+  return api.nvim_get_current_tabpage() == self.id
 end
 
 ---@alias BufferComponent fun(index: number, buf_count: number): string
@@ -218,6 +256,7 @@ function Section:add(item)
 end
 
 M.Buffer = Buffer
+M.Tabpage = Tabpage
 M.Section = Section
 M.GroupView = GroupView
 
