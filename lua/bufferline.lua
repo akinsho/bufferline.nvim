@@ -294,7 +294,7 @@ end
 local function bufferline()
   local tabs = tabpages.get()
   local components = config.get():is_tabline() and tabpages.get_components(state)
-    or buffers.get_components()
+    or buffers.get_components(state)
   local tabline, visible_components = ui.render(components, tabs)
   --- store the full unfiltered lists
   state.__components = components
