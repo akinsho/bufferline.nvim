@@ -103,6 +103,7 @@ local Tabpage = Component:new({ type = "tab" })
 
 function Tabpage:new(tab)
   tab.name = fn.fnamemodify(tab.path, ":t")
+  assert(tab.buf, fmt("A tab must a have a buffer: %s", vim.inspect(tab)))
   tab.modifiable = vim.bo[tab.buf].modifiable
   tab.modified = vim.bo[tab.buf].modified
   tab.buftype = vim.bo[tab.buf].buftype
