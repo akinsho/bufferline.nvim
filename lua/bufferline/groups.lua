@@ -275,11 +275,10 @@ function M.separator.pill(group, hls, count)
 end
 
 ---@param name string,
----@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
 ---@return string, number
-function M.separator.tab(name, group, hls, count)
+function M.separator.tab(name, hls, count)
   local hl = hls.fill.hl
   local indicator_hl = hls.buffer.hl
   local length = utils.measure(name, string.rep(padding, 4), count)
