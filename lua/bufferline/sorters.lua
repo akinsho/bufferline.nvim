@@ -1,5 +1,3 @@
-local config = require("bufferline.config")
-
 local M = {}
 ---------------------------------------------------------------------------//
 -- Sorters
@@ -93,7 +91,7 @@ end
 --- sorts a list of buffers in place
 --- @param sort_by string|function
 --- @param elements TabElement[]
-local function sort_buffers(sort_by, elements)
+function M.sort(sort_by, elements)
   if sort_by == "extension" then
     table.sort(elements, sort_by_extension)
   elseif sort_by == "directory" then
@@ -112,18 +110,7 @@ local function sort_buffers(sort_by, elements)
   for index, buf in ipairs(elements) do
     buf.ordinal = index
   end
-end
-
----sort a list of components using a sort function
----@param list Component[]
----@return Component[]
-function M.sorter(state, list)
-  -- if the user has reshuffled the buffers manually don't try and sort them
-  if state.custom_sort then
-    return list
-  end
-  sort_buffers(config.get("options").sort_by, list)
-  return list
+  return elements
 end
 
 return M

@@ -270,7 +270,7 @@ function M.sort_buffers_by(sort_by)
     return utils.echoerr("Unable to find buffers to sort, sorry")
   end
 
-  sorters.sort_buffers(sort_by, state.components)
+  sorters.sort(sort_by, state.components)
   state.custom_sort = get_buf_ids(state.components)
   local opts = config.get("options")
   if opts.persist_buffer_sort then
@@ -290,6 +290,18 @@ local function filter_invisible(list)
   end, list)
 end
 
+---sort a list of components using a sort function
+---@param list Component[]
+---@return Component[]
+local function sorter(list)
+  -- if the user has reshuffled the buffers manually don't try and sort them
+  if state.custom_sort then
+    return list
+  end
+  local options = config.get("options")
+  return sorters.sort(options.sort_by, list)
+end
+
 --- @return string
 local function bufferline()
   local tabs = tabpages.get()
@@ -299,12 +311,8 @@ local function bufferline()
   local has_groups = config:enabled("groups")
   local components = is_tabline and tabpages.get_components(state) or buffers.get_components(state)
 
-  components = has_groups
-      and not is_tabline
-      and groups.render(components, function(...)
-        return sorters.sorter(state, ...)
-      end)
-    or sorters.sorter(components)
+  components = has_groups and not is_tabline and groups.render(components, sorter)
+    or sorter(components)
 
   local tabline, visible_components = ui.render(components, tabs)
   --- store the full unfiltered lists

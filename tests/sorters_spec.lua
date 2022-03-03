@@ -3,7 +3,7 @@ describe("Sorters - ", function()
 
   it("should sort by ID correctly", function()
     local bufs = { { id = 12 }, { id = 2 }, { id = 3 }, { id = 8 } }
-    sorters.sort_buffers("id", bufs)
+    sorters.sort("id", bufs)
     local ids = vim.tbl_map(function(buf)
       return buf.id
     end, bufs)
@@ -19,7 +19,7 @@ describe("Sorters - ", function()
       return { id = id }
     end, vim.api.nvim_list_bufs())
 
-    sorters.sort_buffers("tabs", bufs)
+    sorters.sort("tabs", bufs)
 
     local buf_names = vim.tbl_map(function(buf)
       return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf.id), ":p:t")
