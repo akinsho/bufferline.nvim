@@ -125,7 +125,12 @@ function Buffer:new(buf)
   buf.buftype = vim.bo[buf.id].buftype
   buf.extension = fn.fnamemodify(buf.path, ":e")
   local is_directory = fn.isdirectory(buf.path) > 0
-  buf.icon, buf.icon_highlight = require("bufferline.utils").get_icon(buf, is_directory)
+  buf.icon, buf.icon_highlight = require("bufferline.utils").get_icon({
+    directory = is_directory,
+    path = buf.path,
+    extension = buf.extension,
+    type = buf.buftype,
+  })
   local name = "[No Name]"
   if buf.path and #buf.path > 0 then
     name = fn.fnamemodify(buf.path, ":t")
