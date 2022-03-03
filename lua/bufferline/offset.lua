@@ -1,3 +1,5 @@
+local config = require("bufferline.config")
+
 local M = {}
 
 local api = vim.api
@@ -123,12 +125,11 @@ local function is_offset_section(windows, offset)
 end
 
 ---Calculate the size of padding required to offset the bufferline
----@param prefs table
 ---@return number
 ---@return string
 ---@return string
-function M.get(prefs)
-  local offsets = prefs.options.offsets
+function M.get()
+  local offsets = config.get("options").offsets
 
   local left = ""
   local right = ""
@@ -145,7 +146,7 @@ function M.get(prefs)
 
           local hl_name = offset.highlight
             or guess_window_highlight(win_id)
-            or prefs.highlights.fill.hl
+            or config.highlights.fill.hl
 
           local hl = require("bufferline.highlights").hl(hl_name)
           local component = get_section_text(width, hl, offset)

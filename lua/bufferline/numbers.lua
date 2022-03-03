@@ -1,4 +1,5 @@
 local constants = require("bufferline.constants")
+local config = require("bufferline.config")
 
 ---@class NumbersFuncOpts
 ---@field ordinal number
@@ -115,7 +116,7 @@ end
 function M.component(context)
   local buffer = context.tab:as_buffer()
   local component = context.component
-  local options = context.preferences.options
+  local options = config.get("options")
   local length = context.length
   if options.numbers == "none" then
     return context
