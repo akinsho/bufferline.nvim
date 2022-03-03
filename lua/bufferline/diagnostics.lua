@@ -49,7 +49,6 @@ local mt = {
   end,
 }
 
-local is_nightly = utils.is_truthy(fn.has("nvim-0.7"))
 local is_valid_version = utils.is_truthy(fn.has("nvim-0.5"))
 
 local function is_disabled(diagnostics)
