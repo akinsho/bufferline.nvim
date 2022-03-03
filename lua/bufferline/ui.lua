@@ -543,8 +543,6 @@ function M.render(components, tab_elements)
     - tabs_length
     - close_length
 
-  -- components = config:enabled("groups") and groups.render(components, sorter) or sorter(components)
-
   local before, current, after = get_sections(components)
   local line, marker, visible_components = truncate(before, current, after, available_width, {
     left_count = 0,

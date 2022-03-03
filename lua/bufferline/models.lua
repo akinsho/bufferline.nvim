@@ -89,6 +89,8 @@ function GroupView:current()
   return false
 end
 
+---@alias TabElement Tabpage|Buffer
+
 ---@class Tabpage
 ---@field public id number
 ---@field public buf number

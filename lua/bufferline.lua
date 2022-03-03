@@ -293,8 +293,19 @@ end
 --- @return string
 local function bufferline()
   local tabs = tabpages.get()
-  local components = config.get():is_tabline() and tabpages.get_components(state)
-    or buffers.get_components(state)
+
+  local conf = config.get()
+  local is_tabline = conf:is_tabline()
+  local has_groups = config:enabled("groups")
+  local components = is_tabline and tabpages.get_components(state) or buffers.get_components(state)
+
+  components = has_groups
+      and not is_tabline
+      and groups.render(components, function(...)
+        return sorters.sorter(state, ...)
+      end)
+    or sorters.sorter(components)
+
   local tabline, visible_components = ui.render(components, tabs)
   --- store the full unfiltered lists
   state.__components = components

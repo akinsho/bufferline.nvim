@@ -92,22 +92,23 @@ end
 
 --- sorts a list of buffers in place
 --- @param sort_by string|function
---- @param buffers Buffer[]
-local function sort_buffers(sort_by, buffers)
+--- @param elements TabElement[]
+local function sort_buffers(sort_by, elements)
   if sort_by == "extension" then
-    table.sort(buffers, sort_by_extension)
+    table.sort(elements, sort_by_extension)
   elseif sort_by == "directory" then
-    table.sort(buffers, sort_by_directory)
+    table.sort(elements, sort_by_directory)
   elseif sort_by == "relative_directory" then
-    table.sort(buffers, sort_by_relative_directory)
+    table.sort(elements, sort_by_relative_directory)
   elseif sort_by == "id" then
-    table.sort(buffers, sort_by_id)
+    table.sort(elements, sort_by_id)
+    --- FIXME: this does not work for tab mode
   elseif sort_by == "tabs" then
-    table.sort(buffers, sort_by_tabs)
+    table.sort(elements, sort_by_tabs)
   elseif type(sort_by) == "function" then
-    table.sort(buffers, sort_by)
+    table.sort(elements, sort_by)
   end
-  for index, buf in ipairs(buffers) do
+  for index, buf in ipairs(elements) do
     buf.ordinal = index
   end
 end
@@ -120,12 +121,7 @@ function M.sorter(state, list)
   if state.custom_sort then
     return list
   end
-  local conf = config.get()
-  ---FIXME: how should we sort tab buffers, create a buffer within each tab and pass those through?
-  if conf:is_tabline() then
-    return
-  end
-  sort_buffers(conf.options.sort_by, list)
+  sort_buffers(config.get("options").sort_by, list)
   return list
 end
 
