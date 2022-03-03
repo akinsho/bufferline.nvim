@@ -114,14 +114,14 @@ end
 --- @param context RenderContext
 --- @return RenderContext
 function M.component(context)
-  local buffer = context.tab:as_buffer()
+  local element = context.tab
   local component = context.component
   local options = config.get("options")
   local length = context.length
   if options.numbers == "none" then
     return context
   end
-  local number_prefix = prefix(buffer, options.numbers, options.number_style)
+  local number_prefix = prefix(element, options.numbers, options.number_style)
   local number_component = ""
   if number_prefix ~= "" then
     number_component = number_prefix .. constants.padding
