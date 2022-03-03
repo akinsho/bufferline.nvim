@@ -109,7 +109,7 @@ local function get_sections(components)
 end
 
 local function get_marker_size(count, element_size)
-  return count > 0 and strwidth(count) + element_size or 0
+  return count > 0 and strwidth(tostring(count)) + element_size or 0
 end
 
 local function truncation_component(count, icon, hls)
