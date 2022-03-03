@@ -290,19 +290,6 @@ local function filter_invisible(list)
   end, list)
 end
 
----sort a list of components using a sort function
----@param list Component[]
----@return Component[]
-local function sorter(list)
-  -- if the user has reshuffled the buffers manually don't try and sort them
-  if state.custom_sort then
-    return list
-  end
-  local options = require("bufferline.config").get("options")
-  require("bufferline.sorters").sort_buffers(options.sort_by, list)
-  return list
-end
-
 --- @return string
 local function bufferline()
   local tabs = tabpages.get()
