@@ -241,9 +241,9 @@ function M.cycle(direction)
   vim.cmd("buffer " .. next.id)
 end
 
----@alias direction "'left'" | "'right'"
+---@alias Direction "'left'" | "'right'"
 ---Close all buffers to the left or right of the current buffer
----@param direction direction
+---@param direction Direction
 function M.close_in_direction(direction)
   local index = get_current_buf_index()
   if not index then
