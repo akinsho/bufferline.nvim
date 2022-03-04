@@ -1,3 +1,5 @@
+local config = require("bufferline.config")
+
 local M = {}
 ---------------------------------------------------------------------------//
 -- Sorters
@@ -89,9 +91,11 @@ local function sort_by_tabs(buf_a, buf_b)
 end
 
 --- sorts a list of buffers in place
---- @param sort_by string|function
 --- @param elements TabElement[]
-function M.sort(sort_by, elements)
+function M.sort(elements)
+  local sort_by = config.options.sort_by
+  local is_tabline = config:is_tabline()
+
   if sort_by == "extension" then
     table.sort(elements, sort_by_extension)
   elseif sort_by == "directory" then
@@ -101,9 +105,7 @@ function M.sort(sort_by, elements)
   elseif sort_by == "id" then
     table.sort(elements, sort_by_id)
   elseif sort_by == "tabs" then
-    --- FIXME: rather than sampling the first element and assuming that
-    --- find a more general way to provide that information or implement this search
-    table.sort(elements, elements[1].type == "tab" and sort_by_id or sort_by_tabs)
+    table.sort(elements, is_tabline and sort_by_id or sort_by_tabs)
   elseif type(sort_by) == "function" then
     table.sort(elements, sort_by)
   end

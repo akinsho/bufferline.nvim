@@ -270,7 +270,7 @@ function M.sort_buffers_by(sort_by)
     return utils.echoerr("Unable to find buffers to sort, sorry")
   end
 
-  sorters.sort(sort_by, state.components)
+  sorters.sort_buffers(sort_by, state.components)
   state.custom_sort = get_buf_ids(state.components)
   local opts = config.options
   if opts.persist_buffer_sort then
@@ -298,8 +298,7 @@ local function sorter(list)
   if state.custom_sort then
     return list
   end
-  local options = config.get("options")
-  return sorters.sort(options.sort_by, list)
+  return sorters.sort(list)
 end
 
 --- @return string
