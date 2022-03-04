@@ -1,6 +1,8 @@
 local ui = require("bufferline.ui")
+local utils = require("bufferline.utils")
 local config = require("bufferline.config")
 local constants = require("bufferline.constants")
+local diagnostics = require("bufferline.diagnostics")
 
 local fn = vim.fn
 local api = vim.api
@@ -80,12 +82,17 @@ function M.get_components(state)
     if type(buffers) == "table" then
       local path, buf_num = get_tab_buffer_details(tab_num, buffers)
       if buf_num then
+        local all_diagnostics = diagnostics.get(options)
+        local match = utils.find(buffers, function(item)
+          return all_diagnostics[item].count > 0
+        end)
         components[#components + 1] = Tabpage:new({
           path = path,
           buf = buf_num,
+          buffers = buffers,
           id = tab_num,
           ordinal = i,
-          diagnostics = {},
+          diagnostics = all_diagnostics[match],
           name_formatter = options.name_formatter,
           hidden = false,
           focusable = true,
