@@ -70,8 +70,7 @@ local function pad(opts)
 end
 
 local function modified_component()
-  local options = config.options
-  local modified_icon = options.modified_icon
+  local modified_icon = config.options.modified_icon
   local modified_section = modified_icon .. padding
   return modified_section, strwidth(modified_section)
 end
