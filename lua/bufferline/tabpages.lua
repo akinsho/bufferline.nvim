@@ -80,7 +80,7 @@ function M.get_components(state)
     if type(buffers) == "table" then
       local path, buf_num = get_tab_buffer_details(tab_num, buffers)
       if buf_num then
-        components[i] = Tabpage:new({
+        components[#components + 1] = Tabpage:new({
           path = path,
           buf = buf_num,
           id = tab_num,
