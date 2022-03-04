@@ -116,7 +116,7 @@ end
 function M.component(context)
   local element = context.tab
   local component = context.component
-  local options = config.get("options")
+  local options = config.options
   local length = context.length
   if options.numbers == "none" then
     return context

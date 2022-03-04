@@ -29,8 +29,8 @@ function M.get()
   local tabpages = {}
   local tabs = vim.fn.gettabinfo()
   local current_tab = vim.fn.tabpagenr()
-  local highlights = config.get("highlights")
-  local style = config.get("options").separator_style
+  local highlights = config.highlights
+  local style = config.options.separator_style
   for i, tab in ipairs(tabs) do
     local is_active_tab = current_tab == tab.tabnr
     local component, length = render(tab, is_active_tab, style, highlights)
@@ -67,7 +67,7 @@ end
 ---@param state BufferlineState
 ---@return Tabpage[]
 function M.get_components(state)
-  local options = config.get("options")
+  local options = config.options
   local tabs = get_valid_tabs()
 
   local Tabpage = require("bufferline.models").Tabpage

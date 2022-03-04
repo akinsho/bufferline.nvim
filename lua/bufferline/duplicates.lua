@@ -74,7 +74,7 @@ function M.component(context)
   local component = context.component
   local hl = context.current_highlights
   local length = context.length
-  local options = config.get("options")
+  local options = config.options
   -- there is no way to enforce a regular tab size as specified by the
   -- user if we are going to potentially increase the tab length by
   -- prefixing it with the parent dir(s)

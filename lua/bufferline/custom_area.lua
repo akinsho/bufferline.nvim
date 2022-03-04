@@ -28,7 +28,7 @@ function M.get()
   local left = ""
   local right = ""
   ---@type table<string,function>
-  local areas = config.get("options").custom_areas
+  local areas = config.options.custom_areas
   if areas then
     for side, section_fn in pairs(areas) do
       if type(section_fn) ~= "function" then

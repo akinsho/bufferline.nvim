@@ -70,7 +70,7 @@ local function pad(opts)
 end
 
 local function modified_component()
-  local options = config.get("options")
+  local options = config.options
   local modified_icon = options.modified_icon
   local modified_section = modified_icon .. padding
   return modified_section, strwidth(modified_section)
@@ -195,7 +195,7 @@ local function add_spacing(context)
   local length = context.length
   local element = context.tab
   local hl = context.current_highlights
-  local options = config.get("options")
+  local options = config.options
 
   if not options.show_buffer_close_icons then
     -- If the buffer is modified add an icon, if it isn't pad
@@ -271,7 +271,7 @@ end
 
 --- @param buf_id number
 local function close_icon(buf_id, context)
-  local options = config.get("options")
+  local options = config.options
   local buffer_close_icon = options.buffer_close_icon
   local close_button_hl = context.current_highlights.close_button
 
@@ -292,8 +292,8 @@ local function add_indicator(context)
   local element = context.tab
   local length = context.length
   local component = context.component
-  local hl = config.get("highlights")
-  local options = config.get("options")
+  local hl = config.highlights
+  local options = config.options
   local curr_hl = context.current_highlights
   local style = options.separator_style
 
@@ -322,7 +322,7 @@ local function add_prefix(context)
   local element = context.tab
   local hl = context.current_highlights
   local length = context.length
-  local options = config.get("options")
+  local options = config.options
 
   if context.is_picking and element.letter then
     component, length = require("bufferline.pick").component(context)
@@ -340,7 +340,7 @@ local function add_suffix(context)
   local component = context.component
   local element = context.tab
   local hl = context.current_highlights
-  local options = config.get("options")
+  local options = config.options
   local length = context.length
   local modified, modified_size = modified_component()
   if not options.show_buffer_close_icons then
@@ -361,8 +361,8 @@ end
 local function add_separators(context)
   local element = context.tab
   local length = context.length
-  local hl = config.get("highlights")
-  local options = config.get("options")
+  local hl = config.highlights
+  local options = config.options
   local style = options.separator_style
   local curr_hl = context.current_highlights
   local focused = element:current() or element:visible()
@@ -392,7 +392,7 @@ end
 ---@return number
 local function get_max_length(context)
   local _, modified_size = modified_component()
-  local options = config.get("options")
+  local options = config.options
   local element = context.tab
   local icon_size = strwidth(element.icon)
   local padding_size = strwidth(padding) * 2
@@ -446,7 +446,7 @@ local function create_renderer(ctx)
     -- if using the non-slanted tab style then we must check if the component is at the end of
     -- of a section e.g. the end of a group and if so it should not be wrapped with separators
     -- as it can use those of the next item
-    if not is_slant(config.get("options").separator_style) and next_item and next_item:is_end() then
+    if not is_slant(config.options.separator_style) and next_item and next_item:is_end() then
       return buffer_component
     end
 
@@ -506,8 +506,8 @@ end
 --- @param tab_elements table[]
 --- @return string
 function M.render(components, tab_elements)
-  local options = config.get("options")
-  local hl = config.get("highlights")
+  local options = config.options
+  local hl = config.highlights
   local right_align = "%="
   local tab_components = ""
   local close, close_length = "", 0

@@ -53,7 +53,7 @@ end
 ---@param state BufferlineState
 ---@return Buffer[]
 function M.get_components(state)
-  local options = config.get("options")
+  local options = config.options
   local buf_nums = utils.get_valid_buffers()
   if options and options.custom_filter then
     buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)

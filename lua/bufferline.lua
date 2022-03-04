@@ -90,7 +90,7 @@ end
 
 ---@param buf_id number
 function M.handle_close_buffer(buf_id)
-  local options = config.get("options")
+  local options = config.options
   local close = options.close_command
   handle_user_command(close, buf_id)
 end
@@ -105,7 +105,7 @@ end
 ---@param id number
 ---@param button string
 function M.handle_click(id, button)
-  local options = config.get("options")
+  local options = config.options
   local cmds = {
     r = "right_mouse_command",
     l = "left_mouse_command",
@@ -207,7 +207,7 @@ function M.move(direction)
     state.components[next_index] = cur_buf
     state.components[index] = destination_buf
     state.custom_sort = get_buf_ids(state.components)
-    local opts = config.get("options")
+    local opts = config.options
     if opts.persist_buffer_sort then
       save_positions(state.custom_sort)
     end
@@ -272,7 +272,7 @@ function M.sort_buffers_by(sort_by)
 
   sorters.sort(sort_by, state.components)
   state.custom_sort = get_buf_ids(state.components)
-  local opts = config.get("options")
+  local opts = config.options
   if opts.persist_buffer_sort then
     save_positions(state.custom_sort)
   end
@@ -326,7 +326,7 @@ local function bufferline()
 end
 
 function M.toggle_bufferline()
-  local opts = config.get("options")
+  local opts = config.options
   local status = (opts.always_show_bufferline or #fn.getbufinfo({ buflisted = 1 }) > 1) and 2 or 0
   vim.o.showtabline = status
 end
@@ -398,7 +398,7 @@ function M.group_action(name, action)
 end
 
 function M.handle_group_enter()
-  local options = config.get("options")
+  local options = config.options
   local _, buf = get_current_buf_index({ include_hidden = true })
   if not buf then
     return

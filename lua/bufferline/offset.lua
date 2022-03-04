@@ -129,8 +129,7 @@ end
 ---@return string
 ---@return string
 function M.get()
-  local offsets = config.get("options").offsets
-
+  local offsets = config.options.offsets
   local left = ""
   local right = ""
   local total_size = 0
