@@ -1,9 +1,11 @@
 local ui = require("bufferline.ui")
 local utils = require("bufferline.utils")
+local state = require("bufferline.state")
 local groups = require("bufferline.groups")
 local config = require("bufferline.config")
 local sorters = require("bufferline.sorters")
 local buffers = require("bufferline.buffers")
+local commands = require("bufferline.commands")
 local tabpages = require("bufferline.tabpages")
 local constants = require("bufferline.constants")
 local highlights = require("bufferline.highlights")
@@ -14,269 +16,36 @@ local fmt = string.format
 
 local positions_key = constants.positions_key
 
-local M = {}
+local M = {
+  move = commands.move,
+  go_to = commands.go_to,
+  cycle = commands.cycle,
+  sort_by = commands.sort_by,
+  pick_buffer = commands.pick,
+  close_with_pick = commands.close_with_pick,
+  close_in_direction = commands.close_in_direction,
+  -- @deprecate
+  go_to_buffer = commands.go_to,
+  sort_buffers_by = commands.sort_by,
+  close_buffer_with_pick = commands.close_with_pick,
+}
 
 --- Global namespace for callbacks and other use cases such as commandline completion functions
 _G.__bufferline = __bufferline or {}
-
------------------------------------------------------------------------------//
--- State
------------------------------------------------------------------------------//
----@class BufferlineState
----@field components Component[]
----@field visible_components Component[]
----@field __components Component[]
----@field __visible_components Component[]
----@field custom_sort number[]
-local state = {
-  is_picking = false,
-  custom_sort = nil,
-  __components = {},
-  __visible_components = {},
-  components = {},
-  visible_components = {},
-}
 -----------------------------------------------------------------------------//
 -- Helpers
 -----------------------------------------------------------------------------//
-
-local function refresh()
-  vim.cmd("redrawtabline")
-  vim.cmd("redraw")
-end
-
----@param bufs number[]
-local function save_positions(bufs)
-  local positions = table.concat(bufs, ",")
-  vim.g[positions_key] = positions
-end
-
 function M.restore_positions()
   local str = vim.g[positions_key]
   if not str then
     return str
   end
-  local buf_ids = vim.split(str, ",")
-  if buf_ids and #buf_ids > 0 then
-    -- these are converted to strings when stored
-    -- so have to be converted back before usage
-    state.custom_sort = vim.tbl_map(tonumber, buf_ids)
+  -- these are converted to strings when stored
+  -- so have to be converted back before usage
+  local ids = vim.split(str, ",")
+  if ids and #ids > 0 then
+    state.custom_sort = vim.tbl_map(tonumber, ids)
   end
-end
-
----------------------------------------------------------------------------//
--- User commands
----------------------------------------------------------------------------//
-
----Handle a user "command" which can be a string or a function
----@param command string|function
----@param buf_id string
-local function handle_user_command(command, buf_id)
-  if not command then
-    return
-  end
-  if type(command) == "function" then
-    command(buf_id)
-  elseif type(command) == "string" then
-    vim.cmd(fmt(command, buf_id))
-  end
-end
-
----@param group_id number
-function M.handle_group_click(group_id)
-  groups.toggle_hidden(group_id)
-  refresh()
-end
-
----@param buf_id number
-function M.handle_close_buffer(buf_id)
-  local options = config.options
-  local close = options.close_command
-  handle_user_command(close, buf_id)
-end
-
----@param id number
-function M.handle_win_click(id)
-  local win_id = vim.fn.bufwinid(id)
-  vim.fn.win_gotoid(win_id)
-end
-
----Handler for each type of mouse click
----@param id number
----@param button string
-function M.handle_click(id, button)
-  local options = config.options
-  local cmds = {
-    r = "right_mouse_command",
-    l = "left_mouse_command",
-    m = "middle_mouse_command",
-  }
-  if id then
-    handle_user_command(options[cmds[button]], id)
-  end
-end
-
----Execute an arbitrary user function on a visible by it's position buffer
----@param index number
----@param func fun(num: number)
-function M.buf_exec(index, func)
-  local target = state.visible_components[index]
-  if target and type(func) == "function" then
-    func(target, state.visible_components)
-  end
-end
-
--- Prompts user to select a buffer then applies a function to the buffer
----@param func fun(buf_id: number)
-local function select_buffer_apply(func)
-  state.is_picking = true
-  refresh()
-
-  local char = vim.fn.getchar()
-  local letter = vim.fn.nr2char(char)
-  for _, item in ipairs(state.components) do
-    local buf = item:as_buffer()
-    if buf and letter == buf.letter then
-      func(buf.id)
-    end
-  end
-
-  state.is_picking = false
-  refresh()
-end
-
-function M.pick_buffer()
-  select_buffer_apply(function(buf_id)
-    vim.cmd("buffer " .. buf_id)
-  end)
-end
-
-function M.close_buffer_with_pick()
-  select_buffer_apply(function(buf_id)
-    M.handle_close_buffer(buf_id)
-  end)
-end
-
---- Open a buffer based on it's visible position in the list
---- unless absolute is specified in which case this will open it based on it place in the full list
---- this is significantly less helpful if you have a lot of buffers open
----@param num number | string
----@param absolute boolean whether or not to use the buffers absolute position or visible positions
-function M.go_to_buffer(num, absolute)
-  num = type(num) == "string" and tonumber(num) or num
-  local list = absolute and state.components or state.visible_components
-  local buf = list[num]
-  if buf then
-    vim.cmd(fmt("buffer %d", buf.id))
-  end
-end
-
----@param opts table
----@return number
----@return Buffer
-local function get_current_buf_index(opts)
-  opts = opts or { include_hidden = false }
-  local list = opts.include_hidden and state.__components or state.components
-  local current = api.nvim_get_current_buf()
-  for index, item in ipairs(list) do
-    local buf = item:as_buffer()
-    if buf and buf.id == current then
-      return index, buf
-    end
-  end
-end
-
---- @param bufs Buffer[]
---- @return number[]
-local function get_buf_ids(bufs)
-  return vim.tbl_map(function(buf)
-    return buf.id
-  end, bufs)
-end
-
---- @param direction number
-function M.move(direction)
-  local index = get_current_buf_index()
-  if not index then
-    return utils.echoerr("Unable to find buffer to move, sorry")
-  end
-  local next_index = index + direction
-  if next_index >= 1 and next_index <= #state.components then
-    local cur_buf = state.components[index]
-    local destination_buf = state.components[next_index]
-    state.components[next_index] = cur_buf
-    state.components[index] = destination_buf
-    state.custom_sort = get_buf_ids(state.components)
-    local opts = config.options
-    if opts.persist_buffer_sort then
-      save_positions(state.custom_sort)
-    end
-    refresh()
-  end
-end
-
-function M.cycle(direction)
-  local index = get_current_buf_index()
-  if not index then
-    return
-  end
-  local length = #state.components
-  local next_index = index + direction
-
-  if next_index <= length and next_index >= 1 then
-    next_index = index + direction
-  elseif index + direction <= 0 then
-    next_index = length
-  else
-    next_index = 1
-  end
-
-  local item = state.components[next_index]
-  local next = item:as_buffer()
-
-  if not next then
-    return utils.echoerr("This buffer does not exist")
-  end
-
-  vim.cmd("buffer " .. next.id)
-end
-
----@alias Direction "'left'" | "'right'"
----Close all buffers to the left or right of the current buffer
----@param direction Direction
-function M.close_in_direction(direction)
-  local index = get_current_buf_index()
-  if not index then
-    return
-  end
-  local length = #state.components
-  if
-    not (index == length and direction == "right") and not (index == 1 and direction == "left")
-  then
-    local start = direction == "left" and 1 or index + 1
-    local _end = direction == "left" and index - 1 or length
-    ---@type Buffer[]
-    local bufs = vim.list_slice(state.components, start, _end)
-    for _, buf in ipairs(bufs) do
-      api.nvim_buf_delete(buf.id, { force = true })
-    end
-  end
-end
-
---- sorts all buffers
---- @param sort_by string|function
-function M.sort_buffers_by(sort_by)
-  if next(state.components) == nil then
-    return utils.echoerr("Unable to find buffers to sort, sorry")
-  end
-
-  sorters.sort_buffers(sort_by, state.components)
-  state.custom_sort = get_buf_ids(state.components)
-  local opts = config.options
-  if opts.persist_buffer_sort then
-    save_positions(state.custom_sort)
-  end
-  refresh()
 end
 
 ---@param list Component[]
@@ -363,7 +132,7 @@ local function setup_autocommands(conf)
 
   if conf:enabled("groups") then
     table.insert(autocommands, {
-      "BufReadPre",
+      "BufRead",
       "*",
       "++once",
       "lua vim.schedule(require'bufferline'.handle_group_enter)",
@@ -390,7 +159,7 @@ function M.group_action(name, action)
     end)
   elseif action == "toggle" then
     groups.toggle_hidden(nil, name)
-    refresh()
+    ui.refresh()
   elseif type(action) == "function" then
     groups.command(name, action)
   end
@@ -398,11 +167,11 @@ end
 
 function M.handle_group_enter()
   local options = config.options
-  local _, buf = get_current_buf_index({ include_hidden = true })
-  if not buf then
+  local _, element = commands.get_current_element_index({ include_hidden = true })
+  if not element or not element.group then
     return
   end
-  local current_group = groups.get_by_id(buf.group)
+  local current_group = groups.get_by_id(element.group)
   if options.groups.options.toggle_hidden_on_enter then
     if current_group.hidden then
       groups.set_hidden(current_group.id, false)
@@ -497,7 +266,7 @@ end
 
 if utils.is_test() then
   M._state = state
-  M._get_current_buf_index = get_current_buf_index
+  M._get_current_buf_index = M.get_current_buf_index
 end
 
 return M

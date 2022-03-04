@@ -1,8 +1,11 @@
+local utils = require("bufferline.utils")
+
 local M = {}
 
 local api = vim.api
 local fn = vim.fn
 local fmt = string.format
+local log = utils.log
 
 --[[
 -----------------------------------------------------------------------------//
@@ -32,7 +35,7 @@ local Component = {}
 
 ---@param field string
 local function not_implemented(field)
-  require("bufferline.utils").log.debug(debug.traceback("Stack trace:"))
+  log.debug(debug.traceback("Stack trace:"))
   error(fmt("%s is not implemented yet", field))
 end
 
@@ -63,13 +66,10 @@ function Component:is_end()
   return self.type:match("group")
 end
 
----@return Buffer?
-function Component:as_buffer()
-  if self.type ~= "buffer" then
-    require("bufferline.utils").log.debug(
-      fmt("This entity is not a buffer, it is a %s.", self.type)
-    )
-    return
+---@return TabElement?
+function Component:as_element()
+  if not vim.tbl_contains({ "buffer", "tab" }, self.type) then
+    return log.debug(fmt("This entity is not a buffer or a buffer, it is a %s.", self.type))
   end
   return self
 end

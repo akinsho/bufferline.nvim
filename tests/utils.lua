@@ -13,7 +13,7 @@ function MockBuffer:new(o)
   return o
 end
 
-function MockBuffer:as_buffer()
+function MockBuffer:as_element()
   return self
 end
 

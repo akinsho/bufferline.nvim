@@ -53,6 +53,11 @@ function Context:update(o)
 end
 -----------------------------------------------------------------------------//
 
+function M.refresh()
+  vim.cmd("redrawtabline")
+  vim.cmd("redraw")
+end
+
 ---@class PadOpts
 ---@field left number?
 ---@field right number?
