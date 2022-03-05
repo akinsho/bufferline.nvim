@@ -1,4 +1,5 @@
 local ui = require("bufferline.ui")
+local pick = require("bufferline.pick")
 local utils = require("bufferline.utils")
 local config = require("bufferline.config")
 local constants = require("bufferline.constants")
@@ -66,6 +67,16 @@ local function get_valid_tabs()
   end, api.nvim_list_tabpages())
 end
 
+--- Get tab buffers based on open windows within the tab
+--- this is similar to tabpagebuflist but doesn't involve
+--- the viml round trip or the quirk where it occasionally returns
+--- a number
+---@param tab_num number
+---@return number[]
+local function get_tab_buffers(tab_num)
+  return vim.tbl_map(api.nvim_win_get_buf, api.nvim_tabpage_list_wins(tab_num))
+end
+
 ---@param state BufferlineState
 ---@return Tabpage[]
 function M.get_components(state)
@@ -75,30 +86,28 @@ function M.get_components(state)
   local Tabpage = require("bufferline.models").Tabpage
   ---@type Tabpage[]
   local components = {}
+  pick.reset()
+
   for i, tab_num in ipairs(tabs) do
-    local buffers = fn.tabpagebuflist(tab_num)
-    -- tabpagebuflist can return 0 if the tab page number was invalid in this case
-    -- skip this tab as it won't have any associated buffers
-    if type(buffers) == "table" then
-      local path, buf_num = get_tab_buffer_details(tab_num, buffers)
-      if buf_num then
-        local all_diagnostics = diagnostics.get(options)
-        local match = utils.find(buffers, function(item)
-          return all_diagnostics[item].count > 0
-        end)
-        components[#components + 1] = Tabpage:new({
-          path = path,
-          buf = buf_num,
-          buffers = buffers,
-          id = tab_num,
-          ordinal = i,
-          diagnostics = all_diagnostics[match],
-          name_formatter = options.name_formatter,
-          hidden = false,
-          focusable = true,
-        })
-      end
-    end
+    local buffers = get_tab_buffers(tab_num)
+    local path, buf_num = get_tab_buffer_details(tab_num)
+    local all_diagnostics = diagnostics.get(options)
+    local match = utils.find(buffers, function(item)
+      return all_diagnostics[item].count > 0
+    end)
+    local tab = Tabpage:new({
+      path = path,
+      buf = buf_num,
+      buffers = buffers,
+      id = tab_num,
+      ordinal = i,
+      diagnostics = all_diagnostics[match],
+      name_formatter = options.name_formatter,
+      hidden = false,
+      focusable = true,
+    })
+    tab.letter = pick.get(tab)
+    components[#components + 1] = tab
   end
   return vim.tbl_map(function(tab)
     return ui.element(state, tab)
