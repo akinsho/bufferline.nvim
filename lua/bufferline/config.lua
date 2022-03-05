@@ -615,6 +615,11 @@ function Config:resolve()
   if is_tabline and self.options.sort_by == "tabs" then
     self.options.sort_by = "id"
   end
+  if is_tabline then
+    self.options.close_command = "tabclose! %d"
+    self.options.right_mouse_command = "tabclose! %d"
+    self.options.left_mouse_command = vim.api.nvim_set_current_tabpage
+  end
 end
 
 ---Generate highlight groups from user
