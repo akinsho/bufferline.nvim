@@ -52,13 +52,11 @@ end
 ---@param tab_num integer
 ---@return string
 ---@return number
-local function get_tab_buffer_details(tab_num, buffers)
-  -- tabpagebuflist can return 0 if the tab page number was invalid
-  -- if this happens show no name
-  local winnr = fn.tabpagewinnr(tab_num)
-  local name = fn.bufname(buffers[winnr])
-  name = name ~= "" and name or "[No name]"
-  return name, buffers[winnr]
+local function get_tab_buffer_details(tab_num)
+  local window = api.nvim_tabpage_get_win(tab_num)
+  local buf = api.nvim_win_get_buf(window)
+  local name = (buf and api.nvim_buf_is_valid(buf)) and api.nvim_buf_get_name(buf) or "[No name]"
+  return name, buf
 end
 
 local function get_valid_tabs()
