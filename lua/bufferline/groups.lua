@@ -85,9 +85,9 @@ end
 ---@return string
 ---@return number
 function M.component(ctx)
-  local buffer = ctx.tab:as_buffer()
+  local element = ctx.tab
   local hls = ctx.current_highlights
-  local group = state.user_groups[buffer.group]
+  local group = state.user_groups[element.group]
   if not group then
     return ctx
   end
@@ -275,11 +275,10 @@ function M.separator.pill(group, hls, count)
 end
 
 ---@param name string,
----@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
 ---@return string, number
-function M.separator.tab(name, group, hls, count)
+function M.separator.tab(name, hls, count)
   local hl = hls.fill.hl
   local indicator_hl = hls.buffer.hl
   local length = utils.measure(name, string.rep(padding, 4), count)
@@ -337,7 +336,7 @@ local function sort_by_groups(components)
   local sorted = {}
   local clustered = generate_sublists(vim.tbl_count(state.user_groups))
   for index, tab in ipairs(components) do
-    local buf = tab:as_buffer()
+    local buf = tab:as_element()
     if buf then
       local group = state.user_groups[buf.group]
       local sublist = clustered[group.priority]

@@ -27,9 +27,15 @@ local function remove_highlight(str)
 end
 
 describe("Offset tests:", function()
+  local bufferline
   local offsets = require("bufferline.offset")
   vim.o.hidden = true
   vim.o.swapfile = false
+
+  before_each(function()
+    package.loaded["bufferline"] = nil
+    bufferline = require("bufferline")
+  end)
 
   after_each(function()
     vim.cmd("silent only")
@@ -38,7 +44,8 @@ describe("Offset tests:", function()
   end)
 
   it("should not trigger if no offsets are specified", function()
-    local size, left, right = offsets.get({ options = {}, highlights = {} })
+    bufferline.setup({ options = {}, highlights = {} })
+    local size, left, right = offsets.get()
     assert.equal(0, size)
     assert.equal(left, "")
     assert.equal(right, "")
@@ -50,7 +57,8 @@ describe("Offset tests:", function()
       highlights = {},
       options = { offsets = { { filetype = ft } } },
     }
-    local size, left, right = offsets.get(opts)
+    bufferline.setup(opts)
+    local size, left, right = offsets.get()
     assert.equal(20, size)
     assert.equal(right, "")
     assert.is_truthy(left:match(" "))
@@ -58,11 +66,11 @@ describe("Offset tests:", function()
 
   it("should include padded text if text is specified", function()
     local ft = open_test_panel()
-    local opts = {
+    bufferline.setup({
       highlights = {},
       options = { offsets = { { filetype = ft, text = "Test buffer" } } },
-    }
-    local size, left, right = offsets.get(opts)
+    })
+    local size, left, right = offsets.get()
     assert.equal(20, size)
     assert.equal(right, "")
     assert.is_truthy(left:match("    Test buffer    "))
@@ -70,12 +78,13 @@ describe("Offset tests:", function()
 
   it("should add the offset to the correct side", function()
     local ft = open_test_panel("L")
-    local size, left, right = offsets.get({
+    bufferline.setup({
       highlights = {},
       options = {
         offsets = { { filetype = ft, text = "Test buffer" } },
       },
     })
+    local size, left, right = offsets.get()
 
     assert.equal(20, size)
     assert.is_truthy(right:match("Test buffer"))
@@ -84,12 +93,13 @@ describe("Offset tests:", function()
 
   it("should correctly truncate offset text", function()
     local ft = open_test_panel()
-    local size, left, right = offsets.get({
+    bufferline.setup({
       highlights = {},
       options = {
         offsets = { { filetype = ft, text = "Test buffer buffer buffer buffer" } },
       },
     })
+    local size, left, right = offsets.get()
 
     assert.equal(20, size)
     assert.equal("", right)
@@ -99,12 +109,13 @@ describe("Offset tests:", function()
   it("should allow left and right offsets", function()
     local ft1 = open_test_panel()
     local ft2 = open_test_panel("L")
-    local size, left, right = offsets.get({
+    bufferline.setup({
       highlights = {},
       options = {
         offsets = { { filetype = ft1, text = "Left" }, { filetype = ft2, text = "Right" } },
       },
     })
+    local size, left, right = offsets.get()
 
     assert.is_truthy(left:match("Left"))
     assert.is_truthy(right:match("Right"))
@@ -113,12 +124,13 @@ describe("Offset tests:", function()
 
   it("should allow setting some extra padding", function()
     local ft1 = open_test_panel()
-    local size, left, _ = offsets.get({
+    bufferline.setup({
       highlights = {},
       options = {
         offsets = { { filetype = ft1, text = "Left", padding = 5 } },
       },
     })
+    local size, left, _ = offsets.get()
 
     assert.is_truthy(left:match("Left"))
     assert.equal(25, size)
@@ -127,12 +139,13 @@ describe("Offset tests:", function()
   it("should align the text to the right if specified", function()
     local ft1 = open_test_panel()
     local text = "Text"
-    local size, left, _ = offsets.get({
+    bufferline.setup({
       highlights = {},
       options = {
         offsets = { { filetype = ft1, text = text, text_align = "right" } },
       },
     })
+    local size, left, _ = offsets.get()
 
     assert.equal(20, size)
     assert.equal(remove_highlight(left), string.rep(" ", size - (#text + 1)) .. text .. " ")
@@ -141,12 +154,13 @@ describe("Offset tests:", function()
   it("should align the text to the left if specified", function()
     local text = "Text"
     local ft1 = open_test_panel()
-    local size, left, _ = offsets.get({
+    bufferline.setup({
       highlights = {},
       options = {
         offsets = { { filetype = ft1, text = text, text_align = "left" } },
       },
     })
+    local size, left, _ = offsets.get()
 
     assert.equal(20, size)
     assert.equal(remove_highlight(left), " " .. text .. string.rep(" ", size - (#text + 1)))
@@ -158,11 +172,11 @@ describe("Offset tests:", function()
       vim.cmd("split")
       vim.cmd("split")
     end)
-    local opts = {
+    bufferline.setup({
       highlights = {},
       options = { offsets = { { filetype = ft } } },
-    }
-    local size, left, right = offsets.get(opts)
+    })
+    local size, left, right = offsets.get()
     assert.equal(20, size)
     assert.equal(right, "")
     assert.is_truthy(left:match(" "))

@@ -2,7 +2,7 @@
   bufferline.nvim
 </h1>
 
-<p align="center">A <i>snazzy</i> 💅 buffer line (with minimal tab integration) for Neovim built using <b>lua</b>.</p>
+<p align="center">A <i>snazzy</i> 💅 buffer line (tab integration) for Neovim built using <b>lua</b>.</p>
 
 ![Demo GIF](https://user-images.githubusercontent.com/22454918/111992693-9c6a9b00-8b0d-11eb-8c39-19db58583061.gif)
 
@@ -13,6 +13,7 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
 
 - [Features](#features)
   - [Alternate styling](#alternate-styling)
+  - [Tabpages mode](#tabpages-mode)
   - [LSP error indicators](#lsp-error-indicators)
   - [Buffer groups](#buffer-groups)
   - [Sidebar offset](#sidebar-offset)
@@ -27,6 +28,7 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Feature overview](#feature-overview)
+  - [Tabpages](#tabpages)
   - [LSP indicators](#lsp-indicators)
   - [Conditional buffer based LSP indicators](#conditional-buffer-based-lsp-indicators)
   - [Groups](#groups)
@@ -55,6 +57,12 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
 though that results may vary depending on your terminal emulator of choice and this style might will not work for all terminals
 
 see: `:h bufferline-styling`
+
+#### Tabpages mode
+
+<img width="500" alt="Screen Shot 2022-03-08 at 17 39 57" src="https://user-images.githubusercontent.com/22454918/157337891-1848da24-69d6-4970-96ee-cf65b2a25c46.png">
+
+You can use this plugin to visualise only native vim tabpages.
 
 #### LSP error indicators
 
@@ -118,14 +126,8 @@ Plug 'akinsho/bufferline.nvim'
 
 ## What about Tabs?
 
-This plugin, as the name implies, shows a user their buffers _not tabs_ if you're unclear as to what the difference
-is please read `:help tabpage`. It does include minimal indicators which show how many tabs you have open and which is focused.
-These are not however part of the bufferline proper and tabs cannot currently replace buffers.
-
-If you are interested in _contributing a PR_ for tab related functionality please raise an issue to discuss.
-
-**N.B:** please **don't open a feature request** for this. It isn't something I plan on _personally_ implementing but will happily help
-a willing contributor who wants to add this themselves.
+This plugin, as the name implies, shows a user their buffers but can also show tabs if using the `tabs` mode. If you're unclear as to what the difference
+is please read `:help tabpage`.
 
 ## Caveats
 
@@ -196,6 +198,7 @@ not track global variables which is the mechanism used to store your sort order.
 ```lua
 require('bufferline').setup {
   options = {
+    mode = "buffers", -- set to "tabs" to only show tabpages instead
     numbers = "none" | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
     --- @deprecated, please specify numbers as a function to customize the styling
     number_style = "superscript" | "subscript" | "" | { "none", "subscript" }, -- buffer_id at index 1, ordinal at index 2
@@ -271,6 +274,16 @@ require('bufferline').setup {
 ```
 
 ## Feature overview
+
+### Tabpages
+
+This plugin can also be set to show only tabpages. This can be done by setting the `mode` option to `tabs`. This will change the bufferline to a tabline
+it has a lot of the same features/styling but not all.
+A few things to note are
+
+- Diagnostics only show if the buffer with issues is the current window selected in that tab page
+- Sorting doesn't work yet as that needs to be thought through.
+- Grouping doesn't work yet as that also needs to be thought through.
 
 ### LSP indicators
 
@@ -367,7 +380,7 @@ groups = {
       priority = 2, -- determines where it will appear relative to other groups (Optional)
       icon = "", -- Optional
       matcher = function(buf) -- Mandatory
-        return buf.filename:match('%_test') or buf.filename:match('%_spec')
+        return buf.name:match('%_test') or buf.name:match('%_spec')
       end,
     },
     {
@@ -375,7 +388,7 @@ groups = {
       highlight = {gui = "undercurl", guisp = "green"},
       auto_close = false,  -- whether or not close this group if it doesn't contain the current buffer
       matcher = function(buf)
-        return buf.filename:match('%.md') or buf.filename:match('%.txt')
+        return buf.name:match('%.md') or buf.name:match('%.txt')
       end,
       separator = { -- Optional
         style = require('bufferline.groups').separator.tab

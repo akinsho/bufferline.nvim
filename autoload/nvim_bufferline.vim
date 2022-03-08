@@ -10,7 +10,7 @@ function! nvim_bufferline#handle_click(minwid, clicks, btn, modifiers) abort
 endfunction
 
 function! nvim_bufferline#handle_close_buffer(minwid, clicks, btn, modifiers) abort
-  call luaeval("require'bufferline'.handle_close_buffer(_A)", a:minwid)
+  call luaeval("require'bufferline'.handle_close(_A)", a:minwid)
 endfunction
 
 

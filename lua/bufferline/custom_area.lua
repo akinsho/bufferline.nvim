@@ -1,3 +1,4 @@
+local config = require("bufferline.config")
 local M = {}
 local fn = vim.fn
 local fmt = string.format
@@ -19,16 +20,15 @@ local function create_hl(index, side, section, guibg)
 end
 
 ---Create tabline segment for custom user specified sections
----@param prefs table
 ---@return integer
 ---@return string
 ---@return string
-function M.get(prefs)
+function M.get()
   local size = 0
   local left = ""
   local right = ""
   ---@type table<string,function>
-  local areas = prefs.options.custom_areas
+  local areas = config.options.custom_areas
   if areas then
     for side, section_fn in pairs(areas) do
       if type(section_fn) ~= "function" then
@@ -37,7 +37,7 @@ function M.get(prefs)
         )
       end
       -- if the user doesn't specify a background use the default
-      local hls = prefs.highlights or {}
+      local hls = config.highlights or {}
       local guibg = hls.fill and hls.fill.guibg or nil
       local ok, section = pcall(section_fn)
       if ok and section and not vim.tbl_isempty(section) then

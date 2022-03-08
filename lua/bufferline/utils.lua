@@ -231,30 +231,33 @@ function M.echomsg(msg, hl)
   vim.api.nvim_echo({ { fmt("[bufferline] %s", msg), hl } }, true, {})
 end
 
+---@class GetIconOpts
+---@field directory boolean
+---@field path string
+---@field extension string
+
 ---Get an icon for a filetype using either nvim-web-devicons or vim-devicons
 ---if using the lua plugin this also returns the icon's highlights
----@param buf Buffer
----@param is_directory boolean
+---@param opts GetIconOpts
 ---@return string, string?
-function M.get_icon(buf, is_directory)
+function M.get_icon(opts)
   local loaded, webdev_icons = pcall(require, "nvim-web-devicons")
-  if is_directory then
+  if opts.directory then
     local hl = loaded and "DevIconDefault" or nil
     return "", hl
   end
-  if buf.buftype == "terminal" then
-    -- NOTE: use an explicit if statement so both values from get icon can be returned
-    -- this does not work if a ternary is used instead as only a single value is returned
-    if not loaded then
-      return ""
-    end
-    return webdev_icons.get_icon(buf.buftype)
+  if type == "terminal" then
+    return webdev_icons.get_icon(type)
   end
   if loaded then
-    return webdev_icons.get_icon(fn.fnamemodify(buf.path, ":t"), buf.extension, { default = true })
+    return webdev_icons.get_icon(
+      fn.fnamemodify(opts.path, ":t"),
+      opts.extension,
+      { default = true }
+    )
   end
   local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
-  return devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(buf.path) or ""
+  return devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(opts.path) or ""
 end
 
 ---Add click action to a component
@@ -286,18 +289,18 @@ local function truncate_by_cell(str, col_limit)
   return short
 end
 
-function M.truncate_filename(filename, word_limit)
+function M.truncate_name(name, word_limit)
   local trunc_symbol = "…"
-  if api.nvim_strwidth(filename) <= word_limit then
-    return filename
+  if api.nvim_strwidth(name) <= word_limit then
+    return name
   end
   -- truncate nicely by seeing if we can drop the extension first
   -- to make things fit if not then truncate abruptly
-  local without_prefix = fn.fnamemodify(filename, ":t:r")
+  local without_prefix = fn.fnamemodify(name, ":t:r")
   if api.nvim_strwidth(without_prefix) < word_limit then
     return without_prefix .. trunc_symbol
   end
-  return truncate_by_cell(filename, word_limit - 1) .. trunc_symbol
+  return truncate_by_cell(name, word_limit - 1) .. trunc_symbol
 end
 
 function M.is_truthy(value)
