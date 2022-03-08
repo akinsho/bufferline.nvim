@@ -11,6 +11,9 @@ describe("Bufferline tests:", function()
   before_each(function()
     package.loaded["bufferline"] = nil
     package.loaded["bufferline.state"] = nil
+    -- dependent modules need to also be reset as
+    -- they keep track of state themselves now
+    package.loaded["bufferline.commands"] = nil
     bufferline = require("bufferline")
     state = require("bufferline.state")
   end)

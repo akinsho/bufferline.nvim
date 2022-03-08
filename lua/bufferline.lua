@@ -265,9 +265,4 @@ function M.setup(conf)
   end
 end
 
-if utils.is_test() then
-  M._state = state
-  M._get_current_buf_index = M.get_current_buf_index
-end
-
 return M
