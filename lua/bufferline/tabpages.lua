@@ -1,11 +1,9 @@
 local ui = require("bufferline.ui")
 local pick = require("bufferline.pick")
-local utils = require("bufferline.utils")
 local config = require("bufferline.config")
 local constants = require("bufferline.constants")
 local diagnostics = require("bufferline.diagnostics")
 
-local fn = vim.fn
 local api = vim.api
 
 local M = {}
@@ -90,16 +88,18 @@ function M.get_components(state)
     local buffers = get_tab_buffers(tab_num)
     local path, buf_num = get_tab_buffer_details(tab_num)
     local all_diagnostics = diagnostics.get(options)
-    local match = utils.find(buffers, function(item)
-      return all_diagnostics[item].count > 0
-    end)
+    -- TODO: decide how diagnostics should render if the focused
+    -- window doesn't have any errors but a neighbouring window does
+    -- local match = utils.find(buffers, function(item)
+    --   return all_diagnostics[item].count > 0
+    -- end)
     local tab = Tabpage:new({
       path = path,
       buf = buf_num,
       buffers = buffers,
       id = tab_num,
       ordinal = i,
-      diagnostics = all_diagnostics[match],
+      diagnostics = all_diagnostics[buf_num],
       name_formatter = options.name_formatter,
       hidden = false,
       focusable = true,
