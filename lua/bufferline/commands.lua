@@ -109,7 +109,7 @@ end
 ---Execute an arbitrary user function on a visible by it's position buffer
 ---@param index number
 ---@param func fun(num: number)
-M.exec = function(index, func)
+function M.exec(index, func)
   local target = state.visible_components[index]
   if target and type(func) == "function" then
     func(target, state.visible_components)
@@ -135,11 +135,11 @@ local function select_element_apply(func)
   ui.refresh()
 end
 
-M.pick = function()
+function M.pick()
   select_element_apply(open_element)
 end
 
-M.close_with_pick = function()
+function M.close_with_pick()
   select_element_apply(function(id)
     M.handle_close(id)
   end)
@@ -150,7 +150,7 @@ end
 --- this is significantly less helpful if you have a lot of elements open
 ---@param num number | string
 ---@param absolute boolean whether or not to use the elements absolute position or visible positions
-M.go_to = function(num, absolute)
+function M.go_to(num, absolute)
   num = type(num) == "string" and tonumber(num) or num
   local list = absolute and state.components or state.visible_components
   local element = list[num]
@@ -162,7 +162,7 @@ end
 ---@param opts table
 ---@return number
 ---@return Buffer
-M.get_current_element_index = function(opts)
+function M.get_current_element_index(opts)
   opts = opts or { include_hidden = false }
   local list = opts.include_hidden and state.__components or state.components
   local current = get_current_element()
@@ -175,7 +175,7 @@ M.get_current_element_index = function(opts)
 end
 
 --- @param direction number
-M.move = function(direction)
+function M.move(direction)
   local index = M.get_current_element_index()
   if not index then
     return utils.echoerr("Unable to find buffer to move, sorry")
@@ -195,7 +195,7 @@ M.move = function(direction)
   end
 end
 
-M.cycle = function(direction)
+function M.cycle(direction)
   local index = M.get_current_element_index()
   if not index then
     return
@@ -221,7 +221,7 @@ end
 ---@alias Direction "'left'" | "'right'"
 ---Close all elements to the left or right of the current buffer
 ---@param direction Direction
-M.close_in_direction = function(direction)
+function M.close_in_direction(direction)
   local index = M.get_current_element_index()
   if not index then
     return
@@ -240,7 +240,7 @@ end
 
 --- sorts all elements
 --- @param sort_by string|function
-M.sort_by = function(sort_by)
+function M.sort_by(sort_by)
   if next(state.components) == nil then
     return utils.echoerr("Unable to find elements to sort, sorry")
   end
