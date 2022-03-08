@@ -1,4 +1,10 @@
-local utils = require("bufferline.utils")
+local lazy = require("bufferline.lazy")
+-- @module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
+-- @module "bufferline.config"
+local config = lazy.require("bufferline.config")
+-- @module "bufferline.constants"
+local constants = lazy.require("bufferline.constants")
 
 local M = {}
 
@@ -150,7 +156,7 @@ end
 
 ---@param context RenderContext
 function M.component(context)
-  local opts = require("bufferline.config").get("options")
+  local opts = config.get("options")
   if is_disabled(opts.diagnostics) then
     return context
   end
@@ -178,7 +184,7 @@ function M.component(context)
   local diag_highlight = highlights[diagnostics.level .. "_diagnostic"]
     or highlights.diagnostic
     or ""
-  local padding = require("bufferline.constants").padding
+  local padding = constants.padding
   local size = context.length + fn.strwidth(indicator) + fn.strwidth(padding)
 
   return context:update({

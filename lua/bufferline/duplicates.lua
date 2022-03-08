@@ -1,6 +1,8 @@
 local M = {}
 
-local config = require("bufferline.config")
+local lazy = require("bufferline.lazy")
+-- @module "bufferline.config"
+local config = lazy.require("bufferline.config")
 
 local strwidth = vim.fn.strwidth
 

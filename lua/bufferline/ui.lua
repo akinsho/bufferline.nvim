@@ -1,10 +1,15 @@
 -----------------------------------------------------------------------------//
 -- UI
 -----------------------------------------------------------------------------//
-local utils = require("bufferline.utils")
-local config = require("bufferline.config")
-local constants = require("bufferline.constants")
-local highlights = require("bufferline.highlights")
+local lazy = require("bufferline.lazy")
+-- @module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
+-- @module "bufferline.config"
+local config = lazy.require("bufferline.config")
+-- @module "bufferline.constants"
+local constants = lazy.require("bufferline.constants")
+-- @module "bufferline.highlights"
+local highlights = lazy.require("bufferline.highlights")
 
 local M = {}
 local sep_names = constants.sep_names

@@ -1,7 +1,12 @@
-local ui = require("bufferline.ui")
-local groups = require("bufferline.groups")
-local config = require("bufferline.config")
-local utils = require("bufferline.utils")
+local lazy = require("bufferline.lazy")
+-- @module "bufferline.ui"
+local ui = lazy.require("bufferline.ui")
+-- @module "bufferline.groups"
+local groups = lazy.require("bufferline.groups")
+-- @module "bufferline.config"
+local config = lazy.require("bufferline.config")
+-- @module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
 
 local M = {}
 

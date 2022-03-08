@@ -1,14 +1,26 @@
-local ui = require("bufferline.ui")
-local utils = require("bufferline.utils")
-local state = require("bufferline.state")
-local groups = require("bufferline.groups")
-local config = require("bufferline.config")
-local sorters = require("bufferline.sorters")
-local buffers = require("bufferline.buffers")
-local commands = require("bufferline.commands")
-local tabpages = require("bufferline.tabpages")
-local constants = require("bufferline.constants")
-local highlights = require("bufferline.highlights")
+local lazy = require("bufferline.lazy")
+--- @module "bufferline.ui"
+local ui = lazy.require("bufferline.ui")
+--- @module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
+--- @module "bufferline.state"
+local state = lazy.require("bufferline.state")
+--- @module "bufferline.groups"
+local groups = lazy.require("bufferline.groups")
+--- @module "bufferline.config"
+local config = lazy.require("bufferline.config")
+--- @module "bufferline.sorters"
+local sorters = lazy.require("bufferline.sorters")
+--- @module "bufferline.buffers"
+local buffers = lazy.require("bufferline.buffers")
+--- @module "bufferline.commands"
+local commands = lazy.require("bufferline.commands")
+--- @module "bufferline.tabpages"
+local tabpages = lazy.require("bufferline.tabpages")
+--- @module "bufferline.constants"
+local constants = lazy.require("bufferline.constants")
+--- @module "bufferline.highlights"
+local highlights = lazy.require("bufferline.highlights")
 
 local api = vim.api
 local fn = vim.fn
