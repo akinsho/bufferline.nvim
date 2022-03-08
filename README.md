@@ -60,7 +60,7 @@ see: `:h bufferline-styling`
 
 #### Tabpages mode
 
-<img width="200" alt="Screen Shot 2022-03-08 at 17 39 57" src="https://user-images.githubusercontent.com/22454918/157337891-1848da24-69d6-4970-96ee-cf65b2a25c46.png">
+<img width="500" alt="Screen Shot 2022-03-08 at 17 39 57" src="https://user-images.githubusercontent.com/22454918/157337891-1848da24-69d6-4970-96ee-cf65b2a25c46.png">
 
 You can use this plugin to visualise only native vim tabpages.
 
