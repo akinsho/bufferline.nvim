@@ -1,5 +1,6 @@
 local M = {}
 
+local fn = vim.fn
 local api = vim.api
 local fmt = string.format
 
@@ -17,6 +18,16 @@ local function create_hl(index, side, section, guibg)
     gui = section.gui,
   })
   return H.hl(name)
+end
+
+--- nvim_eval_statusline is not available in stable nvim yet
+---@param text string
+---@return number
+local function get_size(text)
+  if fn.has("nvim-0.7") < 1 then
+    return api.nvim_strwidth(text)
+  end
+  return api.nvim_eval_statusline(text, { use_tabline = true }).width
 end
 
 ---Create tabline segment for custom user specified sections
@@ -45,7 +56,7 @@ function M.get(prefs)
         for i, item in ipairs(section) do
           if item.text and type(item.text) == "string" then
             local hl = create_hl(i, side, item, guibg)
-            size = size + api.nvim_eval_statusline(item.text, { use_tabline = true }).width
+            size = size + get_size(item.text)
             if side == "left" then
               left = left .. hl .. item.text
             else
