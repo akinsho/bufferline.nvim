@@ -1,5 +1,6 @@
 local M = {}
-local fn = vim.fn
+
+local api = vim.api
 local fmt = string.format
 
 ---generate a custom highlight group
@@ -44,7 +45,7 @@ function M.get(prefs)
         for i, item in ipairs(section) do
           if item.text and type(item.text) == "string" then
             local hl = create_hl(i, side, item, guibg)
-            size = size + vim.api.nvim_eval_statusline(item.text, { use_tabline = true }).width
+            size = size + api.nvim_eval_statusline(item.text, { use_tabline = true }).width
             if side == "left" then
               left = left .. hl .. item.text
             else
