@@ -205,6 +205,11 @@ function M.is_valid(buf_num)
   return vim.bo[buf_num].buflisted and exists
 end
 
+---@return number
+function M.get_buf_count()
+  return #fn.getbufinfo({ buflisted = 1 })
+end
+
 ---@return number[]
 function M.get_valid_buffers()
   local buf_nums = vim.api.nvim_list_bufs()

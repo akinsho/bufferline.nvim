@@ -65,13 +65,6 @@ function M.get_components(state)
   end
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
 
-  if not options.always_show_bufferline then
-    if #buf_nums == 1 then
-      vim.o.showtabline = 0
-      return
-    end
-  end
-
   local pick = require("bufferline.pick")
   local duplicates = require("bufferline.duplicates")
   local has_groups = config:enabled("groups")

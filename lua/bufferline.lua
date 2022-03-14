@@ -92,7 +92,14 @@ local function bufferline()
   local has_groups = config:enabled("groups")
   local components = is_tabline and tabpages.get_components(state) or buffers.get_components(state)
 
-  components = has_groups and not is_tabline and groups.render(components, sorter)
+  if not conf.options.always_show_bufferline then
+    if utils.get_buf_count() == 1 then
+      vim.o.showtabline = 0
+      return
+    end
+  end
+
+  components = (has_groups and not is_tabline) and groups.render(components, sorter)
     or sorter(components)
 
   local tabline, visible_components = ui.render(components, tabs)
@@ -108,7 +115,7 @@ end
 
 function M.toggle_bufferline()
   local opts = config.options
-  local status = (opts.always_show_bufferline or #fn.getbufinfo({ buflisted = 1 }) > 1) and 2 or 0
+  local status = (opts.always_show_bufferline or utils.get_buf_count() > 1) and 2 or 0
   vim.o.showtabline = status
 end
 
