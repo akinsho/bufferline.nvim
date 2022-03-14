@@ -1,5 +1,9 @@
 local M = {}
 
+local lazy = require("bufferline.lazy")
+-- @module "bufferline.config"
+local config = lazy.require("bufferline.config")
+
 local strwidth = vim.fn.strwidth
 
 local duplicates = {}
@@ -18,9 +22,9 @@ function M.mark(buffers)
     if current.path == "" then
       return current
     end
-    local duplicate = duplicates[current.filename]
+    local duplicate = duplicates[current.name]
     if not duplicate then
-      duplicates[current.filename] = { current }
+      duplicates[current.name] = { current }
     else
       local depth = 1
       local limit = 10
@@ -68,16 +72,16 @@ end
 
 --- @param context RenderContext
 function M.component(context)
-  local buffer = context.tab:as_buffer()
+  local element = context.tab
   local component = context.component
-  local options = context.preferences.options
   local hl = context.current_highlights
   local length = context.length
+  local options = config.options
   -- there is no way to enforce a regular tab size as specified by the
   -- user if we are going to potentially increase the tab length by
   -- prefixing it with the parent dir(s)
-  if buffer.duplicated and not options.enforce_regular_tabs then
-    local dir = buffer:ancestor(buffer.prefix_count, function(dir, depth)
+  if element.duplicated and not options.enforce_regular_tabs then
+    local dir = element:ancestor(element.prefix_count, function(dir, depth)
       return truncate(dir, depth, options.max_prefix_length)
     end)
     component = hl.duplicate .. dir .. hl.background .. component

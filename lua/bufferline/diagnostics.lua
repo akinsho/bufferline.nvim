@@ -1,4 +1,10 @@
-local utils = require("bufferline.utils")
+local lazy = require("bufferline.lazy")
+-- @module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
+-- @module "bufferline.config"
+local config = lazy.require("bufferline.config")
+-- @module "bufferline.constants"
+local constants = lazy.require("bufferline.constants")
 
 local M = {}
 
@@ -49,7 +55,6 @@ local mt = {
   end,
 }
 
-local is_nightly = utils.is_truthy(fn.has("nvim-0.7"))
 local is_valid_version = utils.is_truthy(fn.has("nvim-0.5"))
 
 local function is_disabled(diagnostics)
@@ -151,22 +156,22 @@ end
 
 ---@param context RenderContext
 function M.component(context)
-  local opts = context.preferences.options
+  local opts = config.get("options")
   if is_disabled(opts.diagnostics) then
     return context
   end
 
   local user_indicator = opts.diagnostics_indicator
   local highlights = context.current_highlights
-  local buf = context.tab:as_buffer()
-  local diagnostics = buf.diagnostics
-  if diagnostics.count < 1 then
+  local element = context.tab
+  local diagnostics = element.diagnostics
+  if not diagnostics or not diagnostics.count or diagnostics.count < 1 then
     return context
   end
 
   local indicator = " (" .. diagnostics.count .. ")"
   if user_indicator and type(user_indicator) == "function" then
-    local ctx = { buffer = buf }
+    local ctx = { buffer = element, tab = element }
     indicator = user_indicator(diagnostics.count, diagnostics.level, diagnostics.errors, ctx)
   end
 
@@ -179,7 +184,7 @@ function M.component(context)
   local diag_highlight = highlights[diagnostics.level .. "_diagnostic"]
     or highlights.diagnostic
     or ""
-  local padding = require("bufferline.constants").padding
+  local padding = constants.padding
   local size = context.length + fn.strwidth(indicator) + fn.strwidth(padding)
 
   return context:update({

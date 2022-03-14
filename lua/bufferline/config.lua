@@ -12,7 +12,10 @@ local fmt = string.format
 ---@field options GroupOptions
 ---@field items Group[]
 
+---@alias BufferlineMode "'tabs'" | "'buffers'"
+
 ---@class BufferlineOptions
+---@field public mode BufferlineMode
 ---@field public view string
 ---@field public debug DebugOpts
 ---@field public numbers string
@@ -199,6 +202,18 @@ function Config:enabled(feature)
     return self.options.groups and self.options.groups.items and #self.options.groups.items >= 1
   end
   return false
+end
+
+function Config:mode()
+  return self.options.mode
+end
+
+function Config:is_bufferline()
+  return self:mode() == "buffers"
+end
+
+function Config:is_tabline()
+  return self:mode() == "tabs"
 end
 
 local nightly = vim.fn.has("nvim-0.6") > 0
@@ -538,7 +553,7 @@ local function get_defaults()
   return {
     ---@type BufferlineOptions
     options = {
-      view = "default",
+      mode = "buffers",
       numbers = "none",
       number_style = "superscript",
       buffer_close_icon = "",
@@ -586,6 +601,27 @@ local function get_defaults()
   }
 end
 
+--- Resolve/change any incompatible options based on the values of other options
+--- e.g. in tabline only certain values are valid/certain options no longer make sense.
+function Config:resolve()
+  local is_tabline = self:is_tabline()
+  -- Don't show tab indicators in tabline mode
+  if is_tabline and self.options.show_tab_indicators then
+    self.options.show_tab_indicators = false
+  end
+  -- If the sort by mechanism is "tabs" but the user is in tabline mode
+  -- then the id will be that of the tabs so sort by should be id i.e. "tabs" sort
+  -- is redundant in tabs mode
+  if is_tabline and self.options.sort_by == "tabs" then
+    self.options.sort_by = "id"
+  end
+  if is_tabline then
+    self.options.close_command = "tabclose %d"
+    self.options.right_mouse_command = "tabclose %d"
+    self.options.left_mouse_command = vim.api.nvim_set_current_tabpage
+  end
+end
+
 ---Generate highlight groups from user
 ---@param highlights table<string, table>
 --- TODO: can this become part of a metatable for each highlight group so it is done at the point
@@ -602,6 +638,7 @@ function M.apply()
   local defaults = get_defaults()
   config:validate(defaults)
   config:merge(defaults)
+  config:resolve()
   if config:enabled("groups") then
     require("bufferline.groups").setup(config)
   end
@@ -645,4 +682,8 @@ function M.__reset()
   config = nil
 end
 
-return M
+return setmetatable(M, {
+  __index = function(_, k)
+    return config[k]
+  end,
+})

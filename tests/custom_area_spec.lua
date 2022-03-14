@@ -1,58 +1,69 @@
-describe('Custom areas -', function()
+describe("Custom areas -", function()
   local areas = require("bufferline.custom_area")
-  it('should generate a custom area from config', function()
-    local size, left = areas.get({
-      options = {
-        custom_areas = {
-          left = function ()
-            return {{text = "test", guifg = "red", guibg = "black"}}
-          end
-        }
-      }
-    })
-    assert.is_truthy(left)
-    assert.is_equal(4, size)
-    assert.is_equal('%#BufferLineLeftCustomAreaText1#test', left)
+
+  local bufferline
+
+  before_each(function()
+    package.loaded["bufferline"] = nil
+    bufferline = require("bufferline")
   end)
 
-  it('should handle sides correctly', function()
-    local size, left, right = areas.get({
+  it("should generate a custom area from config", function()
+    bufferline.setup({
+      options = {
+        custom_areas = {
+          left = function()
+            return { { text = "test", guifg = "red", guibg = "black" } }
+          end,
+        },
+      },
+    })
+    local size, left = areas.get()
+    assert.is_truthy(left)
+    assert.is_equal(4, size)
+    assert.is_equal("%#BufferLineLeftCustomAreaText1#test", left)
+  end)
+
+  it("should handle sides correctly", function()
+    bufferline.setup({
       highlights = {
-        fill = "#000000"
+        fill = "#000000",
       },
       options = {
         custom_areas = {
-          left = function ()
-            return {{text = "test", guifg = "red", guibg = "black"}}
+          left = function()
+            return { { text = "test", guifg = "red", guibg = "black" } }
           end,
-          right = function ()
-            return {{text = "test1", gui = "italic"}}
-          end
-        }
-      }
+          right = function()
+            return { { text = "test1", gui = "italic" } }
+          end,
+        },
+      },
     })
+    local size, left, right = areas.get()
     assert.is_equal(9, size)
 
     assert.is_truthy(left)
-    assert.is_equal('%#BufferLineLeftCustomAreaText1#test', left)
+    assert.is_equal("%#BufferLineLeftCustomAreaText1#test", left)
 
     assert.is_truthy(right)
-    assert.is_equal('%#BufferLineRightCustomAreaText1#test1', right)
+    assert.is_equal("%#BufferLineRightCustomAreaText1#test1", right)
   end)
 
-  it('should handle user errors gracefully', function()
-    local size, left, right = areas.get({
+  it("should handle user errors gracefully", function()
+    bufferline.setup({
       options = {
         custom_areas = {
-          left = function ()
-            return {{text = {"test"}, guifg = "red", guibg = "black"}}
+          left = function()
+            return { { text = { "test" }, guifg = "red", guibg = "black" } }
           end,
-          right = function ()
-            error('This failed mysteriously')
-          end
-        }
-      }
+          right = function()
+            error("This failed mysteriously")
+          end,
+        },
+      },
     })
+    local size, left, right = areas.get()
     assert.is_equal(0, size)
     assert.is_equal("", left)
     assert.is_equal("", right)

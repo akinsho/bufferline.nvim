@@ -1,8 +1,11 @@
+local utils = require("bufferline.utils")
+
 local M = {}
 
 local api = vim.api
 local fn = vim.fn
 local fmt = string.format
+local log = utils.log
 
 --[[
 -----------------------------------------------------------------------------//
@@ -27,12 +30,12 @@ i.e.
 ---@field component function
 ---@field hidden boolean
 ---@field focusable boolean
----@field type "'group_end'" | "'group_start'" | "'buffer'"
+---@field type "'group_end'" | "'group_start'" | "'buffer'" | "'tabpage'"
 local Component = {}
 
 ---@param field string
 local function not_implemented(field)
-  require("bufferline.utils").log.debug(debug.traceback("Stack trace:"))
+  log.debug(debug.traceback("Stack trace:"))
   error(fmt("%s is not implemented yet", field))
 end
 
@@ -63,13 +66,10 @@ function Component:is_end()
   return self.type:match("group")
 end
 
----@return Buffer?
-function Component:as_buffer()
-  if self.type ~= "buffer" then
-    require("bufferline.utils").log.debug(
-      fmt("This entity is not a buffer, it is a %s.", self.type)
-    )
-    return
+---@return TabElement?
+function Component:as_element()
+  if not vim.tbl_contains({ "buffer", "tab" }, self.type) then
+    return log.debug(fmt("This entity is not a buffer or a buffer, it is a %s.", self.type))
   end
   return self
 end
@@ -89,6 +89,47 @@ function GroupView:current()
   return false
 end
 
+---@alias TabElement Tabpage|Buffer
+
+---@class Tabpage
+---@field public id number
+---@field public buf number
+---@field public icon string
+---@field public name string
+---@field public letter string
+---@field public modified boolean
+---@field public modifiable boolean
+---@field public extension string the file extension
+---@field public path string the full path to the file
+local Tabpage = Component:new({ type = "tab" })
+
+function Tabpage:new(tab)
+  tab.name = fn.fnamemodify(tab.path, ":t")
+  assert(tab.buf, fmt("A tab must a have a buffer: %s", vim.inspect(tab)))
+  tab.modifiable = vim.bo[tab.buf].modifiable
+  tab.modified = vim.bo[tab.buf].modified
+  tab.buftype = vim.bo[tab.buf].buftype
+  tab.extension = fn.fnamemodify(tab.path, ":e")
+  tab.icon, tab.icon_highlight = require("bufferline.utils").get_icon({
+    directory = fn.isdirectory(tab.path) > 0,
+    path = tab.path,
+    extension = tab.extension,
+    type = tab.buftype,
+  })
+  setmetatable(tab, self)
+  self.__index = self
+  return tab
+end
+
+function Tabpage:current()
+  return api.nvim_get_current_tabpage() == self.id
+end
+
+--- NOTE: A visible tab page is the current tab page
+function Tabpage:visible()
+  return api.nvim_get_current_tabpage() == self.id
+end
+
 ---@alias BufferComponent fun(index: number, buf_count: number): string
 
 -- A single buffer class
@@ -98,7 +139,8 @@ end
 ---@field public path string the full path to the file
 ---@field public name_formatter function? dictates how the name should be shown
 ---@field public id integer the buffer number
----@field public filename string the visible name for the file
+---@field public name string the visible name for the file
+---@deprecated public filename string the visible name for the file
 ---@field public icon string the icon
 ---@field public icon_highlight string
 ---@field public diagnostics table
@@ -125,7 +167,12 @@ function Buffer:new(buf)
   buf.buftype = vim.bo[buf.id].buftype
   buf.extension = fn.fnamemodify(buf.path, ":e")
   local is_directory = fn.isdirectory(buf.path) > 0
-  buf.icon, buf.icon_highlight = require("bufferline.utils").get_icon(buf, is_directory)
+  buf.icon, buf.icon_highlight = require("bufferline.utils").get_icon({
+    directory = is_directory,
+    path = buf.path,
+    extension = buf.extension,
+    type = buf.buftype,
+  })
   local name = "[No Name]"
   if buf.path and #buf.path > 0 then
     name = fn.fnamemodify(buf.path, ":t")
@@ -134,7 +181,8 @@ function Buffer:new(buf)
       name = buf.name_formatter({ name = name, path = buf.path, bufnr = buf.id }) or name
     end
   end
-  buf.filename = name
+  buf.name = name
+  buf.filename = name -- TODO: remove this field
   setmetatable(buf, self)
   self.__index = self
   return buf
@@ -213,6 +261,7 @@ function Section:add(item)
 end
 
 M.Buffer = Buffer
+M.Tabpage = Tabpage
 M.Section = Section
 M.GroupView = GroupView
 

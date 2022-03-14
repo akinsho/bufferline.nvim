@@ -6,10 +6,16 @@ describe("Bufferline tests:", function()
   vim.opt.hidden = true
 
   local bufferline
+  local state
 
   before_each(function()
     package.loaded["bufferline"] = nil
+    package.loaded["bufferline.state"] = nil
+    -- dependent modules need to also be reset as
+    -- they keep track of state themselves now
+    package.loaded["bufferline.commands"] = nil
     bufferline = require("bufferline")
+    state = require("bufferline.state")
   end)
 
   after_each(function()
@@ -24,7 +30,7 @@ describe("Bufferline tests:", function()
       vim.cmd("edit test-2.txt")
       local tabline = nvim_bufferline()
       assert.truthy(tabline)
-      assert.is.equal(#bufferline._state.components, 2)
+      assert.is.equal(#state.components, 2)
     end)
 
     it("should allow configuring the indicator icon", function()
@@ -160,7 +166,7 @@ describe("Bufferline tests:", function()
         },
       })
       utils.vim_enter()
-      bufferline.handle_close_buffer(bufnum)
+      bufferline.handle_close(bufnum)
       assert.is_equal(count, expected)
     end)
   end)
@@ -193,7 +199,7 @@ describe("Bufferline tests:", function()
       vim.cmd("edit e.txt")
       nvim_bufferline()
 
-      assert.is.equal(5, #bufferline._state.components)
+      assert.is.equal(5, #state.components)
 
       local bufs = vim.api.nvim_list_bufs()
       assert.is_equal(5, #bufs)
