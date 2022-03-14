@@ -2,7 +2,7 @@
   bufferline.nvim
 </h1>
 
-<p align="center">A <i>snazzy</i> 💅 buffer line (tab integration) for Neovim built using <b>lua</b>.</p>
+<p align="center">A <i>snazzy</i> 💅 buffer line (with tabpage integration) for Neovim built using <b>lua</b>.</p>
 
 ![Demo GIF](https://user-images.githubusercontent.com/22454918/111992693-9c6a9b00-8b0d-11eb-8c39-19db58583061.gif)
 
@@ -60,7 +60,7 @@ see: `:h bufferline-styling`
 
 #### Tabpages mode
 
-<img width="500" alt="Screen Shot 2022-03-08 at 17 39 57" src="https://user-images.githubusercontent.com/22454918/157337891-1848da24-69d6-4970-96ee-cf65b2a25c46.png">
+<img width="800" alt="Screen Shot 2022-03-08 at 17 39 57" src="https://user-images.githubusercontent.com/22454918/157337891-1848da24-69d6-4970-96ee-cf65b2a25c46.png">
 
 You can use this plugin to visualise only native vim tabpages.
 
