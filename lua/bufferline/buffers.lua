@@ -60,9 +60,8 @@ end
 function M.get_components(state)
   local options = config.options
   local buf_nums = utils.get_valid_buffers()
-  if options and options.custom_filter then
-    buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
-  end
+  local filter = options.custom_filter
+  buf_nums = filter and apply_buffer_filter(buf_nums, filter) or buf_nums
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
 
   local pick = require("bufferline.pick")
