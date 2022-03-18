@@ -38,6 +38,7 @@ local M = {
   handle_click = commands.handle_click,
   close_with_pick = commands.close_with_pick,
   close_in_direction = commands.close_in_direction,
+  handle_group_click = commands.handle_group_click,
   -- @deprecate
   go_to_buffer = commands.go_to,
   sort_buffers_by = commands.sort_by,
