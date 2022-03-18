@@ -72,10 +72,10 @@ function M.get_components(state)
   pick.reset()
   duplicates.reset()
   ---@type Buffer[]
-  local buffers = {}
+  local components = {}
   local all_diagnostics = require("bufferline.diagnostics").get(options)
   local Buffer = require("bufferline.models").Buffer
-  for i, buf_id in ipairs(buf_nums) do
+  for i, buf_id in ipairs(buffers) do
     local buf = Buffer:new({
       path = vim.fn.bufname(buf_id),
       id = buf_id,
@@ -85,12 +85,12 @@ function M.get_components(state)
     })
     buf.letter = pick.get(buf)
     buf.group = has_groups and groups.set_id(buf) or nil
-    buffers[i] = buf
+    components[i] = buf
   end
 
   return vim.tbl_map(function(buf)
     return ui.element(state, buf)
-  end, duplicates.mark(buffers))
+  end, duplicates.mark(components))
 end
 
 return M
