@@ -167,6 +167,19 @@ function M.go_to(num, absolute)
   end
 end
 
+---Track and return either the current element or the last element that was current
+M.get_last_accessed_index = (function()
+  local last_index = nil
+  ---@param s BufferlineState
+  ---@param opts table
+  ---@return number
+  return function(s, opts)
+    local index = M.get_current_element_index(s, opts)
+    last_index = index or last_index
+    return last_index
+  end
+end)()
+
 ---@param s BufferlineState
 ---@param opts table
 ---@return number

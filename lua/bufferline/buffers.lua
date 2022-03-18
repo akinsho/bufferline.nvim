@@ -15,6 +15,8 @@ local pick = require("bufferline.pick")
 local duplicates = require("bufferline.duplicates")
 -- @module "bufferline.diagnostics"
 local diagnostics = require("bufferline.diagnostics")
+-- @module "bufferline.commands"
+local commands = require("bufferline.commands")
 
 local M = {}
 
@@ -76,7 +78,8 @@ function M.get_components(state)
   end
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
 
-  buffers:add_all(buf_nums, start_index)
+  local start_index = commands.get_last_accessed_index(state)
+  buffers:add_all(buf_nums, (start_index and start_index + 1 or nil))
   local buf_ids = buffers:replace_with_intersection(buf_nums)
 
   local has_groups = config:enabled("groups")
