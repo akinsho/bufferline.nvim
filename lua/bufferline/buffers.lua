@@ -7,8 +7,13 @@ local groups = lazy.require("bufferline.groups")
 local config = lazy.require("bufferline.config")
 -- @module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
+-- @module "bufferline.set"
+local Set = require("bufferline.set")
 
 local M = {}
+
+---@type Set
+local buffers = Set:new()
 
 --- sorts buf_names in place, but doesn't add/remove any values
 --- @param buf_nums number[]
@@ -65,6 +70,9 @@ function M.get_components(state)
   end
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
 
+  buffers:add_all(buf_nums)
+  local buf_ids = buffers:intersection(buf_nums)
+
   local pick = require("bufferline.pick")
   local duplicates = require("bufferline.duplicates")
   local has_groups = config:enabled("groups")
@@ -75,7 +83,7 @@ function M.get_components(state)
   local components = {}
   local all_diagnostics = require("bufferline.diagnostics").get(options)
   local Buffer = require("bufferline.models").Buffer
-  for i, buf_id in ipairs(buffers) do
+  for i, buf_id in ipairs(buf_ids) do
     local buf = Buffer:new({
       path = vim.fn.bufname(buf_id),
       id = buf_id,
