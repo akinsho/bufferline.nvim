@@ -96,7 +96,9 @@ function M.sort(elements)
   local sort_by = config.options.sort_by
   local is_tabline = config:is_tabline()
 
-  if sort_by == "extension" then
+  if sort_by == "none" then
+    -- DO NOTHING, FIXME: can/should we completely avoid this function call
+  elseif sort_by == "extension" then
     table.sort(elements, sort_by_extension)
   elseif sort_by == "directory" then
     table.sort(elements, sort_by_directory)
