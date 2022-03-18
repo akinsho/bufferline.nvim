@@ -187,7 +187,7 @@ end
 
 function M.handle_group_enter()
   local options = config.options
-  local _, element = commands.get_current_element_index({ include_hidden = true })
+  local _, element = commands.get_current_element_index(state, { include_hidden = true })
   if not element or not element.group then
     return
   end
