@@ -9,6 +9,12 @@ local config = lazy.require("bufferline.config")
 local utils = lazy.require("bufferline.utils")
 -- @module "bufferline.set"
 local Set = require("bufferline.set")
+-- @module "bufferline.pick"
+local pick = require("bufferline.pick")
+-- @module "bufferline.duplicates"
+local duplicates = require("bufferline.duplicates")
+-- @module "bufferline.diagnostics"
+local diagnostics = require("bufferline.diagnostics")
 
 local M = {}
 
@@ -73,15 +79,13 @@ function M.get_components(state)
   buffers:add_all(buf_nums)
   local buf_ids = buffers:intersection(buf_nums)
 
-  local pick = require("bufferline.pick")
-  local duplicates = require("bufferline.duplicates")
   local has_groups = config:enabled("groups")
 
   pick.reset()
   duplicates.reset()
   ---@type Buffer[]
   local components = {}
-  local all_diagnostics = require("bufferline.diagnostics").get(options)
+  local all_diagnostics = diagnostics.get(options)
   local Buffer = require("bufferline.models").Buffer
   for i, buf_id in ipairs(buf_ids) do
     local buf = Buffer:new({
