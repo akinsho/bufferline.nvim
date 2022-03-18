@@ -76,8 +76,8 @@ function M.get_components(state)
   end
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
 
-  buffers:add_all(buf_nums)
-  local buf_ids = buffers:intersection(buf_nums)
+  buffers:add_all(buf_nums, start_index)
+  local buf_ids = buffers:replace_with_intersection(buf_nums)
 
   local has_groups = config:enabled("groups")
 

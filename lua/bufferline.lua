@@ -23,7 +23,6 @@ local constants = lazy.require("bufferline.constants")
 local highlights = lazy.require("bufferline.highlights")
 
 local api = vim.api
-local fn = vim.fn
 local fmt = string.format
 
 local positions_key = constants.positions_key
