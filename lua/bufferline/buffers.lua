@@ -77,10 +77,12 @@ function M.get_components(state)
     buf_nums = apply_buffer_filter(buf_nums, options.custom_filter)
   end
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
-
-  local start_index = commands.get_last_accessed_index(state)
-  buffers:add_all(buf_nums, (start_index and start_index + 1 or nil))
-  local buf_ids = buffers:replace_with_intersection(buf_nums)
+  local buf_ids = buf_nums
+  if not buffers:same(buf_nums) then
+    local start_index = state.current_element_index
+    buffers:add_all(buf_nums, (start_index and start_index + 1 or nil))
+    buf_ids = buffers:replace_with_intersection(buf_nums)
+  end
 
   local has_groups = config:enabled("groups")
 

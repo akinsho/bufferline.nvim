@@ -35,6 +35,13 @@ function Set:size()
   return #self.list
 end
 
+---compare whether the underlying list in the set is the same as that of the list passed in
+---@param list number[]
+---@return boolean
+function Set:same(list)
+  return table.concat(self.list) == table.concat(list)
+end
+
 ---@param item number
 function Set:remove(item)
   if self.values[tostring(item)] then
