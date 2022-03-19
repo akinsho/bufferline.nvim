@@ -37,8 +37,8 @@ end
 
 ---@param item number
 function Set:remove(item)
-  if self.values[item] then
-    self.values[item] = nil
+  if self.values[tostring(item)] then
+    self.values[tostring(item)] = nil
     self.list = vim.tbl_filter(function(i)
       return i ~= item
     end, self.list)
