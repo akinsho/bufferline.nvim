@@ -167,16 +167,18 @@ function M.go_to(num, absolute)
   end
 end
 
+---@param s BufferlineState
 ---@param opts table
 ---@return number
 ---@return Buffer
-function M.get_current_element_index(opts)
+function M.get_current_element_index(s, opts)
   opts = opts or { include_hidden = false }
-  local list = opts.include_hidden and state.__components or state.components
+  local list = opts.include_hidden and s.__components or s.components
   local current = get_current_element()
   for index, item in ipairs(list) do
     local element = item:as_element()
     if element and element.id == current then
+      state.set({ current_element_index = index })
       return index, element
     end
   end
@@ -184,7 +186,7 @@ end
 
 --- @param direction number
 function M.move(direction)
-  local index = M.get_current_element_index()
+  local index = M.get_current_element_index(state)
   if not index then
     return utils.echoerr("Unable to find buffer to move, sorry")
   end
@@ -204,7 +206,7 @@ function M.move(direction)
 end
 
 function M.cycle(direction)
-  local index = M.get_current_element_index()
+  local index = M.get_current_element_index(state)
   if not index then
     return
   end
@@ -230,7 +232,7 @@ end
 ---Close all elements to the left or right of the current buffer
 ---@param direction Direction
 function M.close_in_direction(direction)
-  local index = M.get_current_element_index()
+  local index = M.get_current_element_index(state)
   if not index then
     return
   end
