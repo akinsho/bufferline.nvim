@@ -94,9 +94,10 @@ end
 --- @param elements TabElement[]
 function M.sort(elements)
   local sort_by = config.options.sort_by
-  local is_tabline = config:is_tabline()
 
-  if sort_by == "extension" then
+  if sort_by == "none" then
+    return elements
+  elseif sort_by == "extension" then
     table.sort(elements, sort_by_extension)
   elseif sort_by == "directory" then
     table.sort(elements, sort_by_directory)
@@ -105,6 +106,7 @@ function M.sort(elements)
   elseif sort_by == "id" then
     table.sort(elements, sort_by_id)
   elseif sort_by == "tabs" then
+    local is_tabline = config:is_tabline()
     table.sort(elements, is_tabline and sort_by_id or sort_by_tabs)
   elseif type(sort_by) == "function" then
     table.sort(elements, sort_by)
