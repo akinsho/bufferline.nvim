@@ -92,10 +92,9 @@ end
 
 --- sorts a list of buffers in place
 --- @param elements TabElement[]
-function M.sort(elements)
-  local sort_by = config.options.sort_by
-  local is_tabline = config:is_tabline()
-
+--- @param sort_by string?
+function M.sort(elements, sort_by)
+  sort_by = sort_by or config.options.sort_by
   if sort_by == "extension" then
     table.sort(elements, sort_by_extension)
   elseif sort_by == "directory" then
@@ -105,7 +104,7 @@ function M.sort(elements)
   elseif sort_by == "id" then
     table.sort(elements, sort_by_id)
   elseif sort_by == "tabs" then
-    table.sort(elements, is_tabline and sort_by_id or sort_by_tabs)
+    table.sort(elements, config:is_tabline() and sort_by_id or sort_by_tabs)
   elseif type(sort_by) == "function" then
     table.sort(elements, sort_by)
   end

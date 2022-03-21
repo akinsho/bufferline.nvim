@@ -252,7 +252,7 @@ function M.sort_by(sort_by)
   if next(state.components) == nil then
     return utils.echoerr("Unable to find elements to sort, sorry")
   end
-  sorters.sort_buffers(sort_by, state.components)
+  sorters.sort(state.components, sort_by)
   state.custom_sort = get_ids(state.components)
   local opts = config.options
   if opts.persist_buffer_sort then
