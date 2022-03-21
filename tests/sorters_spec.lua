@@ -7,6 +7,24 @@ describe("Sorters - ", function()
     bufferline = require("bufferline")
   end)
 
+  it("should always return a list", function()
+    bufferline.setup({ options = { sort_by = "none" } })
+    local bufs = { { id = 12 }, { id = 2 }, { id = 3 }, { id = 8 } }
+    local list = sorters.sort(bufs)
+    assert.is_true(vim.tbl_islist(list))
+  end)
+
+  it("should return an unsorted list sort is none", function()
+    bufferline.setup({ options = { sort_by = "none" } })
+    local bufs = { { id = 12 }, { id = 2 }, { id = 3 }, { id = 8 } }
+    local list = sorters.sort(bufs)
+    assert.is_true(vim.tbl_islist(list))
+    local ids = vim.tbl_map(function(buf)
+      return buf.id
+    end, list)
+    assert.same(ids, { 12, 2, 3, 8 })
+  end)
+
   it("should sort by ID correctly", function()
     bufferline.setup({ options = { sort_by = "id" } })
     local bufs = { { id = 12 }, { id = 2 }, { id = 3 }, { id = 8 } }
