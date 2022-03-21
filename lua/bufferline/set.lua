@@ -1,3 +1,8 @@
+----------------------------------------------------------------------------------------------------
+-- Set
+----------------------------------------------------------------------------------------------------
+-- @reference: https://www.lua.org/pil/13.1.html
+
 ---@class Set
 ---@field private values table<string, number>
 ---@field private list number[]
@@ -66,6 +71,8 @@ function Set:add_all(list, insertion_index)
 end
 
 ---The list of items that the set has in common with the list
+---Not really a pure implementation as an intersection would operate on
+---two sets rather than a list and a set `set_a:intersection(set_b)`
 ---@param list number[]
 function Set:intersection(list)
   local result = {}
