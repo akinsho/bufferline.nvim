@@ -91,10 +91,9 @@ local function sort_by_tabs(buf_a, buf_b)
 end
 
 --- sorts a list of buffers in place
---- @param elements TabElement[]
-function M.sort(elements)
-  local sort_by = config.options.sort_by
-
+--- @param sort_by string?
+function M.sort(elements, sort_by)
+  sort_by = sort_by or config.options.sort_by
   if sort_by == "none" then
     return elements
   elseif sort_by == "extension" then
@@ -106,8 +105,7 @@ function M.sort(elements)
   elseif sort_by == "id" then
     table.sort(elements, sort_by_id)
   elseif sort_by == "tabs" then
-    local is_tabline = config:is_tabline()
-    table.sort(elements, is_tabline and sort_by_id or sort_by_tabs)
+    table.sort(elements, config:is_tabline() and sort_by_id or sort_by_tabs)
   elseif type(sort_by) == "function" then
     table.sort(elements, sort_by)
   end
