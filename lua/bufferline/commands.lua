@@ -2,19 +2,19 @@
 -- User commands
 ---------------------------------------------------------------------------//
 local lazy = require("bufferline.lazy")
--- @module "bufferline.ui"
+---@module "bufferline.ui"
 local ui = lazy.require("bufferline.ui")
--- @module "bufferline.state"
+---@module "bufferline.state"
 local state = lazy.require("bufferline.state")
--- @module "bufferline.utils"
+---@module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
--- @module "bufferline.config"
+---@module "bufferline.config"
 local config = lazy.require("bufferline.config")
--- @module "bufferline.groups"
+---@module "bufferline.groups"
 local groups = lazy.require("bufferline.groups")
--- @module "bufferline.sorters"
+---@module "bufferline.sorters"
 local sorters = lazy.require("bufferline.sorters")
--- @module "bufferline.constants"
+---@module "bufferline.constants"
 local constants = lazy.require("bufferline.constants")
 
 local M = {}
