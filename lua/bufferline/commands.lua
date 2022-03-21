@@ -178,7 +178,9 @@ function M.get_current_element_index(s, opts)
   for index, item in ipairs(list) do
     local element = item:as_element()
     if element and element.id == current then
-      state.set({ current_element_index = index })
+      if not opts.include_hidden then -- Don't track when we focus invisible components
+        state.set({ current_element_index = index })
+      end
       return index, element
     end
   end
