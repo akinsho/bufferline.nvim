@@ -564,7 +564,7 @@ local function get_defaults()
       right_mouse_command = "bdelete! %d",
       middle_mouse_command = nil,
       -- U+2590 ▐ Right half block, this character is right aligned so the
-      -- background highlight doesn't appear in th middle
+      -- background highlight doesn't appear in the middle
       -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
       indicator_icon = "▎",
       left_trunc_marker = "",
@@ -582,7 +582,7 @@ local function get_defaults()
       always_show_bufferline = true,
       persist_buffer_sort = true,
       max_prefix_length = 15,
-      sort_by = "none",
+      sort_by = "id",
       diagnostics = false,
       diagnostics_indicator = nil,
       diagnostics_update_in_insert = true,
