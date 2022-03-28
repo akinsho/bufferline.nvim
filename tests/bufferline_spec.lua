@@ -214,7 +214,7 @@ describe("Bufferline tests:", function()
     it("should open the new buffer beside the current", function()
       bufferline.setup({
         options = {
-          sort_by = "none",
+          sort_by = "insert_after_current",
         },
       })
       utils.vim_enter()
@@ -226,7 +226,7 @@ describe("Bufferline tests:", function()
       nvim_bufferline()
       vim.cmd("b b.txt")
       nvim_bufferline()
-      assert.is_equal(state.components[2].id, state.current_element_index)
+      assert.is_equal(2, state.current_element_index)
       vim.cmd("edit g.txt")
       nvim_bufferline()
       assert.is_true(state.components[3].name:match("g.txt") ~= nil)
