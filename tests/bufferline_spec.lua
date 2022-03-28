@@ -6,6 +6,7 @@ describe("Bufferline tests:", function()
   vim.opt.hidden = true
 
   local bufferline
+  ---@module "bufferline.state"
   local state
 
   before_each(function()
@@ -206,6 +207,29 @@ describe("Bufferline tests:", function()
       bufferline.close_in_direction("left")
       bufs = vim.api.nvim_list_bufs()
       assert.is_equal(1, #bufs)
+    end)
+  end)
+
+  describe("Open after current", function()
+    it("should open the new buffer beside the current", function()
+      bufferline.setup({
+        options = {
+          sort_by = "none",
+        },
+      })
+      utils.vim_enter()
+      vim.cmd("edit! a.txt")
+      vim.cmd("edit b.txt")
+      vim.cmd("edit c.txt")
+      vim.cmd("edit d.txt")
+      vim.cmd("edit e.txt")
+      nvim_bufferline()
+      vim.cmd("b b.txt")
+      nvim_bufferline()
+      assert.is_equal(state.components[2].id, state.current_element_index)
+      vim.cmd("edit g.txt")
+      nvim_bufferline()
+      assert.is_true(state.components[3].name:match("g.txt") ~= nil)
     end)
   end)
 end)
