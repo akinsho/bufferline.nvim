@@ -25,10 +25,6 @@ function M.set(value)
   state = vim.tbl_extend("force", state, value)
 end
 
-function M.get()
-  return state
-end
-
 return setmetatable(M, {
   __index = function(_, k)
     return state[k]
