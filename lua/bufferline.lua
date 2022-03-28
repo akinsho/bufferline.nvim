@@ -118,13 +118,15 @@ local function bufferline()
     or sorter(components)
 
   local tabline, visible_components = ui.render(components, tabs)
-  --- store the full unfiltered lists
-  state.__components = components
-  state.__visible_components = visible_components
 
-  --- Store copies without focusable/hidden elements
-  state.components = filter_invisible(components)
-  state.visible_components = filter_invisible(visible_components)
+  state.set({
+    --- store the full unfiltered lists
+    __components = components,
+    __visible_components = visible_components,
+    --- Store copies without focusable/hidden elements
+    components = filter_invisible(components),
+    visible_components = filter_invisible(visible_components),
+  })
   return tabline
 end
 
