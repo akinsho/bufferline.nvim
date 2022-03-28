@@ -90,12 +90,58 @@ local function sort_by_tabs(buf_a, buf_b)
   return buf_a_tabnr < buf_b_tabnr
 end
 
+--- @param state BufferlineState
+local sort_by_new_after_existing = function(state)
+  --- @param item_a Buffer
+  --- @param item_b Buffer
+  return function(item_a, item_b)
+    if item_a:is_new(state) and item_b:is_existing(state) then
+      return true
+    elseif item_a:is_existing(state) and item_b:is_new(state) then
+      return false
+    end
+    return item_a.id < item_b.id
+  end
+end
+
+--- @param state BufferlineState
+local sort_by_new_after_current = function(state)
+  --- @param item_a Buffer
+  --- @param item_b Buffer
+  return function(item_a, item_b)
+    local a_index = item_a:find_index(state)
+    local a_is_new = item_a:is_new(state)
+    local b_index = item_b:find_index(state)
+    local b_is_new = item_b:is_new(state)
+    local current_index = state.current_element_index or 1
+    if not a_is_new and not b_is_new then
+      -- If both buffers are either before or after (inclusive) the current
+      -- buffer, respect the current order.
+      if (a_index - current_index) * (b_index - current_index) >= 0 then
+        return a_index < b_index
+      end
+      return a_index < current_index
+    elseif not a_is_new and b_is_new then
+      return a_index <= current_index
+    elseif a_is_new and not b_is_new then
+      return current_index < b_index
+    end
+    return item_a.id < item_b.id
+  end
+end
+
 --- sorts a list of buffers in place
 --- @param sort_by string?
 function M.sort(elements, sort_by)
   sort_by = sort_by or config.options.sort_by
+  local state = require("bufferline.state")
+
   if sort_by == "none" then
     return elements
+  elseif sort_by == "insert_after_current" then
+    table.sort(elements, sort_by_new_after_current(state))
+  elseif sort_by == "insert_at_end" then
+    table.sort(elements, sort_by_new_after_existing(state))
   elseif sort_by == "extension" then
     table.sort(elements, sort_by_extension)
   elseif sort_by == "directory" then
