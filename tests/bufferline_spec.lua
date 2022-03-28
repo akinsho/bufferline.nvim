@@ -6,6 +6,7 @@ describe("Bufferline tests:", function()
   vim.opt.hidden = true
 
   local bufferline
+  ---@module "bufferline.state"
   local state
 
   before_each(function()

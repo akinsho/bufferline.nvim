@@ -3,6 +3,7 @@ local M = {}
 -----------------------------------------------------------------------------//
 -- State
 -----------------------------------------------------------------------------//
+
 ---@class BufferlineState
 ---@field components Component[]
 ---@field current_element_index number?
@@ -23,10 +24,6 @@ local state = {
 ---@param value BufferlineState
 function M.set(value)
   state = vim.tbl_extend("force", state, value)
-end
-
-function M.get()
-  return state
 end
 
 return setmetatable(M, {

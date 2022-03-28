@@ -1,10 +1,22 @@
+local utils = require("tests.utils")
+
 describe("Sorters - ", function()
   local sorters = require("bufferline.sorters")
+  ---@module "bufferline"
   local bufferline
+  ---@type BufferlineState
+  local state
 
   before_each(function()
     package.loaded["bufferline"] = nil
+    package.loaded["bufferline.state"] = nil
     bufferline = require("bufferline")
+    package.loaded["bufferline.commands"] = nil
+    state = require("bufferline.state")
+  end)
+
+  after_each(function()
+    vim.cmd("silent %bwipeout!")
   end)
 
   it("should always return a list", function()
@@ -51,5 +63,51 @@ describe("Sorters - ", function()
       return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf.id), ":p:t")
     end, bufs)
     assert.same({ "file1.txt", "file3.txt", "file2.txt" }, buf_names)
+  end)
+
+  it("should add to the end of the buffer list", function()
+    bufferline.setup({
+      options = {
+        sort_by = "insert_at_end",
+      },
+    })
+    utils.vim_enter()
+    vim.cmd("edit! a.txt")
+    vim.cmd("edit b.txt")
+    vim.cmd("edit c.txt")
+    vim.cmd("edit d.txt")
+    vim.cmd("edit e.txt")
+    nvim_bufferline()
+    vim.cmd("b b.txt")
+    nvim_bufferline()
+    assert.is_equal(2, state.current_element_index)
+    vim.cmd("edit g.txt")
+    nvim_bufferline()
+    local comp = state.components[#state.components]:as_element()
+    assert.is_truthy(comp)
+    assert.is_true(comp.name:match("g.txt") ~= nil)
+  end)
+
+  it("should open the new buffer beside the current", function()
+    bufferline.setup({
+      options = {
+        sort_by = "insert_after_current",
+      },
+    })
+    utils.vim_enter()
+    vim.cmd("edit! a.txt")
+    vim.cmd("edit b.txt")
+    vim.cmd("edit c.txt")
+    vim.cmd("edit d.txt")
+    vim.cmd("edit e.txt")
+    nvim_bufferline()
+    vim.cmd("b b.txt")
+    nvim_bufferline()
+    assert.is_equal(2, state.current_element_index)
+    vim.cmd("edit g.txt")
+    nvim_bufferline()
+    local comp = state.components[3]:as_element()
+    assert.is_truthy(comp)
+    assert.is_true(comp.name:match("g.txt") ~= nil)
   end)
 end)

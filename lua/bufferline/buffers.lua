@@ -7,21 +7,14 @@ local groups = lazy.require("bufferline.groups")
 local config = lazy.require("bufferline.config")
 -- @module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
--- @module "bufferline.set"
-local Set = require("bufferline.set")
 -- @module "bufferline.pick"
 local pick = require("bufferline.pick")
 -- @module "bufferline.duplicates"
 local duplicates = require("bufferline.duplicates")
 -- @module "bufferline.diagnostics"
 local diagnostics = require("bufferline.diagnostics")
--- @module "bufferline.commands"
-local commands = require("bufferline.commands")
 
 local M = {}
-
----@type Set
-local buffers = Set:new()
 
 --- sorts buf_names in place, but doesn't add/remove any values
 --- @param buf_nums number[]
@@ -76,12 +69,6 @@ function M.get_components(state)
   local filter = options.custom_filter
   buf_nums = filter and apply_buffer_filter(buf_nums, filter) or buf_nums
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
-  local buf_ids = buf_nums
-  if not buffers:same(buf_nums) then
-    local start_index = state.current_element_index
-    buffers:add_all(buf_nums, (start_index and start_index + 1 or nil))
-    buf_ids = buffers:replace_with_intersection(buf_nums)
-  end
 
   local has_groups = config:enabled("groups")
 
@@ -91,7 +78,7 @@ function M.get_components(state)
   local components = {}
   local all_diagnostics = diagnostics.get(options)
   local Buffer = require("bufferline.models").Buffer
-  for i, buf_id in ipairs(buf_ids) do
+  for i, buf_id in ipairs(buf_nums) do
     local buf = Buffer:new({
       path = vim.fn.bufname(buf_id),
       id = buf_id,
