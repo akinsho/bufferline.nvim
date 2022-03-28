@@ -84,6 +84,17 @@ local function sorter(list)
   return sorters.sort(list)
 end
 
+---Get the index of the current element
+---@param current_state BufferlineState
+---@return number
+local function get_current_index(current_state)
+  for index, component in ipairs(current_state.components) do
+    if component:current() then
+      return index
+    end
+  end
+end
+
 --- @return string
 local function bufferline()
   local conf = config.get()
@@ -98,6 +109,10 @@ local function bufferline()
       return
     end
   end
+
+  --- NOTE: this cannot be added to state as a metamethod since
+  --- state is not actually set till after sorting and component creation is done
+  state.set({ current_element_index = get_current_index(state) })
 
   components = (has_groups and not is_tabline) and groups.render(components, sorter)
     or sorter(components)
