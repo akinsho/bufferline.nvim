@@ -2,6 +2,8 @@
   bufferline.nvim
 </h1>
 
+[![Run tests](https://github.com/akinsho/bufferline.nvim/actions/workflows/test.yaml/badge.svg)](https://github.com/akinsho/bufferline.nvim/actions/workflows/test.yaml)
+
 <p align="center">A <i>snazzy</i> 💅 buffer line (with tabpage integration) for Neovim built using <b>lua</b>.</p>
 
 ![Demo GIF](https://user-images.githubusercontent.com/22454918/111992693-9c6a9b00-8b0d-11eb-8c39-19db58583061.gif)
