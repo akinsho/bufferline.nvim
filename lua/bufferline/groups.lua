@@ -172,28 +172,6 @@ function M.setup(config)
   state.user_groups = result.list
 end
 
---- Add the next section of information collection to the group
----@param group Group
----@param index number
----@param stages string[]
-local function collect_data(group, index, stages)
-  vim.ui.input({ prompt = stages[index] }, function(response)
-    group[stages[index]] = response
-    index = index + 1
-    if stages[index] then
-      vim.pretty_print(group)
-      collect_data(group, index, stages)
-    end
-  end)
-end
-
-function M.collect_group_data()
-  local group = {}
-  local index = 1
-  local stages = { "group_name", "icon", "matcher" }
-  collect_data(group, index, stages)
-end
-
 --- Add the current highlight for a specific buffer
 --- NOTE: this function mutates the current highlights.
 ---@param buffer Buffer
@@ -415,6 +393,65 @@ function M.render(components, sorter)
   end
   return result
 end
+
+----------------------------------------------------------------------------------------------------
+-- DYNAMIC GROUPS
+----------------------------------------------------------------------------------------------------
+
+---@class InputStage
+---@field name string
+---@field formatter function(input: string): T
+
+local function string_to_highlight(input)
+  local parts = vim.split(input, ",")
+  local hl = {}
+  for _, value in ipairs(parts) do
+    local key, color = unpack(vim.split(value, ":"))
+    hl[vim.trim(key)] = vim.trim(color)
+  end
+  return hl
+end
+
+---Create a matcher function from a specified pattern
+---@param input string
+---@return fun(buffer: Buffer): boolean
+local function gen_matcher(input)
+  --- @param buffer Buffer
+  return function(buffer)
+    return buffer.name:match(input)
+  end
+end
+
+--- recursively call `vim.ui.input` to addend user input to a target object
+---@param group Group
+---@param index number
+---@param stages InputStage[]
+local function collect_data(group, index, stages)
+  local stage = stages[index]
+  vim.ui.input({ prompt = stage.name }, function(response)
+    group[stage.name] = stage.formatter and stage.formatter(response) or response
+    index = index + 1
+    if not stages[index] then
+      return group
+    end
+    collect_data(group, index, stages)
+  end)
+end
+
+function M.collect_group_data()
+  local group = {}
+  local index = 1
+  local stages = {
+    { name = "name" },
+    { name = "icon" },
+    { name = "priority", formatter = tonumber },
+    { name = "matcher", formatter = gen_matcher },
+    { name = "highlight", formatter = string_to_highlight },
+  }
+  group = collect_data(group, index, stages)
+  print("group: " .. vim.inspect(group))
+end
+----------------------------------------------------------------------------------------------------
 
 if utils.is_test() then
   M.state = state
