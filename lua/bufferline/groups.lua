@@ -402,12 +402,28 @@ end
 ---@field name string
 ---@field formatter function(input: string): T
 
+---@param input string
+---@return boolean
+local function has_invalid_input(input)
+  return not input or input == ""
+end
+
 local function string_to_highlight(input)
-  local parts = vim.split(input, ",")
+  if has_invalid_input(input) then
+    return {}
+  end
+  local parts = vim.split(input, " ")
+  if #parts == 0 then
+    return {}
+  end
   local hl = {}
   for _, value in ipairs(parts) do
-    local key, color = unpack(vim.split(value, ":"))
-    hl[vim.trim(key)] = vim.trim(color)
+    if value then
+      local key, color = unpack(vim.split(value, ":"))
+      if key and color then
+        hl[vim.trim(key)] = vim.trim(color)
+      end
+    end
   end
   return hl
 end
@@ -416,9 +432,15 @@ end
 ---@param input string
 ---@return fun(buffer: Buffer): boolean
 local function gen_matcher(input)
+  if has_invalid_input(input) then
+    return function()
+      return false
+    end
+  end
+  local regex = vim.regex(input)
   --- @param buffer Buffer
   return function(buffer)
-    return buffer.name:match(input)
+    return regex:match_str(buffer.name) ~= nil
   end
 end
 
@@ -434,7 +456,7 @@ local function collect_data(stages, callback, value)
   if not stage then
     return callback(value)
   end
-  vim.ui.input({ prompt = stage.name }, function(response)
+  vim.ui.input({ prompt = stage.prompt }, function(response)
     value[stage.name] = stage.formatter and stage.formatter(response) or response
     collect_data(stages, callback, value)
   end)
@@ -442,11 +464,13 @@ end
 
 function M.collect_group_data()
   local stages = {
-    { name = "name" },
-    { name = "icon" },
-    { name = "priority", formatter = tonumber },
-    { name = "matcher", formatter = gen_matcher },
-    { name = "highlight", formatter = string_to_highlight },
+    { name = "name", prompt = "Name" },
+    { name = "matcher", prompt = "Matcher (vim regex)", formatter = gen_matcher },
+    {
+      name = "highlight",
+      prompt = "Highlight (e.g. gui:italic)",
+      formatter = string_to_highlight,
+    },
   }
   collect_data(stages, function(group)
     enrich_group(vim.tbl_count(state.user_groups) + 1, group)
