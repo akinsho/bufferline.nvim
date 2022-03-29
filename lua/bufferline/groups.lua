@@ -423,24 +423,24 @@ local function gen_matcher(input)
 end
 
 --- recursively call `vim.ui.input` to addend user input to a target object
----@param group Group
----@param index number
+---@generic T
 ---@param stages InputStage[]
-local function collect_data(group, index, stages)
-  local stage = stages[index]
+---@param callback fun(result: T)
+---@param value T
+---@return T
+local function collect_data(stages, callback, value)
+  value = value or {}
+  local stage = table.remove(stages, 1)
+  if not stage then
+    return callback(value)
+  end
   vim.ui.input({ prompt = stage.name }, function(response)
-    group[stage.name] = stage.formatter and stage.formatter(response) or response
-    index = index + 1
-    if not stages[index] then
-      return group
-    end
-    collect_data(group, index, stages)
+    value[stage.name] = stage.formatter and stage.formatter(response) or response
+    collect_data(stages, callback, value)
   end)
 end
 
 function M.collect_group_data()
-  local group = {}
-  local index = 1
   local stages = {
     { name = "name" },
     { name = "icon" },
@@ -448,8 +448,13 @@ function M.collect_group_data()
     { name = "matcher", formatter = gen_matcher },
     { name = "highlight", formatter = string_to_highlight },
   }
-  group = collect_data(group, index, stages)
-  print("group: " .. vim.inspect(group))
+  collect_data(stages, function(group)
+    enrich_group(vim.tbl_count(state.user_groups) + 1, group)
+    -- TODO: figure out how to apply highlights
+    -- local config = require("bufferline.config")
+    -- set_group_highlights(group.name, group, config.highlightss)
+    state.user_groups[group.id] = group
+  end)
 end
 ----------------------------------------------------------------------------------------------------
 
