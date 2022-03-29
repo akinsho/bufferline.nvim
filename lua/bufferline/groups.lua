@@ -172,6 +172,28 @@ function M.setup(config)
   state.user_groups = result.list
 end
 
+--- Add the next section of information collection to the group
+---@param group Group
+---@param index number
+---@param stages string[]
+local function collect_data(group, index, stages)
+  vim.ui.input({ prompt = stages[index] }, function(response)
+    group[stages[index]] = response
+    index = index + 1
+    if stages[index] then
+      vim.pretty_print(group)
+      collect_data(group, index, stages)
+    end
+  end)
+end
+
+function M.collect_group_data()
+  local group = {}
+  local index = 1
+  local stages = { "group_name", "icon", "matcher" }
+  collect_data(group, index, stages)
+end
+
 --- Add the current highlight for a specific buffer
 --- NOTE: this function mutates the current highlights.
 ---@param buffer Buffer
