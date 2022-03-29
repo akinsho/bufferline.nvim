@@ -2,19 +2,19 @@
 -- User commands
 ---------------------------------------------------------------------------//
 local lazy = require("bufferline.lazy")
--- @module "bufferline.ui"
+---@module "bufferline.ui"
 local ui = lazy.require("bufferline.ui")
--- @module "bufferline.state"
+---@module "bufferline.state"
 local state = lazy.require("bufferline.state")
--- @module "bufferline.utils"
+---@module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
--- @module "bufferline.config"
+---@module "bufferline.config"
 local config = lazy.require("bufferline.config")
--- @module "bufferline.groups"
+---@module "bufferline.groups"
 local groups = lazy.require("bufferline.groups")
--- @module "bufferline.sorters"
+---@module "bufferline.sorters"
 local sorters = lazy.require("bufferline.sorters")
--- @module "bufferline.constants"
+---@module "bufferline.constants"
 local constants = lazy.require("bufferline.constants")
 
 local M = {}
@@ -167,16 +167,16 @@ function M.go_to(num, absolute)
   end
 end
 
+---@param current_state BufferlineState
 ---@param opts table
 ---@return number
 ---@return Buffer
-function M.get_current_element_index(opts)
+function M.get_current_element_index(current_state, opts)
   opts = opts or { include_hidden = false }
-  local list = opts.include_hidden and state.__components or state.components
-  local current = get_current_element()
+  local list = opts.include_hidden and current_state.__components or current_state.components
   for index, item in ipairs(list) do
     local element = item:as_element()
-    if element and element.id == current then
+    if element and element.id == get_current_element() then
       return index, element
     end
   end
@@ -184,7 +184,7 @@ end
 
 --- @param direction number
 function M.move(direction)
-  local index = M.get_current_element_index()
+  local index = M.get_current_element_index(state)
   if not index then
     return utils.echoerr("Unable to find buffer to move, sorry")
   end
@@ -204,7 +204,7 @@ function M.move(direction)
 end
 
 function M.cycle(direction)
-  local index = M.get_current_element_index()
+  local index = M.get_current_element_index(state)
   if not index then
     return
   end
@@ -230,7 +230,7 @@ end
 ---Close all elements to the left or right of the current buffer
 ---@param direction Direction
 function M.close_in_direction(direction)
-  local index = M.get_current_element_index()
+  local index = M.get_current_element_index(state)
   if not index then
     return
   end

@@ -7,6 +7,12 @@ local groups = lazy.require("bufferline.groups")
 local config = lazy.require("bufferline.config")
 -- @module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
+-- @module "bufferline.pick"
+local pick = require("bufferline.pick")
+-- @module "bufferline.duplicates"
+local duplicates = require("bufferline.duplicates")
+-- @module "bufferline.diagnostics"
+local diagnostics = require("bufferline.diagnostics")
 
 local M = {}
 
@@ -64,15 +70,13 @@ function M.get_components(state)
   buf_nums = filter and apply_buffer_filter(buf_nums, filter) or buf_nums
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
 
-  local pick = require("bufferline.pick")
-  local duplicates = require("bufferline.duplicates")
   local has_groups = config:enabled("groups")
 
   pick.reset()
   duplicates.reset()
   ---@type Buffer[]
-  local buffers = {}
-  local all_diagnostics = require("bufferline.diagnostics").get(options)
+  local components = {}
+  local all_diagnostics = diagnostics.get(options)
   local Buffer = require("bufferline.models").Buffer
   for i, buf_id in ipairs(buf_nums) do
     local buf = Buffer:new({
@@ -84,12 +88,12 @@ function M.get_components(state)
     })
     buf.letter = pick.get(buf)
     buf.group = has_groups and groups.set_id(buf) or nil
-    buffers[i] = buf
+    components[i] = buf
   end
 
   return vim.tbl_map(function(buf)
     return ui.element(state, buf)
-  end, duplicates.mark(buffers))
+  end, duplicates.mark(components))
 end
 
 return M

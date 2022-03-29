@@ -81,7 +81,18 @@ local function sorter(list)
   if state.custom_sort then
     return list
   end
-  return sorters.sort(list)
+  return sorters.sort(list, nil, state)
+end
+
+---Get the index of the current element
+---@param current_state BufferlineState
+---@return number
+local function get_current_index(current_state)
+  for index, component in ipairs(current_state.components) do
+    if component:current() then
+      return index
+    end
+  end
 end
 
 --- @return string
@@ -99,17 +110,23 @@ local function bufferline()
     end
   end
 
+  --- NOTE: this cannot be added to state as a metamethod since
+  --- state is not actually set till after sorting and component creation is done
+  state.set({ current_element_index = get_current_index(state) })
+
   components = (has_groups and not is_tabline) and groups.render(components, sorter)
     or sorter(components)
 
   local tabline, visible_components = ui.render(components, tabs)
-  --- store the full unfiltered lists
-  state.__components = components
-  state.__visible_components = visible_components
 
-  --- Store copies without focusable/hidden elements
-  state.components = filter_invisible(components)
-  state.visible_components = filter_invisible(visible_components)
+  state.set({
+    --- store the full unfiltered lists
+    __components = components,
+    __visible_components = visible_components,
+    --- Store copies without focusable/hidden elements
+    components = filter_invisible(components),
+    visible_components = filter_invisible(visible_components),
+  })
   return tabline
 end
 
@@ -187,7 +204,7 @@ end
 
 function M.handle_group_enter()
   local options = config.options
-  local _, element = commands.get_current_element_index({ include_hidden = true })
+  local _, element = commands.get_current_element_index(state, { include_hidden = true })
   if not element or not element.group then
     return
   end

@@ -3,14 +3,17 @@ local M = {}
 -----------------------------------------------------------------------------//
 -- State
 -----------------------------------------------------------------------------//
+
 ---@class BufferlineState
 ---@field components Component[]
+---@field current_element_index number?
 ---@field visible_components Component[]
 ---@field __components Component[]
 ---@field __visible_components Component[]
 ---@field custom_sort number[]
 local state = {
   is_picking = false,
+  current_element_index = nil,
   custom_sort = nil,
   __components = {},
   __visible_components = {},
@@ -20,11 +23,7 @@ local state = {
 
 ---@param value BufferlineState
 function M.set(value)
-  vim.tbl_extend("force", state, value)
-end
-
-function M.get()
-  return state
+  state = vim.tbl_extend("force", state, value)
 end
 
 return setmetatable(M, {

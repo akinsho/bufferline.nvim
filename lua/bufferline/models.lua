@@ -26,6 +26,7 @@ i.e.
 --- The base class that represents a visual tab in the tabline
 --- i.e. not necessarily representative of a vim tab or buffer
 ---@class Component
+---@field id number
 ---@field length number
 ---@field component function
 ---@field hidden boolean
@@ -188,16 +189,33 @@ function Buffer:new(buf)
   return buf
 end
 
--- Borrowed this trick from
--- https://github.com/bagrat/vim-buffet/blob/28e8535766f1a48e6006dc70178985de2b8c026d/autoload/buffet.vim#L186
--- If the current buffer in the current window has a matching ID it is ours and so should
--- have the main selected highlighting. If it isn't but it is the window highlight it as inactive
--- the "trick" here is that "bufwinnr" returns a value which is the first window associated with a buffer
--- if there are no windows associated i.e. it is not in view and the function returns -1
--- FIXME: this does not work if the same buffer is open in multiple window
--- maybe do something with win_findbuf(bufnr('%'))
 function Buffer:current()
-  return api.nvim_win_get_buf(api.nvim_get_current_win()) == self.id
+  return api.nvim_get_current_buf() == self.id
+end
+
+--- If the buffer is already part of state then it is existing
+--- otherwise it is new
+---@param state BufferlineState
+---@return boolean
+function Buffer:is_existing(state)
+  return utils.find(state.components, function(component)
+    return component.id == self.id
+  end) ~= nil
+end
+
+-- Find and return the index of the matching buffer (by id) in the list in state
+--- @param state BufferlineState
+function Buffer:find_index(state)
+  for index, component in ipairs(state.components) do
+    if component.id == self.id then
+      return index
+    end
+  end
+end
+
+-- @param state BufferlineState
+function Buffer:is_new(state)
+  return not self:is_existing(state)
 end
 
 function Buffer:visible()
