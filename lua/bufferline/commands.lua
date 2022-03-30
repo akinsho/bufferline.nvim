@@ -186,7 +186,7 @@ end
 function M.move(direction)
   local index = M.get_current_element_index(state)
   if not index then
-    return utils.echoerr("Unable to find buffer to move, sorry")
+    return utils.notify("Unable to find buffer to move, sorry", utils.W)
   end
   local next_index = index + direction
   if next_index >= 1 and next_index <= #state.components then
@@ -221,7 +221,7 @@ function M.cycle(direction)
 
   local item = state.components[next_index]
   if not item then
-    return utils.echoerr(fmt("This %s does not exist", item.type))
+    return utils.notify(fmt("This %s does not exist", item.type), utils.E)
   end
   open_element(item.id)
 end
@@ -250,7 +250,7 @@ end
 --- @param sort_by string|function
 function M.sort_by(sort_by)
   if next(state.components) == nil then
-    return utils.echoerr("Unable to find elements to sort, sorry")
+    return utils.notify("Unable to find elements to sort, sorry", utils.W)
   end
   sorters.sort(state.components, sort_by)
   state.custom_sort = get_ids(state.components)
