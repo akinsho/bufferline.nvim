@@ -1,3 +1,7 @@
+local lazy = require("bufferline.lazy")
+---@module "bufferline.colors"
+local colors = lazy.require("bufferline.colors")
+
 local M = {}
 
 local fmt = string.format
@@ -80,7 +84,7 @@ local function convert_highlights(highlights)
     for attribute, value in pairs(attributes) do
       if type(value) == "table" then
         if value.highlight and value.attribute then
-          updated[hl][attribute] = require("bufferline.colors").get_hex({
+          updated[hl][attribute] = colors.get_hex({
             name = value.highlight,
             attribute = value.attribute,
           })
@@ -216,7 +220,6 @@ local nightly = vim.fn.has("nvim-0.6") > 0
 ---Derive the colors for the bufferline
 ---@return BufferlineHighlights
 local function derive_colors()
-  local colors = require("bufferline.colors")
   local hex = colors.get_hex
   local shade = colors.shade_color
 
