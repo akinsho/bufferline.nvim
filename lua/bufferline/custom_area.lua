@@ -47,7 +47,8 @@ function M.get()
     for side, section_fn in pairs(areas) do
       if type(section_fn) ~= "function" then
         return utils.notify(
-          fmt("each side should be a function but you passed in %s", vim.inspect(side))
+          fmt("each side should be a function but you passed in %s", vim.inspect(side)),
+          utils.E
         )
       end
       -- if the user doesn't specify a background use the default
