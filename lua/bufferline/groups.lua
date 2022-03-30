@@ -66,6 +66,10 @@ function M.set_id(buffer)
   return ungrouped_id
 end
 
+local function next_group_id()
+  return vim.tbl_count(state.user_groups) + 1
+end
+
 ---@param id number
 ---@return Group
 function M.get_by_id(id)
@@ -473,10 +477,9 @@ function M.collect_group_data()
     },
   }
   collect_data(stages, function(group)
-    enrich_group(vim.tbl_count(state.user_groups) + 1, group)
+    group = enrich_group(next_group_id(), group)
     -- TODO: figure out how to apply highlights
-    -- local config = require("bufferline.config")
-    -- set_group_highlights(group.name, group, config.highlightss)
+    set_group_highlights(group.name, group, require("bufferline.config").get("highlights"))
     state.user_groups[group.id] = group
   end)
 end
