@@ -1,6 +1,7 @@
 local M = {}
 
 local fmt = string.format
+local utils = require("bufferline.utils")
 
 ---@class DebugOpts
 ---@field logging boolean
@@ -85,10 +86,7 @@ local function convert_highlights(highlights)
           })
         else
           updated[hl][attribute] = nil
-          require("bufferline.utils").echomsg(
-            string.format("removing %s as it is not formatted correctly", hl),
-            "WarningMsg"
-          )
+          utils.notify(fmt("removing %s as it is not formatted correctly", hl), utils.W)
         end
       end
     end
@@ -153,10 +151,7 @@ local function handle_deprecations(options)
     if deprecation then
       vim.schedule(function()
         local timeframe = deprecation.pending and "will be" or "has been"
-        vim.notify(
-          fmt("'%s' %s deprecated: %s", key, timeframe, deprecation.message),
-          vim.log.levels.WARN
-        )
+        utils.notify(fmt("'%s' %s deprecated: %s", key, timeframe, deprecation.message), utils.W)
       end)
     end
   end
@@ -190,7 +185,7 @@ function Config:validate(defaults)
       object,
       "Please check the README for all valid highlights",
     })
-    require("bufferline.utils").echomsg(msg, "WarningMsg")
+    utils.notify(msg, utils.E)
   end
 end
 

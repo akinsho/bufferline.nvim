@@ -1,5 +1,5 @@
-local api = vim.api
 local fmt = string.format
+local utils = require("bufferline.utils")
 ---------------------------------------------------------------------------//
 -- Highlights
 ---------------------------------------------------------------------------//
@@ -27,9 +27,9 @@ function M.set_one(name, opts)
   end
   local success, err = pcall(vim.cmd, fmt("highlight! %s %s", name, table.concat(hls, " ")))
   if not success then
-    vim.notify(
-      "Failed setting " .. name .. " highlight, something isn't configured correctly: " .. err,
-      vim.log.levels.ERROR
+    utils.notify(
+      fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, err),
+      utils.E
     )
   end
 end
@@ -49,12 +49,9 @@ end
 function M.set_all(user_colors)
   for name, tbl in pairs(user_colors) do
     if not tbl or not tbl.hl_name then
-      api.nvim_echo({
-        {
-          ("Error setting highlight group: no name for %s - %s"):format(name, vim.inspect(tbl)),
-          "ErrorMsg",
-        },
-      }, true, {})
+      utils.notify(
+        fmt("Error setting highlight group: no name for %s - %s", name, vim.inspect(tbl), utils.E)
+      )
     else
       M.set_one(tbl.hl_name, tbl)
     end

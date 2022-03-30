@@ -222,18 +222,16 @@ function M.get_valid_buffers()
   return ids
 end
 
----Print an error message to the commandline
----@param msg string
-function M.echoerr(msg)
-  M.echomsg(msg, "ErrorMsg")
-end
+M.W = vim.log.levels.WARN
+M.E = vim.log.levels.ERROR
+M.I = vim.log.levels.INFO
+M.D = vim.log.levels.DEBUG
 
----Print a message to the commandline
+--- Wrapper around `vim.notify` that adds message metadata
 ---@param msg string
----@param hl string?
-function M.echomsg(msg, hl)
-  hl = hl or "Title"
-  vim.api.nvim_echo({ { fmt("[bufferline] %s", msg), hl } }, true, {})
+---@param level number
+function M.notify(msg, level)
+  vim.notify(msg, level, { title = "Bufferline" })
 end
 
 ---@class GetIconOpts

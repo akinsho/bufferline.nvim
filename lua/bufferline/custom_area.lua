@@ -1,4 +1,6 @@
 local config = require("bufferline.config")
+local utils = require("bufferline.utils")
+
 local M = {}
 
 local fn = vim.fn
@@ -44,8 +46,9 @@ function M.get()
   if areas then
     for side, section_fn in pairs(areas) do
       if type(section_fn) ~= "function" then
-        return require("bufferline.utils").echoerr(
-          fmt("each side should be a function but you passed in %s", vim.inspect(side))
+        return utils.notify(
+          fmt("each side should be a function but you passed in %s", vim.inspect(side)),
+          utils.E
         )
       end
       -- if the user doesn't specify a background use the default
