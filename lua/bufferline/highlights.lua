@@ -50,7 +50,7 @@ function M.set_all(user_colors)
   for name, tbl in pairs(user_colors) do
     if not tbl or not tbl.hl_name then
       utils.notify(
-        fmt("Error setting highlight group: no name for %s - %s", name, vim.inspect(tbl))
+        fmt("Error setting highlight group: no name for %s - %s", name, vim.inspect(tbl), utils.E)
       )
     else
       M.set_one(tbl.hl_name, tbl)
