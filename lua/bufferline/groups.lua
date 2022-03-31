@@ -93,6 +93,10 @@ function M.separator.tab(name, hls, count)
   return indicator, length
 end
 
+function M.separator.none()
+  return "", 0
+end
+
 ----------------------------------------------------------------------------------------------------
 -- BUILTIN GROUPS
 ----------------------------------------------------------------------------------------------------
@@ -103,6 +107,9 @@ M.builtin.pinned = {
   name = PINNED_NAME,
   icon = "📌",
   priority = 1,
+  separator = {
+    style = M.separator.none,
+  },
 }
 
 ----------------------------------------------------------------------------------------------------
