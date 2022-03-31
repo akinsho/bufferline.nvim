@@ -1,4 +1,5 @@
 local utils = require("bufferline.utils")
+local constants = require("bufferline.constants")
 
 local M = {}
 
@@ -6,6 +7,7 @@ local api = vim.api
 local fn = vim.fn
 local fmt = string.format
 local log = utils.log
+local visibility = constants.visibility
 
 --[[
 -----------------------------------------------------------------------------//
@@ -187,6 +189,12 @@ function Buffer:new(buf)
   setmetatable(buf, self)
   self.__index = self
   return buf
+end
+
+function Buffer:visibility()
+  return self:current() and visibility.SELECTED
+    or self:visible() and visibility.INACTIVE
+    or visibility.NONE
 end
 
 function Buffer:current()

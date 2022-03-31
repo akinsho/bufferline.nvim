@@ -243,19 +243,16 @@ local function highlight_icon(buffer, color_icons, hl_defs)
     return icon .. padding
   end
 
-  local state = visibility.NONE
-  local bg_hl = hl_defs.background.hl_name
-  if buffer:current() then
-    state = visibility.SELECTED
-    bg_hl = hl_defs.buffer_selected.hl_name
-  elseif buffer:visible() then
-    state = visibility.INACTIVE
-    bg_hl = hl_defs.buffer_visible.hl_name
-  end
+  local state = buffer:visibility()
+  local bg_hls = {
+    [visibility.INACTIVE] = hl_defs.buffer_visible.hl_name,
+    [visibility.SELECTED] = hl_defs.buffer_selected.hl_name,
+    [visibility.NONE] = hl_defs.background.hl_name,
+  }
 
   local new_hl = highlights.generate_name(hl, { visibility = state })
   local guifg = not color_icons and "fg" or colors.get_hex({ name = hl, attribute = "fg" })
-  local guibg = colors.get_hex({ name = bg_hl, attribute = "bg" })
+  local guibg = colors.get_hex({ name = bg_hls[state], attribute = "bg" })
   highlights.set_one(new_hl, { guibg = guibg, guifg = guifg })
   return highlights.hl(new_hl) .. icon .. padding .. "%*"
 end
