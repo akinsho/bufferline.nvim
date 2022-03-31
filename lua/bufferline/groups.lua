@@ -294,15 +294,29 @@ local function group_by_name(name)
   end
 end
 
+---@param buffer Buffer
+function M.is_pinned(buffer)
+  return state.manual_groupings[buffer.path] == PINNED_ID
+end
+
 --- Add a buffer to a group manually
 ---@param group_name string
 ---@param buffer Buffer
 function M.add_to_group(group_name, buffer)
   local group = group_by_name(group_name)
-  if not group then
-    return
+  if group then
+    state.manual_groupings[buffer.path] = group.id
   end
-  state.manual_groupings[buffer.path] = group.id
+end
+
+---@param group_name string
+---@param buffer Buffer
+function M.remove_from_group(group_name, buffer)
+  local group = group_by_name(group_name)
+  if group then
+    local id = state.manual_groupings[buffer.path]
+    state.manual_groupings[buffer.path] = id == group.id and nil or id
+  end
 end
 
 ---@param id string

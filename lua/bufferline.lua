@@ -202,9 +202,13 @@ function M.group_action(name, action)
   end
 end
 
-function M.pin_buffer()
+function M.toggle_pin()
   local _, buffer = commands.get_current_element_index(state)
-  groups.add_to_group("pinned", buffer)
+  if groups.is_pinned(buffer) then
+    groups.remove_from_group("pinned", buffer)
+  else
+    groups.add_to_group("pinned", buffer)
+  end
   ui.refresh()
 end
 
@@ -266,8 +270,8 @@ local function setup_commands()
     },
     {
       nargs = 0,
-      name = "BufferLinePinBuffer",
-      cmd = "pin_buffer()",
+      name = "BufferLineTogglePin",
+      cmd = "toggle_pin()",
     },
   }
   for _, cmd in ipairs(cmds) do
