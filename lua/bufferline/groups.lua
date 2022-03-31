@@ -315,7 +315,7 @@ function M.remove_from_group(group_name, buffer)
   local group = group_by_name(group_name)
   if group then
     local id = state.manual_groupings[buffer.path]
-    state.manual_groupings[buffer.path] = id == group.id and nil or id
+    state.manual_groupings[buffer.path] = id ~= group.id and id or nil
   end
 end
 
