@@ -36,7 +36,7 @@ local utils = require("bufferline.utils")
 ---@field public name_formatter fun(path: string):string
 ---@field public tab_size number
 ---@field public max_name_length number
----@field public mappings boolean DEPRECATED
+---@field public color_icons boolean
 ---@field public show_buffer_icons boolean
 ---@field public show_buffer_close_icons boolean
 ---@field public show_close_icon boolean
@@ -569,6 +569,7 @@ local function get_defaults()
       tab_size = 18,
       max_name_length = 18,
       mappings = false,
+      color_icons = true,
       show_buffer_icons = true,
       show_buffer_close_icons = true,
       show_close_icon = true,

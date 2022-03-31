@@ -1,9 +1,31 @@
 local fmt = string.format
 local utils = require("bufferline.utils")
+local constants = require("bufferline.constants")
 ---------------------------------------------------------------------------//
 -- Highlights
 ---------------------------------------------------------------------------//
 local M = {}
+
+local PREFIX = "BufferLine"
+
+local visibility_suffix = {
+  [constants.visibility.INACTIVE] = "Inactive",
+  [constants.visibility.SELECTED] = "Selected",
+  [constants.visibility.NONE] = "",
+}
+
+--- @class NameGenerationArgs
+--- @field visibility number
+
+--- Create a highlight name from a string using the bufferline prefix as well as appending the state
+--- of the element
+---@param name string
+---@param opts NameGenerationArgs
+---@return string
+function M.generate_name(name, opts)
+  opts = opts or {}
+  return fmt("%s%s%s", PREFIX, name, visibility_suffix[opts.visibility])
+end
 
 function M.hl(item)
   return "%#" .. item .. "#"
@@ -38,7 +60,7 @@ end
 ---@param highlight table
 function M.add_group(name, highlight)
   -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
-  local formatted = "BufferLine" .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
+  local formatted = PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
   highlight.hl_name = formatted
   highlight.hl = M.hl(formatted)
 end

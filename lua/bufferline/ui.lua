@@ -2,16 +2,19 @@
 -- UI
 -----------------------------------------------------------------------------//
 local lazy = require("bufferline.lazy")
--- @module "bufferline.utils"
+--- @module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
--- @module "bufferline.config"
+--- @module "bufferline.config"
 local config = lazy.require("bufferline.config")
--- @module "bufferline.constants"
+--- @module "bufferline.constants"
 local constants = lazy.require("bufferline.constants")
--- @module "bufferline.highlights"
+--- @module "bufferline.highlights"
 local highlights = lazy.require("bufferline.highlights")
+--- @module "bufferline.colors"
+local colors = require("bufferline.colors")
 
 local M = {}
+local visibility = constants.visibility
 local sep_names = constants.sep_names
 local sep_chars = constants.sep_chars
 -- string.len counts number of bytes and so the unicode icons are counted
@@ -226,34 +229,35 @@ local function add_spacing(context)
 end
 
 --- @param buffer Buffer
+--- @param color_icons boolean whether or not to color the filetype icons
+--- @param hl_defs BufferlineHighlights
 --- @return string
-local function highlight_icon(buffer)
-  local colors = require("bufferline.colors")
+local function highlight_icon(buffer, color_icons, hl_defs)
   local icon = buffer.icon
   local hl = buffer.icon_highlight
 
   if not icon or icon == "" then
     return ""
-  elseif not hl or hl == "" then
+  end
+  if not hl or hl == "" then
     return icon .. padding
   end
 
-  local prefix = "BufferLine"
-  local new_hl = prefix .. hl
-  local bg_hl = prefix .. "Background"
-  -- TODO: do not depend directly on style names
+  local state = visibility.NONE
+  local bg_hl = hl_defs.background.hl_name
   if buffer:current() then
-    new_hl = new_hl .. "Selected"
-    bg_hl = prefix .. "BufferSelected"
+    state = visibility.SELECTED
+    bg_hl = hl_defs.buffer_selected.hl_name
   elseif buffer:visible() then
-    new_hl = new_hl .. "Inactive"
-    bg_hl = prefix .. "BufferVisible"
+    state = visibility.INACTIVE
+    bg_hl = hl_defs.buffer_visible.hl_name
   end
-  local guifg = colors.get_hex({ name = hl, attribute = "fg" })
+
+  local new_hl = highlights.generate_name(hl, { visibility = state })
+  local guifg = not color_icons and "fg" or colors.get_hex({ name = hl, attribute = "fg" })
   local guibg = colors.get_hex({ name = bg_hl, attribute = "bg" })
-  local H = require("bufferline.highlights")
-  H.set_one(new_hl, { guibg = guibg, guifg = guifg })
-  return H.hl(new_hl) .. icon .. padding .. "%*"
+  highlights.set_one(new_hl, { guibg = guibg, guifg = guifg })
+  return highlights.hl(new_hl) .. icon .. padding .. "%*"
 end
 
 ---Determine if the separator style is one of the slant options
@@ -336,7 +340,7 @@ local function add_prefix(context)
   if context.is_picking and element.letter then
     component, length = require("bufferline.pick").component(context)
   elseif options.show_buffer_icons and element.icon then
-    local icon_highlight = highlight_icon(element)
+    local icon_highlight = highlight_icon(element, options.color_icons, config.highlights)
     component = icon_highlight .. hl.background .. component
     length = length + strwidth(element.icon .. padding)
   end
