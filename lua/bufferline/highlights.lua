@@ -1,6 +1,13 @@
 local fmt = string.format
-local utils = require("bufferline.utils")
-local constants = require("bufferline.constants")
+local lazy = require("bufferline.lazy")
+--- @module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
+--- @module "bufferline.constants"
+local constants = lazy.require("bufferline.constants")
+--- @module "bufferline.config"
+local config = lazy.require("bufferline.config")
+--- @module "bufferline.groups"
+local groups = lazy.require("bufferline.groups")
 ---------------------------------------------------------------------------//
 -- Highlights
 ---------------------------------------------------------------------------//
@@ -85,7 +92,7 @@ end
 ---@return table
 function M.for_element(element)
   local hl = {}
-  local h = require("bufferline.config").get("highlights")
+  local h = config.get("highlights")
   if element:current() then
     hl.background = h.buffer_selected.hl
     hl.modified = h.modified_selected.hl
@@ -140,7 +147,7 @@ function M.for_element(element)
   end
 
   if element.group then
-    require("bufferline.groups").set_current_hl(element, h, hl)
+    groups.set_current_hl(element, h, hl)
   end
 
   return hl
