@@ -4,7 +4,10 @@ local strwidth = api.nvim_strwidth
 local utils = require("bufferline.utils")
 local padding = require("bufferline.constants").padding
 
-local UNGROUPED = "ungrouped"
+local PINNED_ID = 1
+local PINNED_NAME = "pinned"
+local UNGROUPED_NAME = "ungrouped"
+local UNGROUPED_ID = 2
 
 local M = {
   separator = {},
@@ -12,16 +15,28 @@ local M = {
   builtin = {},
 }
 
-M.builtin.ungrouped = { name = "ungrouped" }
+M.builtin.ungrouped = { name = UNGROUPED_NAME }
+M.builtin.pinned = {
+  id = PINNED_ID,
+  name = PINNED_NAME,
+  icon = "📌",
+  priority = 1,
+}
 
+--- @class GroupState
+--- @field manual_groupings table<string, Group>
+--- @field user_groups table<string, Group>
+--- @field components_by_group table<string,number>[][]
+
+--- @type GroupState
 local state = {
-  ---@type table<string, Group>
+  -- A table of buffers mapped to a specific group by a user
+  manual_groupings = {},
   user_groups = {},
   --- Represents a list of maps of type `{id = buf_id, index = position in list}`
   --- so that rather than storing the components we store their positions
   --- with an easy way to look them up later.
   --- e.g. `[[group 1, {id = 12, index = 1}, {id = 10, index 2}], [group 2, {id = 5, index = 3}]]`
-  ---@type table<string,number>[][]
   components_by_group = {},
 }
 
@@ -51,19 +66,18 @@ end
 ---buffers only carry a copy of the group ID which is then used to retrieve the correct group
 ---@param buffer Buffer
 function M.set_id(buffer)
-  if not state.user_groups or vim.tbl_isempty(state.user_groups) then
+  if vim.tbl_isempty(state.user_groups) then
     return
   end
-  local ungrouped_id
+  if state.manual_groupings[buffer.path] then
+    return state.manual_groupings[buffer.path]
+  end
   for id, group in pairs(state.user_groups) do
-    if group.name == UNGROUPED then
-      ungrouped_id = group.id
-    end
     if type(group.matcher) == "function" and group.matcher(buffer) then
       return id
     end
   end
-  return ungrouped_id
+  return UNGROUPED_ID
 end
 
 ---@param id number
@@ -153,20 +167,19 @@ function M.setup(config)
 
   local hls = config.highlights
   local groups = config.options.groups.items
+  table.insert(groups, 1, M.builtin.pinned)
+
   local result = utils.fold({ ungrouped_seen = false, list = {} }, function(accum, group, index)
     local name = format_name(group.name)
-    accum.ungrouped_seen = accum.ungrouped_seen or name == UNGROUPED
+    accum.ungrouped_seen = accum.ungrouped_seen or name == UNGROUPED_NAME
     accum.list[index] = enrich_group(index, group)
-
     -- track if the user has specified an ungrouped group because if they haven't we must add one
     -- on the final iteration of the loop
     if index == #groups and not accum.ungrouped_seen then
       local last_position = index + 1
       accum.list[last_position] = enrich_group(last_position, M.builtin.ungrouped)
     end
-
     set_group_highlights(name, group, hls)
-
     return accum
   end, groups)
   state.user_groups = result.list
@@ -207,6 +220,17 @@ local function group_by_name(name)
       return grp
     end
   end
+end
+
+--- Add a buffer to a group manually
+---@param group_name string
+---@param buffer Buffer
+function M.add_to_group(group_name, buffer)
+  local group = group_by_name(group_name)
+  if not group then
+    return
+  end
+  state.manual_groupings[buffer.path] = group.id
 end
 
 ---@param id string
@@ -293,7 +317,7 @@ end
 ---@return Component
 local function get_tab(group_id, components)
   local group = state.user_groups[group_id]
-  if not group or group.name == UNGROUPED then
+  if not group or group.name == UNGROUPED_NAME then
     return
   end
   local GroupView = require("bufferline.models").GroupView
@@ -379,7 +403,7 @@ function M.render(components, sorter)
     --- Sort *each* group, TODO: in the future each group should be able to have it's own sorter
     items = sorter(items)
 
-    if sublist.name ~= UNGROUPED and #sublist > 0 then
+    if sublist.name ~= UNGROUPED_NAME and #sublist > 0 then
       local group_start, group_end = get_tab(buf_group_id, sublist)
       if group_start then
         table.insert(items, 1, group_start)

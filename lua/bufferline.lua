@@ -202,6 +202,12 @@ function M.group_action(name, action)
   end
 end
 
+function M.pin_buffer()
+  local _, buffer = commands.get_current_element_index(state)
+  groups.add_to_group("pinned", buffer)
+  ui.refresh()
+end
+
 function M.handle_group_enter()
   local options = config.options
   local _, element = commands.get_current_element_index(state, { include_hidden = true })
@@ -257,6 +263,11 @@ local function setup_commands()
       name = "BufferLineGroupToggle",
       cmd = 'group_action(<q-args>, "toggle")',
       complete = "complete_groups",
+    },
+    {
+      nargs = 0,
+      name = "BufferLinePinBuffer",
+      cmd = "pin_buffer()",
     },
   }
   for _, cmd in ipairs(cmds) do
