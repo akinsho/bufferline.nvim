@@ -1,44 +1,19 @@
-local api = vim.api
-local fmt = string.format
-local strwidth = api.nvim_strwidth
-local utils = require("bufferline.utils")
-local padding = require("bufferline.constants").padding
+local lazy = require("bufferline.lazy")
+--- @module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
+--- @module "bufferline.constants"
+local padding = lazy.require("bufferline.constants").padding
+--- @module "bufferline.models"
+local models = lazy.require("bufferline.models")
 
-local PINNED_ID = 1
-local PINNED_NAME = "pinned"
-local UNGROUPED_NAME = "ungrouped"
-local UNGROUPED_ID = 2
-
-local M = {
-  separator = {},
-  ---@type table<string, Group>
-  builtin = {},
-}
-
-M.builtin.ungrouped = { name = UNGROUPED_NAME }
-M.builtin.pinned = {
-  id = PINNED_ID,
-  name = PINNED_NAME,
-  icon = "📌",
-  priority = 1,
-}
+----------------------------------------------------------------------------------------------------
+-- Types
+----------------------------------------------------------------------------------------------------
 
 --- @class GroupState
 --- @field manual_groupings table<string, Group>
 --- @field user_groups table<string, Group>
 --- @field components_by_group table<string,number>[][]
-
---- @type GroupState
-local state = {
-  -- A table of buffers mapped to a specific group by a user
-  manual_groupings = {},
-  user_groups = {},
-  --- Represents a list of maps of type `{id = buf_id, index = position in list}`
-  --- so that rather than storing the components we store their positions
-  --- with an easy way to look them up later.
-  --- e.g. `[[group 1, {id = 12, index = 1}, {id = 10, index 2}], [group 2, {id = 5, index = 3}]]`
-  components_by_group = {},
-}
 
 ---@alias GroupSeparator fun(name: string, group:Group, hls: BufferlineHLGroup, count_item: string): string, number
 ---@alias GroupSeparators table<string, GroupSeparator>
@@ -55,6 +30,96 @@ local state = {
 ---@field public icon string
 ---@field public hidden boolean
 ---@field auto_close boolean when leaving the group automatically close it
+
+----------------------------------------------------------------------------------------------------
+-- CONSTANTS
+----------------------------------------------------------------------------------------------------
+
+local PINNED_ID = 1
+local PINNED_NAME = "pinned"
+local UNGROUPED_NAME = "ungrouped"
+local UNGROUPED_ID = 2
+
+local api = vim.api
+local fmt = string.format
+local strwidth = api.nvim_strwidth
+
+local M = {
+  separator = {},
+  ---@type table<string, Group>
+  builtin = {},
+}
+
+----------------------------------------------------------------------------------------------------
+-- SEPARATORS
+----------------------------------------------------------------------------------------------------
+
+---@param group Group,
+---@param hls  table<string, table<string, string>>
+---@param count string
+---@return string, number
+function M.separator.pill(group, hls, count)
+  local bg_hl = hls.fill.hl
+  local name, display_name = group.name, group.display_name
+  local sep_grp, label_grp = hls[fmt("%s_separator", name)], hls[fmt("%s_label", name)]
+  local sep_hl = sep_grp and sep_grp.hl or hls.group_separator.hl
+  local label_hl = label_grp and label_grp.hl or hls.group_label.hl
+  local left, right = "█", "█"
+  local indicator = utils.join(
+    bg_hl,
+    padding,
+    sep_hl,
+    left,
+    label_hl,
+    display_name,
+    count,
+    sep_hl,
+    right,
+    padding
+  )
+  local length = utils.measure(left, right, display_name, count, padding, padding)
+  return indicator, length
+end
+
+---@param name string,
+---@param hls  table<string, table<string, string>>
+---@param count string
+---@return string, number
+function M.separator.tab(name, hls, count)
+  local hl = hls.fill.hl
+  local indicator_hl = hls.buffer.hl
+  local length = utils.measure(name, string.rep(padding, 4), count)
+  local indicator = utils.join(hl, padding, indicator_hl, padding, name, count, hl, padding)
+  return indicator, length
+end
+
+----------------------------------------------------------------------------------------------------
+-- BUILTIN GROUPS
+----------------------------------------------------------------------------------------------------
+
+M.builtin.ungrouped = { name = UNGROUPED_NAME }
+M.builtin.pinned = {
+  id = PINNED_ID,
+  name = PINNED_NAME,
+  icon = "📌",
+  priority = 1,
+}
+
+----------------------------------------------------------------------------------------------------
+-- STATE
+----------------------------------------------------------------------------------------------------
+
+--- @type GroupState
+local state = {
+  -- A table of buffers mapped to a specific group by a user
+  manual_groupings = {},
+  user_groups = {},
+  --- Represents a list of maps of type `{id = buf_id, index = position in list}`
+  --- so that rather than storing the components we store their positions
+  --- with an easy way to look them up later.
+  --- e.g. `[[group 1, {id = 12, index = 1}, {id = 10, index 2}], [group 2, {id = 5, index = 3}]]`
+  components_by_group = {},
+}
 
 --- Remove illegal characters from a group name name
 ---@param name string
@@ -271,43 +336,18 @@ function M.names(include_empty)
   return names
 end
 
----@param group Group,
----@param hls  table<string, table<string, string>>
----@param count string
+--- Draw the separator start component for a group
+---@param group Group
+---@param hls BufferlineHighlights
+---@param count number
 ---@return string, number
-function M.separator.pill(group, hls, count)
-  local bg_hl = hls.fill.hl
-  local name, display_name = group.name, group.display_name
-  local sep_grp, label_grp = hls[fmt("%s_separator", name)], hls[fmt("%s_label", name)]
-  local sep_hl = sep_grp and sep_grp.hl or hls.group_separator.hl
-  local label_hl = label_grp and label_grp.hl or hls.group_label.hl
-  local left, right = "█", "█"
-  local indicator = utils.join(
-    bg_hl,
-    padding,
-    sep_hl,
-    left,
-    label_hl,
-    display_name,
-    count,
-    sep_hl,
-    right,
-    padding
-  )
-  local length = utils.measure(left, right, display_name, count, padding, padding)
-  return indicator, length
-end
-
----@param name string,
----@param hls  table<string, table<string, string>>
----@param count string
----@return string, number
-function M.separator.tab(name, hls, count)
-  local hl = hls.fill.hl
-  local indicator_hl = hls.buffer.hl
-  local length = utils.measure(name, string.rep(padding, 4), count)
-  local indicator = utils.join(hl, padding, indicator_hl, padding, name, count, hl, padding)
-  return indicator, length
+local function create_indicator(group, hls, count)
+  local count_item = group.hidden and fmt("(%s)", count) or ""
+  local indicator, length = group.separator.style(group, hls, count_item)
+  if length == 0 then
+    return indicator, length
+  end
+  return utils.make_clickable("handle_group_click", group.id, indicator), length
 end
 
 ---Create the visual indicators bookending buffer groups
@@ -320,7 +360,7 @@ local function get_tab(group_id, components)
   if not group or group.name == UNGROUPED_NAME then
     return
   end
-  local GroupView = require("bufferline.models").GroupView
+  local GroupView = models.GroupView
   local hl_groups = require("bufferline.config").get("highlights")
 
   group.separator = group.separator or {}
@@ -329,10 +369,8 @@ local function get_tab(group_id, components)
   if not group.separator.style then
     return
   end
-  local count_item = group.hidden and fmt("(%s)", #components) or ""
-  local indicator, length = group.separator.style(group, hl_groups, count_item)
-  indicator = require("bufferline.utils").make_clickable("handle_group_click", group.id, indicator)
 
+  local indicator, length = create_indicator(group, hl_groups, #components)
   local group_start = GroupView:new({
     type = "group_start",
     length = length,
