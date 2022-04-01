@@ -124,6 +124,12 @@ function Tabpage:new(tab)
   return tab
 end
 
+function Tabpage:visibility()
+  return self:current() and visibility.SELECTED
+    or self:visible() and visibility.INACTIVE
+    or visibility.NONE
+end
+
 function Tabpage:current()
   return api.nvim_get_current_tabpage() == self.id
 end
