@@ -29,16 +29,17 @@ local models = lazy.require("bufferline.models")
 ---@field public highlight table<string, string>
 ---@field public icon string
 ---@field public hidden boolean
+---@field public index number the position of the group
 ---@field auto_close boolean when leaving the group automatically close it
 
 ----------------------------------------------------------------------------------------------------
 -- CONSTANTS
 ----------------------------------------------------------------------------------------------------
 
-local PINNED_ID = 1
+local PINNED_ID = "pinned"
 local PINNED_NAME = "pinned"
 local UNGROUPED_NAME = "ungrouped"
-local UNGROUPED_ID = 2
+local UNGROUPED_ID = "ungrouped"
 
 local api = vim.api
 local fmt = string.format
@@ -191,10 +192,12 @@ end
 ---@return Group
 local function enrich_group(index, group)
   group = group or { priority = index }
+  local name = format_name(group.name)
   return vim.tbl_extend("force", group, {
-    id = index,
-    hidden = false,
-    name = format_name(group.name),
+    index = index,
+    id = group.id or name,
+    hidden = group.hidden == nil and false or group.hidden,
+    name = name,
     display_name = group.name,
     priority = group.priority or index,
   })
@@ -241,20 +244,21 @@ function M.setup(config)
   local groups = config.options.groups.items
   table.insert(groups, 1, M.builtin.pinned)
 
-  local result = utils.fold({ ungrouped_seen = false, list = {} }, function(accum, group, index)
+  local result = utils.fold({ ungrouped_seen = false, map = {} }, function(accum, group, index)
     local name = format_name(group.name)
     accum.ungrouped_seen = accum.ungrouped_seen or name == UNGROUPED_NAME
-    accum.list[index] = enrich_group(index, group)
+    group = enrich_group(index, group)
+    accum.map[group.id] = group
     -- track if the user has specified an ungrouped group because if they haven't we must add one
     -- on the final iteration of the loop
     if index == #groups and not accum.ungrouped_seen then
-      local last_position = index + 1
-      accum.list[last_position] = enrich_group(last_position, M.builtin.ungrouped)
+      local ungrouped = enrich_group(index + 1, M.builtin.ungrouped)
+      accum.map[ungrouped.id] = ungrouped.id
     end
     set_group_highlights(name, group, hls)
     return accum
   end, groups)
-  state.user_groups = result.list
+  state.user_groups = result.map
 end
 
 --- Add the current highlight for a specific buffer
@@ -368,7 +372,7 @@ local function create_indicator(group, hls, count)
   if length == 0 then
     return indicator, length
   end
-  return utils.make_clickable("handle_group_click", group.id, indicator), length
+  return utils.make_clickable("handle_group_click", group.index, indicator), length
 end
 
 ---Create the visual indicators bookending buffer groups
