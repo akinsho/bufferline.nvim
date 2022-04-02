@@ -55,6 +55,16 @@ local strwidth = api.nvim_strwidth
 local M = {}
 
 ----------------------------------------------------------------------------------------------------
+-- UTILS
+----------------------------------------------------------------------------------------------------
+
+--- Remove illegal characters from a group name name
+---@param name string
+local function format_name(name)
+  return name:gsub("[^%w]+", "_")
+end
+
+----------------------------------------------------------------------------------------------------
 -- SEPARATORS
 ----------------------------------------------------------------------------------------------------
 local separator = {}
@@ -116,9 +126,20 @@ local builtin = {}
 --- @type Group
 local Group = {}
 
-function Group:new(o)
-  o = o or {}
+---@param o Group
+---@param index number?
+---@return Group
+function Group:new(o, index)
+  o = o or { priority = index }
   self.__index = self
+  local name = format_name(o.name)
+  o = vim.tbl_extend("force", o, {
+    id = o.id or name,
+    hidden = o.hidden == nil and false or o.hidden,
+    name = name,
+    display_name = o.name,
+    priority = o.priority or index,
+  })
   return setmetatable(o, self)
 end
 
@@ -155,19 +176,15 @@ builtin.pinned = Group:new({
 local state = {
   -- A table of buffers mapped to a specific group by a user
   manual_groupings = {},
-  user_groups = {},
+  user_groups = {
+    [builtin.pinned.id] = builtin.pinned,
+  },
   --- Represents a list of maps of type `{id = buf_id, index = position in list}`
   --- so that rather than storing the components we store their positions
   --- with an easy way to look them up later.
   --- e.g. `[[group 1, {id = 12, index = 1}, {id = 10, index 2}], [group 2, {id = 5, index = 3}]]`
   components_by_group = {},
 }
-
---- Remove illegal characters from a group name name
----@param name string
-local function format_name(name)
-  return name:gsub("[^%w]+", "_")
-end
 
 ---Group buffers based on user criteria
 ---buffers only carry a copy of the group ID which is then used to retrieve the correct group
@@ -220,22 +237,6 @@ function M.component(ctx)
   return ctx:update({ component = component, length = length })
 end
 
----Add extra metadata to each group
----@param index number
----@param group Group
----@return Group
-local function enrich_group(index, group)
-  group = group or { priority = index }
-  local name = format_name(group.name)
-  return vim.tbl_extend("force", group, {
-    id = group.id or name,
-    hidden = group.hidden == nil and false or group.hidden,
-    name = name,
-    display_name = group.name,
-    priority = group.priority or index,
-  })
-end
-
 ---Add highlight groups for a group
 ---@param name string
 ---@param group Group
@@ -273,24 +274,24 @@ function M.setup(config)
     return
   end
 
-  local hls = config.highlights
   local groups = config.options.groups.items or {}
-  table.insert(groups, 1, M.builtin.pinned)
 
-  local result = utils.fold({ ungrouped_seen = false, map = {} }, function(accum, group, index)
-    accum.ungrouped_seen = accum.ungrouped_seen or group.id == UNGROUPED_ID
-    group = enrich_group(index, group)
-    accum.map[group.id] = group
-    -- track if the user has specified an ungrouped group because if they haven't we must add one
-    -- on the final iteration of the loop
-    if index == #groups and not accum.ungrouped_seen then
-      local ungrouped = enrich_group(index + 1, M.builtin.ungrouped)
-      accum.map[ungrouped.id] = ungrouped
+  local has_added_ungrouped = false
+  local starting_index = vim.tbl_count(state.user_groups)
+  for index, current in ipairs(groups) do
+    if current.id == UNGROUPED_ID then
+      has_added_ungrouped = true
     end
-    set_group_highlights(group.name, group, hls)
-    return accum
-  end, groups)
-  state.user_groups = result.map
+    local priority = index + starting_index
+    local group = Group:new(current, priority)
+    state.user_groups[group.id] = group
+    set_group_highlights(group.name, group, config.highlights)
+  end
+  if not has_added_ungrouped then
+    state.user_groups[UNGROUPED_ID] = builtin.ungrouped:with({
+      priority = vim.tbl_count(state.user_groups) + 1,
+    })
+  end
 end
 
 --- Add the current highlight for a specific buffer
