@@ -6,6 +6,10 @@ local lazy = require("bufferline.lazy")
 local groups = lazy.require("bufferline.groups")
 --- @module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
+--- @module "bufferline.highlights"
+local highlights = lazy.require("bufferline.highlights")
+--- @module "bufferline.colors"
+local colors = lazy.require("bufferline.colors")
 
 ---@class DebugOpts
 ---@field logging boolean
@@ -72,19 +76,19 @@ local utils = lazy.require("bufferline.utils")
 ---@field private original BufferlineConfig original copy of user preferences
 
 --- Convert highlights specified as tables to the correct existing colours
----@param highlights BufferlineHighlights
-local function convert_highlights(highlights)
-  if not highlights or vim.tbl_isempty(highlights) then
+---@param map BufferlineHighlights
+local function convert_highlights(map)
+  if not map or vim.tbl_isempty(map) then
     return {}
   end
   -- we deep copy the highlights table as assigning the attributes
   -- will only pass the references so will mutate the original table otherwise
-  local updated = vim.deepcopy(highlights)
-  for hl, attributes in pairs(highlights) do
+  local updated = vim.deepcopy(map)
+  for hl, attributes in pairs(map) do
     for attribute, value in pairs(attributes) do
       if type(value) == "table" then
         if value.highlight and value.attribute then
-          updated[hl][attribute] = require("bufferline.colors").get_hex({
+          updated[hl][attribute] = colors.get_hex({
             name = value.highlight,
             attribute = value.attribute,
           })
@@ -210,7 +214,6 @@ local nightly = vim.fn.has("nvim-0.6") > 0
 ---Derive the colors for the bufferline
 ---@return BufferlineHighlights
 local function derive_colors()
-  local colors = require("bufferline.colors")
   local hex = colors.get_hex
   local shade = colors.shade_color
 
@@ -613,12 +616,12 @@ function Config:resolve()
 end
 
 ---Generate highlight groups from user
----@param highlights table<string, table>
+---@param map table<string, table>
 --- TODO: can this become part of a metatable for each highlight group so it is done at the point
 ---of usage
-local function add_highlight_groups(highlights)
-  for name, tbl in pairs(highlights) do
-    require("bufferline.highlights").add_group(name, tbl)
+local function add_highlight_groups(map)
+  for name, tbl in pairs(map) do
+    highlights.add_group(name, tbl)
   end
 end
 
