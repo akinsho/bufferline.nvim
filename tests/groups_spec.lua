@@ -215,4 +215,50 @@ describe("Group tests - ", function()
     assert.is_equal(components[10]:as_element().name, "d.dart")
     assert.is_equal(components[11]:as_element().name, "c.dart")
   end)
+
+  it("should pin a buffer", function()
+    bufferline.setup()
+    utils.vim_enter()
+    vim.cmd("edit dummy-1.txt")
+    nvim_bufferline()
+    vim.cmd("BufferLineTogglePin")
+    nvim_bufferline()
+    assert.is_truthy(groups.state.manual_groupings["dummy-1.txt"]:match("pinned"))
+  end)
+
+  it("should unpin a pinned buffer", function()
+    bufferline.setup()
+    utils.vim_enter()
+    vim.cmd("edit dummy-1.txt")
+    nvim_bufferline()
+    vim.cmd("BufferLineTogglePin")
+    nvim_bufferline()
+    assert.is_truthy(groups.state.manual_groupings["dummy-1.txt"]:match("pinned"))
+    vim.cmd("BufferLineTogglePin")
+    nvim_bufferline()
+    assert.is_falsy(groups.state.manual_groupings["dummy-1.txt"])
+  end)
+
+  it("pinning should override other groups", function()
+    bufferline.setup({
+      options = {
+        groups = {
+          items = {
+            {
+              name = "A",
+              matcher = function(buf)
+                return buf.name:match("%.txt")
+              end,
+            },
+          },
+        },
+      },
+    })
+    utils.vim_enter()
+    vim.cmd("edit dummy-1.txt")
+    nvim_bufferline()
+    vim.cmd("BufferLineTogglePin")
+    nvim_bufferline()
+    assert.is_truthy(groups.state.manual_groupings["dummy-1.txt"])
+  end)
 end)
