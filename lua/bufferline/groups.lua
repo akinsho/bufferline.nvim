@@ -253,7 +253,7 @@ function M.setup(config)
     -- on the final iteration of the loop
     if index == #groups and not accum.ungrouped_seen then
       local ungrouped = enrich_group(index + 1, M.builtin.ungrouped)
-      accum.map[ungrouped.id] = ungrouped.id
+      accum.map[ungrouped.id] = ungrouped
     end
     set_group_highlights(name, group, hls)
     return accum
