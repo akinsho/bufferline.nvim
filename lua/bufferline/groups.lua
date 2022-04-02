@@ -15,7 +15,15 @@ local models = lazy.require("bufferline.models")
 --- @field user_groups table<string, Group>
 --- @field components_by_group table<string,number>[][]
 
----@alias GroupSeparator fun(name: string, group:Group, hls: BufferlineHLGroup, count_item: string): string, number
+--- @class Separator
+--- @field component string
+--- @field length number
+
+--- @class Separators
+--- @field sep_start Separator
+--- @field sep_end Separator
+
+---@alias GroupSeparator fun(name: string, group:Group, hls: BufferlineHLGroup, count_item: string): Separators
 ---@alias GroupSeparators table<string, GroupSeparator>
 ---@alias grouper fun(b: Buffer): boolean
 
@@ -55,6 +63,10 @@ local M = {
 -- SEPARATORS
 ----------------------------------------------------------------------------------------------------
 
+local function space_end(hl_groups)
+  return { component = utils.join(hl_groups.fill.hl, padding), length = strwidth(padding) }
+end
+
 ---@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
@@ -79,23 +91,25 @@ function M.separator.pill(group, hls, count)
     padding
   )
   local length = utils.measure(left, right, display_name, count, padding, padding)
-  return indicator, length
+  return { sep_start = { component = indicator, length = length }, sep_end = space_end(hls) }
 end
 
 ---@param name string,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
 ---@return string, number
+---@type GroupSeparator
 function M.separator.tab(name, hls, count)
   local hl = hls.fill.hl
   local indicator_hl = hls.buffer.hl
   local length = utils.measure(name, string.rep(padding, 4), count)
   local indicator = utils.join(hl, padding, indicator_hl, padding, name, count, hl, padding)
-  return indicator, length
+  return { sep_start = { component = indicator, length = length }, sep_end = space_end(hls) }
 end
 
+---@type GroupSeparator
 function M.separator.none()
-  return "", 0
+  return { sep_start = { component = "", length = 0 }, sep_end = { component = "", length = 0 } }
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -105,6 +119,9 @@ end
 M.builtin.ungrouped = {
   id = UNGROUPED_ID,
   name = UNGROUPED_NAME,
+  separator = {
+    style = M.separator.none,
+  },
 }
 
 M.builtin.pinned = {
@@ -368,14 +385,18 @@ end
 ---@param group Group
 ---@param hls BufferlineHighlights
 ---@param count number
----@return string, number
+---@return Separators
 local function create_indicator(group, hls, count)
   local count_item = group.hidden and fmt("(%s)", count) or ""
-  local indicator, length = group.separator.style(group, hls, count_item)
-  if length == 0 then
-    return indicator, length
+  local seps = group.separator.style(group, hls, count_item)
+  if seps.sep_start.length > 0 then
+    seps.sep_start.component = utils.make_clickable(
+      "handle_group_click",
+      group.index,
+      seps.sep_start.component
+    )
   end
-  return utils.make_clickable("handle_group_click", group.index, indicator), length
+  return seps
 end
 
 ---Create the visual indicators bookending buffer groups
@@ -385,7 +406,7 @@ end
 ---@return Component
 local function get_group_marker(group_id, components)
   local group = state.user_groups[group_id]
-  if not group or group.name == UNGROUPED_NAME then
+  if not group then
     return
   end
   local GroupView = models.GroupView
@@ -398,19 +419,20 @@ local function get_group_marker(group_id, components)
     return
   end
 
-  local indicator, length = create_indicator(group, hl_groups, #components)
+  local seps = create_indicator(group, hl_groups, #components)
+  local s_start, s_end = seps.sep_start, seps.sep_end
   local group_start = GroupView:new({
     type = "group_start",
-    length = length,
+    length = s_start.length,
     component = function()
-      return indicator
+      return s_start.component
     end,
   })
   local group_end = GroupView:new({
     type = "group_end",
-    length = strwidth(padding),
+    length = s_end.length,
     component = function()
-      return utils.join(hl_groups.fill.hl, padding)
+      return s_end.component
     end,
   })
   return group_start, group_end
@@ -469,7 +491,7 @@ function M.render(components, sorter)
     --- Sort *each* group, TODO: in the future each group should be able to have it's own sorter
     items = sorter(items)
 
-    if sublist.name ~= UNGROUPED_NAME and #sublist > 0 then
+    if #sublist > 0 then
       local group_start, group_end = get_group_marker(buf_group_id, sublist)
       if group_start then
         table.insert(items, 1, group_start)
