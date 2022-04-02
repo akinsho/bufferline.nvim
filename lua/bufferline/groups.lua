@@ -323,9 +323,9 @@ end
 ---@param value boolean
 function M.set_hidden(id, value)
   assert(id, "You must pass in a group ID to set its state")
-  local grp = state.user_groups[id]
-  if grp then
-    grp.hidden = value
+  local group = state.user_groups[id]
+  if group then
+    group.hidden = value
   end
 end
 
