@@ -11,7 +11,7 @@ local models = lazy.require("bufferline.models")
 ----------------------------------------------------------------------------------------------------
 
 --- @class GroupState
---- @field manual_groupings table<string, Group>
+--- @field manual_groupings table<string, string>
 --- @field user_groups table<string, Group>
 --- @field components_by_group table<string,number>[][]
 
@@ -260,7 +260,7 @@ function M.setup(config)
   end
 
   local hls = config.highlights
-  local groups = config.options.groups.items
+  local groups = config.options.groups.items or {}
   table.insert(groups, 1, M.builtin.pinned)
 
   local result = utils.fold({ ungrouped_seen = false, map = {} }, function(accum, group, index)
