@@ -37,7 +37,6 @@ local models = lazy.require("bufferline.models")
 ---@field public highlight table<string, string>
 ---@field public icon string
 ---@field public hidden boolean
----@field public index number the position of the group
 ---@field auto_close boolean when leaving the group automatically close it
 
 ----------------------------------------------------------------------------------------------------
@@ -215,7 +214,6 @@ local function enrich_group(index, group)
   group = group or { priority = index }
   local name = format_name(group.name)
   return vim.tbl_extend("force", group, {
-    index = index,
     id = group.id or name,
     hidden = group.hidden == nil and false or group.hidden,
     name = name,
