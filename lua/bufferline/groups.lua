@@ -176,11 +176,7 @@ builtin.pinned = Group:new({
 local state = {
   -- A table of buffers mapped to a specific group by a user
   manual_groupings = {},
-  -- NOTE: ungrouped should not be added until setup at which point we will know if the
-  -- user has chosen to add it in themselves, otherwise we add it in for them.
-  user_groups = {
-    [builtin.pinned.id] = builtin.pinned,
-  },
+  user_groups = {},
   --- Represents a list of maps of type `{id = buf_id, index = position in list}`
   --- so that rather than storing the components we store their positions
   --- with an easy way to look them up later.
@@ -278,12 +274,16 @@ function M.setup(config)
 
   local groups = config.options.groups.items or {}
 
-  local starting_index = vim.tbl_count(state.user_groups)
+  local starting_index = 1 -- start at one to allow for the pinned group
   for index, current in ipairs(groups) do
     local priority = index + starting_index
     local group = Group:new(current, priority)
     state.user_groups[group.id] = group
     set_group_highlights(group.name, group, config.highlights)
+  end
+  -- We only set the builtin groups after we know what the user has configured
+  if not state.user_groups[PINNED_ID] then
+    state.user_groups[PINNED_ID] = builtin.pinned
   end
   if not state.user_groups[UNGROUPED_ID] then
     state.user_groups[UNGROUPED_ID] = builtin.ungrouped:with({
