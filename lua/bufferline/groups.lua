@@ -383,7 +383,7 @@ end
 ---@param components Component[]
 ---@return Component
 ---@return Component
-local function get_tab(group_id, components)
+local function get_group_marker(group_id, components)
   local group = state.user_groups[group_id]
   if not group or group.name == UNGROUPED_NAME then
     return
@@ -470,7 +470,7 @@ function M.render(components, sorter)
     items = sorter(items)
 
     if sublist.name ~= UNGROUPED_NAME and #sublist > 0 then
-      local group_start, group_end = get_tab(buf_group_id, sublist)
+      local group_start, group_end = get_group_marker(buf_group_id, sublist)
       if group_start then
         table.insert(items, 1, group_start)
         items[#items + 1] = group_end
