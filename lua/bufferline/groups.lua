@@ -184,6 +184,20 @@ local state = {
   components_by_group = {},
 }
 
+---@param buffer Buffer
+---@return number
+local function get_manual_group(buffer)
+  return state.manual_groupings[buffer.id]
+end
+
+--- Wrapper to abstract interacting directly with manual groups as the access mechanism
+-- can vary i.e. buffer id or path and this should be changed in a centralised way.
+---@param buffer Buffer
+---@param group_id number?
+local function set_manual_group(buffer, group_id)
+  state.manual_groupings[buffer.id] = group_id
+end
+
 ---Group buffers based on user criteria
 ---buffers only carry a copy of the group ID which is then used to retrieve the correct group
 ---@param buffer Buffer
@@ -191,8 +205,9 @@ function M.set_id(buffer)
   if vim.tbl_isempty(state.user_groups) then
     return
   end
-  if state.manual_groupings[buffer.path] then
-    return state.manual_groupings[buffer.path]
+  local manual_group = get_manual_group(buffer)
+  if manual_group then
+    return manual_group
   end
   for id, group in pairs(state.user_groups) do
     if type(group.matcher) == "function" and group.matcher(buffer) then
@@ -337,16 +352,15 @@ local group_by_priority = group_by("priority")
 
 ---@param buffer Buffer
 function M.is_pinned(buffer)
-  return state.manual_groupings[buffer.path] == PINNED_ID
+  return get_manual_group(buffer) == PINNED_ID
 end
-
 --- Add a buffer to a group manually
 ---@param group_name string
 ---@param buffer Buffer
 function M.add_to_group(group_name, buffer)
   local group = group_by_name(group_name)
   if group then
-    state.manual_groupings[buffer.path] = group.id
+    set_manual_group(buffer, group.id)
   end
 end
 
@@ -355,8 +369,8 @@ end
 function M.remove_from_group(group_name, buffer)
   local group = group_by_name(group_name)
   if group then
-    local id = state.manual_groupings[buffer.path]
-    state.manual_groupings[buffer.path] = id ~= group.id and id or nil
+    local id = get_manual_group(buffer)
+    set_manual_group(buffer, id ~= group.id and id or nil)
   end
 end
 
