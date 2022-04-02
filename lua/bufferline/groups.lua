@@ -176,6 +176,8 @@ builtin.pinned = Group:new({
 local state = {
   -- A table of buffers mapped to a specific group by a user
   manual_groupings = {},
+  -- NOTE: ungrouped should not be added until setup at which point we will know if the
+  -- user has chosen to add it in themselves, otherwise we add it in for them.
   user_groups = {
     [builtin.pinned.id] = builtin.pinned,
   },
@@ -276,18 +278,14 @@ function M.setup(config)
 
   local groups = config.options.groups.items or {}
 
-  local has_added_ungrouped = false
   local starting_index = vim.tbl_count(state.user_groups)
   for index, current in ipairs(groups) do
-    if current.id == UNGROUPED_ID then
-      has_added_ungrouped = true
-    end
     local priority = index + starting_index
     local group = Group:new(current, priority)
     state.user_groups[group.id] = group
     set_group_highlights(group.name, group, config.highlights)
   end
-  if not has_added_ungrouped then
+  if not state.user_groups[UNGROUPED_ID] then
     state.user_groups[UNGROUPED_ID] = builtin.ungrouped:with({
       priority = vim.tbl_count(state.user_groups) + 1,
     })
