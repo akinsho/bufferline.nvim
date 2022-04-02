@@ -494,12 +494,12 @@ function M.element(state, buffer)
   --- length of the component
   ctx = utils.compose(
     get_name,
+    add_duplicates,
+    add_group,
     add_padding({ right = 1 }),
     add_diagnostics,
-    add_duplicates,
     add_prefix,
     add_numbers,
-    add_group,
     add_spacing,
     add_click_action,
     add_indicator,
