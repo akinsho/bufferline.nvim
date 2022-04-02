@@ -52,15 +52,12 @@ local api = vim.api
 local fmt = string.format
 local strwidth = api.nvim_strwidth
 
-local M = {
-  separator = {},
-  ---@type table<string, Group>
-  builtin = {},
-}
+local M = {}
 
 ----------------------------------------------------------------------------------------------------
 -- SEPARATORS
 ----------------------------------------------------------------------------------------------------
+local separator = {}
 
 local function space_end(hl_groups)
   return { component = utils.join(hl_groups.fill.hl, padding), length = strwidth(padding) }
@@ -70,7 +67,7 @@ end
 ---@param hls  table<string, table<string, string>>
 ---@param count string
 ---@return string, number
-function M.separator.pill(group, hls, count)
+function separator.pill(group, hls, count)
   local bg_hl = hls.fill.hl
   local name, display_name = group.name, group.display_name
   local sep_grp, label_grp = hls[fmt("%s_separator", name)], hls[fmt("%s_label", name)]
@@ -98,7 +95,7 @@ end
 ---@param count string
 ---@return string, number
 ---@type GroupSeparator
-function M.separator.tab(name, hls, count)
+function separator.tab(name, hls, count)
   local hl = hls.fill.hl
   local indicator_hl = hls.buffer.hl
   local length = utils.measure(name, string.rep(padding, 4), count)
@@ -107,31 +104,48 @@ function M.separator.tab(name, hls, count)
 end
 
 ---@type GroupSeparator
-function M.separator.none()
+function separator.none()
   return { sep_start = { component = "", length = 0 }, sep_end = { component = "", length = 0 } }
 end
 
 ----------------------------------------------------------------------------------------------------
 -- BUILTIN GROUPS
 ----------------------------------------------------------------------------------------------------
+local builtin = {}
 
-M.builtin.ungrouped = {
+--- @type Group
+local Group = {}
+
+function Group:new(o)
+  o = o or {}
+  self.__index = self
+  return setmetatable(o, self)
+end
+
+function Group:with(o)
+  for key, value in pairs(o) do
+    self[key] = value
+  end
+  return self
+end
+
+builtin.ungrouped = Group:new({
   id = UNGROUPED_ID,
   name = UNGROUPED_NAME,
   separator = {
-    style = M.separator.none,
+    style = separator.none,
   },
-}
+})
 
-M.builtin.pinned = {
+builtin.pinned = Group:new({
   id = PINNED_ID,
   name = PINNED_NAME,
   icon = "📌",
   priority = 1,
   separator = {
-    style = M.separator.none,
+    style = separator.none,
   },
-}
+})
 
 ----------------------------------------------------------------------------------------------------
 -- STATE
@@ -418,7 +432,7 @@ local function get_group_marker(group_id, components)
 
   group.separator = group.separator or {}
   --- NOTE: the default buffer group style is the pill
-  group.separator.style = group.separator.style or M.separator.pill
+  group.separator.style = group.separator.style or separator.pill
   if not group.separator.style then
     return
   end
@@ -509,6 +523,9 @@ function M.render(components, sorter)
   end
   return result
 end
+
+M.builtin = builtin
+M.separator = separator
 
 if utils.is_test() then
   M.state = state
