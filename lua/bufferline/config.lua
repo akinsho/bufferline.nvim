@@ -1,7 +1,11 @@
 local M = {}
 
 local fmt = string.format
-local utils = require("bufferline.utils")
+local lazy = require("bufferline.lazy")
+--- @module "bufferline.groups"
+local groups = lazy.require("bufferline.groups")
+--- @module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
 
 ---@class DebugOpts
 ---@field logging boolean
@@ -187,16 +191,6 @@ function Config:validate(defaults)
     })
     utils.notify(msg, utils.E)
   end
-end
-
----Check if a specific feature is enabled
----@param feature '"groups"'
----@return boolean
-function Config:enabled(feature)
-  if feature == "groups" then
-    return self.options.groups and self.options.groups.items and #self.options.groups.items >= 1
-  end
-  return false
 end
 
 function Config:mode()
@@ -584,7 +578,7 @@ local function get_defaults()
       diagnostics_update_in_insert = true,
       offsets = {},
       groups = {
-        items = nil,
+        items = {},
         options = {
           toggle_hidden_on_enter = true,
         },
@@ -635,9 +629,7 @@ function M.apply()
   config:validate(defaults)
   config:merge(defaults)
   config:resolve()
-  if config:enabled("groups") then
-    require("bufferline.groups").setup(config)
-  end
+  groups.setup(config)
   add_highlight_groups(config.highlights)
   return config
 end
@@ -653,9 +645,7 @@ end
 ---Update highlight colours when the colour scheme changes
 function M.update_highlights()
   config:merge({ highlights = derive_colors() })
-  if config:enabled("groups") then
-    require("bufferline.groups").reset_highlights(config.highlights)
-  end
+  groups.reset_highlights(config.highlights)
   add_highlight_groups(config.highlights)
   return config
 end

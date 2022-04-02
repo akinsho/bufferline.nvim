@@ -70,8 +70,6 @@ function M.get_components(state)
   buf_nums = filter and apply_buffer_filter(buf_nums, filter) or buf_nums
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
 
-  local has_groups = config:enabled("groups")
-
   pick.reset()
   duplicates.reset()
   ---@type Buffer[]
@@ -87,7 +85,7 @@ function M.get_components(state)
       name_formatter = options.name_formatter,
     })
     buf.letter = pick.get(buf)
-    buf.group = has_groups and groups.set_id(buf) or nil
+    buf.group = groups.set_id(buf)
     components[i] = buf
   end
 
