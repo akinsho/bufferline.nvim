@@ -102,7 +102,11 @@ end
 -- BUILTIN GROUPS
 ----------------------------------------------------------------------------------------------------
 
-M.builtin.ungrouped = { name = UNGROUPED_NAME }
+M.builtin.ungrouped = {
+  id = UNGROUPED_ID,
+  name = UNGROUPED_NAME,
+}
+
 M.builtin.pinned = {
   id = PINNED_ID,
   name = PINNED_NAME,
@@ -245,8 +249,7 @@ function M.setup(config)
   table.insert(groups, 1, M.builtin.pinned)
 
   local result = utils.fold({ ungrouped_seen = false, map = {} }, function(accum, group, index)
-    local name = format_name(group.name)
-    accum.ungrouped_seen = accum.ungrouped_seen or name == UNGROUPED_NAME
+    accum.ungrouped_seen = accum.ungrouped_seen or group.id == UNGROUPED_ID
     group = enrich_group(index, group)
     accum.map[group.id] = group
     -- track if the user has specified an ungrouped group because if they haven't we must add one
@@ -255,7 +258,7 @@ function M.setup(config)
       local ungrouped = enrich_group(index + 1, M.builtin.ungrouped)
       accum.map[ungrouped.id] = ungrouped
     end
-    set_group_highlights(name, group, hls)
+    set_group_highlights(group.name, group, hls)
     return accum
   end, groups)
   state.user_groups = result.map
