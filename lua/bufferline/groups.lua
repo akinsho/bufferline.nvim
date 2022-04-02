@@ -308,15 +308,21 @@ function M.command(group_name, callback)
   utils.for_each(group, callback)
 end
 
----@param name string
----@return Group
-local function group_by_name(name)
-  for _, grp in pairs(state.user_groups) do
-    if grp.name == name then
-      return grp
+---@generic T
+---@param attr string
+---@return fun(arg: T): Group
+local function group_by(attr)
+  return function(value)
+    for _, grp in pairs(state.user_groups) do
+      if grp[attr] == value then
+        return grp
+      end
     end
   end
 end
+
+local group_by_name = group_by("name")
+local group_by_priority = group_by("priority")
 
 ---@param buffer Buffer
 function M.is_pinned(buffer)
@@ -353,10 +359,10 @@ function M.set_hidden(id, value)
   end
 end
 
----@param group_id number
+---@param priority number
 ---@param name string
-function M.toggle_hidden(group_id, name)
-  local group = group_id and state.user_groups[group_id] or group_by_name(name)
+function M.toggle_hidden(priority, name)
+  local group = priority and group_by_priority(priority) or group_by_name(name)
   if group then
     group.hidden = not group.hidden
   end
@@ -392,7 +398,7 @@ local function create_indicator(group, hls, count)
   if seps.sep_start.length > 0 then
     seps.sep_start.component = utils.make_clickable(
       "handle_group_click",
-      group.index,
+      group.priority,
       seps.sep_start.component
     )
   end
