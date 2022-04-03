@@ -111,7 +111,6 @@ local function bufferline()
   state.set({
     --- store the full unfiltered lists
     __components = components,
-    __visible_components = visible_components,
     --- Store copies without focusable/hidden elements
     components = filter_invisible(components),
     visible_components = filter_invisible(visible_components),
