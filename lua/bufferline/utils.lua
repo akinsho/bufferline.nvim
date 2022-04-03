@@ -1,7 +1,11 @@
 ---------------------------------------------------------------------------//
 -- HELPERS
 ---------------------------------------------------------------------------//
-local constants = require("bufferline.constants")
+local lazy = require("bufferline.lazy")
+--- @module "bufferline.constants"
+local constants = lazy.require("bufferline.constants")
+--- @module "bufferline.config"
+local config = lazy.require("bufferline.config")
 
 local M = { log = {} }
 
@@ -16,9 +20,7 @@ end
 
 ---@return boolean
 local function check_logging()
-  ---@type BufferlineOptions
-  local config = require("bufferline.config").get("options")
-  return config.debug.logging
+  return config.options.debug.logging
 end
 
 ---@param msg string
@@ -253,7 +255,8 @@ function M.get_icon(opts)
   if type == "terminal" then
     return webdev_icons.get_icon(type)
   end
-  local icon, hl = webdev_icons.get_icon(fn.fnamemodify(opts.path, ":t"), opts.extension)
+  local name = fn.fnamemodify(opts.path, ":t")
+  local icon, hl = webdev_icons.get_icon(name, opts.extension)
   if not icon then
     return "", ""
   end
