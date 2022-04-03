@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------//
 -- HELPERS
 ---------------------------------------------------------------------------//
+local constants = require("bufferline.constants")
+
 local M = { log = {} }
 
 local fmt = string.format
@@ -240,20 +242,22 @@ function M.get_icon(opts)
   local loaded, webdev_icons = pcall(require, "nvim-web-devicons")
   if opts.directory then
     local hl = loaded and "DevIconDefault" or nil
-    return "", hl
+    return constants.FOLDER_ICON, hl
+  end
+  if not loaded then
+    if fn.exists("*WebDevIconsGetFileTypeSymbol") > 0 then
+      return fn.WebDevIconsGetFileTypeSymbol(opts.path), ""
+    end
+    return "", ""
   end
   if type == "terminal" then
     return webdev_icons.get_icon(type)
   end
-  if loaded then
-    return webdev_icons.get_icon(
-      fn.fnamemodify(opts.path, ":t"),
-      opts.extension,
-      { default = true }
-    )
+  local icon, hl = webdev_icons.get_icon(fn.fnamemodify(opts.path, ":t"), opts.extension)
+  if not icon then
+    return "", ""
   end
-  local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
-  return devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(opts.path) or ""
+  return icon, hl
 end
 
 ---Add click action to a component
