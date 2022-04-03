@@ -397,15 +397,12 @@ end
 ---@param include_empty boolean
 ---@return string[]
 function M.names(include_empty)
-  if state.user_groups == nil then
+  if not state.user_groups then
     return {}
   end
   local names = {}
-  for _, group in ipairs(state.user_groups) do
-    local group_components = utils.find(state.components_by_group, function(item)
-      return item.id == group.id
-    end)
-    if include_empty or (group_components and #group_components > 0) then
+  for _, group in pairs(state.components_by_group) do
+    if include_empty or (group and #group > 0) then
       table.insert(names, group.name)
     end
   end
