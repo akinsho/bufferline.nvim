@@ -277,6 +277,31 @@ e.g.
         end)
     end
 <
+
+==============================================================================
+PINNING BUFFERS                                           *bufferline-pinning*
+
+Buffers can be pinned to the start of the bufferline by using the
+`:BufferLineTogglePin` command, this will override other groupings or sorting
+order for the buffer and position it left of all other buffers.
+
+Pinned buffers are essentially a builtin group that positions the assigned
+elements. The icons and highlights for pinned buffers can be changed similarly
+to other groups e.g.
+
+>
+ config = {
+    options = {
+        groups = {
+            items = {
+                require('bufferline.groups').builtin.pinned:with({ icon = "" })
+                ... -- other items
+            }
+        }
+    }
+ }
+<
+
 ==============================================================================
 REGULAR TAB SIZES                                  *bufferline-regular-tabs*
 
