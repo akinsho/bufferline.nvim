@@ -46,6 +46,18 @@ local function strip_parens(str)
   return fn.substitute(str, "[()]", "", "g")
 end
 
+---@param name string
+---@param state BufferlineState
+---@return TabElement
+function M.find_buffer(name, state)
+  for _, component in ipairs(state.components) do
+    local element = component:as_element()
+    if fn.matchstr(element.name, name) ~= "" then
+      return component
+    end
+  end
+end
+
 ---Remove special tabline syntax from bufferline in order to inspect its appearance
 ---@param str string
 ---@return string

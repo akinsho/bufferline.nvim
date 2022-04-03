@@ -100,7 +100,6 @@ local function bufferline()
   local conf = config.get()
   local tabs = tabpages.get()
   local is_tabline = conf:is_tabline()
-  local has_groups = config:enabled("groups")
   local components = is_tabline and tabpages.get_components(state) or buffers.get_components(state)
 
   if not conf.options.always_show_bufferline then
@@ -114,8 +113,7 @@ local function bufferline()
   --- state is not actually set till after sorting and component creation is done
   state.set({ current_element_index = get_current_index(state) })
 
-  components = (has_groups and not is_tabline) and groups.render(components, sorter)
-    or sorter(components)
+  components = not is_tabline and groups.render(components, sorter) or sorter(components)
 
   local tabline, visible_components = ui.render(components, tabs)
 
@@ -167,19 +165,17 @@ local function setup_autocommands(conf)
     })
   end
 
-  if conf:enabled("groups") then
-    table.insert(autocommands, {
-      "BufRead",
-      "*",
-      "++once",
-      "lua vim.schedule(require'bufferline'.handle_group_enter)",
-    })
-    table.insert(autocommands, {
-      "BufEnter",
-      "*",
-      "lua require'bufferline'.handle_group_enter()",
-    })
-  end
+  table.insert(autocommands, {
+    "BufRead",
+    "*",
+    "++once",
+    "lua vim.schedule(require'bufferline'.handle_group_enter)",
+  })
+  table.insert(autocommands, {
+    "BufEnter",
+    "*",
+    "lua require'bufferline'.handle_group_enter()",
+  })
 
   utils.augroup({ BufferlineColors = autocommands })
 end
@@ -200,6 +196,16 @@ function M.group_action(name, action)
   elseif type(action) == "function" then
     groups.command(name, action)
   end
+end
+
+function M.toggle_pin()
+  local _, buffer = commands.get_current_element_index(state)
+  if groups.is_pinned(buffer) then
+    groups.remove_from_group("pinned", buffer)
+  else
+    groups.add_to_group("pinned", buffer)
+  end
+  ui.refresh()
 end
 
 function M.handle_group_enter()
@@ -257,6 +263,11 @@ local function setup_commands()
       name = "BufferLineGroupToggle",
       cmd = 'group_action(<q-args>, "toggle")',
       complete = "complete_groups",
+    },
+    {
+      nargs = 0,
+      name = "BufferLineTogglePin",
+      cmd = "toggle_pin()",
     },
   }
   for _, cmd in ipairs(cmds) do
