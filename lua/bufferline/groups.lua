@@ -540,6 +540,8 @@ M.separator = separator
 if utils.is_test() then
   M.state = state
   M.sort_by_groups = sort_by_groups
+  M.get_manual_group = get_manual_group
+  M.set_manual_group = set_manual_group
 end
 
 return M

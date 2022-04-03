@@ -1,19 +1,25 @@
 local utils = require("tests.utils")
+
 local Buffer = utils.MockBuffer
+local fn = vim.fn
 
 --- NOTE: The pinned group is group 1 and so all groups must appear after this
 --- all group are moved down by one because of this
 describe("Group tests - ", function()
   --- @module "bufferline.groups"
   local groups
+  --- @module "bufferline.state"
+  local state
   --- @module "bufferline"
   local bufferline
 
   before_each(function()
     package.loaded["bufferline"] = nil
     package.loaded["bufferline.groups"] = nil
+    package.loaded["bufferline.state"] = nil
     groups = require("bufferline.groups")
     bufferline = require("bufferline")
+    state = require("bufferline.state")
   end)
 
   local function set_buf_group(buffer)
@@ -223,7 +229,9 @@ describe("Group tests - ", function()
     nvim_bufferline()
     vim.cmd("BufferLineTogglePin")
     nvim_bufferline()
-    assert.is_truthy(groups.state.manual_groupings["dummy-1.txt"]:match("pinned"))
+    local buf = utils.find_buffer("dummy-1.txt", state)
+    local group = groups.get_manual_group(buf)
+    assert.is_truthy(group:match("pinned"))
   end)
 
   it("should unpin a pinned buffer", function()
@@ -233,10 +241,13 @@ describe("Group tests - ", function()
     nvim_bufferline()
     vim.cmd("BufferLineTogglePin")
     nvim_bufferline()
-    assert.is_truthy(groups.state.manual_groupings["dummy-1.txt"]:match("pinned"))
+    local buf = utils.find_buffer("dummy-1.txt", state)
+    local group = groups.get_manual_group(buf)
+    assert.is_truthy(group:match("pinned"))
     vim.cmd("BufferLineTogglePin")
     nvim_bufferline()
-    assert.is_falsy(groups.state.manual_groupings["dummy-1.txt"])
+    group = groups.get_manual_group(buf)
+    assert.is_falsy(group)
   end)
 
   it("pinning should override other groups", function()
@@ -259,6 +270,8 @@ describe("Group tests - ", function()
     nvim_bufferline()
     vim.cmd("BufferLineTogglePin")
     nvim_bufferline()
-    assert.is_truthy(groups.state.manual_groupings["dummy-1.txt"])
+    local buf = utils.find_buffer("dummy-1.txt", state)
+    local group = groups.get_manual_group(buf)
+    assert.is_truthy(group:match("pinned"))
   end)
 end)
