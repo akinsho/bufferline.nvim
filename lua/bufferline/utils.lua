@@ -212,14 +212,7 @@ end
 
 ---@return number[]
 function M.get_valid_buffers()
-  local buf_nums = vim.api.nvim_list_bufs()
-  local ids = {}
-  for _, buf in ipairs(buf_nums) do
-    if M.is_valid(buf) then
-      ids[#ids + 1] = buf
-    end
-  end
-  return ids
+  return vim.tbl_filter(M.is_valid, vim.api.nvim_list_bufs())
 end
 
 M.W = vim.log.levels.WARN

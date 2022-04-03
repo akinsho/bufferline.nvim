@@ -102,19 +102,10 @@ local function bufferline()
   local is_tabline = conf:is_tabline()
   local components = is_tabline and tabpages.get_components(state) or buffers.get_components(state)
 
-  if not conf.options.always_show_bufferline then
-    if utils.get_buf_count() == 1 then
-      vim.o.showtabline = 0
-      return
-    end
-  end
-
   --- NOTE: this cannot be added to state as a metamethod since
   --- state is not actually set till after sorting and component creation is done
   state.set({ current_element_index = get_current_index(state) })
-
   components = not is_tabline and groups.render(components, sorter) or sorter(components)
-
   local tabline, visible_components = ui.render(components, tabs)
 
   state.set({
@@ -128,10 +119,12 @@ local function bufferline()
   return tabline
 end
 
+--- If the buffer count has changed and the next tabline status is different then update it
 function M.toggle_bufferline()
-  local opts = config.options
-  local status = (opts.always_show_bufferline or utils.get_buf_count() > 1) and 2 or 0
-  vim.o.showtabline = status
+  local status = (config.options.always_show_bufferline or utils.get_buf_count() > 1) and 2 or 0
+  if vim.o.showtabline ~= status then
+    vim.o.showtabline = status
+  end
 end
 
 ---@private
@@ -283,6 +276,8 @@ end
 
 ---@private
 function _G.nvim_bufferline()
+  -- Always populate state regardless of if tabline status is less than 2 #352
+  M.toggle_bufferline()
   return bufferline()
 end
 
