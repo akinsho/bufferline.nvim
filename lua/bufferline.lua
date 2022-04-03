@@ -280,30 +280,17 @@ function _G.nvim_bufferline()
   return bufferline()
 end
 
----@private
-function M.__load()
-  local preferences = config.apply()
-  -- on loading (and reloading) the plugin's config reset all the highlights
-  highlights.set_all(preferences.highlights)
-  -- TODO: don't reapply commands and autocommands if load has already been called
-  setup_commands()
-  setup_autocommands(preferences)
-  vim.o.tabline = "%!v:lua.nvim_bufferline()"
-  M.toggle_bufferline()
-end
-
 ---@param conf BufferlineConfig
 function M.setup(conf)
   conf = conf or {}
   config.set(conf)
-  if vim.v.vim_did_enter == 1 then
-    M.__load()
-  else
-    -- defer the first load of the plugin till vim has started
-    require("bufferline.utils").augroup({
-      BufferlineLoad = { { "VimEnter", "*", "++once", "lua require('bufferline').__load()" } },
-    })
-  end
+  local preferences = config.apply()
+  -- on loading (and reloading) the plugin's config reset all the highlights
+  highlights.set_all(preferences.highlights)
+  setup_commands()
+  setup_autocommands(preferences)
+  vim.o.tabline = "%!v:lua.nvim_bufferline()"
+  M.toggle_bufferline()
 end
 
 return M
