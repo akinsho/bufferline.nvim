@@ -1,5 +1,3 @@
-local utils = require("tests.utils")
-
 describe("Sorters - ", function()
   local sorters = require("bufferline.sorters")
   ---@module "bufferline"
@@ -71,7 +69,6 @@ describe("Sorters - ", function()
         sort_by = "insert_at_end",
       },
     })
-    utils.vim_enter()
     vim.cmd("edit! a.txt")
     vim.cmd("edit b.txt")
     vim.cmd("edit c.txt")
@@ -94,7 +91,6 @@ describe("Sorters - ", function()
         sort_by = "insert_after_current",
       },
     })
-    utils.vim_enter()
     vim.cmd("edit! a.txt")
     vim.cmd("edit b.txt")
     vim.cmd("edit c.txt")

@@ -27,7 +27,9 @@ describe("Custom areas -", function()
   it("should handle sides correctly", function()
     bufferline.setup({
       highlights = {
-        fill = "#000000",
+        fill = {
+          guifg = "#000000",
+        },
       },
       options = {
         custom_areas = {

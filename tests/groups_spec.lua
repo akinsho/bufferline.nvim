@@ -1,7 +1,6 @@
 local utils = require("tests.utils")
 
 local Buffer = utils.MockBuffer
-local fn = vim.fn
 
 --- NOTE: The pinned group is group 1 and so all groups must appear after this
 --- all group are moved down by one because of this
@@ -151,7 +150,6 @@ describe("Group tests - ", function()
       },
     }
     bufferline.setup(config)
-    utils.vim_enter()
     local components = {
       Buffer:new({ name = "dummy-1.txt" }),
       Buffer:new({ name = "dummy-2.txt" }),
@@ -198,7 +196,6 @@ describe("Group tests - ", function()
       },
     }
     bufferline.setup(config)
-    utils.vim_enter()
     local components = {
       Buffer:new({ name = "a.txt" }),
       Buffer:new({ name = "b.txt" }),
@@ -224,7 +221,6 @@ describe("Group tests - ", function()
 
   it("should pin a buffer", function()
     bufferline.setup()
-    utils.vim_enter()
     vim.cmd("edit dummy-1.txt")
     nvim_bufferline()
     vim.cmd("BufferLineTogglePin")
@@ -236,7 +232,6 @@ describe("Group tests - ", function()
 
   it("should unpin a pinned buffer", function()
     bufferline.setup()
-    utils.vim_enter()
     vim.cmd("edit dummy-1.txt")
     nvim_bufferline()
     vim.cmd("BufferLineTogglePin")
@@ -265,7 +260,6 @@ describe("Group tests - ", function()
         },
       },
     })
-    utils.vim_enter()
     vim.cmd("edit dummy-1.txt")
     nvim_bufferline()
     vim.cmd("BufferLineTogglePin")

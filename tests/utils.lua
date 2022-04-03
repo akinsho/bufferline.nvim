@@ -1,9 +1,5 @@
 local M = {}
 
-function M.vim_enter()
-  vim.cmd("doautocmd VimEnter")
-end
-
 local MockBuffer = {}
 
 function MockBuffer:new(o)
