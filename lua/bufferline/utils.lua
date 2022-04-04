@@ -256,7 +256,9 @@ function M.get_icon(opts)
     return webdev_icons.get_icon(type)
   end
   local name = fn.fnamemodify(opts.path, ":t")
-  local icon, hl = webdev_icons.get_icon(name, opts.extension)
+  local icon, hl = webdev_icons.get_icon(name, opts.extension, {
+    default = config.options.show_buffer_default_icon,
+  })
   if not icon then
     return "", ""
   end
