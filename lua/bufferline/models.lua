@@ -1,5 +1,8 @@
-local utils = require("bufferline.utils")
-local constants = require("bufferline.constants")
+local lazy = require("bufferline.lazy")
+--- @module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
+--- @module "bufferline.constants"
+local constants = lazy.require("bufferline.constants")
 
 local M = {}
 
@@ -113,7 +116,7 @@ function Tabpage:new(tab)
   tab.modified = vim.bo[tab.buf].modified
   tab.buftype = vim.bo[tab.buf].buftype
   tab.extension = fn.fnamemodify(tab.path, ":e")
-  tab.icon, tab.icon_highlight = require("bufferline.utils").get_icon({
+  tab.icon, tab.icon_highlight = utils.get_icon({
     directory = fn.isdirectory(tab.path) > 0,
     path = tab.path,
     extension = tab.extension,
@@ -176,7 +179,7 @@ function Buffer:new(buf)
   buf.buftype = vim.bo[buf.id].buftype
   buf.extension = fn.fnamemodify(buf.path, ":e")
   local is_directory = fn.isdirectory(buf.path) > 0
-  buf.icon, buf.icon_highlight = require("bufferline.utils").get_icon({
+  buf.icon, buf.icon_highlight = utils.get_icon({
     directory = is_directory,
     path = buf.path,
     extension = buf.extension,

@@ -23,6 +23,8 @@ local colors = lazy.require("bufferline.colors")
 
 ---@alias BufferlineMode "'tabs'" | "'buffers'"
 
+---@alias DiagnosticIndicator fun(count: number, level: number, errors: table<string, any>, ctx: table<string, any>): string
+
 ---@class BufferlineOptions
 ---@field public mode BufferlineMode
 ---@field public view string
@@ -47,6 +49,7 @@ local colors = lazy.require("bufferline.colors")
 ---@field public color_icons boolean
 ---@field public show_buffer_icons boolean
 ---@field public show_buffer_close_icons boolean
+---@field public show_buffer_default_icon boolean
 ---@field public show_close_icon boolean
 ---@field public show_tab_indicators boolean
 ---@field public enforce_regular_tabs boolean
@@ -55,7 +58,7 @@ local colors = lazy.require("bufferline.colors")
 ---@field public max_prefix_length number
 ---@field public sort_by string
 ---@field public diagnostics boolean
----@field public diagnostics_indicator function?
+---@field public diagnostics_indicator DiagnosticIndicator
 ---@field public diagnostics_update_in_insert boolean
 ---@field public offsets table[]
 ---@field public groups GroupOpts
@@ -569,6 +572,7 @@ local function get_defaults()
       color_icons = true,
       show_buffer_icons = true,
       show_buffer_close_icons = true,
+      show_buffer_default_icon = true,
       show_close_icon = true,
       show_tab_indicators = true,
       enforce_regular_tabs = false,

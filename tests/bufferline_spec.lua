@@ -7,15 +7,20 @@ describe("Bufferline tests:", function()
   local bufferline
   ---@module "bufferline.state"
   local state
+  ---@module "nvim-web-devicons"
+  local icons
 
   before_each(function()
     package.loaded["bufferline"] = nil
     package.loaded["bufferline.state"] = nil
+    package.loaded["nvim-web-devicons"] = nil
     -- dependent modules need to also be reset as
     -- they keep track of state themselves now
     package.loaded["bufferline.commands"] = nil
     bufferline = require("bufferline")
     state = require("bufferline.state")
+    icons = require("nvim-web-devicons")
+    icons.setup({ default = true })
   end)
 
   after_each(function()
@@ -106,6 +111,32 @@ describe("Bufferline tests:", function()
       assert.is_truthy(tabline)
       local snapshot = utils.format_tabline(tabline)
       assert.is_equal(snapshot, snapshots[3])
+    end)
+
+    it("should not show a default icon if specified", function()
+      bufferline.setup({
+        options = {
+          show_buffer_default_icon = false,
+        },
+      })
+      vim.cmd("edit test.rrj")
+      local tabline = nvim_bufferline()
+      local snapshot = utils.format_tabline(tabline)
+      local icon = icons.get_icon("")
+      assert.is_false(snapshot:match(icon) == nil)
+    end)
+
+    it("should show a default icon if specified", function()
+      bufferline.setup({
+        options = {
+          show_buffer_default_icon = true,
+        },
+      })
+      vim.cmd("edit test.rrj")
+      local tabline = nvim_bufferline()
+      local snapshot = utils.format_tabline(tabline)
+      local icon = icons.get_icon("")
+      assert.is_true(snapshot:match(icon) ~= nil)
     end)
   end)
 

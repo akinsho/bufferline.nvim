@@ -1,6 +1,12 @@
 ---------------------------------------------------------------------------//
 -- HELPERS
 ---------------------------------------------------------------------------//
+local lazy = require("bufferline.lazy")
+--- @module "bufferline.constants"
+local constants = lazy.require("bufferline.constants")
+--- @module "bufferline.config"
+local config = lazy.require("bufferline.config")
+
 local M = { log = {} }
 
 local fmt = string.format
@@ -14,9 +20,7 @@ end
 
 ---@return boolean
 local function check_logging()
-  ---@type BufferlineOptions
-  local config = require("bufferline.config").get("options")
-  return config.debug.logging
+  return config.options.debug.logging
 end
 
 ---@param msg string
@@ -240,20 +244,25 @@ function M.get_icon(opts)
   local loaded, webdev_icons = pcall(require, "nvim-web-devicons")
   if opts.directory then
     local hl = loaded and "DevIconDefault" or nil
-    return "", hl
+    return constants.FOLDER_ICON, hl
+  end
+  if not loaded then
+    if fn.exists("*WebDevIconsGetFileTypeSymbol") > 0 then
+      return fn.WebDevIconsGetFileTypeSymbol(opts.path), ""
+    end
+    return "", ""
   end
   if type == "terminal" then
     return webdev_icons.get_icon(type)
   end
-  if loaded then
-    return webdev_icons.get_icon(
-      fn.fnamemodify(opts.path, ":t"),
-      opts.extension,
-      { default = true }
-    )
+  local name = fn.fnamemodify(opts.path, ":t")
+  local icon, hl = webdev_icons.get_icon(name, opts.extension, {
+    default = config.options.show_buffer_default_icon,
+  })
+  if not icon then
+    return "", ""
   end
-  local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
-  return devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(opts.path) or ""
+  return icon, hl
 end
 
 ---Add click action to a component
