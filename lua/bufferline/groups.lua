@@ -251,11 +251,11 @@ function M.component(ctx)
 end
 
 ---Add highlight groups for a group
----@param name string
 ---@param group Group
 ---@param hls BufferlineHighlights
-local function set_group_highlights(name, group, hls)
+local function set_group_highlights(group, hls)
   local hl = group.highlight
+  local name = group.name
   if not hl or type(hl) ~= "table" then
     return
   end
@@ -275,7 +275,7 @@ end
 ---@param highlights BufferlineHighlights
 function M.reset_highlights(highlights)
   utils.for_each(state.user_groups, function(item)
-    set_group_highlights(item.name, item, highlights)
+    set_group_highlights(item, highlights)
   end)
 end
 
@@ -294,7 +294,6 @@ function M.setup(config)
     local priority = index + starting_index
     local group = Group:new(current, priority)
     state.user_groups[group.id] = group
-    set_group_highlights(group.name, group, config.highlights)
   end
   -- We only set the builtin groups after we know what the user has configured
   if not state.user_groups[PINNED_ID] then
@@ -304,6 +303,9 @@ function M.setup(config)
     state.user_groups[UNGROUPED_ID] = builtin.ungrouped:with({
       priority = vim.tbl_count(state.user_groups) + 1,
     })
+  end
+  for _, group in pairs(state.user_groups) do
+    set_group_highlights(group, config.highlights)
   end
 end
 
