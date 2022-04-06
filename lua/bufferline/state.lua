@@ -9,14 +9,12 @@ local M = {}
 ---@field current_element_index number?
 ---@field visible_components Component[]
 ---@field __components Component[]
----@field __visible_components Component[]
 ---@field custom_sort number[]
 local state = {
   is_picking = false,
   current_element_index = nil,
   custom_sort = nil,
   __components = {},
-  __visible_components = {},
   components = {},
   visible_components = {},
 }

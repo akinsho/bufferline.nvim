@@ -24,6 +24,7 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
   - [Unique buffer names](#unique-buffer-names)
   - [Close icons](#close-icons)
   - [Buffer re-ordering](#buffer-re-ordering)
+  - [Pinning buffers](#pinning-buffers)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Caveats](#caveats)
@@ -34,6 +35,7 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
   - [LSP indicators](#lsp-indicators)
   - [Conditional buffer based LSP indicators](#conditional-buffer-based-lsp-indicators)
   - [Groups](#groups)
+  - [Pinning](#pinning)
   - [Regular tab sizes](#regular-tab-sizes)
   - [Numbers](#numbers)
   - [Sorting](#sorting)
@@ -103,6 +105,10 @@ Ordinal number and buffer number with a customized number styles.
 ![re-order buffers](https://user-images.githubusercontent.com/22454918/111993463-91643a80-8b0e-11eb-87f0-26acfe92c021.gif)
 
 This order can be persisted between sessions (enabled by default).
+
+#### Pinning buffers
+
+<img width="899" alt="Screen Shot 2022-03-31 at 18 13 50" src="https://user-images.githubusercontent.com/22454918/161112867-ba48fdf6-42ee-4cd3-9e1a-7118c4a2738b.png">
 
 ## Requirements
 
@@ -261,6 +267,7 @@ require('bufferline').setup {
     color_icons = true | false, -- whether or not to add the filetype icon highlights
     show_buffer_icons = true | false, -- disable filetype icons for buffers
     show_buffer_close_icons = true | false,
+    show_buffer_default_icon = true | false, -- whether or not an unrecognised filetype should show a default icon
     show_close_icon = true | false,
     show_tab_indicators = true | false,
     persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
@@ -363,7 +370,7 @@ end
 The first bufferline shows `diagnostic.lua` as the currently opened `current` buffer. It has LSP reported errors, but they don't show up in the bufferline.
 The second bufferline shows `500-nvim-bufferline.lua` as the currently opened `current` buffer. Because the 'faulty' `diagnostic.lua` buffer has now transitioned from `current` to `visible`, the LSP indicator does show up.
 
-### Groups (Experimental)
+### Groups
 
 ![groups](https://user-images.githubusercontent.com/22454918/132225763-1bfeb6cb-40e1-414b-8355-05726778b8b8.png)
 
@@ -440,6 +447,27 @@ function _G.__group_open()
     vim.cmd('vsplit '..buf.path)
   end)
 end
+```
+
+### Pinning
+
+Buffers can be pinned to the start of the bufferline by using the `:BufferLineTogglePin` command, this will override other groupings or sorting order for the buffer and position it left of all other buffers.
+
+Pinned buffers are essentially a builtin group that positions the assigned
+elements. The icons and highlights for pinned buffers can be changed similarly
+to other groups e.g.
+
+```lua
+ config = {
+    options = {
+        groups = {
+            items = {
+                require('bufferline.groups').builtin.pinned:with({ icon = "" }),
+                ... -- other items
+            }
+        }
+    }
+ }
 ```
 
 ### Regular tab sizes

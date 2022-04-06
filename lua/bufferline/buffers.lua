@@ -1,17 +1,17 @@
 local lazy = require("bufferline.lazy")
--- @module "bufferline.ui"
+--- @module "bufferline.ui"
 local ui = lazy.require("bufferline.ui")
--- @module "bufferline.groups"
+--- @module "bufferline.groups"
 local groups = lazy.require("bufferline.groups")
--- @module "bufferline.config"
+--- @module "bufferline.config"
 local config = lazy.require("bufferline.config")
--- @module "bufferline.utils"
+--- @module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
--- @module "bufferline.pick"
+--- @module "bufferline.pick"
 local pick = require("bufferline.pick")
--- @module "bufferline.duplicates"
+--- @module "bufferline.duplicates"
 local duplicates = require("bufferline.duplicates")
--- @module "bufferline.diagnostics"
+--- @module "bufferline.diagnostics"
 local diagnostics = require("bufferline.diagnostics")
 
 local M = {}
@@ -70,8 +70,6 @@ function M.get_components(state)
   buf_nums = filter and apply_buffer_filter(buf_nums, filter) or buf_nums
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
 
-  local has_groups = config:enabled("groups")
-
   pick.reset()
   duplicates.reset()
   ---@type Buffer[]
@@ -87,7 +85,7 @@ function M.get_components(state)
       name_formatter = options.name_formatter,
     })
     buf.letter = pick.get(buf)
-    buf.group = has_groups and groups.set_id(buf) or nil
+    buf.group = groups.set_id(buf)
     components[i] = buf
   end
 

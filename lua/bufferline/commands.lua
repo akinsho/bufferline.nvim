@@ -80,9 +80,9 @@ local function handle_user_command(command, id)
   end
 end
 
----@param group_id number
-function M.handle_group_click(group_id)
-  groups.toggle_hidden(group_id)
+---@param position number
+function M.handle_group_click(position)
+  groups.toggle_hidden(position)
   ui.refresh()
 end
 

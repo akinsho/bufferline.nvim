@@ -1,6 +1,5 @@
 local utils = require("tests.utils")
 
--- FIXME: vim.v.vim_did_enter is 0 in all test cases.
 describe("Bufferline tests:", function()
   vim.opt.swapfile = false
   vim.opt.hidden = true
@@ -8,15 +7,20 @@ describe("Bufferline tests:", function()
   local bufferline
   ---@module "bufferline.state"
   local state
+  ---@module "nvim-web-devicons"
+  local icons
 
   before_each(function()
     package.loaded["bufferline"] = nil
     package.loaded["bufferline.state"] = nil
+    package.loaded["nvim-web-devicons"] = nil
     -- dependent modules need to also be reset as
     -- they keep track of state themselves now
     package.loaded["bufferline.commands"] = nil
     bufferline = require("bufferline")
     state = require("bufferline.state")
+    icons = require("nvim-web-devicons")
+    icons.setup({ default = true })
   end)
 
   after_each(function()
@@ -26,7 +30,6 @@ describe("Bufferline tests:", function()
   describe("render buffer - ", function()
     it("should create corresponding buffers in state", function()
       bufferline.setup()
-      utils.vim_enter()
       vim.cmd("edit test-1.txt")
       vim.cmd("edit test-2.txt")
       local tabline = nvim_bufferline()
@@ -41,7 +44,6 @@ describe("Bufferline tests:", function()
           indicator_icon = icon,
         },
       })
-      utils.vim_enter()
       vim.cmd("edit test.txt")
       local tabline = nvim_bufferline()
       assert.truthy(tabline)
@@ -58,7 +60,6 @@ describe("Bufferline tests:", function()
           end,
         },
       })
-      utils.vim_enter()
       vim.cmd("edit test.txt")
       local tabline = nvim_bufferline()
       assert.truthy(tabline)
@@ -74,7 +75,6 @@ describe("Bufferline tests:", function()
     }
     it("should add correct padding if close icons are present", function()
       bufferline.setup()
-      utils.vim_enter()
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
@@ -90,7 +90,6 @@ describe("Bufferline tests:", function()
           show_buffer_close_icons = false,
         },
       })
-      utils.vim_enter()
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
@@ -105,7 +104,6 @@ describe("Bufferline tests:", function()
           separator_style = "slant",
         },
       })
-      utils.vim_enter()
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
@@ -113,6 +111,32 @@ describe("Bufferline tests:", function()
       assert.is_truthy(tabline)
       local snapshot = utils.format_tabline(tabline)
       assert.is_equal(snapshot, snapshots[3])
+    end)
+
+    it("should not show a default icon if specified", function()
+      bufferline.setup({
+        options = {
+          show_buffer_default_icon = false,
+        },
+      })
+      vim.cmd("edit test.rrj")
+      local tabline = nvim_bufferline()
+      local snapshot = utils.format_tabline(tabline)
+      local icon = icons.get_icon("")
+      assert.is_false(snapshot:match(icon) == nil)
+    end)
+
+    it("should show a default icon if specified", function()
+      bufferline.setup({
+        options = {
+          show_buffer_default_icon = true,
+        },
+      })
+      vim.cmd("edit test.rrj")
+      local tabline = nvim_bufferline()
+      local snapshot = utils.format_tabline(tabline)
+      local icon = icons.get_icon("")
+      assert.is_true(snapshot:match(icon) ~= nil)
     end)
   end)
 
@@ -124,7 +148,6 @@ describe("Bufferline tests:", function()
           left_mouse_command = "vertical sbuffer %d",
         },
       })
-      utils.vim_enter()
       bufferline.handle_click(bufnum, "l")
       assert.is_equal(#vim.api.nvim_list_wins(), 2)
     end)
@@ -138,7 +161,6 @@ describe("Bufferline tests:", function()
           end,
         },
       })
-      utils.vim_enter()
       bufferline.handle_click(bufnum, "m")
       assert.is_equal(vim.bo[bufnum].filetype, "test")
     end)
@@ -150,7 +172,6 @@ describe("Bufferline tests:", function()
           right_mouse_command = "setfiletype egg",
         },
       })
-      utils.vim_enter()
       bufferline.handle_click(bufnum, "r")
       assert.is_equal(vim.bo.filetype, "egg")
     end)
@@ -166,7 +187,6 @@ describe("Bufferline tests:", function()
           end,
         },
       })
-      utils.vim_enter()
       bufferline.handle_close(bufnum)
       assert.is_equal(count, expected)
     end)
@@ -176,7 +196,6 @@ describe("Bufferline tests:", function()
   describe("commands - ", function()
     it("should close buffers to the right of the current buffer", function()
       bufferline.setup()
-      utils.vim_enter()
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
@@ -192,7 +211,6 @@ describe("Bufferline tests:", function()
 
     it("should close buffers to the left of the current buffer", function()
       bufferline.setup()
-      utils.vim_enter()
       vim.cmd("edit! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")

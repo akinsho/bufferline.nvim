@@ -88,6 +88,7 @@ The available settings are: >
             groups = {} -- see :h bufferline-groups for details
             show_buffer_icons = true | false,
             show_buffer_close_icons = true | false,
+            show_buffer_default_icon = true | false, -- whether or not an unrecognised filetype should show a default icon
             show_close_icon = true | false,
             show_tab_indicators = true | false
             persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
@@ -277,6 +278,31 @@ e.g.
         end)
     end
 <
+
+==============================================================================
+PINNING BUFFERS                                           *bufferline-pinning*
+
+Buffers can be pinned to the start of the bufferline by using the
+`:BufferLineTogglePin` command, this will override other groupings or sorting
+order for the buffer and position it left of all other buffers.
+
+Pinned buffers are essentially a builtin group that positions the assigned
+elements. The icons and highlights for pinned buffers can be changed similarly
+to other groups e.g.
+
+>
+ config = {
+    options = {
+        groups = {
+            items = {
+                require('bufferline.groups').builtin.pinned:with({ icon = "" })
+                ... -- other items
+            }
+        }
+    }
+ }
+<
+
 ==============================================================================
 REGULAR TAB SIZES                                  *bufferline-regular-tabs*
 

@@ -1,7 +1,15 @@
 local M = {}
 
 local fmt = string.format
-local utils = require("bufferline.utils")
+local lazy = require("bufferline.lazy")
+--- @module "bufferline.groups"
+local groups = lazy.require("bufferline.groups")
+--- @module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
+--- @module "bufferline.highlights"
+local highlights = lazy.require("bufferline.highlights")
+--- @module "bufferline.colors"
+local colors = lazy.require("bufferline.colors")
 
 ---@class DebugOpts
 ---@field logging boolean
@@ -14,6 +22,8 @@ local utils = require("bufferline.utils")
 ---@field items Group[]
 
 ---@alias BufferlineMode "'tabs'" | "'buffers'"
+
+---@alias DiagnosticIndicator fun(count: number, level: number, errors: table<string, any>, ctx: table<string, any>): string
 
 ---@class BufferlineOptions
 ---@field public mode BufferlineMode
@@ -39,6 +49,7 @@ local utils = require("bufferline.utils")
 ---@field public color_icons boolean
 ---@field public show_buffer_icons boolean
 ---@field public show_buffer_close_icons boolean
+---@field public show_buffer_default_icon boolean
 ---@field public show_close_icon boolean
 ---@field public show_tab_indicators boolean
 ---@field public enforce_regular_tabs boolean
@@ -47,7 +58,7 @@ local utils = require("bufferline.utils")
 ---@field public max_prefix_length number
 ---@field public sort_by string
 ---@field public diagnostics boolean
----@field public diagnostics_indicator function?
+---@field public diagnostics_indicator DiagnosticIndicator
 ---@field public diagnostics_update_in_insert boolean
 ---@field public offsets table[]
 ---@field public groups GroupOpts
@@ -68,19 +79,19 @@ local utils = require("bufferline.utils")
 ---@field private original BufferlineConfig original copy of user preferences
 
 --- Convert highlights specified as tables to the correct existing colours
----@param highlights BufferlineHighlights
-local function convert_highlights(highlights)
-  if not highlights or vim.tbl_isempty(highlights) then
+---@param map BufferlineHighlights
+local function convert_highlights(map)
+  if not map or vim.tbl_isempty(map) then
     return {}
   end
   -- we deep copy the highlights table as assigning the attributes
   -- will only pass the references so will mutate the original table otherwise
-  local updated = vim.deepcopy(highlights)
-  for hl, attributes in pairs(highlights) do
+  local updated = vim.deepcopy(map)
+  for hl, attributes in pairs(map) do
     for attribute, value in pairs(attributes) do
       if type(value) == "table" then
         if value.highlight and value.attribute then
-          updated[hl][attribute] = require("bufferline.colors").get_hex({
+          updated[hl][attribute] = colors.get_hex({
             name = value.highlight,
             attribute = value.attribute,
           })
@@ -189,16 +200,6 @@ function Config:validate(defaults)
   end
 end
 
----Check if a specific feature is enabled
----@param feature '"groups"'
----@return boolean
-function Config:enabled(feature)
-  if feature == "groups" then
-    return self.options.groups and self.options.groups.items and #self.options.groups.items >= 1
-  end
-  return false
-end
-
 function Config:mode()
   return self.options.mode
 end
@@ -216,7 +217,6 @@ local nightly = vim.fn.has("nvim-0.6") > 0
 ---Derive the colors for the bufferline
 ---@return BufferlineHighlights
 local function derive_colors()
-  local colors = require("bufferline.colors")
   local hex = colors.get_hex
   local shade = colors.shade_color
 
@@ -572,6 +572,7 @@ local function get_defaults()
       color_icons = true,
       show_buffer_icons = true,
       show_buffer_close_icons = true,
+      show_buffer_default_icon = true,
       show_close_icon = true,
       show_tab_indicators = true,
       enforce_regular_tabs = false,
@@ -584,7 +585,7 @@ local function get_defaults()
       diagnostics_update_in_insert = true,
       offsets = {},
       groups = {
-        items = nil,
+        items = {},
         options = {
           toggle_hidden_on_enter = true,
         },
@@ -619,12 +620,12 @@ function Config:resolve()
 end
 
 ---Generate highlight groups from user
----@param highlights table<string, table>
+---@param map table<string, table>
 --- TODO: can this become part of a metatable for each highlight group so it is done at the point
 ---of usage
-local function add_highlight_groups(highlights)
-  for name, tbl in pairs(highlights) do
-    require("bufferline.highlights").add_group(name, tbl)
+local function add_highlight_groups(map)
+  for name, tbl in pairs(map) do
+    highlights.add_group(name, tbl)
   end
 end
 
@@ -635,9 +636,8 @@ function M.apply()
   config:validate(defaults)
   config:merge(defaults)
   config:resolve()
-  if config:enabled("groups") then
-    require("bufferline.groups").setup(config)
-  end
+  -- TODO: Can setting up of group highlights be constrained to the config module
+  groups.setup(config)
   add_highlight_groups(config.highlights)
   return config
 end
@@ -653,9 +653,7 @@ end
 ---Update highlight colours when the colour scheme changes
 function M.update_highlights()
   config:merge({ highlights = derive_colors() })
-  if config:enabled("groups") then
-    require("bufferline.groups").reset_highlights(config.highlights)
-  end
+  groups.reset_highlights(config.highlights)
   add_highlight_groups(config.highlights)
   return config
 end

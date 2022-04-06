@@ -87,12 +87,12 @@ function M.set_all(user_colors)
   end
 end
 
---- TODO: find a tidier way to do this if possible
 ---@param element Buffer | Tabpage
 ---@return table
 function M.for_element(element)
   local hl = {}
   local h = config.get("highlights")
+  --- TODO: find a tidier way to do this if possible
   if element:current() then
     hl.background = h.buffer_selected.hl
     hl.modified = h.modified_selected.hl

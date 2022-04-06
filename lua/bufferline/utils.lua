@@ -1,6 +1,12 @@
 ---------------------------------------------------------------------------//
 -- HELPERS
 ---------------------------------------------------------------------------//
+local lazy = require("bufferline.lazy")
+--- @module "bufferline.constants"
+local constants = lazy.require("bufferline.constants")
+--- @module "bufferline.config"
+local config = lazy.require("bufferline.config")
+
 local M = { log = {} }
 
 local fmt = string.format
@@ -14,16 +20,20 @@ end
 
 ---@return boolean
 local function check_logging()
-  ---@type BufferlineOptions
-  local config = require("bufferline.config").get("options")
-  return config.debug.logging
+  return config.options.debug.logging
 end
 
 ---@param msg string
 function M.log.debug(msg)
   if check_logging() then
     local info = debug.getinfo(2, "S")
-    print(fmt("[bufferline]: %s\n%s\n%s", msg, info.linedefined, info.short_src))
+    vim.schedule(function()
+      M.notify(
+        fmt("[bufferline]: %s\n%s:%s", msg, info.linedefined, info.short_src),
+        M.D,
+        { once = true }
+      )
+    end)
   end
 end
 
@@ -212,14 +222,7 @@ end
 
 ---@return number[]
 function M.get_valid_buffers()
-  local buf_nums = vim.api.nvim_list_bufs()
-  local ids = {}
-  for _, buf in ipairs(buf_nums) do
-    if M.is_valid(buf) then
-      ids[#ids + 1] = buf
-    end
-  end
-  return ids
+  return vim.tbl_filter(M.is_valid, vim.api.nvim_list_bufs())
 end
 
 M.W = vim.log.levels.WARN
@@ -230,8 +233,12 @@ M.D = vim.log.levels.DEBUG
 --- Wrapper around `vim.notify` that adds message metadata
 ---@param msg string
 ---@param level number
-function M.notify(msg, level)
-  vim.notify(msg, level, { title = "Bufferline" })
+function M.notify(msg, level, opts)
+  local nopts = { title = "Bufferline" }
+  if opts.once then
+    return vim.notify_once(msg, level, nopts)
+  end
+  vim.notify(msg, level, nopts)
 end
 
 ---@class GetIconOpts
@@ -247,20 +254,25 @@ function M.get_icon(opts)
   local loaded, webdev_icons = pcall(require, "nvim-web-devicons")
   if opts.directory then
     local hl = loaded and "DevIconDefault" or nil
-    return "", hl
+    return constants.FOLDER_ICON, hl
+  end
+  if not loaded then
+    if fn.exists("*WebDevIconsGetFileTypeSymbol") > 0 then
+      return fn.WebDevIconsGetFileTypeSymbol(opts.path), ""
+    end
+    return "", ""
   end
   if type == "terminal" then
     return webdev_icons.get_icon(type)
   end
-  if loaded then
-    return webdev_icons.get_icon(
-      fn.fnamemodify(opts.path, ":t"),
-      opts.extension,
-      { default = true }
-    )
+  local name = fn.fnamemodify(opts.path, ":t")
+  local icon, hl = webdev_icons.get_icon(name, opts.extension, {
+    default = config.options.show_buffer_default_icon,
+  })
+  if not icon then
+    return "", ""
   end
-  local devicons_loaded = fn.exists("*WebDevIconsGetFileTypeSymbol") > 0
-  return devicons_loaded and fn.WebDevIconsGetFileTypeSymbol(opts.path) or ""
+  return icon, hl
 end
 
 ---Add click action to a component
