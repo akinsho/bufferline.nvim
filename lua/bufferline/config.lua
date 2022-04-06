@@ -636,6 +636,7 @@ function M.apply()
   config:validate(defaults)
   config:merge(defaults)
   config:resolve()
+  -- TODO: Can setting up of group highlights be constrained to the config module
   groups.setup(config)
   add_highlight_groups(config.highlights)
   return config

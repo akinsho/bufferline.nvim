@@ -274,9 +274,9 @@ end
 
 ---@param highlights BufferlineHighlights
 function M.reset_highlights(highlights)
-  utils.for_each(state.user_groups, function(item)
-    set_group_highlights(item, highlights)
-  end)
+  for _, group in pairs(state.user_groups) do
+    set_group_highlights(group, highlights)
+  end
 end
 
 --- NOTE: this function mutates the user's configuration.
@@ -323,7 +323,11 @@ function M.set_current_hl(buffer, highlights, current_hl)
   local hl_name = buffer:current() and fmt("%s_selected", name)
     or buffer:visible() and fmt("%s_visible", name)
     or name
-  current_hl[name] = highlights[hl_name].hl
+  if highlights[hl_name] then
+    current_hl[name] = highlights[hl_name].hl
+  else
+    utils.log.debug(fmt("%s group highlight not found", name))
+  end
 end
 
 ---Execute a command on each buffer of a group
