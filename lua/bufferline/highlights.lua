@@ -42,28 +42,30 @@ function M.hl_exists(name)
   return vim.fn.hlexists(name) > 0
 end
 
-local keys = { "gui", "guisp", "guibg", "guifg" }
-
-function M.set_one(name, opts)
-  if not opts or vim.tbl_isempty(opts) then
-    return
-  end
+local function sanitize_hl_keys(opts)
+  local keys = { "gui", "guisp", "guibg", "guifg" }
   local hls = {}
   for key, value in pairs(opts) do
-    if value and value ~= "" and vim.tbl_contains(keys, key) then
-      table.insert(hls, fmt("%s=%s", key, value))
+    if vim.tbl_contains(keys, key) then
+      hls[key] = value
     end
   end
-  local themable = require("bufferline.config").get("options").themable
-  local ok, rsp = pcall(
-    vim.cmd,
-    fmt("highlight %s %s %s", themable and "default" or "", name, table.concat(hls, " "))
-  )
-  if not ok then
-    utils.notify(
-      fmt("Failed setting %s  highlight, something isn't configured correctly: %s", name, rsp),
-      utils.E
-    )
+  return hls
+end
+
+---Apply a single highlight
+---@param name string
+---@param opts table<string, string>
+function M.set_one(name, opts)
+  if opts and not vim.tbl_isempty(opts) then
+    local hls = sanitize_hl_keys(opts)
+    local ok, msg = pcall(vim.highlight.create, name, hls, config.options.themable)
+    if not ok then
+      utils.notify(
+        fmt("Failed setting %s  highlight, something isn't configured correctly: %s", name, msg),
+        utils.E
+      )
+    end
   end
 end
 
