@@ -74,10 +74,9 @@ end
 
 ---@return TabElement?
 function Component:as_element()
-  if not vim.tbl_contains({ "buffer", "tab" }, self.type) then
-    return log.debug(fmt("This entity is not a buffer or a buffer, it is a %s.", self.type))
+  if vim.tbl_contains({ "buffer", "tab" }, self.type) then
+    return self
   end
-  return self
 end
 
 local GroupView = Component:new({ type = "group", focusable = false })

@@ -27,7 +27,13 @@ end
 function M.log.debug(msg)
   if check_logging() then
     local info = debug.getinfo(2, "S")
-    print(fmt("[bufferline]: %s\n%s\n%s", msg, info.linedefined, info.short_src))
+    vim.schedule(function()
+      M.notify(
+        fmt("[bufferline]: %s\n%s:%s", msg, info.linedefined, info.short_src),
+        M.D,
+        { once = true }
+      )
+    end)
   end
 end
 
@@ -227,8 +233,12 @@ M.D = vim.log.levels.DEBUG
 --- Wrapper around `vim.notify` that adds message metadata
 ---@param msg string
 ---@param level number
-function M.notify(msg, level)
-  vim.notify(msg, level, { title = "Bufferline" })
+function M.notify(msg, level, opts)
+  local nopts = { title = "Bufferline" }
+  if opts.once then
+    return vim.notify_once(msg, level, nopts)
+  end
+  vim.notify(msg, level, nopts)
 end
 
 ---@class GetIconOpts
