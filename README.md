@@ -111,11 +111,13 @@ This order can be persisted between sessions (enabled by default).
 
 ## Installation
 
+It is advised that you specify either the latest tag or a specific tag and bump them manually if you'd prefer to inspect changes before updating.
+
 **Lua**
 
 ```lua
 -- using packer.nvim
-use {'akinsho/bufferline.nvim', requires = 'kyazdani42/nvim-web-devicons'}
+use {'akinsho/bufferline.nvim', tag = "*", requires = 'kyazdani42/nvim-web-devicons'}
 ```
 
 **Vimscript**
@@ -123,7 +125,7 @@ use {'akinsho/bufferline.nvim', requires = 'kyazdani42/nvim-web-devicons'}
 ```vim
 Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
 " Plug 'ryanoasis/vim-devicons' Icons without colours
-Plug 'akinsho/bufferline.nvim'
+Plug 'akinsho/bufferline.nvim', { 'tag': '*' }
 ```
 
 ## What about Tabs?
