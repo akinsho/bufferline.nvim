@@ -62,6 +62,7 @@ local colors = lazy.require("bufferline.colors")
 ---@field public diagnostics_update_in_insert boolean
 ---@field public offsets table[]
 ---@field public groups GroupOpts
+---@field public themable boolean
 
 ---@class BufferlineHLGroup
 ---@field guifg string
@@ -549,6 +550,7 @@ local function get_defaults()
     ---@type BufferlineOptions
     options = {
       mode = "buffers",
+      themable = true, -- whether or not bufferline highlights can be overriden externally
       numbers = "none",
       number_style = "superscript",
       buffer_close_icon = "",
