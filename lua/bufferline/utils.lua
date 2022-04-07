@@ -234,6 +234,7 @@ M.D = vim.log.levels.DEBUG
 ---@param msg string
 ---@param level number
 function M.notify(msg, level, opts)
+  opts = opts or {}
   local nopts = { title = "Bufferline" }
   if opts.once then
     return vim.notify_once(msg, level, nopts)
