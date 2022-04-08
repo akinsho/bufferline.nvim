@@ -126,7 +126,7 @@ function M.component(context)
   if number_prefix ~= "" then
     number_component = number_prefix .. constants.padding
   end
-  component = number_component .. component
+  component = context.current_highlights.numbers .. number_component .. component
   length = length + vim.fn.strwidth(number_component)
   return context:update({ component = component, length = length })
 end
