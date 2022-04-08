@@ -30,7 +30,6 @@ local colors = lazy.require("bufferline.colors")
 ---@field public view string
 ---@field public debug DebugOpts
 ---@field public numbers string
----@field public number_style numbers_opt
 ---@field public buffer_close_icon string
 ---@field public modified_icon string
 ---@field public close_icon string
@@ -552,7 +551,6 @@ local function get_defaults()
       mode = "buffers",
       themable = true, -- whether or not bufferline highlights can be overriden externally
       numbers = "none",
-      number_style = "superscript",
       buffer_close_icon = "",
       modified_icon = "●",
       close_icon = "",
