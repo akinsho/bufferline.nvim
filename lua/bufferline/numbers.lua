@@ -13,8 +13,6 @@ local config = require("bufferline.config")
 
 local M = {}
 
-local styles = { "buffer_id", "ordinal" }
-
 local superscript_numbers = {
   ["0"] = "⁰",
   ["1"] = "¹",
@@ -48,10 +46,10 @@ local maps = {
 
 --- convert single or multi-digit strings to {sub|super}script
 --- or return the plain number if there is no corresponding number table
----@param map table<string, string>
 ---@param num number
+---@param map table<string, string>
 ---@return string
-local function construct_number(map, num)
+local function construct_number(num, map)
   if not map then
     return num .. "."
   end
@@ -63,7 +61,7 @@ end
 
 local function to_style(map)
   return function(num)
-    return construct_number(map, num)
+    return construct_number(num, map)
   end
 end
 
@@ -72,43 +70,24 @@ local lower, raise = to_style(subscript_numbers), to_style(superscript_numbers)
 ---Add a number prefix to the buffer matching a user's preference
 ---@param buffer Buffer
 ---@param numbers numbers_opt
----@param numbers_style string[]
 ---@return string
-local function prefix(buffer, numbers, numbers_style)
+local function prefix(buffer, numbers)
   if type(numbers) == "function" then
-    local opts = {
+    local ok, number = pcall(numbers, {
       ordinal = buffer.ordinal,
       id = buffer.id,
       lower = lower,
       raise = raise,
-    }
-    local ok, number = pcall(numbers, opts)
-    if not ok then
-      return ""
-    end
-    return number
+    })
+    return ok and number or ""
   end
   -- if mode is both, numbers will look similar to lightline-bufferline,
   -- buffer_id at top left and ordinal number at bottom right
   if numbers == "both" then
-    -- default number_style for mode "both"
-    local both = { buffer_id = "none", ordinal = "subscript" }
-    if numbers_style ~= "superscript" and type(numbers_style) == "table" then
-      both.buffer_id = numbers_style[1] and numbers_style[1] or both.buffer_id
-      both.ordinal = numbers_style[2] and numbers_style[2] or both.ordinal
-    end
-
-    local num = ""
-    for _, value in ipairs(styles) do
-      local current = value == "ordinal" and buffer.ordinal or buffer.id
-      num = num .. construct_number(maps[both[value]], current)
-    end
-    return num
+    return construct_number(buffer.id) .. construct_number(buffer.ordinal, maps.subscript)
   end
 
-  local n = numbers == "ordinal" and buffer.ordinal or buffer.id
-  local num = construct_number(maps[numbers_style], n)
-  return num
+  return construct_number(numbers == "ordinal" and buffer.ordinal or buffer.id)
 end
 
 --- @param context RenderContext
@@ -121,7 +100,7 @@ function M.component(context)
   if options.numbers == "none" then
     return context
   end
-  local number_prefix = prefix(element, options.numbers, options.number_style)
+  local number_prefix = prefix(element, options.numbers)
   local number_component = ""
   if number_prefix ~= "" then
     number_component = number_prefix .. constants.padding
