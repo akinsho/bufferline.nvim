@@ -116,6 +116,7 @@ function M.for_element(element)
     hl.hint = h.hint_selected.hl
     hl.hint_diagnostic = h.hint_diagnostic_selected.hl
     hl.close_button = h.close_button_selected.hl
+    hl.numbers = h.numbers_selected.hl
   elseif element:visible() then
     hl.background = h.buffer_visible.hl
     hl.modified = h.modified_visible.hl
@@ -133,6 +134,7 @@ function M.for_element(element)
     hl.hint = h.hint_visible.hl
     hl.hint_diagnostic = h.hint_diagnostic_visible.hl
     hl.close_button = h.close_button_visible.hl
+    hl.numbers = h.numbers_visible.hl
   else
     hl.background = h.background.hl
     hl.modified = h.modified.hl
@@ -150,6 +152,7 @@ function M.for_element(element)
     hl.hint = h.hint.hl
     hl.hint_diagnostic = h.hint_diagnostic.hl
     hl.close_button = h.close_button.hl
+    hl.numbers = h.numbers.hl
   end
 
   if element.group then

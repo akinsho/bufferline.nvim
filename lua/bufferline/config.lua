@@ -345,6 +345,19 @@ local function derive_colors()
       guibg = normal_bg,
       gui = "bold,italic",
     },
+    numbers = {
+      guifg = comment_fg,
+      guibg = background_color,
+    },
+    numbers_selected = {
+      guifg = normal_fg,
+      guibg = normal_bg,
+      gui = "bold,italic",
+    },
+    numbers_visible = {
+      guifg = comment_fg,
+      guibg = visible_bg,
+    },
     diagnostic = {
       guifg = comment_diagnostic_fg,
       guibg = background_color,

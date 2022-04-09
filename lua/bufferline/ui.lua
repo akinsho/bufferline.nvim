@@ -12,6 +12,8 @@ local constants = lazy.require("bufferline.constants")
 local highlights = lazy.require("bufferline.highlights")
 --- @module "bufferline.colors"
 local colors = require("bufferline.colors")
+---@module "bufferline.pick"
+local pick = lazy.require("bufferline.pick")
 
 local M = {}
 local visibility = constants.visibility
@@ -335,7 +337,7 @@ local function add_prefix(context)
   local options = config.options
 
   if context.is_picking and element.letter then
-    component, length = require("bufferline.pick").component(context)
+    component, length = pick.component(context)
   elseif options.show_buffer_icons and element.icon then
     local icon_highlight = highlight_icon(element, options.color_icons, config.highlights)
     component = icon_highlight .. hl.background .. component
