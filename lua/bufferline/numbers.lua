@@ -118,6 +118,7 @@ function M.component(context)
   local component = context.component
   local options = config.options
   local length = context.length
+  local hl = context.current_highlights
   if options.numbers == "none" then
     return context
   end
@@ -126,7 +127,7 @@ function M.component(context)
   if number_prefix ~= "" then
     number_component = number_prefix .. constants.padding
   end
-  component = context.current_highlights.numbers .. number_component .. component
+  component = context.current_highlights.numbers .. number_component .. hl.background .. component
   length = length + vim.fn.strwidth(number_component)
   return context:update({ component = component, length = length })
 end
