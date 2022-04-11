@@ -118,9 +118,10 @@ local function bufferline()
   return tabline
 end
 
---- If the buffer count has changed and the next tabline status is different then update it
+--- If the item count has changed and the next tabline status is different then update it
 function M.toggle_bufferline()
-  local status = (config.options.always_show_bufferline or utils.get_buf_count() > 1) and 2 or 0
+  local item_count = config:is_tabline() and utils.get_tab_count() or utils.get_buf_count()
+  local status = (config.options.always_show_bufferline or item_count > 1) and 2 or 0
   if vim.o.showtabline ~= status then
     vim.o.showtabline = status
   end
