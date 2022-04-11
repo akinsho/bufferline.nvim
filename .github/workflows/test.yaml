@@ -7,7 +7,7 @@ on:
       - ".github/**"
       - "*.md"
     branches:
-      - master
+      - main
 
 jobs:
   build:
