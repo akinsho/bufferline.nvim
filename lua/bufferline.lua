@@ -29,6 +29,7 @@ local positions_key = constants.positions_key
 
 local M = {
   move = commands.move,
+  exec = commands.exec,
   go_to = commands.go_to,
   cycle = commands.cycle,
   sort_by = commands.sort_by,
