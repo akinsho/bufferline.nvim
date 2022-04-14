@@ -675,14 +675,14 @@ A user can also execute arbitrary functions against a buffer using the
 `exec` function. For example
 
 ```lua
-    require('bufferline.commands').exec(
+    require('bufferline').exec(
         4, -- the forth visible buffer from the left
         user_function -- an arbitrary user function which gets passed the buffer
     )
 
     -- e.g.
     function _G.bdel(num)
-        require('bufferline.commands').exec(num, function(buf, visible_buffers)
+        require('bufferline').exec(num, function(buf, visible_buffers)
             vim.cmd('bdelete '..buf.id)
         end
     end
