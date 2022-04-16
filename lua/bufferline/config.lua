@@ -30,7 +30,6 @@ local colors = lazy.require("bufferline.colors")
 ---@field public view string
 ---@field public debug DebugOpts
 ---@field public numbers string
----@field public number_style numbers_opt
 ---@field public buffer_close_icon string
 ---@field public modified_icon string
 ---@field public close_icon string
@@ -62,6 +61,7 @@ local colors = lazy.require("bufferline.colors")
 ---@field public diagnostics_update_in_insert boolean
 ---@field public offsets table[]
 ---@field public groups GroupOpts
+---@field public themable boolean
 
 ---@class BufferlineHLGroup
 ---@field guifg string
@@ -345,6 +345,19 @@ local function derive_colors()
       guibg = normal_bg,
       gui = "bold,italic",
     },
+    numbers = {
+      guifg = comment_fg,
+      guibg = background_color,
+    },
+    numbers_selected = {
+      guifg = normal_fg,
+      guibg = normal_bg,
+      gui = "bold,italic",
+    },
+    numbers_visible = {
+      guifg = comment_fg,
+      guibg = visible_bg,
+    },
     diagnostic = {
       guifg = comment_diagnostic_fg,
       guibg = background_color,
@@ -549,8 +562,8 @@ local function get_defaults()
     ---@type BufferlineOptions
     options = {
       mode = "buffers",
+      themable = true, -- whether or not bufferline highlights can be overriden externally
       numbers = "none",
-      number_style = "superscript",
       buffer_close_icon = "",
       modified_icon = "●",
       close_icon = "",

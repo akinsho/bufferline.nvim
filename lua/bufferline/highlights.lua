@@ -42,24 +42,30 @@ function M.hl_exists(name)
   return vim.fn.hlexists(name) > 0
 end
 
-local keys = { "gui", "guisp", "guibg", "guifg" }
-
-function M.set_one(name, opts)
-  if not opts or vim.tbl_isempty(opts) then
-    return
-  end
+local function sanitize_hl_keys(opts)
+  local keys = { "gui", "guisp", "guibg", "guifg" }
   local hls = {}
   for key, value in pairs(opts) do
-    if value and value ~= "" and vim.tbl_contains(keys, key) then
-      table.insert(hls, fmt("%s=%s", key, value))
+    if vim.tbl_contains(keys, key) then
+      hls[key] = value
     end
   end
-  local success, err = pcall(vim.cmd, fmt("highlight! %s %s", name, table.concat(hls, " ")))
-  if not success then
-    utils.notify(
-      fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, err),
-      utils.E
-    )
+  return hls
+end
+
+---Apply a single highlight
+---@param name string
+---@param opts table<string, string>
+function M.set_one(name, opts)
+  if opts and not vim.tbl_isempty(opts) then
+    local hls = sanitize_hl_keys(opts)
+    local ok, msg = pcall(vim.highlight.create, name, hls, config.options.themable)
+    if not ok then
+      utils.notify(
+        fmt("Failed setting %s  highlight, something isn't configured correctly: %s", name, msg),
+        utils.E
+      )
+    end
   end
 end
 
@@ -110,6 +116,7 @@ function M.for_element(element)
     hl.hint = h.hint_selected.hl
     hl.hint_diagnostic = h.hint_diagnostic_selected.hl
     hl.close_button = h.close_button_selected.hl
+    hl.numbers = h.numbers_selected.hl
   elseif element:visible() then
     hl.background = h.buffer_visible.hl
     hl.modified = h.modified_visible.hl
@@ -127,6 +134,7 @@ function M.for_element(element)
     hl.hint = h.hint_visible.hl
     hl.hint_diagnostic = h.hint_diagnostic_visible.hl
     hl.close_button = h.close_button_visible.hl
+    hl.numbers = h.numbers_visible.hl
   else
     hl.background = h.background.hl
     hl.modified = h.modified.hl
@@ -144,6 +152,7 @@ function M.for_element(element)
     hl.hint = h.hint.hl
     hl.hint_diagnostic = h.hint_diagnostic.hl
     hl.close_button = h.close_button.hl
+    hl.numbers = h.numbers.hl
   end
 
   if element.group then
