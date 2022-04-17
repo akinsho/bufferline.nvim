@@ -193,19 +193,6 @@ end
 
 M.path_sep = vim.loop.os_uname().sysname == "Windows" and "\\" or "/"
 
--- Source: https://teukka.tech/luanvim.html
-function M.augroup(definitions)
-  for group_name, definition in pairs(definitions) do
-    vim.cmd("augroup " .. group_name)
-    vim.cmd("autocmd!")
-    for _, def in pairs(definition) do
-      local command = table.concat(vim.tbl_flatten({ "autocmd", def }), " ")
-      vim.cmd(command)
-    end
-    vim.cmd("augroup END")
-  end
-end
-
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
 function M.is_valid(buf_num)
   if not buf_num or buf_num < 1 then
