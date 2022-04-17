@@ -112,7 +112,7 @@ This order can be persisted between sessions (enabled by default).
 
 ## Requirements
 
-- Neovim 0.5+
+- Neovim 0.7+
 - A patched font (see [nerd fonts](https://github.com/ryanoasis/nerd-fonts))
 
 ## Installation
