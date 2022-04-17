@@ -23,7 +23,6 @@ local constants = lazy.require("bufferline.constants")
 local highlights = lazy.require("bufferline.highlights")
 
 local api = vim.api
-local fmt = string.format
 
 local positions_key = constants.positions_key
 local BUFFERLINE_GROUP = "BufferlineCmds"
@@ -237,52 +236,76 @@ end
 ---@param cursor_pos number
 ---@return string[]
 ---@diagnostic disable-next-line: unused-local
-function __bufferline.complete_groups(arg_lead, cmd_line, cursor_pos)
+local function complete_groups(arg_lead, cmd_line, cursor_pos)
   return groups.names()
 end
 
 local function setup_commands()
-  local cmds = {
-    { name = "BufferLinePick", cmd = "pick_buffer()" },
-    { name = "BufferLinePickClose", cmd = "close_buffer_with_pick()" },
-    { name = "BufferLineCycleNext", cmd = "cycle(1)" },
-    { name = "BufferLineCyclePrev", cmd = "cycle(-1)" },
-    { name = "BufferLineCloseRight", cmd = 'close_in_direction("right")' },
-    { name = "BufferLineCloseLeft", cmd = 'close_in_direction("left")' },
-    { name = "BufferLineMoveNext", cmd = "move(1)" },
-    { name = "BufferLineMovePrev", cmd = "move(-1)" },
-    { name = "BufferLineSortByExtension", cmd = 'sort_buffers_by("extension")' },
-    { name = "BufferLineSortByDirectory", cmd = 'sort_buffers_by("directory")' },
-    { name = "BufferLineSortByRelativeDirectory", cmd = 'sort_buffers_by("relative_directory")' },
-    { name = "BufferLineSortByTabs", cmd = 'sort_buffers_by("tabs")' },
-    { name = "BufferLineGoToBuffer", cmd = "go_to_buffer(<q-args>)", nargs = 1 },
-    {
-      nargs = 1,
-      name = "BufferLineGroupClose",
-      cmd = 'group_action(<q-args>, "close")',
-      complete = "complete_groups",
-    },
-    {
-      nargs = 1,
-      name = "BufferLineGroupToggle",
-      cmd = 'group_action(<q-args>, "toggle")',
-      complete = "complete_groups",
-    },
-    {
-      nargs = 0,
-      name = "BufferLineTogglePin",
-      cmd = "toggle_pin()",
-    },
-  }
-  for _, cmd in ipairs(cmds) do
-    local nargs = cmd.nargs and fmt("-nargs=%d", cmd.nargs) or ""
-    local complete = cmd.complete
-        and fmt("-complete=customlist,v:lua.__bufferline.%s", cmd.complete)
-      or ""
-    vim.cmd(
-      fmt('command! %s %s %s lua require("bufferline").%s', nargs, complete, cmd.name, cmd.cmd)
-    )
-  end
+  local cmd = api.nvim_create_user_command
+
+  cmd("BufferLinePick", function()
+    M.pick_buffer()
+  end, {})
+
+  cmd("BufferLinePickClose", function()
+    M.close_buffer_with_pick()
+  end, {})
+
+  cmd("BufferLineCycleNext", function()
+    M.cycle(1)
+  end, {})
+
+  cmd("BufferLineCyclePrev", function()
+    M.cycle(-1)
+  end, {})
+
+  cmd("BufferLineCloseRight", function()
+    M.close_in_direction("right")
+  end, {})
+
+  cmd("BufferLineCloseLeft", function()
+    M.close_in_direction("left")
+  end, {})
+
+  cmd("BufferLineMoveNext", function()
+    M.move(1)
+  end, {})
+
+  cmd("BufferLineMovePrev", function()
+    M.move(-1)
+  end, {})
+
+  cmd("BufferLineSortByExtension", function()
+    M.sort_buffers_by("extension")
+  end, {})
+
+  cmd("BufferLineSortByDirectory", function()
+    M.sort_buffers_by("directory")
+  end, {})
+
+  cmd("BufferLineSortByRelativeDirectory", function()
+    M.sort_buffers_by("relative_directory")
+  end, {})
+
+  cmd("BufferLineSortByTabs", function()
+    M.sort_buffers_by("tabs")
+  end, {})
+
+  cmd("BufferLineGoToBuffer", function(opts)
+    M.go_to_buffer(opts.args)
+  end, { nargs = 1 })
+
+  cmd("BufferLineGroupClose", function(opts)
+    M.group_action(opts.args, "close")
+  end, { nargs = 1, complete = complete_groups })
+
+  cmd("BufferLineGroupToggle", function(opts)
+    M.group_action(opts.args, "toggle")
+  end, { nargs = 1, complete = complete_groups })
+
+  cmd("BufferLineTogglePin", function()
+    M.toggle_pin()
+  end, { nargs = 0 })
 end
 
 ---@private
