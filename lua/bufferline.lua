@@ -44,9 +44,6 @@ local M = {
   sort_buffers_by = commands.sort_by,
   close_buffer_with_pick = commands.close_with_pick,
 }
-
---- Global namespace for callbacks and other use cases such as commandline completion functions
-_G.__bufferline = __bufferline or {}
 -----------------------------------------------------------------------------//
 -- Helpers
 -----------------------------------------------------------------------------//
