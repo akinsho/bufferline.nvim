@@ -289,9 +289,15 @@ function M.setup(config)
 
   local groups = config.options.groups.items or {}
 
-  local starting_index = 1 -- start at one to allow for the pinned group
+  -- NOTE: if the user has already set the pinned builtin themselves
+  -- then we want each group to have a priority based on it's position in the list
+  -- otherwise we want to shift the priorities of their groups by 1 to accommodate the pinned group
+  local has_set_pinned = vim.tbl_filter(function(group)
+    return group.id == PINNED_ID
+  end, groups) ~= nil
+
   for index, current in ipairs(groups) do
-    local priority = index + starting_index
+    local priority = has_set_pinned and index or index + 1
     local group = Group:new(current, priority)
     state.user_groups[group.id] = group
   end
