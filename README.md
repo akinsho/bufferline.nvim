@@ -114,6 +114,7 @@ This order can be persisted between sessions (enabled by default).
 
 - Neovim 0.5+
 - A patched font (see [nerd fonts](https://github.com/ryanoasis/nerd-fonts))
+- A colorscheme (either your custom highlight or a maintained one somewhere)
 
 ## Installation
 
