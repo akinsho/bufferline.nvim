@@ -112,7 +112,17 @@ function separator.tab(group, hls, count)
   local hl = hls.fill.hl
   local indicator_hl = hls.buffer.hl
   local length = utils.measure(group.name, string.rep(padding, 4), count)
-  local indicator = utils.join(hl, padding, indicator_hl, padding, group.name, count, hl, padding)
+  local indicator = utils.join(
+    hl,
+    padding,
+    indicator_hl,
+    padding,
+    group.name,
+    count,
+    padding,
+    hl,
+    padding
+  )
   return { sep_start = { component = indicator, length = length }, sep_end = space_end(hls) }
 end
 
