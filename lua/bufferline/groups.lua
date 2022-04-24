@@ -103,16 +103,16 @@ function separator.pill(group, hls, count)
   return { sep_start = { component = indicator, length = length }, sep_end = space_end(hls) }
 end
 
----@param name string,
+---@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
 ---@return string, number
 ---@type GroupSeparator
-function separator.tab(name, hls, count)
+function separator.tab(group, hls, count)
   local hl = hls.fill.hl
   local indicator_hl = hls.buffer.hl
-  local length = utils.measure(name, string.rep(padding, 4), count)
-  local indicator = utils.join(hl, padding, indicator_hl, padding, name, count, hl, padding)
+  local length = utils.measure(group.name, string.rep(padding, 4), count)
+  local indicator = utils.join(hl, padding, indicator_hl, padding, group.name, count, hl, padding)
   return { sep_start = { component = indicator, length = length }, sep_end = space_end(hls) }
 end
 
