@@ -315,7 +315,8 @@ end
 ---@param conf BufferlineConfig
 function M.setup(conf)
   if vim.fn.has("nvim-0.7") == 0 then
-    utils.notify("bufferline.nvim requires Neovim 0.7 or higher", utils.E)
+    utils.notify("bufferline.nvim requires Neovim 0.7 or higher", utils.E, { once = true })
+    return
   end
   conf = conf or {}
   config.set(conf)
