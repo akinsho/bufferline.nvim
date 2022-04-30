@@ -61,7 +61,12 @@ end
 local function get_tab_buffer_details(buffers, tab_num, filter)
   local window = api.nvim_tabpage_get_win(tab_num)
   local active_buf = api.nvim_win_get_buf(window)
-  local buf = filter and filter(active_buf, buffers) and active_buf or buffers[1]
+  local buf
+  if filter then
+    buf = filter(active_buf, buffers) and active_buf or buffers[1]
+  else
+    buf = active_buf
+  end
   local name = (buf and api.nvim_buf_is_valid(buf)) and api.nvim_buf_get_name(buf) or "[No name]"
   return name, buf
 end
