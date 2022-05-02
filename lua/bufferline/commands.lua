@@ -157,7 +157,7 @@ end
 --- unless absolute is specified in which case this will open it based on it place in the full list
 --- this is significantly less helpful if you have a lot of elements open
 ---@param num number | string
----@param absolute boolean whether or not to use the elements absolute position or visible positions
+---@param absolute boolean? whether or not to use the elements absolute position or visible positions
 function M.go_to(num, absolute)
   num = type(num) == "string" and tonumber(num) or num
   local list = absolute and state.components or state.visible_components
@@ -168,7 +168,7 @@ function M.go_to(num, absolute)
 end
 
 ---@param current_state BufferlineState
----@param opts table
+---@param opts table?
 ---@return number
 ---@return Buffer
 function M.get_current_element_index(current_state, opts)

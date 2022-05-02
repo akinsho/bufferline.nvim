@@ -121,6 +121,7 @@ function M.compose(...)
     end
     return recurse(i + 1, funcs[i](...))
   end
+
   return function(...)
     return recurse(1, ...)
   end
@@ -153,7 +154,7 @@ end
 ---@generic T
 ---@param list T[]
 ---@param callback fun(item: `T`)
----@param matcher fun(item: `T`):boolean
+---@param matcher (fun(item: `T`):boolean)?
 function M.for_each(list, callback, matcher)
   for _, item in ipairs(list) do
     if not matcher or matcher(item) then
@@ -224,7 +225,7 @@ M.D = vim.log.levels.DEBUG
 
 --- Wrapper around `vim.notify` that adds message metadata
 ---@param msg string
----@param level number
+---@param level number?
 function M.notify(msg, level, opts)
   opts = opts or {}
   local nopts = { title = "Bufferline" }

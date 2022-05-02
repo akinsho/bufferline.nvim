@@ -25,7 +25,7 @@ local ui = lazy.require("bufferline.ui")
 --- @field sep_start Separator
 --- @field sep_end Separator
 
----@alias GroupSeparator fun(name: string, group:Group, hls: BufferlineHLGroup, count_item: string): Separators
+---@alias GroupSeparator fun(name: string, group:Group, hls: BufferlineHLGroup, count_item: string?): Separators
 ---@alias GroupSeparators table<string, GroupSeparator>
 ---@alias grouper fun(b: Buffer): boolean
 
@@ -455,7 +455,7 @@ function M.toggle_hidden(priority, name)
 end
 
 ---Get the names for all bufferline groups
----@param include_empty boolean
+---@param include_empty boolean?
 ---@return string[]
 function M.names(include_empty)
   if not state.user_groups then
