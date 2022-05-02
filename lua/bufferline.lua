@@ -127,7 +127,7 @@ end
 
 local function apply_colors()
   local current_prefs = config.update_highlights()
-  highlights.set_all(current_prefs.highlights)
+  highlights.set_all(current_prefs)
 end
 
 ---@alias group_actions '"close"' | '"toggle"'
@@ -326,7 +326,7 @@ function M.setup(conf)
   config.set(conf)
   local preferences = config.apply()
   -- on loading (and reloading) the plugin's config reset all the highlights
-  highlights.set_all(preferences.highlights)
+  highlights.set_all(preferences)
   setup_commands()
   setup_autocommands(preferences)
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
