@@ -23,9 +23,9 @@ local constants = lazy.require("bufferline.constants")
 local highlights = lazy.require("bufferline.highlights")
 
 local api = vim.api
-local fmt = string.format
 
 local positions_key = constants.positions_key
+local BUFFERLINE_GROUP = "BufferlineCmds"
 
 local M = {
   move = commands.move,
@@ -44,13 +44,10 @@ local M = {
   sort_buffers_by = commands.sort_by,
   close_buffer_with_pick = commands.close_with_pick,
 }
-
---- Global namespace for callbacks and other use cases such as commandline completion functions
-_G.__bufferline = __bufferline or {}
 -----------------------------------------------------------------------------//
 -- Helpers
 -----------------------------------------------------------------------------//
-function M.restore_positions()
+local function restore_positions()
   local str = vim.g[positions_key]
   if not str then
     return str
@@ -120,7 +117,7 @@ local function bufferline()
 end
 
 --- If the item count has changed and the next tabline status is different then update it
-function M.toggle_bufferline()
+local function toggle_bufferline()
   local item_count = config:is_tabline() and utils.get_tab_count() or utils.get_buf_count()
   local status = (config.options.always_show_bufferline or item_count > 1) and 2 or 0
   if vim.o.showtabline ~= status then
@@ -128,50 +125,9 @@ function M.toggle_bufferline()
   end
 end
 
----@private
-function M.__apply_colors()
+local function apply_colors()
   local current_prefs = config.update_highlights()
   highlights.set_all(current_prefs.highlights)
-end
-
----@param conf BufferlineConfig
-local function setup_autocommands(conf)
-  local options = conf.options
-  local autocommands = {
-    { "ColorScheme", "*", [[lua require('bufferline').__apply_colors()]] },
-  }
-  if not options or vim.tbl_isempty(options) then
-    return
-  end
-  if options.persist_buffer_sort then
-    table.insert(autocommands, {
-      "SessionLoadPost",
-      "*",
-      [[lua require'bufferline'.restore_positions()]],
-    })
-  end
-  if not options.always_show_bufferline then
-    -- toggle tabline
-    table.insert(autocommands, {
-      "BufAdd,TabEnter",
-      "*",
-      "lua require'bufferline'.toggle_bufferline()",
-    })
-  end
-
-  table.insert(autocommands, {
-    "BufRead",
-    "*",
-    "++once",
-    "lua vim.schedule(require'bufferline'.handle_group_enter)",
-  })
-  table.insert(autocommands, {
-    "BufEnter",
-    "*",
-    "lua require'bufferline'.handle_group_enter()",
-  })
-
-  utils.augroup({ BufferlineColors = autocommands })
 end
 
 ---@alias group_actions '"close"' | '"toggle"'
@@ -202,7 +158,7 @@ function M.toggle_pin()
   ui.refresh()
 end
 
-function M.handle_group_enter()
+local function handle_group_enter()
   local options = config.options
   local _, element = commands.get_current_element_index(state, { include_hidden = true })
   if not element or not element.group then
@@ -222,68 +178,150 @@ function M.handle_group_enter()
   end)
 end
 
+---@param conf BufferlineConfig
+local function setup_autocommands(conf)
+  local options = conf.options
+  api.nvim_create_augroup(BUFFERLINE_GROUP, { clear = true })
+  api.nvim_create_autocmd("ColorScheme", {
+    pattern = "*",
+    group = BUFFERLINE_GROUP,
+    callback = function()
+      apply_colors()
+    end,
+  })
+  if not options or vim.tbl_isempty(options) then
+    return
+  end
+  if options.persist_buffer_sort then
+    api.nvim_create_autocmd("SessionLoadPost", {
+      pattern = "*",
+      group = BUFFERLINE_GROUP,
+      callback = function()
+        restore_positions()
+      end,
+    })
+  end
+  if not options.always_show_bufferline then
+    -- toggle tabline
+    api.nvim_create_autocmd({ "BufAdd", "TabEnter" }, {
+      pattern = "*",
+      group = BUFFERLINE_GROUP,
+      callback = function()
+        toggle_bufferline()
+      end,
+    })
+  end
+
+  api.nvim_create_autocmd("BufRead", {
+    pattern = "*",
+    once = true,
+    callback = function()
+      vim.schedule(handle_group_enter)
+    end,
+  })
+
+  api.nvim_create_autocmd("BufEnter", {
+    pattern = "*",
+    callback = function()
+      handle_group_enter()
+    end,
+  })
+end
+
 ---@param arg_lead string
 ---@param cmd_line string
 ---@param cursor_pos number
 ---@return string[]
 ---@diagnostic disable-next-line: unused-local
-function __bufferline.complete_groups(arg_lead, cmd_line, cursor_pos)
+local function complete_groups(arg_lead, cmd_line, cursor_pos)
   return groups.names()
 end
 
 local function setup_commands()
-  local cmds = {
-    { name = "BufferLinePick", cmd = "pick_buffer()" },
-    { name = "BufferLinePickClose", cmd = "close_buffer_with_pick()" },
-    { name = "BufferLineCycleNext", cmd = "cycle(1)" },
-    { name = "BufferLineCyclePrev", cmd = "cycle(-1)" },
-    { name = "BufferLineCloseRight", cmd = 'close_in_direction("right")' },
-    { name = "BufferLineCloseLeft", cmd = 'close_in_direction("left")' },
-    { name = "BufferLineMoveNext", cmd = "move(1)" },
-    { name = "BufferLineMovePrev", cmd = "move(-1)" },
-    { name = "BufferLineSortByExtension", cmd = 'sort_buffers_by("extension")' },
-    { name = "BufferLineSortByDirectory", cmd = 'sort_buffers_by("directory")' },
-    { name = "BufferLineSortByRelativeDirectory", cmd = 'sort_buffers_by("relative_directory")' },
-    { name = "BufferLineSortByTabs", cmd = 'sort_buffers_by("tabs")' },
-    { name = "BufferLineGoToBuffer", cmd = "go_to_buffer(<q-args>)", nargs = 1 },
-    {
-      nargs = 1,
-      name = "BufferLineGroupClose",
-      cmd = 'group_action(<q-args>, "close")',
-      complete = "complete_groups",
-    },
-    {
-      nargs = 1,
-      name = "BufferLineGroupToggle",
-      cmd = 'group_action(<q-args>, "toggle")',
-      complete = "complete_groups",
-    },
-    {
-      nargs = 0,
-      name = "BufferLineTogglePin",
-      cmd = "toggle_pin()",
-    },
-  }
-  for _, cmd in ipairs(cmds) do
-    local nargs = cmd.nargs and fmt("-nargs=%d", cmd.nargs) or ""
-    local complete = cmd.complete
-        and fmt("-complete=customlist,v:lua.__bufferline.%s", cmd.complete)
-      or ""
-    vim.cmd(
-      fmt('command! %s %s %s lua require("bufferline").%s', nargs, complete, cmd.name, cmd.cmd)
-    )
-  end
+  local cmd = api.nvim_create_user_command
+
+  cmd("BufferLinePick", function()
+    M.pick_buffer()
+  end, {})
+
+  cmd("BufferLinePickClose", function()
+    M.close_buffer_with_pick()
+  end, {})
+
+  cmd("BufferLineCycleNext", function()
+    M.cycle(1)
+  end, {})
+
+  cmd("BufferLineCyclePrev", function()
+    M.cycle(-1)
+  end, {})
+
+  cmd("BufferLineCloseRight", function()
+    M.close_in_direction("right")
+  end, {})
+
+  cmd("BufferLineCloseLeft", function()
+    M.close_in_direction("left")
+  end, {})
+
+  cmd("BufferLineMoveNext", function()
+    M.move(1)
+  end, {})
+
+  cmd("BufferLineMovePrev", function()
+    M.move(-1)
+  end, {})
+
+  cmd("BufferLineSortByExtension", function()
+    M.sort_buffers_by("extension")
+  end, {})
+
+  cmd("BufferLineSortByDirectory", function()
+    M.sort_buffers_by("directory")
+  end, {})
+
+  cmd("BufferLineSortByRelativeDirectory", function()
+    M.sort_buffers_by("relative_directory")
+  end, {})
+
+  cmd("BufferLineSortByTabs", function()
+    M.sort_buffers_by("tabs")
+  end, {})
+
+  cmd("BufferLineGoToBuffer", function(opts)
+    M.go_to_buffer(opts.args)
+  end, { nargs = 1 })
+
+  cmd("BufferLineGroupClose", function(opts)
+    M.group_action(opts.args, "close")
+  end, { nargs = 1, complete = complete_groups })
+
+  cmd("BufferLineGroupToggle", function(opts)
+    M.group_action(opts.args, "toggle")
+  end, { nargs = 1, complete = complete_groups })
+
+  cmd("BufferLineTogglePin", function()
+    M.toggle_pin()
+  end, { nargs = 0 })
 end
 
 ---@private
 function _G.nvim_bufferline()
   -- Always populate state regardless of if tabline status is less than 2 #352
-  M.toggle_bufferline()
+  toggle_bufferline()
   return bufferline()
 end
 
 ---@param conf BufferlineConfig
 function M.setup(conf)
+  if vim.fn.has("nvim-0.7") == 0 then
+    utils.notify(
+      "bufferline.nvim requires Neovim 0.7 or higher, please use tag 1.* or update your neovim",
+      utils.E,
+      { once = true }
+    )
+    return
+  end
   conf = conf or {}
   config.set(conf)
   local preferences = config.apply()
@@ -292,7 +330,7 @@ function M.setup(conf)
   setup_commands()
   setup_autocommands(preferences)
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
-  M.toggle_bufferline()
+  toggle_bufferline()
 end
 
 return M

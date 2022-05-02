@@ -77,6 +77,9 @@ local colors = lazy.require("bufferline.colors")
 ---@field public options BufferlineOptions
 ---@field public highlights BufferlineHighlights
 ---@field private original BufferlineConfig original copy of user preferences
+---@field private merge fun(self:BufferlineConfig, BufferlineConfig): BufferlineConfig
+---@field private validate fun(self:BufferlineConfig, BufferlineConfig): nil
+---@field private resolve fun()
 
 --- Convert highlights specified as tables to the correct existing colours
 ---@param map BufferlineHighlights

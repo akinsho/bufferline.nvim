@@ -8,6 +8,8 @@ local constants = lazy.require("bufferline.constants")
 local config = lazy.require("bufferline.config")
 --- @module "bufferline.groups"
 local groups = lazy.require("bufferline.groups")
+
+local api = vim.api
 ---------------------------------------------------------------------------//
 -- Highlights
 ---------------------------------------------------------------------------//
@@ -42,14 +44,32 @@ function M.hl_exists(name)
   return vim.fn.hlexists(name) > 0
 end
 
-local function sanitize_hl_keys(opts)
-  local keys = { "gui", "guisp", "guibg", "guifg" }
+local function convert_gui(guistr)
+  local gui = {}
+  local parts = vim.split(guistr, ",")
+  for _, part in ipairs(parts) do
+    gui[part] = true
+  end
+  return gui
+end
+
+local keys = { guisp = "sp", guibg = "background", guifg = "foreground" }
+
+--- Transform legacy highlight keys to new nvim_set_hl api keys
+---@param opts table<string, string>
+---@param themable boolean
+---@return table<string, string|boolean>
+local function convert_hl_keys(opts, themable)
   local hls = {}
   for key, value in pairs(opts) do
-    if vim.tbl_contains(keys, key) then
-      hls[key] = value
+    if keys[key] then
+      hls[keys[key]] = value
     end
   end
+  if opts.gui then
+    hls = vim.tbl_extend("force", hls, convert_gui(opts.gui))
+  end
+  hls.default = themable
   return hls
 end
 
@@ -58,8 +78,8 @@ end
 ---@param opts table<string, string>
 function M.set_one(name, opts)
   if opts and not vim.tbl_isempty(opts) then
-    local hls = sanitize_hl_keys(opts)
-    local ok, msg = pcall(vim.highlight.create, name, hls, config.options.themable)
+    local hls = convert_hl_keys(opts, config.options.themable)
+    local ok, msg = pcall(api.nvim_set_hl, 0, name, hls)
     if not ok then
       utils.notify(
         fmt("Failed setting %s  highlight, something isn't configured correctly: %s", name, msg),
