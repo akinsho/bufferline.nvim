@@ -280,6 +280,16 @@ function M.make_clickable(func_name, id, component)
   return "%" .. id .. "@nvim_bufferline#" .. func_name .. "@" .. component
 end
 
+local current_stable = {
+  major = 0,
+  minor = 7,
+  patch = 0,
+}
+
+function M.is_current_stable_release()
+  return vim.version().minor >= current_stable.minor
+end
+
 -- truncate a string based on number of display columns/cells it occupies
 -- so that multibyte characters are not broken up mid character
 ---@param str string
