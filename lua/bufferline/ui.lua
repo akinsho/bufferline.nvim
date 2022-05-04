@@ -36,6 +36,7 @@ local padding = constants.padding
 ---@field tab Tabpage | Buffer
 ---@field separators table<string, string>
 ---@field is_picking boolean
+---@field update fun(RenderContext, RenderContext):RenderContext
 ---@type RenderContext
 local Context = {}
 
@@ -61,6 +62,7 @@ function Context:update(o)
   end
   return self
 end
+
 -----------------------------------------------------------------------------//
 
 function M.refresh()

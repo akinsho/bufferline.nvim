@@ -169,7 +169,7 @@ end
 
 ---@param current_state BufferlineState
 ---@param opts table?
----@return number
+---@return number?
 ---@return Buffer
 function M.get_current_element_index(current_state, opts)
   opts = opts or { include_hidden = false }
