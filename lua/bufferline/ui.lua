@@ -131,7 +131,7 @@ local function get_marker_size(count, element_size)
 end
 
 ---@param component Segment[]
-function M.to_tabline_str(component)
+local function to_tabline_str(component)
   component = component or {}
   local str = ""
   for _, part in ipairs(component) do
@@ -174,7 +174,7 @@ local function truncate(before, current, after, available_width, marker, visible
     visible = utils.array_concat(before.items, current.items, after.items)
     for index, item in ipairs(visible) do
       local component = item.component(visible[index + 1])
-      line = line .. M.to_tabline_str(component)
+      line = line .. to_tabline_str(component)
     end
     return line, marker, visible
     -- if we aren't even able to fit the current buffer into the
@@ -443,7 +443,7 @@ local function is_not_empty(s)
   return true
 end
 
-function M.get_component_size(...)
+local function get_component_size(...)
   local sum = 0
   for i = 1, select("#", ...) do
     local s = select(i, ...)
@@ -476,7 +476,7 @@ function M.element(state, element)
   local icon = add_icon(ctx)
   local number_item = add_numbers(ctx)
   local suffix = add_suffix(ctx)
-  local text_size = M.get_component_size(
+  local text_size = get_component_size(
     name,
     duplicate_prefix,
     group_item,
@@ -506,7 +506,7 @@ function M.element(state, element)
   utils.make_clickable("handle_click", element.id, component)
 
   element.component = create_renderer(left, right, component)
-  element.length = M.get_component_size(unpack(component))
+  element.length = get_component_size(unpack(component))
   return element
 end
 
