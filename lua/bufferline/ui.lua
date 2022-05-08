@@ -446,7 +446,8 @@ end
 
 function M.get_component_size(...)
   local sum = 0
-  for _, s in ipairs({ ... }) do
+  for i = 1, select("#", ...) do
+    local s = select(i, ...)
     if is_not_empty(s) then
       sum = sum + strwidth(s.text)
     end
