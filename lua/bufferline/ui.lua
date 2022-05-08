@@ -130,12 +130,9 @@ local function get_marker_size(count, element_size)
   return count > 0 and strwidth(tostring(count)) + element_size or 0
 end
 
-local function truncation_component(count, icon, hls)
-  return utils.join(hls.fill.hl, padding, count, padding, icon, padding)
-end
-
 ---@param component Segment[]
 function M.to_tabline_str(component)
+  component = component or {}
   local str = ""
   for _, part in ipairs(component) do
     str = (part.attr and part.attr.prefix or "")
@@ -513,6 +510,20 @@ function M.element(state, element)
   return element
 end
 
+---@param trunc_icon string
+---@param count_hl string
+---@param icon_hl string
+---@param count number
+---@return Segment[]?
+local function get_trunc_marker(trunc_icon, count_hl, icon_hl, count)
+  if count > 0 then
+    return {
+      { highlight = count_hl, text = padding .. count .. padding },
+      { highlight = icon_hl, text = trunc_icon .. padding },
+    }
+  end
+end
+
 --- @param components Component[]
 --- @param tab_elements table[]
 --- @return string
@@ -542,8 +553,9 @@ function M.tabline(components, tab_elements)
   -- Icons from https://fontawesome.com/cheatsheet
   local left_trunc_icon = options.left_trunc_marker
   local right_trunc_icon = options.right_trunc_marker
-  local left_element_size = utils.measure(padding, padding, left_trunc_icon, padding, padding)
-  local right_element_size = utils.measure(padding, padding, right_trunc_icon, padding)
+  -- NOTE: this estimates the size of the truncation marker as we don't know how big it will be yet
+  local left_element_size = utils.measure(string.rep(padding, 3), left_trunc_icon, padding, padding)
+  local right_element_size = utils.measure(string.rep(padding, 3), right_trunc_icon, padding)
 
   local offset_size, left_offset, right_offset = require("bufferline.offset").get()
   local custom_area_size, left_area, right_area = require("bufferline.custom_area").get()
@@ -562,14 +574,22 @@ function M.tabline(components, tab_elements)
     right_element_size = right_element_size,
   })
 
-  if marker.left_count > 0 then
-    local icon = truncation_component(marker.left_count, left_trunc_icon, hl)
-    line = utils.join(hl.background.hl, icon, padding, line)
-  end
-  if marker.right_count > 0 then
-    local icon = truncation_component(marker.right_count, right_trunc_icon, hl)
-    line = utils.join(line, hl.background.hl, icon)
-  end
+  -- TODO: All components should return Segment[] that are then combined in one go into a tabline
+  local left_marker = get_trunc_marker(
+    left_trunc_icon,
+    hl.fill.hl,
+    hl.fill.hl,
+    marker.left_count
+  )
+  local right_marker = get_trunc_marker(
+    right_trunc_icon,
+    hl.fill.hl,
+    hl.fill.hl,
+    marker.right_count
+  )
+
+  line = M.to_tabline_str(left_marker) .. line
+  line = line .. M.to_tabline_str(right_marker)
 
   return utils.join(
     left_offset,
