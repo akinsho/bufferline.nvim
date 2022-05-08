@@ -133,7 +133,11 @@ end
 local function to_tabline_str(component)
   local str = ""
   for _, part in ipairs(component) do
-    str = str .. highlights.hl(part.highlight) .. part.text .. (part.attr and part.attr.text or "")
+    str = str
+      .. highlights.hl(part.highlight)
+      .. (part.attr and part.attr.prefix or "")
+      .. (part.text or "")
+      .. (part.attr and part.attr.suffix or "")
   end
   return str
 end
