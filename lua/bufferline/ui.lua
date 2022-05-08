@@ -80,11 +80,14 @@ end
 ---Add padding to either side of a component
 ---@param left number?
 ---@param right number?
+---@param left_hl string?
+---@param right_hl string?
 ---@return Segment, Segment
-local function pad(left, right)
-  left, right = left or 0, right or 0
+local function pad(left, right, left_hl, right_hl)
+  left, left_hl = left or 0, left_hl or ""
+  right, right_hl = right or 0, right_hl or left_hl
   local left_p, right_p = string.rep(padding, left), string.rep(padding, right)
-  return { text = left_p }, { text = right_p }
+  return { text = left_p, highlight = left_hl }, { text = right_p, highlight = right_hl }
 end
 
 local function modified_component()
@@ -202,17 +205,19 @@ local function truncate(before, current, after, available_width, marker, visible
   end
 end
 
---- @param length number
---- @return Segment?
-local function add_space(length)
+---@param ctx RenderContext
+---@param length number
+---@return Segment?
+local function add_space(ctx, length)
   local options = config.options
+  local curr_hl = ctx.current_highlights
   -- pad each tab smaller than the max tab size to make it consistent
   local difference = options.tab_size - length
   if difference <= 0 then
     return
   end
   local size = math.floor(difference / 2)
-  return pad(size, size)
+  return pad(size, size, curr_hl.buffer.hl)
 end
 
 --- @param buffer Buffer
@@ -462,9 +467,10 @@ end
 --- @param element TabElement
 --- @return TabElement
 function M.element(state, element)
+  local curr_hl = highlights.for_element(element)
   local ctx = Context:new({
     tab = element,
-    current_highlights = highlights.for_element(element),
+    current_highlights = curr_hl,
     is_picking = state.is_picking,
   })
 
@@ -488,7 +494,7 @@ function M.element(state, element)
     number_item,
     suffix
   )
-  local left_space, right_space = add_space(text_size)
+  local left_space, right_space = add_space(ctx, text_size)
   local indicator = add_indicator(ctx)
   local left, right = add_separators(ctx)
 
@@ -501,7 +507,7 @@ function M.element(state, element)
     number_item,
     icon,
     name,
-    pad(1),
+    pad(1, nil, curr_hl.buffer.hl),
     diagnostic,
     suffix,
     right_space,
