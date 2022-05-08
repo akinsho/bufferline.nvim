@@ -538,6 +538,10 @@ local function derive_colors()
       guifg = tabline_sel_bg,
       guibg = normal_bg,
     },
+    indicator_visible = {
+      guifg = visible_bg,
+      guibg = visible_bg,
+    },
     pick_selected = {
       guifg = error_fg,
       guibg = normal_bg,

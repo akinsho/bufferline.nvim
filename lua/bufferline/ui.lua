@@ -299,22 +299,24 @@ end
 local function add_indicator(context)
   local element = context.tab
   local hl = config.highlights
+  local curr_hl = context.current_highlights
   local options = config.options
   local style = options.separator_style
-
-  if element:current() then
-    local indicator = " "
-    local symbol, highlight = indicator, nil
-    if not is_slant(style) then
-      symbol = options.indicator_icon
-      indicator = symbol
-      highlight = hl.indicator_selected.hl
-    end
-    return { text = indicator, highlight = highlight }
+  local symbol, highlight = padding, nil
+  if is_slant(style) then
+    return { text = symbol, highlight = highlight }
   end
+
+  local is_current = element:current()
+
+  symbol = is_current and options.indicator_icon or symbol
+  highlight = is_current and hl.indicator_selected.hl
+    or element:visible() and hl.indicator_visible.hl
+    or curr_hl.background.hl
+
   -- since all non-current buffers do not have an indicator they need
   -- to be padded to make up the difference in size
-  return { text = padding }
+  return { text = symbol, highlight = highlight }
 end
 
 --- @param context RenderContext
