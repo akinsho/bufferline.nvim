@@ -8,6 +8,8 @@ local models = lazy.require("bufferline.models")
 --- @module "bufferline.ui"
 local ui = lazy.require("bufferline.ui")
 
+local fn = vim.fn
+
 ----------------------------------------------------------------------------------------------------
 -- Types
 ----------------------------------------------------------------------------------------------------
@@ -203,7 +205,7 @@ local function persist_pinned_buffers()
   local pinned = {}
   for buf, group in pairs(state.manual_groupings) do
     if group == PINNED_ID then
-      table.insert(pinned, buf)
+      table.insert(pinned, api.nvim_buf_get_name(buf))
     end
   end
   if #pinned == 0 then
@@ -317,8 +319,12 @@ local function restore_pinned_buffers()
   if not pinned then
     return
   end
-  local manual_groupings = vim.tbl_map(tonumber, vim.split(pinned, ",")) or {}
-  for _, buf_id in pairs(manual_groupings) do
+  local manual_groupings = vim.split(pinned, ",") or {}
+  for _, path in ipairs(manual_groupings) do
+    local buf_id = fn.bufnr(path)
+    if buf_id == -1 then
+      return
+    end
     set_manual_group(buf_id, PINNED_ID)
   end
   ui.refresh()
