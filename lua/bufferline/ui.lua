@@ -477,15 +477,15 @@ function M.element(state, element)
   local group_item = element.group and groups.component(ctx) or nil
   local diagnostic = add_diagnostics(ctx)
   local icon = add_icon(ctx)
-  local number_prefix = add_numbers(ctx)
+  local number_item = add_numbers(ctx)
   local suffix = add_suffix(ctx)
   local text_size = get_component_size(
     name,
     duplicate_prefix,
-    group_prefix,
+    group_item,
     diagnostic,
     icon,
-    number_prefix,
+    number_item,
     suffix
   )
   local left_space, right_space = add_space(text_size)
@@ -495,9 +495,9 @@ function M.element(state, element)
   local component = vim.tbl_filter(is_not_empty, {
     indicator,
     left_space,
-    group_prefix,
+    group_item,
     duplicate_prefix,
-    number_prefix,
+    number_item,
     icon,
     name,
     pad(1),
