@@ -587,13 +587,12 @@ function M.tabline(components, tab_elements)
     marker.right_count
   )
 
-  line = M.to_tabline_str(left_marker) .. line
-  line = line .. M.to_tabline_str(right_marker)
-
   return utils.join(
     left_offset,
     left_area,
+    to_tabline_str(left_marker),
     line,
+    to_tabline_str(right_marker),
     highlights.hl(hl.fill.hl),
     right_align,
     tab_components,
