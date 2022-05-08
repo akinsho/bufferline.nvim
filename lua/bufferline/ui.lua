@@ -451,7 +451,10 @@ end
 ---@param s Segment?
 ---@return boolean
 local function is_not_empty(s)
-  return s ~= nil and s.text ~= ""
+  if s == nil or s.text == nil or s.text == "" then
+    return false
+  end
+  return true
 end
 
 local function get_component_size(...)
