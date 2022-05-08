@@ -281,13 +281,13 @@ local function get_close_icon(buf_id, context)
   local close_button_hl = context.current_highlights.close_button
 
   local symbol = buffer_close_icon .. padding
-  local component = require("bufferline.utils").make_clickable(
-    "handle_close_buffer",
-    buf_id,
-    -- the %X works as a closing label. @see :h tabline
-    close_button_hl .. symbol .. "%X"
-  )
-  return { text = symbol, attrs = { click = component }, highlight = close_button_hl }
+  local component = require("bufferline.utils").make_clickable("handle_close_buffer", buf_id)
+  -- the %X works as a closing label. @see :h tabline
+  return {
+    text = symbol,
+    highlight = close_button_hl,
+    attr = { click = component, prefix = "%X" },
+  }
 end
 
 --- @param context RenderContext
@@ -493,6 +493,7 @@ function M.element(state, element)
   local left, right = add_separators(ctx)
 
   local component = vim.tbl_filter(is_not_empty, {
+    utils.make_clickable("handle_click", element.id),
     indicator,
     left_space,
     group_item,
