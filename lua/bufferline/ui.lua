@@ -294,11 +294,8 @@ end
 --- @return Segment?
 local function add_indicator(context)
   local element = context.tab
-  -- local length = context.length
-  -- local component = context.component
   local hl = config.highlights
   local options = config.options
-  -- local curr_hl = context.current_highlights
   local style = options.separator_style
 
   if element:current() then
@@ -309,14 +306,10 @@ local function add_indicator(context)
       indicator = symbol
       highlight = hl.indicator_selected.hl
     end
-    -- length = length + strwidth(symbol)
-    -- component = indicator .. curr_hl.background .. component
     return { text = indicator, highlight = highlight }
   end
   -- since all non-current buffers do not have an indicator they need
   -- to be padded to make up the difference in size
-  -- length = length + strwidth(padding)
-  -- component = curr_hl.background .. padding .. component
   return { text = padding }
 end
 
@@ -362,20 +355,12 @@ end
 --- @param context RenderContext
 --- @return Segment?, Segment
 local function add_separators(context)
-  local element = context.tab
-  local length = context.length
   local hl = config.highlights
   local options = config.options
   local style = options.separator_style
-  local curr_hl = context.current_highlights
-  local focused = element:current() or element:visible()
-
+  local focused = context.tab:current() or context.tab:visible()
   local right_sep, left_sep = get_separator(focused, style)
-  local sep_hl = is_slant(style) and curr_hl.separator or hl.separator.hl
-  length = length + strwidth(right_sep)
-  if left_sep then
-    length = length + strwidth(left_sep)
-  end
+  local sep_hl = is_slant(style) and context.current_highlights.separator or hl.separator.hl
 
   local left_separator = left_sep and { text = left_sep, highlight = sep_hl } or nil
   local right_separator = { text = right_sep, highlight = sep_hl }
@@ -486,25 +471,6 @@ function M.element(state, element)
   local add_diagnostics = require("bufferline.diagnostics").component
   local add_duplicates = require("bufferline.duplicates").component
   local add_numbers = require("bufferline.numbers").component
-  --- Order matter here as this is the sequence which builds up the tab component
-  --- each render function takes the context and returns an updated context with it's
-  --- changes e.g. adding a modified icon to the context component or updating the
-  --- length of the component
-  -- ctx = utils.compose(
-  --   get_name,
-  --   add_duplicates,
-  --   add_group,
-  --   add_padding({ right = 1 }),
-  --   add_diagnostics,
-  --   add_icon,
-  --   add_numbers,
-  --   add_modified,
-  --   add_space,
-  --   add_click_action,
-  --   add_indicator,
-  --   add_suffix,
-  --   add_separators
-  -- )(ctx)
 
   local name = get_name(ctx)
   local duplicate_prefix = add_duplicates(ctx)
