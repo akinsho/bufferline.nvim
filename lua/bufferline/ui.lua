@@ -94,12 +94,12 @@ local function modified_component()
   return config.options.modified_icon .. padding
 end
 
----@param icon string
----@return string
----@return number
-local function tab_close_button(icon)
-  local component = padding .. icon .. padding
-  return "%999X" .. component, strwidth(component)
+---@param options BufferlineOptions
+---@return Segment?
+local function get_tab_close_button(options)
+  if options.show_close_icon then
+    return { text = padding .. options.close_icon .. padding, attr = { suffix = "%999X" } }
+  end
 end
 
 ---@param components Component[]
@@ -532,10 +532,6 @@ function M.tabline(components, tab_elements)
   local hl = config.highlights
   local right_align = "%="
   local tab_components = ""
-  local close, close_length = "", 0
-  if options.show_close_icon then
-    close, close_length = tab_close_button(options.close_icon)
-  end
   local tabs_length = 0
 
   if options.show_tab_indicators then
@@ -549,6 +545,9 @@ function M.tabline(components, tab_elements)
       end
     end
   end
+  local tab_close_button = get_tab_close_button(options)
+  local tab_close_button_length = get_component_size(tab_close_button)
+  local tab_close_button_component = to_tabline_str(tab_close_button)
 
   -- Icons from https://fontawesome.com/cheatsheet
   local left_trunc_icon = options.left_trunc_marker
@@ -564,7 +563,7 @@ function M.tabline(components, tab_elements)
     - custom_area_size
     - offset_size
     - tabs_length
-    - close_length
+    - tab_close_button_length
 
   local before, current, after = get_sections(components)
   local line, marker, visible_components = truncate(before, current, after, available_width, {
@@ -599,7 +598,7 @@ function M.tabline(components, tab_elements)
     right_align,
     tab_components,
     highlights.hl(hl.tab_close.hl),
-    close,
+    tab_close_button_component,
     right_area,
     right_offset
   ),
