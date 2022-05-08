@@ -20,7 +20,7 @@ local fn = vim.fn
 --- @field components_by_group table<string,number>[][]
 
 --- @class Separator
---- @field component string
+--- @field component Segment
 --- @field length number
 
 --- @class Separators
@@ -56,7 +56,6 @@ local PINNED_KEY = "BufferlinePinnedBuffers"
 
 local api = vim.api
 local fmt = string.format
-local strwidth = api.nvim_strwidth
 
 local M = {}
 
@@ -76,7 +75,7 @@ end
 local separator = {}
 
 local function space_end(hl_groups)
-  return { component = utils.join(hl_groups.fill.hl, padding), length = strwidth(padding) }
+  return { component = { highlight = hl_groups.fill.hl, text = padding } }
 end
 
 ---@param group Group,
@@ -90,20 +89,14 @@ function separator.pill(group, hls, count)
   local sep_hl = sep_grp and sep_grp.hl or hls.group_separator.hl
   local label_hl = label_grp and label_grp.hl or hls.group_label.hl
   local left, right = "█", "█"
-  local indicator = utils.join(
-    bg_hl,
-    padding,
-    sep_hl,
-    left,
-    label_hl,
-    display_name,
-    count,
-    sep_hl,
-    right,
-    padding
-  )
-  local length = utils.measure(left, right, display_name, count, padding, padding)
-  return { sep_start = { component = indicator, length = length }, sep_end = space_end(hls) }
+  local indicator = {
+    { text = padding, highlight = bg_hl },
+    { text = left, highlight = sep_hl },
+    { text = display_name .. count, highlight = label_hl },
+    { text = right, highlight = sep_hl },
+    { text = padding, highlight = bg_hl },
+  }
+  return { sep_start = { component = indicator }, sep_end = space_end(hls) }
 end
 
 ---@param group Group,
@@ -114,24 +107,17 @@ end
 function separator.tab(group, hls, count)
   local hl = hls.fill.hl
   local indicator_hl = hls.buffer.hl
-  local length = utils.measure(group.name, string.rep(padding, 4), count)
-  local indicator = utils.join(
-    hl,
-    padding,
-    indicator_hl,
-    padding,
-    group.name,
-    count,
-    padding,
-    hl,
-    padding
-  )
-  return { sep_start = { component = indicator, length = length }, sep_end = space_end(hls) }
+  local indicator = {
+    { higlight = hl, text = padding },
+    { highlight = indicator_hl, text = padding .. group.name .. count .. padding },
+    { highlight = hl, text = padding },
+  }
+  return { sep_start = { component = indicator }, sep_end = space_end(hls) }
 end
 
 ---@type GroupSeparator
 function separator.none()
-  return { sep_start = { component = "", length = 0 }, sep_end = { component = "", length = 0 } }
+  return { sep_start = { component = {} }, sep_end = { component = {} } }
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -267,21 +253,16 @@ end
 
 ---Add group styling to the buffer component
 ---@param ctx RenderContext
----@return string
----@return number
+---@return Segment?
 function M.component(ctx)
   local element = ctx.tab
   local hls = ctx.current_highlights
   local group = state.user_groups[element.group]
   if not group then
-    return ctx
+    return nil
   end
-  --- TODO: should there be default icons at all
   local icon = group.icon and group.icon .. padding or ""
-  local icon_length = api.nvim_strwidth(icon)
-  local hl = hls[group.name] or ""
-  local component, length = hl .. icon .. ctx.component .. hls.buffer.hl, ctx.length + icon_length
-  return ctx:update({ component = component, length = length })
+  return { text = icon, highlight = hls[group.name] }
 end
 
 ---Add highlight groups for a group
@@ -484,12 +465,10 @@ end
 local function create_indicator(group, hls, count)
   local count_item = group.hidden and fmt("(%s)", count) or ""
   local seps = group.separator.style(group, hls, count_item)
-  if seps.sep_start.length > 0 then
-    seps.sep_start.component = utils.make_clickable(
-      "handle_group_click",
-      group.priority,
-      seps.sep_start.component
-    )
+  if seps.sep_start.component then
+    seps.sep_start.component.attr = {
+      click = utils.make_clickable("handle_group_click", group.priority),
+    }
   end
   return seps
 end

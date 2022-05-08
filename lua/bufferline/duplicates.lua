@@ -72,11 +72,10 @@ local function truncate(dir, depth, max_size)
 end
 
 --- @param context RenderContext
+--- @return Segment?
 function M.component(context)
   local element = context.tab
-  local component = context.component
   local hl = context.current_highlights
-  local length = context.length
   local options = config.options
   -- there is no way to enforce a regular tab size as specified by the
   -- user if we are going to potentially increase the tab length by
@@ -85,10 +84,8 @@ function M.component(context)
     local dir = element:ancestor(element.prefix_count, function(dir, depth)
       return truncate(dir, depth, options.max_prefix_length)
     end)
-    component = hl.duplicate .. dir .. hl.background .. component
-    length = length + strwidth(dir)
+    return { text = dir, highlight = hl.duplicate }
   end
-  return context:update({ component = component, length = length })
 end
 
 return M

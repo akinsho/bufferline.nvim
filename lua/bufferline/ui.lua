@@ -40,13 +40,18 @@ local padding = constants.padding
 ---@type RenderContext
 local Context = {}
 
+--- @class Segment
+--- @field text string
+--- @field highlight string
+--- @field attr table<string, string | boolean>
+
 ---@param ctx RenderContext
 ---@return RenderContext
 function Context:new(ctx)
   assert(ctx.tab, "A tab view entity is required to create a context")
   self.length = ctx.length or 0
   self.tab = ctx.tab
-  self.component = ctx.component or ""
+  self.component = ctx.component or {}
   self.separators = ctx.component or { left = "", right = "" }
   self.__index = self
   return setmetatable(ctx, self)
@@ -70,26 +75,18 @@ function M.refresh()
   vim.cmd("redraw")
 end
 
----@class PadOpts
----@field left number?
----@field right number?
----@field component string
----@field length number
-
 ---Add padding to either side of a component
----@param opts PadOpts
----@return string, number
-local function pad(opts)
-  local left, right = opts.left or 0, opts.right or 0
+---@param left number?
+---@param right number?
+---@return Segment, Segment
+local function pad(left, right)
+  left, right = left or 0, right or 0
   local left_p, right_p = string.rep(padding, left), string.rep(padding, right)
-  local padded = left_p .. opts.component .. right_p
-  return padded, strwidth(left_p) + strwidth(right_p) + opts.length
+  return { text = left_p }, { text = right_p }
 end
 
 local function modified_component()
-  local modified_icon = config.options.modified_icon
-  local modified_section = modified_icon .. padding
-  return modified_section, strwidth(modified_section)
+  return config.options.modified_icon .. padding
 end
 
 ---@param icon string
@@ -132,6 +129,15 @@ local function truncation_component(count, icon, hls)
   return utils.join(hls.fill.hl, padding, count, padding, icon, padding)
 end
 
+---@param component Segment[]
+local function to_tabline_str(component)
+  local str = ""
+  for _, part in ipairs(component) do
+    str = str .. highlights.hl(part.highlight) .. part.text .. (part.attr and part.attr.text or "")
+  end
+  return str
+end
+
 --- PREREQUISITE: active buffer always remains in view
 --- 1. Find amount of available space in the window
 --- 2. Find the amount of space the bufferline will take up
@@ -161,7 +167,8 @@ local function truncate(before, current, after, available_width, marker, visible
   if available_width >= total_length then
     visible = utils.array_concat(before.items, current.items, after.items)
     for index, item in ipairs(visible) do
-      line = line .. item.component(visible[index + 1])
+      local component = item.component(visible[index + 1])
+      line = line .. to_tabline_str(component)
     end
     return line, marker, visible
     -- if we aren't even able to fit the current buffer into the
@@ -189,69 +196,39 @@ local function truncate(before, current, after, available_width, marker, visible
   end
 end
 
----@param sides table<'"right"' | '"left"',  number>
----@return fun(ctx: RenderContext): RenderContext
-local function add_padding(sides)
-  ---@param ctx RenderContext
-  return function(ctx)
-    local component, length = pad({
-      left = sides.left,
-      right = sides.right,
-      component = ctx.component,
-      length = ctx.length,
-    })
-    return ctx:update({ component = component, length = length })
-  end
-end
-
---- @param context RenderContext
---- @return RenderContext
-local function add_spacing(context)
-  local component = context.component
-  local length = context.length
-  local element = context.tab
-  local hl = context.current_highlights
+--- @param length number
+--- @return Segment?
+local function add_space(length)
   local options = config.options
-
-  if not options.show_buffer_close_icons then
-    -- If the buffer is modified add an icon, if it isn't pad
-    -- the buffer so it doesn't "jump" when it becomes modified i.e. due
-    -- to the sudden addition of a new character
-    local modified, size = modified_component()
-    local modified_padding = string.rep(padding, size)
-    local suffix = element.modified and hl.modified .. modified or modified_padding
-    component = modified_padding .. context.component .. suffix
-    length = context.length + (size * 2)
-  end
   -- pad each tab smaller than the max tab size to make it consistent
   local difference = options.tab_size - length
-  if difference > 0 then
-    local size = math.floor(difference / 2)
-    component, length = pad({ left = size, right = size, component = component, length = length })
+  if difference <= 0 then
+    return
   end
-  return context:update({ component = component, length = length })
+  local size = math.floor(difference / 2)
+  return pad(size, size)
 end
 
 --- @param buffer Buffer
 --- @param color_icons boolean whether or not to color the filetype icons
 --- @param hl_defs BufferlineHighlights
---- @return string
-local function highlight_icon(buffer, color_icons, hl_defs)
+--- @return Segment?
+local function get_icon_with_highlight(buffer, color_icons, hl_defs)
   local icon = buffer.icon
   local hl = buffer.icon_highlight
 
   if not icon or icon == "" then
-    return ""
+    return
   end
   if not hl or hl == "" then
-    return icon .. padding
+    return { text = icon .. padding }
   end
 
   local state = buffer:visibility()
   local bg_hls = {
-    [visibility.INACTIVE] = hl_defs.buffer_visible.hl_name,
-    [visibility.SELECTED] = hl_defs.buffer_selected.hl_name,
-    [visibility.NONE] = hl_defs.background.hl_name,
+    [visibility.INACTIVE] = hl_defs.buffer_visible.hl,
+    [visibility.SELECTED] = hl_defs.buffer_selected.hl,
+    [visibility.NONE] = hl_defs.background.hl,
   }
 
   local new_hl = highlights.generate_name(hl, { visibility = state })
@@ -266,7 +243,7 @@ local function highlight_icon(buffer, color_icons, hl_defs)
     ctermbg = colors.get_color({ name = bg_hls[state], attribute = "bg", cterm = true }),
   }
   highlights.set_one(new_hl, hl_colors)
-  return highlights.hl(new_hl) .. icon .. padding .. "%*"
+  return { text = icon .. padding, highlight = new_hl, attr = { text = "%*" } }
 end
 
 ---Determine if the separator style is one of the slant options
@@ -292,94 +269,92 @@ local function get_separator(focused, style)
 end
 
 --- @param buf_id number
-local function close_icon(buf_id, context)
+local function get_close_icon(buf_id, context)
   local options = config.options
   local buffer_close_icon = options.buffer_close_icon
   local close_button_hl = context.current_highlights.close_button
 
   local symbol = buffer_close_icon .. padding
-  local size = strwidth(symbol)
   local component = require("bufferline.utils").make_clickable(
     "handle_close_buffer",
     buf_id,
     -- the %X works as a closing label. @see :h tabline
     close_button_hl .. symbol .. "%X"
   )
-  return component, size
+  return { text = symbol, attrs = { click = component }, highlight = close_button_hl }
 end
 
 --- @param context RenderContext
---- @return RenderContext
+--- @return Segment?
 local function add_indicator(context)
   local element = context.tab
-  local length = context.length
-  local component = context.component
+  -- local length = context.length
+  -- local component = context.component
   local hl = config.highlights
   local options = config.options
-  local curr_hl = context.current_highlights
+  -- local curr_hl = context.current_highlights
   local style = options.separator_style
 
   if element:current() then
     local indicator = " "
-    local symbol = indicator
+    local symbol, highlight = indicator, nil
     if not is_slant(style) then
       symbol = options.indicator_icon
-      indicator = hl.indicator_selected.hl .. symbol .. "%*"
+      indicator = symbol
+      highlight = hl.indicator_selected.hl
     end
-    length = length + strwidth(symbol)
-    component = indicator .. curr_hl.background .. component
-  else
-    -- since all non-current buffers do not have an indicator they need
-    -- to be padded to make up the difference in size
-    length = length + strwidth(padding)
-    component = curr_hl.background .. padding .. component
+    -- length = length + strwidth(symbol)
+    -- component = indicator .. curr_hl.background .. component
+    return { text = indicator, highlight = highlight }
   end
-  return context:update({ component = component, length = length })
+  -- since all non-current buffers do not have an indicator they need
+  -- to be padded to make up the difference in size
+  -- length = length + strwidth(padding)
+  -- component = curr_hl.background .. padding .. component
+  return { text = padding }
 end
 
 --- @param context RenderContext
---- @return RenderContext
-local function add_prefix(context)
-  local component = context.component
+--- @return Segment?
+local function add_icon(context)
   local element = context.tab
-  local hl = context.current_highlights
-  local length = context.length
   local options = config.options
-
   if context.is_picking and element.letter then
-    component, length = pick.component(context)
+    return pick.component(context)
   elseif options.show_buffer_icons and element.icon then
-    local icon_highlight = highlight_icon(element, options.color_icons, config.highlights)
-    component = icon_highlight .. hl.background .. component
-    length = length + strwidth(element.icon .. padding)
+    return get_icon_with_highlight(element, options.color_icons, config.highlights)
   end
-  return context:update({ component = component, length = length })
 end
 
 --- @param context RenderContext
---- @return RenderContext
+--- @return Segment?
 local function add_suffix(context)
-  local component = context.component
   local element = context.tab
   local hl = context.current_highlights
-  local options = config.options
-  local length = context.length
-  local modified, modified_size = modified_component()
-  if not options.show_buffer_close_icons then
-    return context
-  end
+  local symbol = modified_component()
+  local modified = {
+    text = element.modified and symbol or string.rep(padding, strwidth(symbol)),
+    highlight = element.modified and hl.modified or nil,
+  }
+  -- local options = config.options
+  -- if not options.show_buffer_close_icons then
+  --   -- If the buffer is modified add an icon, if it isn't pad
+  --   -- the buffer so it doesn't "jump" when it becomes modified i.e. due
+  --   -- to the sudden addition of a new character
+  --   modified = {
+  --     text = element.modified and symbol or string.rep(padding, strwidth(symbol)),
+  --     highlight = element.modified and hl.modified or nil,
+  --   }
+  -- end
 
-  local close, size = close_icon(element.id, context)
-  local suffix = element.modified and hl.modified .. modified or close
-  component = component .. hl.background .. suffix
-  length = length + (element.modified and modified_size or size)
-  return context:update({ component = component, length = length })
+  local close = get_close_icon(element.id, context)
+  return not element.modified and close or modified
 end
 
 --- TODO: We increment the buffer length by the separator although the final
 --- buffer will not have a separator so we are technically off by 1
 --- @param context RenderContext
---- @return RenderContext
+--- @return Segment?, Segment
 local function add_separators(context)
   local element = context.tab
   local length = context.length
@@ -391,20 +366,14 @@ local function add_separators(context)
 
   local right_sep, left_sep = get_separator(focused, style)
   local sep_hl = is_slant(style) and curr_hl.separator or hl.separator.hl
-  local right_separator = sep_hl .. right_sep
-  local left_separator = left_sep and (sep_hl .. left_sep) or nil
   length = length + strwidth(right_sep)
   if left_sep then
     length = length + strwidth(left_sep)
   end
 
-  return context:update({
-    length = length,
-    separators = {
-      left = left_separator,
-      right = right_separator,
-    },
-  })
+  local left_separator = left_sep and { text = left_sep, highlight = sep_hl } or nil
+  local right_separator = { text = right_sep, highlight = sep_hl }
+  return left_separator, right_separator
 end
 
 -- if we are enforcing regular tab size then all components will try and fit
@@ -429,60 +398,70 @@ local function get_max_length(context)
 end
 
 ---@param ctx RenderContext
----@return RenderContext
+---@return Segment
 local function get_name(ctx)
   local max_length = get_max_length(ctx)
   local name = utils.truncate_name(ctx.tab.name, max_length)
   -- escape filenames that contain "%" as this breaks in statusline patterns
   name = name:gsub("%%", "%%%1")
-  return ctx:update({ component = name, length = strwidth(name) })
+  return { text = name, highlight = ctx.current_highlights.buffer.hl }
 end
 
 --- @param context RenderContext
 --- @return RenderContext
 local function add_click_action(context)
   return context:update({
-    component = require("bufferline.utils").make_clickable(
-      "handle_click",
-      context.tab.id,
-      context.component
-    ),
+    component = require("bufferline.utils").make_clickable("handle_click", context.tab.id),
   })
 end
 
 ---Create the render function that components need to position their
 ---separators once rendering calculations are complete
----@param ctx RenderContext
----@return fun(next: Component): string
-local function create_renderer(ctx)
+---@param left_separator Segment
+---@param right_separator Segment
+---@param component Segment[]
+---@return fun(next: Component): Segment[]
+local function create_renderer(left_separator, right_separator, component)
   --- We return a function from render buffer as we do not yet have access to
   --- information regarding which buffers will actually be rendered
   --- @param next_item Component
   --- @returns string
   return function(next_item)
-    -- NOTE: the component is wrapped in an item -> %(content) so
-    -- vim counts each item as one rather than all of its individual
-    -- sub-components.
-    local buffer_component = "%(" .. ctx.component .. "%)"
-
     -- if using the non-slanted tab style then we must check if the component is at the end of
     -- of a section e.g. the end of a group and if so it should not be wrapped with separators
     -- as it can use those of the next item
     if not is_slant(config.options.separator_style) and next_item and next_item:is_end() then
-      return buffer_component
+      return component
     end
 
-    local sep = ctx.separators
-    if sep.left then
-      return sep.left .. buffer_component .. sep.right
+    if left_separator then
+      table.insert(component, 1, left_separator)
+      table.insert(component, right_separator)
+      return component
     end
 
     if next_item then
-      return buffer_component .. sep.right
+      table.insert(component, right_separator)
     end
 
-    return buffer_component
+    return component
   end
+end
+
+---@param s Segment?
+---@return boolean
+local function is_not_empty(s)
+  return s ~= nil and s.text ~= ""
+end
+
+local function get_component_size(...)
+  local sum = 0
+  for _, s in ipairs({ ... }) do
+    if is_not_empty(s) then
+      sum = sum + strwidth(s.text)
+    end
+  end
+  return sum
 end
 
 --- @param state BufferlineState
@@ -504,23 +483,57 @@ function M.element(state, buffer)
   --- each render function takes the context and returns an updated context with it's
   --- changes e.g. adding a modified icon to the context component or updating the
   --- length of the component
-  ctx = utils.compose(
-    get_name,
-    add_duplicates,
-    add_group,
-    add_padding({ right = 1 }),
-    add_diagnostics,
-    add_prefix,
-    add_numbers,
-    add_spacing,
-    add_click_action,
-    add_indicator,
-    add_suffix,
-    add_separators
-  )(ctx)
+  -- ctx = utils.compose(
+  --   get_name,
+  --   add_duplicates,
+  --   add_group,
+  --   add_padding({ right = 1 }),
+  --   add_diagnostics,
+  --   add_icon,
+  --   add_numbers,
+  --   add_modified,
+  --   add_space,
+  --   add_click_action,
+  --   add_indicator,
+  --   add_suffix,
+  --   add_separators
+  -- )(ctx)
 
-  buffer.length, buffer.component = ctx.length, create_renderer(ctx)
+  local name = get_name(ctx)
+  local duplicate_prefix = add_duplicates(ctx)
+  local group_prefix = add_group(ctx)
+  local diagnostic = add_diagnostics(ctx)
+  local icon = add_icon(ctx)
+  local number_prefix = add_numbers(ctx)
+  local suffix = add_suffix(ctx)
+  local text_size = get_component_size(
+    name,
+    duplicate_prefix,
+    group_prefix,
+    diagnostic,
+    icon,
+    number_prefix,
+    suffix
+  )
+  local left_space, right_space = add_space(text_size)
+  local indicator = add_indicator(ctx)
+  local left, right = add_separators(ctx)
 
+  local component = vim.tbl_filter(is_not_empty, {
+    indicator,
+    left_space,
+    group_prefix,
+    duplicate_prefix,
+    number_prefix,
+    icon,
+    name,
+    pad(1),
+    diagnostic,
+    suffix,
+    right_space,
+  })
+
+  buffer.component = create_renderer(left, right, component)
   return buffer
 end
 
@@ -586,10 +599,10 @@ function M.render(components, tab_elements)
     left_offset,
     left_area,
     line,
-    hl.fill.hl,
+    highlights.hl(hl.fill.hl),
     right_align,
     tab_components,
-    hl.tab_close.hl,
+    highlights.hl(hl.tab_close.hl),
     close,
     right_area,
     right_offset

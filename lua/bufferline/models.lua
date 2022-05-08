@@ -101,6 +101,7 @@ end
 ---@field public buf number
 ---@field public icon string
 ---@field public name string
+---@field public group number
 ---@field public letter string
 ---@field public modified boolean
 ---@field public modifiable boolean

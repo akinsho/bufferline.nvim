@@ -47,7 +47,7 @@ local maps = {
 --- convert single or multi-digit strings to {sub|super}script
 --- or return the plain number if there is no corresponding number table
 ---@param num number
----@param map table<string, string>
+---@param map table<string, string>?
 ---@return string
 local function construct_number(num, map)
   if not map then
@@ -91,24 +91,16 @@ local function prefix(buffer, numbers)
 end
 
 --- @param context RenderContext
---- @return RenderContext
+--- @return Segment?
 function M.component(context)
   local element = context.tab
-  local component = context.component
   local options = config.options
-  local length = context.length
-  local hl = context.current_highlights
   if options.numbers == "none" then
-    return context
+    return
   end
   local number_prefix = prefix(element, options.numbers)
-  local number_component = ""
-  if number_prefix ~= "" then
-    number_component = number_prefix .. constants.padding
-  end
-  component = context.current_highlights.numbers .. number_component .. hl.background .. component
-  length = length + vim.fn.strwidth(number_component)
-  return context:update({ component = component, length = length })
+  local number_component = number_prefix ~= "" and number_prefix .. constants.padding or ""
+  return { highlight = context.current_highlights.numbers, text = number_component }
 end
 
 if require("bufferline.utils").is_test() then
