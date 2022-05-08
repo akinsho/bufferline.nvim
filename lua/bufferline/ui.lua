@@ -403,14 +403,6 @@ local function get_name(ctx)
   return { text = name, highlight = ctx.current_highlights.buffer.hl }
 end
 
---- @param context RenderContext
---- @return RenderContext
-local function add_click_action(context)
-  return context:update({
-    component = require("bufferline.utils").make_clickable("handle_click", context.tab.id),
-  })
-end
-
 ---Create the render function that components need to position their
 ---separators once rendering calculations are complete
 ---@param left_separator Segment
