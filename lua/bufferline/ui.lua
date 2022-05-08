@@ -468,12 +468,12 @@ local function get_component_size(...)
 end
 
 --- @param state BufferlineState
---- @param buffer Buffer
---- @return Buffer
-function M.element(state, buffer)
+--- @param element TabElement
+--- @return TabElement
+function M.element(state, element)
   local ctx = Context:new({
-    tab = buffer,
-    current_highlights = highlights.for_element(buffer),
+    tab = element,
+    current_highlights = highlights.for_element(element),
     is_picking = state.is_picking,
   })
 
@@ -536,8 +536,9 @@ function M.element(state, buffer)
     right_space,
   })
 
-  buffer.component = create_renderer(left, right, component)
-  return buffer
+  element.component = create_renderer(left, right, component)
+  element.length = get_component_size(unpack(component))
+  return element
 end
 
 --- @param components Component[]
