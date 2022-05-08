@@ -138,9 +138,9 @@ end
 function M.to_tabline_str(component)
   local str = ""
   for _, part in ipairs(component) do
-    str = str
+    str = (part.attr and part.attr.prefix or "")
+      .. str
       .. highlights.hl(part.highlight)
-      .. (part.attr and part.attr.prefix or "")
       .. (part.text or "")
       .. (part.attr and part.attr.suffix or "")
   end
@@ -280,19 +280,18 @@ local function get_separator(focused, style)
 end
 
 --- @param buf_id number
+--- @return Segment
 local function get_close_icon(buf_id, context)
   local options = config.options
   local buffer_close_icon = options.buffer_close_icon
   local close_button_hl = context.current_highlights.close_button
 
   local symbol = buffer_close_icon .. padding
-  local component = require("bufferline.utils").make_clickable("handle_close_buffer", buf_id)
   -- the %X works as a closing label. @see :h tabline
-  return {
+  return utils.make_clickable("handle_close_buffer", buf_id, {
     text = symbol,
     highlight = close_button_hl,
-    attr = { click = component, prefix = "%X" },
-  }
+  })
 end
 
 --- @param context RenderContext
@@ -491,7 +490,6 @@ function M.element(state, element)
   local left, right = add_separators(ctx)
 
   local component = vim.tbl_filter(is_not_empty, {
-    utils.make_clickable("handle_click", element.id),
     indicator,
     left_space,
     group_item,
@@ -504,6 +502,8 @@ function M.element(state, element)
     suffix,
     right_space,
   })
+
+  utils.make_clickable("handle_click", element.id, component)
 
   element.component = create_renderer(left, right, component)
   element.length = M.get_component_size(unpack(component))

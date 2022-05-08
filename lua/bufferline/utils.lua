@@ -272,11 +272,12 @@ end
 ---Add click action to a component
 ---@param func_name string
 ---@param id number
----@return string
-function M.make_clickable(func_name, id)
+---@param component Segment
+function M.make_clickable(func_name, id, component)
   -- v:lua does not support function references in vimscript so
   -- the only way to implement this is using autoload vimscript functions
-  return { attr = { click = "%" .. id .. "@nvim_bufferline#" .. func_name .. "@" } }
+  component.attr = { prefix = "%" .. id .. "@nvim_bufferline#" .. func_name .. "@", suffix = "%X" }
+  return component
 end
 
 local current_stable = {
