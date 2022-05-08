@@ -52,23 +52,19 @@ function M.get()
   return tabpages
 end
 
----Choose the active window's buffer as the buffer for that tab
----@param buffers integer[]
 ---@param tab_num integer
----@param filter fun(buf: integer, bufs: integer[]): boolean
----@return string
----@return number
-local function get_tab_buffer_details(buffers, tab_num, filter)
+---@return integer
+local function get_active_buf_for_tab(tab_num)
   local window = api.nvim_tabpage_get_win(tab_num)
-  local active_buf = api.nvim_win_get_buf(window)
-  local buf
-  if filter then
-    buf = filter(active_buf, buffers) and active_buf or buffers[1]
-  else
-    buf = active_buf
-  end
+  return api.nvim_win_get_buf(window)
+end
+
+---Choose the active window's buffer as the buffer for that tab
+---@param buf integer
+---@return string
+local function get_buffer_name(buf)
   local name = (buf and api.nvim_buf_is_valid(buf)) and api.nvim_buf_get_name(buf) or "[No name]"
-  return name, buf
+  return name
 end
 
 local function get_valid_tabs()
@@ -100,10 +96,8 @@ end
 --- a number
 ---@param tab_num number
 ---@return number[]
-local function get_tab_buffers(tab_num, filter)
-  local bufs = vim.tbl_map(api.nvim_win_get_buf, api.nvim_tabpage_list_wins(tab_num))
-  bufs = filter and apply_buffer_filter(bufs, filter) or bufs
-  return bufs
+local function get_tab_buffers(tab_num)
+  return vim.tbl_map(api.nvim_win_get_buf, api.nvim_tabpage_list_wins(tab_num))
 end
 
 ---@param state BufferlineState
@@ -117,9 +111,19 @@ function M.get_components(state)
   local components = {}
   pick.reset()
 
+  local filter = options.custom_filter
+
   for i, tab_num in ipairs(tabs) do
-    local buffers = get_tab_buffers(tab_num, options.custom_filter)
-    local path, buf_num = get_tab_buffer_details(buffers, tab_num, options.custom_filter)
+    local active_buf = get_active_buf_for_tab(tab_num)
+    local buffers = get_tab_buffers(tab_num)
+    local buffer
+    if filter then
+      buffers = apply_buffer_filter(buffers, filter)
+      buffer = filter(active_buf) and active_buf or buffers[1]
+    else
+      buffer = active_buf
+    end
+    local path = get_buffer_name(buffer)
     local all_diagnostics = diagnostics.get(options)
     -- TODO: decide how diagnostics should render if the focused
     -- window doesn't have any errors but a neighbouring window does
@@ -128,11 +132,11 @@ function M.get_components(state)
     -- end)
     local tab = Tabpage:new({
       path = path,
-      buf = buf_num,
+      buf = buffer,
       buffers = buffers,
       id = tab_num,
       ordinal = i,
-      diagnostics = all_diagnostics[buf_num],
+      diagnostics = all_diagnostics[buffer],
       name_formatter = options.name_formatter,
       hidden = false,
       focusable = true,
