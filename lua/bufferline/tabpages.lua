@@ -14,7 +14,6 @@ local api = vim.api
 
 local M = {}
 
-local strwidth = vim.fn.strwidth
 local padding = constants.padding
 
 local function tab_click_component(num)
@@ -26,10 +25,11 @@ local function render(tabpage, is_active, style, highlights)
   local hl = is_active and h.tab_selected.hl or h.tab.hl
   local separator_hl = is_active and h.separator_selected.hl or h.separator.hl
   local separator_component = style == "thick" and "▐" or "▕"
-  local separator = separator_hl .. separator_component
   local name = padding .. padding .. tabpage.tabnr .. padding
-  local length = strwidth(name) + strwidth(separator_component)
-  return hl .. tab_click_component(tabpage.tabnr) .. name .. separator, length
+  return {
+    { highlight = hl, text = name, attr = { click = tab_click_component(tabpage.tabnr) } },
+    { highlight = separator_hl, text = separator_component },
+  }
 end
 
 function M.get()
@@ -40,10 +40,12 @@ function M.get()
   local style = config.options.separator_style
   for i, tab in ipairs(tabs) do
     local is_active_tab = current_tab == tab.tabnr
-    local component, length = render(tab, is_active_tab, style, highlights)
+    local components = render(tab, is_active_tab, style, highlights)
+    local str = ui.to_tabline_str(components)
+    local length = ui.get_component_size(unpack(components))
 
     tabpages[i] = {
-      component = component,
+      component = str,
       length = length,
       id = tab.tabnr,
       windows = tab.windows,

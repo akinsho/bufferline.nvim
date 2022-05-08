@@ -135,7 +135,7 @@ local function truncation_component(count, icon, hls)
 end
 
 ---@param component Segment[]
-local function to_tabline_str(component)
+function M.to_tabline_str(component)
   local str = ""
   for _, part in ipairs(component) do
     str = str
@@ -177,7 +177,7 @@ local function truncate(before, current, after, available_width, marker, visible
     visible = utils.array_concat(before.items, current.items, after.items)
     for index, item in ipairs(visible) do
       local component = item.component(visible[index + 1])
-      line = line .. to_tabline_str(component)
+      line = line .. M.to_tabline_str(component)
     end
     return line, marker, visible
     -- if we aren't even able to fit the current buffer into the
@@ -453,7 +453,7 @@ local function is_not_empty(s)
   return true
 end
 
-local function get_component_size(...)
+function M.get_component_size(...)
   local sum = 0
   for _, s in ipairs({ ... }) do
     if is_not_empty(s) then
@@ -485,7 +485,7 @@ function M.element(state, element)
   local icon = add_icon(ctx)
   local number_item = add_numbers(ctx)
   local suffix = add_suffix(ctx)
-  local text_size = get_component_size(
+  local text_size = M.get_component_size(
     name,
     duplicate_prefix,
     group_item,
@@ -514,7 +514,7 @@ function M.element(state, element)
   })
 
   element.component = create_renderer(left, right, component)
-  element.length = get_component_size(unpack(component))
+  element.length = M.get_component_size(unpack(component))
   return element
 end
 
