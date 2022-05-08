@@ -513,7 +513,7 @@ end
 --- @param components Component[]
 --- @param tab_elements table[]
 --- @return string
-function M.render(components, tab_elements)
+function M.tabline(components, tab_elements)
   local options = config.options
   local hl = config.highlights
   local right_align = "%="
