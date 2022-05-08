@@ -1,13 +1,13 @@
 local lazy = require("bufferline.lazy")
--- @module "bufferline.ui"
+---@module "bufferline.ui"
 local ui = lazy.require("bufferline.ui")
--- @module "bufferline.pick"
+---@module "bufferline.pick"
 local pick = lazy.require("bufferline.pick")
--- @module "bufferline.config"
+---@module "bufferline.config"
 local config = lazy.require("bufferline.config")
--- @module "bufferline.constants"
+---@module "bufferline.constants"
 local constants = lazy.require("bufferline.constants")
--- @module "bufferline.diagnostics"
+---@module "bufferline.diagnostics"
 local diagnostics = lazy.require("bufferline.diagnostics")
 
 local api = vim.api
