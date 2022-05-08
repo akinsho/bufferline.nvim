@@ -580,12 +580,7 @@ function M.tabline(components, tab_indicators)
     right_element_size = right_element_size,
   })
 
-  local left_marker = get_trunc_marker(
-    left_trunc_icon,
-    hl.fill.hl,
-    hl.fill.hl,
-    marker.left_count
-  )
+  local left_marker = get_trunc_marker(left_trunc_icon, hl.fill.hl, hl.fill.hl, marker.left_count)
   local right_marker = get_trunc_marker(
     right_trunc_icon,
     hl.fill.hl,
