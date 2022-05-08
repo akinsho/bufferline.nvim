@@ -587,7 +587,7 @@ function M.tabline(components, tab_elements)
     marker.right_count
   )
 
-  return utils.join(
+  local tabline = utils.join(
     left_offset,
     left_area,
     to_tabline_str(left_marker),
@@ -600,8 +600,9 @@ function M.tabline(components, tab_elements)
     tab_close_button_component,
     right_area,
     right_offset
-  ),
-    visible_components
+  )
+
+  return tabline, visible_components
 end
 
 return M
