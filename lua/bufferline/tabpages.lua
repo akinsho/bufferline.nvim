@@ -9,6 +9,8 @@ local config = lazy.require("bufferline.config")
 local constants = lazy.require("bufferline.constants")
 ---@module "bufferline.diagnostics"
 local diagnostics = lazy.require("bufferline.diagnostics")
+---@module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
 
 local api = vim.api
 
@@ -33,25 +35,19 @@ local function render(tabpage, is_active, style, highlights)
 end
 
 function M.get()
-  local tabpages = {}
   local tabs = vim.fn.gettabinfo()
   local current_tab = vim.fn.tabpagenr()
   local highlights = config.highlights
   local style = config.options.separator_style
-  for i, tab in ipairs(tabs) do
+  return utils.map(function(tab)
     local is_active_tab = current_tab == tab.tabnr
     local components = render(tab, is_active_tab, style, highlights)
-    local str = ui.to_tabline_str(components)
-    local length = ui.get_component_size(unpack(components))
-
-    tabpages[i] = {
-      component = str,
-      length = length,
+    return {
+      component = components,
       id = tab.tabnr,
       windows = tab.windows,
     }
-  end
-  return tabpages
+  end, tabs)
 end
 
 ---@param tab_num integer

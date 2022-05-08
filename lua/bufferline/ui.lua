@@ -524,30 +524,37 @@ local function get_trunc_marker(trunc_icon, count_hl, icon_hl, count)
   end
 end
 
+---@param indicators table<string, table>
+---@param options BufferlineOptions
+---@return string
+---@return integer
+local function get_tab_indicators(indicators, options)
+  local tab_components = ""
+  local tabs_length = 0
+  if not options.show_tab_indicators or #indicators < 2 then
+    return tab_components, tabs_length
+  end
+  for _, t in ipairs(indicators) do
+    tabs_length = tabs_length + get_component_size(unpack(t.component))
+    tab_components = tab_components .. to_tabline_str(t.component)
+  end
+  return tab_components, tabs_length
+end
+
+--- TODO: All components should return Segment[] that are then combined in one go into a tabline
 --- @param components Component[]
---- @param tab_elements table[]
+--- @param tab_indicators table[]
 --- @return string
-function M.tabline(components, tab_elements)
+function M.tabline(components, tab_indicators)
   local options = config.options
   local hl = config.highlights
   local right_align = "%="
-  local tab_components = ""
-  local tabs_length = 0
 
-  if options.show_tab_indicators then
-    -- Add the length of the tabs + close components to total length
-    if #tab_elements > 1 then
-      for _, t in pairs(tab_elements) do
-        if not vim.tbl_isempty(t) then
-          tabs_length = tabs_length + t.length
-          tab_components = tab_components .. t.component
-        end
-      end
-    end
-  end
   local tab_close_button = get_tab_close_button(options)
   local tab_close_button_length = get_component_size(tab_close_button)
   local tab_close_button_component = to_tabline_str(tab_close_button)
+
+  local tab_indicator_component, tab_indicator_length = get_tab_indicators(tab_indicators, options)
 
   -- Icons from https://fontawesome.com/cheatsheet
   local left_trunc_icon = options.left_trunc_marker
@@ -562,7 +569,7 @@ function M.tabline(components, tab_elements)
   local available_width = vim.o.columns
     - custom_area_size
     - offset_size
-    - tabs_length
+    - tab_indicator_length
     - tab_close_button_length
 
   local before, current, after = get_sections(components)
@@ -573,7 +580,6 @@ function M.tabline(components, tab_elements)
     right_element_size = right_element_size,
   })
 
-  -- TODO: All components should return Segment[] that are then combined in one go into a tabline
   local left_marker = get_trunc_marker(
     left_trunc_icon,
     hl.fill.hl,
@@ -595,7 +601,7 @@ function M.tabline(components, tab_elements)
     to_tabline_str(right_marker),
     highlights.hl(hl.fill.hl),
     right_align,
-    tab_components,
+    tab_indicator_component,
     highlights.hl(hl.tab_close.hl),
     tab_close_button_component,
     right_area,
