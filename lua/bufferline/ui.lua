@@ -405,7 +405,7 @@ end
 ---@param context RenderContext
 ---@return number
 local function get_max_length(context)
-  local _, modified_size = modified_component()
+  local modified = modified_component()
   local options = config.options
   local element = context.tab
   local icon_size = strwidth(element.icon)
@@ -417,7 +417,7 @@ local function get_max_length(context)
   end
   -- estimate the maximum allowed size of a filename given that it will be
   -- padded and prefixed with a file icon
-  return options.tab_size - modified_size - icon_size - padding_size
+  return options.tab_size - strwidth(modified) - icon_size - padding_size
 end
 
 ---@param ctx RenderContext
