@@ -79,6 +79,21 @@ local function is_not_nil(s)
   return s ~= nil
 end
 
+local function get_component_size(...)
+  local sum = 0
+  for i = 1, select("#", ...) do
+    local s = select(i, ...)
+    if has_text(s) then
+      sum = sum + strwidth(s.text)
+    end
+  end
+  return sum
+end
+
+local function get_marker_size(count, element_size)
+  return count > 0 and strwidth(tostring(count)) + element_size or 0
+end
+
 function M.refresh()
   vim.cmd("redrawtabline")
   vim.cmd("redraw")
@@ -145,10 +160,6 @@ local function get_sections(components)
     end
   end
   return before, current, after
-end
-
-local function get_marker_size(count, element_size)
-  return count > 0 and strwidth(tostring(count)) + element_size or 0
 end
 
 ---@param component Segment[]
@@ -367,17 +378,6 @@ local function add_suffix(context)
     text = element.modified and symbol or string.rep(padding, strwidth(symbol)),
     highlight = element.modified and hl.modified or nil,
   }
-  -- local options = config.options
-  -- if not options.show_buffer_close_icons then
-  --   -- If the buffer is modified add an icon, if it isn't pad
-  --   -- the buffer so it doesn't "jump" when it becomes modified i.e. due
-  --   -- to the sudden addition of a new character
-  --   modified = {
-  --     text = element.modified and symbol or string.rep(padding, strwidth(symbol)),
-  --     highlight = element.modified and hl.modified or nil,
-  --   }
-  -- end
-
   local close = get_close_icon(element.id, context)
   return not element.modified and close or modified
 end
@@ -465,17 +465,6 @@ local function create_renderer(left_separator, right_separator, component)
 
     return component
   end
-end
-
-local function get_component_size(...)
-  local sum = 0
-  for i = 1, select("#", ...) do
-    local s = select(i, ...)
-    if has_text(s) then
-      sum = sum + strwidth(s.text)
-    end
-  end
-  return sum
 end
 
 ---@param id number
