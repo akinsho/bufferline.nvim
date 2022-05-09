@@ -527,7 +527,9 @@ function M.element(state, element)
   })
 
   element.component = create_renderer(left, right, component)
-  element.length = get_component_size(unpack(component))
+  -- NOTE: we must count the size of the separators here although we do not
+  -- add them yet, since by the time they are added the component will already have rendered
+  element.length = get_component_size(left, right, unpack(component))
   return element
 end
 
