@@ -9,6 +9,8 @@ describe("Bufferline tests:", function()
   local state
   ---@module "nvim-web-devicons"
   local icons
+  ---@module "bufferline.ui"
+  local ui
 
   before_each(function()
     package.loaded["bufferline"] = nil
@@ -18,6 +20,7 @@ describe("Bufferline tests:", function()
     -- they keep track of state themselves now
     package.loaded["bufferline.commands"] = nil
     bufferline = require("bufferline")
+    ui = require("bufferline.ui")
     state = require("bufferline.state")
     icons = require("nvim-web-devicons")
     icons.setup({ default = true })
@@ -69,18 +72,18 @@ describe("Bufferline tests:", function()
 
   describe("Snapshots - ", function()
     local snapshots = {
-      "       a.txt       ▕       b.txt       ▕▎      c.txt         ",
-      "       a.txt      ▕       b.txt      ▕▎      c.txt        ",
-      "       a.txt              b.txt              c.txt         ",
+      "       a.txt       ▕       b.txt       ▕▎      c.txt      ",
+      "       a.txt      ▕       b.txt      ▕▎      c.txt       ",
+      "       a.txt              b.txt              c.txt        ",
     }
     it("should add correct padding if close icons are present", function()
       bufferline.setup()
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
-      local tabline = nvim_bufferline()
+      local tabline, components = nvim_bufferline()
       assert.is_truthy(tabline)
-      local snapshot = utils.format_tabline(tabline)
+      local snapshot = utils.tabline_from_components(components)
       assert.is_equal(snapshot, snapshots[1])
     end)
 
@@ -93,9 +96,9 @@ describe("Bufferline tests:", function()
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
-      local tabline = nvim_bufferline()
+      local tabline, components = nvim_bufferline()
       assert.is_truthy(tabline)
-      local snapshot = utils.format_tabline(tabline)
+      local snapshot = utils.tabline_from_components(components)
       assert.is_equal(snapshot, snapshots[2])
     end)
     it("should show the correct separators", function()
@@ -107,9 +110,9 @@ describe("Bufferline tests:", function()
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
-      local tabline = nvim_bufferline()
+      local tabline, components = nvim_bufferline()
       assert.is_truthy(tabline)
-      local snapshot = utils.format_tabline(tabline)
+      local snapshot = utils.tabline_from_components(components)
       assert.is_equal(snapshot, snapshots[3])
     end)
 
@@ -120,8 +123,8 @@ describe("Bufferline tests:", function()
         },
       })
       vim.cmd("edit test.rrj")
-      local tabline = nvim_bufferline()
-      local snapshot = utils.format_tabline(tabline)
+      local _, components = nvim_bufferline()
+      local snapshot = utils.tabline_from_components(components)
       local icon = icons.get_icon("")
       assert.is_false(snapshot:match(icon) == nil)
     end)
@@ -133,8 +136,8 @@ describe("Bufferline tests:", function()
         },
       })
       vim.cmd("edit test.rrj")
-      local tabline = nvim_bufferline()
-      local snapshot = utils.format_tabline(tabline)
+      local _, components = nvim_bufferline()
+      local snapshot = utils.tabline_from_components(components)
       local icon = icons.get_icon("")
       assert.is_true(snapshot:match(icon) ~= nil)
     end)
