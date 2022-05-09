@@ -38,14 +38,18 @@ local padding = constants.padding
 ---@field tab Tabpage | Buffer
 ---@field separators table<string, string>
 ---@field is_picking boolean
----@field update fun(RenderContext, RenderContext):RenderContext
 ---@type RenderContext
 local Context = {}
+
+---@class SegmentAttribute
+---@field global boolean whether or not the attribute applies to other elements apart from the current one
+---@field prefix string
+---@field suffix string
 
 --- @class Segment
 --- @field text string
 --- @field highlight string
---- @field attr table<string, string | boolean>
+--- @field attr SegmentAttribute
 
 ---@param ctx RenderContext
 ---@return RenderContext
