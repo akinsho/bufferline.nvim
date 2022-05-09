@@ -327,7 +327,8 @@ local function get_close_icon(buf_id, context)
   local buffer_close_icon = options.buffer_close_icon
   local close_button_hl = context.current_highlights.close_button
 
-  local symbol = buffer_close_icon .. padding
+  local replacement = string.rep(padding, strwidth(buffer_close_icon))
+  local symbol = (options.show_buffer_close_icons and buffer_close_icon or replacement) .. padding
   return M.make_clickable("handle_close_buffer", buf_id, {
     text = symbol,
     highlight = close_button_hl,
