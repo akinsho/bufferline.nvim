@@ -29,7 +29,7 @@ local function render(tabpage, is_active, style, highlights)
   local separator_component = style == "thick" and "▐" or "▕"
   local name = padding .. padding .. tabpage.tabnr .. padding
   return {
-    { highlight = hl, text = name, attr = { click = tab_click_component(tabpage.tabnr) } },
+    { highlight = hl, text = name, attr = { prefix = tab_click_component(tabpage.tabnr) } },
     { highlight = separator_hl, text = separator_component },
   }
 end
