@@ -335,7 +335,7 @@ local function add_indicator(context)
   symbol = is_current and options.indicator_icon or symbol
   highlight = is_current and hl.indicator_selected.hl
     or element:visible() and hl.indicator_visible.hl
-    or curr_hl.background.hl
+    or curr_hl.buffer.hl
 
   -- since all non-current buffers do not have an indicator they need
   -- to be padded to make up the difference in size
