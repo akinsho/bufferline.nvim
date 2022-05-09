@@ -584,7 +584,6 @@ local function get_defaults()
       name_formatter = nil,
       tab_size = 18,
       max_name_length = 18,
-      mappings = false,
       color_icons = true,
       show_buffer_icons = true,
       show_buffer_close_icons = true,
