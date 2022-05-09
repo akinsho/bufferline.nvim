@@ -116,10 +116,10 @@ local function modified_component()
 end
 
 ---@param options BufferlineOptions
----@return Segment?
+---@return Segment[]?
 local function get_tab_close_button(options)
   if options.show_close_icon then
-    return { text = padding .. options.close_icon .. padding, attr = { suffix = "%999X" } }
+    return { { text = padding .. options.close_icon .. padding, attr = { prefix = "%999X" } } }
   end
 end
 
@@ -583,7 +583,7 @@ function M.tabline(components, tab_indicators)
   local right_align = "%="
 
   local tab_close_button = get_tab_close_button(options)
-  local tab_close_button_length = get_component_size(tab_close_button)
+  local tab_close_button_length = get_component_size(unpack(tab_close_button))
   local tab_close_button_component = to_tabline_str(tab_close_button)
 
   local tab_indicator_component, tab_indicator_length = get_tab_indicators(tab_indicators, options)
