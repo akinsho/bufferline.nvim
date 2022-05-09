@@ -135,9 +135,9 @@ local function to_tabline_str(component)
   component = component or {}
   local str = ""
   for _, part in ipairs(component) do
-    str = (part.attr and part.attr.prefix or "")
-      .. str
+    str = str
       .. highlights.hl(part.highlight)
+      .. (part.attr and part.attr.prefix or "")
       .. (part.text or "")
       .. (part.attr and part.attr.suffix or "")
   end
