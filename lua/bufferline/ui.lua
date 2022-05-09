@@ -63,18 +63,21 @@ function Context:new(ctx)
   return setmetatable(ctx, self)
 end
 
----@param o RenderContext
----@return RenderContext
-function Context:update(o)
-  for k, v in pairs(o) do
-    if v ~= nil then
-      self[k] = v
-    end
+-----------------------------------------------------------------------------//
+---@param s Segment?
+---@return boolean
+local function has_text(s)
+  if s == nil or s.text == nil or s.text == "" then
+    return false
   end
-  return self
+  return true
 end
 
------------------------------------------------------------------------------//
+---@param s Segment?
+---@return boolean
+local function is_not_nil(s)
+  return s ~= nil
+end
 
 function M.refresh()
   vim.cmd("redrawtabline")
@@ -442,7 +445,12 @@ local function create_renderer(left_separator, right_separator, component)
     -- if using the non-slanted tab style then we must check if the component is at the end of
     -- of a section e.g. the end of a group and if so it should not be wrapped with separators
     -- as it can use those of the next item
-    if not is_slant(config.options.separator_style) and next_item and next_item:is_end() then
+    if -- NOTE: should components without text ever reach this point
+      not is_slant(config.options.separator_style)
+      and next_item
+      and has_text(next_item.component())
+      and next_item:is_end()
+    then
       return component
     end
 
@@ -458,21 +466,6 @@ local function create_renderer(left_separator, right_separator, component)
 
     return component
   end
-end
-
----@param s Segment?
----@return boolean
-local function has_text(s)
-  if s == nil or s.text == nil or s.text == "" then
-    return false
-  end
-  return true
-end
-
----@param s Segment?
----@return boolean
-local function is_not_nil(s)
-  return s ~= nil
 end
 
 local function get_component_size(...)
