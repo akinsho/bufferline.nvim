@@ -507,6 +507,8 @@ function M.element(state, element)
   local icon = add_icon(ctx)
   local number_item = add_numbers(ctx)
   local suffix = add_suffix(ctx)
+  local indicator = add_indicator(ctx)
+  local left, right = add_separators(ctx)
   local text_size = get_component_size(
     name,
     duplicate_prefix,
@@ -514,11 +516,12 @@ function M.element(state, element)
     diagnostic,
     icon,
     number_item,
-    suffix
+    suffix,
+    indicator,
+    left,
+    right
   )
   local left_space, right_space = add_space(ctx, text_size)
-  local indicator = add_indicator(ctx)
-  local left, right = add_separators(ctx)
 
   local component = vim.tbl_filter(is_not_nil, {
     tab_click_handler(element.id),
