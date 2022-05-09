@@ -2,6 +2,20 @@ local M = {}
 
 local MockBuffer = {}
 
+---helper to find text in a Segment[]
+---@param component Segment[]
+---@param text string
+---@return boolean
+function M.find_text(component, text)
+  local found = false
+  for _, item in ipairs(component) do
+    if item.text == text then
+      found = true
+    end
+  end
+  return found
+end
+
 function MockBuffer:new(o)
   self.__index = self
   setmetatable(o, self)
