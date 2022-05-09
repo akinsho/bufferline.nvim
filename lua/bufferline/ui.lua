@@ -525,8 +525,8 @@ function M.element(state, element)
     name,
     pad(1, nil, curr_hl.buffer.hl),
     diagnostic,
-    suffix,
     right_space,
+    suffix,
   })
 
   element.component = create_renderer(left, right, component)
