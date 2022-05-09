@@ -259,7 +259,7 @@ function M.component(ctx)
   local hls = ctx.current_highlights
   local group = state.user_groups[element.group]
   if not group then
-    return nil
+    return
   end
   local icon = group.icon and group.icon .. padding or ""
   return { text = icon, highlight = hls[group.name] }

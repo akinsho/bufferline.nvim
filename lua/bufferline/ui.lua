@@ -90,6 +90,7 @@ function M.make_clickable(func_name, id, component)
   -- the only way to implement this is using autoload vimscript functions
   component.attr = component.attr or {}
   component.attr.prefix = "%" .. id .. "@nvim_bufferline#" .. func_name .. "@"
+  -- the %X works as a closing label. @see :h tabline
   component.attr.suffix = "%X"
   return component
 end
@@ -294,6 +295,7 @@ local function get_separator(focused, style)
   if type(style) == "table" then
     return focused and style[1] or style[2]
   end
+  ---@diagnostic disable-next-line: undefined-field
   local chars = sep_chars[style] or sep_chars.thin
   if is_slant(style) then
     return chars[1], chars[2]
@@ -309,7 +311,6 @@ local function get_close_icon(buf_id, context)
   local close_button_hl = context.current_highlights.close_button
 
   local symbol = buffer_close_icon .. padding
-  -- the %X works as a closing label. @see :h tabline
   return M.make_clickable("handle_close_buffer", buf_id, {
     text = symbol,
     highlight = close_button_hl,
