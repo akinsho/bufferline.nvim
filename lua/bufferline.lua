@@ -103,7 +103,7 @@ local function bufferline()
   --- state is not actually set till after sorting and component creation is done
   state.set({ current_element_index = get_current_index(state) })
   components = not is_tabline and groups.render(components, sorter) or sorter(components)
-  local tabline, visible_components = ui.tabline(components, tabpages.get())
+  local tabline, visible_components, segments = ui.tabline(components, tabpages.get())
 
   state.set({
     --- store the full unfiltered lists
@@ -112,7 +112,7 @@ local function bufferline()
     components = filter_invisible(components),
     visible_components = filter_invisible(visible_components),
   })
-  return tabline
+  return tabline, segments
 end
 
 --- If the item count has changed and the next tabline status is different then update it

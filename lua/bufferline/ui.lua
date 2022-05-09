@@ -199,6 +199,7 @@ end
 ---@return string
 ---@return table
 ---@return Buffer[]
+---@return Segment[][]
 local function truncate(before, current, after, available_width, marker, visible)
   visible = visible or {}
   local line = ""
@@ -211,12 +212,14 @@ local function truncate(before, current, after, available_width, marker, visible
   local total_length = before.length + current.length + after.length + markers_length
 
   if available_width >= total_length then
+    local components = {}
     visible = utils.array_concat(before.items, current.items, after.items)
     for index, item in ipairs(visible) do
       local component = item.component(visible[index + 1])
+      table.insert(components, component)
       line = line .. to_tabline_str(component)
     end
-    return line, marker, visible
+    return line, marker, visible, components
     -- if we aren't even able to fit the current buffer into the
     -- available space that means the window is really narrow
     -- so don't show anything
@@ -597,12 +600,18 @@ function M.tabline(components, tab_indicators)
     - tab_close_button_length
 
   local before, current, after = get_sections(components)
-  local line, marker, visible_components = truncate(before, current, after, available_width, {
-    left_count = 0,
-    right_count = 0,
-    left_element_size = left_element_size,
-    right_element_size = right_element_size,
-  })
+  local line, marker, visible_components, segments = truncate(
+    before,
+    current,
+    after,
+    available_width,
+    {
+      left_count = 0,
+      right_count = 0,
+      left_element_size = left_element_size,
+      right_element_size = right_element_size,
+    }
+  )
 
   local left_marker = get_trunc_marker(left_trunc_icon, hl.fill.hl, hl.fill.hl, marker.left_count)
   local right_marker = get_trunc_marker(
@@ -627,7 +636,7 @@ function M.tabline(components, tab_indicators)
     right_offset
   )
 
-  return tabline, visible_components
+  return tabline, visible_components, segments
 end
 
 return M
