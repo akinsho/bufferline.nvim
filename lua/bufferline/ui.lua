@@ -583,8 +583,9 @@ function M.tabline(components, tab_indicators)
   local left_trunc_icon = options.left_trunc_marker
   local right_trunc_icon = options.right_trunc_marker
   -- NOTE: this estimates the size of the truncation marker as we don't know how big it will be yet
-  local left_element_size = utils.measure(string.rep(padding, 3), left_trunc_icon, padding, padding)
-  local right_element_size = utils.measure(string.rep(padding, 3), right_trunc_icon, padding)
+  local max_padding = string.rep(padding, 2)
+  local left_element_size = utils.measure(max_padding, left_trunc_icon, max_padding)
+  local right_element_size = utils.measure(max_padding, right_trunc_icon, max_padding)
 
   local offset_size, left_offset, right_offset = require("bufferline.offset").get()
   local custom_area_size, left_area, right_area = require("bufferline.custom_area").get()
