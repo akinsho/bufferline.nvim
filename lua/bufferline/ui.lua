@@ -82,13 +82,10 @@ function M.refresh()
 end
 
 ---Add click action to a component
----if called without a component it is assumed that the click handler will be applied globally
----to a list of segments
 ---@param func_name string
 ---@param id number
----@param component Segment?
+---@param component Segment
 function M.make_clickable(func_name, id, component)
-  component = component or { attr = { global = true } }
   -- v:lua does not support function references in vimscript so
   -- the only way to implement this is using autoload vimscript functions
   component.attr = component.attr or {}
@@ -488,6 +485,12 @@ local function get_component_size(...)
   return sum
 end
 
+---@param id number
+---@return Segment
+local function tab_click_handler(id)
+  return M.make_clickable("handle_click", id, { attr = { global = true } })
+end
+
 --- @param state BufferlineState
 --- @param element TabElement
 --- @return TabElement
@@ -524,7 +527,7 @@ function M.element(state, element)
   local left, right = add_separators(ctx)
 
   local component = vim.tbl_filter(is_not_nil, {
-    M.make_clickable("handle_click", element.id),
+    tab_click_handler(element.id),
     indicator,
     left_space,
     group_item,
