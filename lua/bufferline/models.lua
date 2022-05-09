@@ -293,6 +293,7 @@ function Section:drop(index)
   end
 end
 
+---@param item TabElement
 function Section:add(item)
   table.insert(self.items, item)
   self.length = self.length + item.length
