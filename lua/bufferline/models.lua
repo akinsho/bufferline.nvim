@@ -166,6 +166,8 @@ end
 ---@field public group_fn string
 ---@field public length number the length of the buffer component
 ---@field public visibility fun(): boolean
+---@field public current fun(): boolean
+---@field public visible fun(): boolean
 ---@deprecated public filename string the visible name for the file
 local Buffer = Component:new({ type = "buffer" })
 
