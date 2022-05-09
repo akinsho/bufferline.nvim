@@ -262,7 +262,8 @@ function M.component(ctx)
     return
   end
   local icon = group.icon and group.icon .. padding or ""
-  return { text = icon, highlight = hls[group.name] }
+  local hl = hls[group.name] or hls.buffer.hl
+  return { text = icon, highlight = hl }
 end
 
 ---Add highlight groups for a group
