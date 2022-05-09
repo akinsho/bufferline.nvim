@@ -461,7 +461,7 @@ end
 
 ---@param s Segment?
 ---@return boolean
-local function is_not_empty(s)
+local function has_text(s)
   if s == nil or s.text == nil or s.text == "" then
     return false
   end
@@ -478,7 +478,7 @@ local function get_component_size(...)
   local sum = 0
   for i = 1, select("#", ...) do
     local s = select(i, ...)
-    if is_not_empty(s) then
+    if has_text(s) then
       sum = sum + strwidth(s.text)
     end
   end
