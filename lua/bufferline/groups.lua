@@ -466,7 +466,7 @@ local function create_indicator(group, hls, count)
   local count_item = group.hidden and fmt("(%s)", count) or ""
   local seps = group.separator.style(group, hls, count_item)
   if seps.sep_start.component then
-    utils.make_clickable("handle_group_click", group.priority, seps.sep_start.component)
+    ui.make_clickable("handle_group_click", group.priority, seps.sep_start.component)
   end
   return seps
 end

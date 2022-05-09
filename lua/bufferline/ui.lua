@@ -77,6 +77,22 @@ function M.refresh()
   vim.cmd("redraw")
 end
 
+---Add click action to a component
+---if called without a component it is assumed that the click handler will be applied globally
+---to a list of segments
+---@param func_name string
+---@param id number
+---@param component Segment?
+function M.make_clickable(func_name, id, component)
+  component = component or { attr = { global = true } }
+  -- v:lua does not support function references in vimscript so
+  -- the only way to implement this is using autoload vimscript functions
+  component.attr = component.attr or {}
+  component.attr.prefix = "%" .. id .. "@nvim_bufferline#" .. func_name .. "@"
+  component.attr.suffix = "%X"
+  return component
+end
+
 ---Add padding to either side of a component
 ---@param left number?
 ---@param right number?
@@ -134,12 +150,20 @@ end
 local function to_tabline_str(component)
   component = component or {}
   local str = ""
+  local globals = {}
   for _, part in ipairs(component) do
+    local attr = part.attr
+    if attr and attr.global then
+      table.insert(globals, { attr.prefix or "", attr.suffix or "" })
+    end
     str = str
       .. highlights.hl(part.highlight)
-      .. (part.attr and part.attr.prefix or "")
+      .. ((attr and not attr.global) and attr.prefix or "")
       .. (part.text or "")
-      .. (part.attr and part.attr.suffix or "")
+      .. ((attr and not attr.global) and attr.suffix or "")
+  end
+  for _, attr in ipairs(globals) do
+    str = attr[1] .. str .. attr[2]
   end
   return str
 end
@@ -285,7 +309,7 @@ local function get_close_icon(buf_id, context)
 
   local symbol = buffer_close_icon .. padding
   -- the %X works as a closing label. @see :h tabline
-  return utils.make_clickable("handle_close_buffer", buf_id, {
+  return M.make_clickable("handle_close_buffer", buf_id, {
     text = symbol,
     highlight = close_button_hl,
   })
@@ -443,6 +467,12 @@ local function is_not_empty(s)
   return true
 end
 
+---@param s Segment?
+---@return boolean
+local function is_not_nil(s)
+  return s ~= nil
+end
+
 local function get_component_size(...)
   local sum = 0
   for i = 1, select("#", ...) do
@@ -489,7 +519,8 @@ function M.element(state, element)
   local indicator = add_indicator(ctx)
   local left, right = add_separators(ctx)
 
-  local component = vim.tbl_filter(is_not_empty, {
+  local component = vim.tbl_filter(is_not_nil, {
+    M.make_clickable("handle_click", element.id),
     indicator,
     left_space,
     group_item,
@@ -502,8 +533,6 @@ function M.element(state, element)
     suffix,
     right_space,
   })
-
-  utils.make_clickable("handle_click", element.id, component)
 
   element.component = create_renderer(left, right, component)
   element.length = get_component_size(unpack(component))
