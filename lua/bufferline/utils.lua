@@ -87,12 +87,12 @@ function M.join(...)
 end
 
 ---@generic T
----@param callback fun(item: T): T
+---@param callback fun(item: T, index: number): T
 ---@param list T[]
 ---@return T[]
 function M.map(callback, list)
-  return M.fold({}, function(accum, item)
-    table.insert(accum, callback(item))
+  return M.fold({}, function(accum, item, index)
+    table.insert(accum, callback(item, index))
     return accum
   end, list)
 end
