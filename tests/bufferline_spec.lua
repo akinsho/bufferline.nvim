@@ -10,7 +10,6 @@ describe("Bufferline tests:", function()
   ---@module "nvim-web-devicons"
   local icons
   ---@module "bufferline.ui"
-  local ui
 
   before_each(function()
     package.loaded["bufferline"] = nil
@@ -20,7 +19,6 @@ describe("Bufferline tests:", function()
     -- they keep track of state themselves now
     package.loaded["bufferline.commands"] = nil
     bufferline = require("bufferline")
-    ui = require("bufferline.ui")
     state = require("bufferline.state")
     icons = require("nvim-web-devicons")
     icons.setup({ default = true })

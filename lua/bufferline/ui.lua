@@ -2,15 +2,15 @@
 -- UI
 -----------------------------------------------------------------------------//
 local lazy = require("bufferline.lazy")
---- @module "bufferline.utils"
+---@module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
---- @module "bufferline.config"
+---@module "bufferline.config"
 local config = lazy.require("bufferline.config")
---- @module "bufferline.constants"
+---@module "bufferline.constants"
 local constants = lazy.require("bufferline.constants")
---- @module "bufferline.highlights"
+---@module "bufferline.highlights"
 local highlights = lazy.require("bufferline.highlights")
---- @module "bufferline.colors"
+---@module "bufferline.colors"
 local colors = require("bufferline.colors")
 ---@module "bufferline.pick"
 local pick = lazy.require("bufferline.pick")
@@ -80,9 +80,12 @@ local function is_not_nil(s)
   return s ~= nil
 end
 
+---@vararg Segment
+---@return integer
 local function get_component_size(...)
   local sum = 0
   for i = 1, select("#", ...) do
+    ---@type Segment
     local s = select(i, ...)
     if has_text(s) then
       sum = sum + strwidth(s.text)
