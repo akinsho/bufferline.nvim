@@ -16,6 +16,12 @@ local colors = require("bufferline.colors")
 local pick = lazy.require("bufferline.pick")
 ---@module "bufferline.groups"
 local groups = lazy.require("bufferline.groups")
+---@module "bufferline.diagnostics"
+local diagnostics = lazy.require("bufferline.diagnostics")
+---@module "bufferline.duplicates"
+local duplicates = lazy.require("bufferline.duplicates")
+---@module "bufferline.numbers"
+local numbers = lazy.require("bufferline.numbers")
 
 local M = {}
 local visibility = constants.visibility
@@ -489,19 +495,17 @@ function M.element(state, element)
     is_picking = state.is_picking,
   })
 
-  local add_diagnostics = require("bufferline.diagnostics").component
-  local add_duplicates = require("bufferline.duplicates").component
-  local add_numbers = require("bufferline.numbers").component
-
-  local name = get_name(ctx)
-  local duplicate_prefix = add_duplicates(ctx)
+  local duplicate_prefix = duplicates.component(ctx)
   local group_item = element.group and groups.component(ctx) or nil
-  local diagnostic = add_diagnostics(ctx)
+  local diagnostic = diagnostics.component(ctx)
   local icon = add_icon(ctx)
-  local number_item = add_numbers(ctx)
+  local number_item = numbers.component(ctx)
   local suffix = add_suffix(ctx)
   local indicator = add_indicator(ctx)
   local left, right = add_separators(ctx)
+
+  local name = get_name(ctx)
+  local name_padding = pad(1, nil, curr_hl.buffer.hl)
   -- Guess how much space there will for padding based on the buffer's name
   local name_size = get_component_size(name, icon, suffix)
   local left_space, right_space = add_space(ctx, name_size)
@@ -515,7 +519,7 @@ function M.element(state, element)
     group_item,
     duplicate_prefix,
     name,
-    pad(1, nil, curr_hl.buffer.hl),
+    name_padding,
     diagnostic,
     right_space,
     suffix,
