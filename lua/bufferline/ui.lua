@@ -31,12 +31,9 @@ local padding = constants.padding
 -----------------------------------------------------------------------------//
 
 ---@class RenderContext
----@field length number
----@field component string
 ---@field preferences BufferlineConfig
 ---@field current_highlights table<string, table<string, string>>
 ---@field tab Tabpage | Buffer
----@field separators table<string, string>
 ---@field is_picking boolean
 ---@type RenderContext
 local Context = {}
@@ -55,10 +52,7 @@ local Context = {}
 ---@return RenderContext
 function Context:new(ctx)
   assert(ctx.tab, "A tab view entity is required to create a context")
-  self.length = ctx.length or 0
   self.tab = ctx.tab
-  self.component = ctx.component or {}
-  self.separators = ctx.component or { left = "", right = "" }
   self.__index = self
   return setmetatable(ctx, self)
 end
