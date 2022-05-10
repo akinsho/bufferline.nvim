@@ -127,7 +127,7 @@ end
 
 local function apply_colors()
   local current_prefs = config.update_highlights()
-  highlights.set_all(current_prefs.highlights)
+  highlights.set_all(current_prefs)
 end
 
 ---@alias group_actions '"close"' | '"toggle"'
@@ -314,7 +314,7 @@ end
 
 ---@param conf BufferlineConfig
 function M.setup(conf)
-  if vim.fn.has("nvim-0.7") == 0 then
+  if not utils.is_current_stable_release() then
     utils.notify(
       "bufferline.nvim requires Neovim 0.7 or higher, please use tag 1.* or update your neovim",
       utils.E,
@@ -322,11 +322,10 @@ function M.setup(conf)
     )
     return
   end
-  conf = conf or {}
-  config.set(conf)
+  config.set(conf or {})
   local preferences = config.apply()
   -- on loading (and reloading) the plugin's config reset all the highlights
-  highlights.set_all(preferences.highlights)
+  highlights.set_all(preferences)
   setup_commands()
   setup_autocommands(preferences)
   vim.o.tabline = "%!v:lua.nvim_bufferline()"

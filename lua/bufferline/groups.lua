@@ -8,6 +8,8 @@ local models = lazy.require("bufferline.models")
 --- @module "bufferline.ui"
 local ui = lazy.require("bufferline.ui")
 
+local fn = vim.fn
+
 ----------------------------------------------------------------------------------------------------
 -- Types
 ----------------------------------------------------------------------------------------------------
@@ -25,7 +27,7 @@ local ui = lazy.require("bufferline.ui")
 --- @field sep_start Separator
 --- @field sep_end Separator
 
----@alias GroupSeparator fun(name: string, group:Group, hls: BufferlineHLGroup, count_item: string): Separators
+---@alias GroupSeparator fun(name: string, group:Group, hls: BufferlineHLGroup, count_item: string?): Separators
 ---@alias GroupSeparators table<string, GroupSeparator>
 ---@alias grouper fun(b: Buffer): boolean
 
@@ -39,6 +41,7 @@ local ui = lazy.require("bufferline.ui")
 ---@field public highlight table<string, string>
 ---@field public icon string
 ---@field public hidden boolean
+---@field public with fun(Group, Group)
 ---@field auto_close boolean when leaving the group automatically close it
 
 ----------------------------------------------------------------------------------------------------
@@ -203,7 +206,7 @@ local function persist_pinned_buffers()
   local pinned = {}
   for buf, group in pairs(state.manual_groupings) do
     if group == PINNED_ID then
-      table.insert(pinned, buf)
+      table.insert(pinned, api.nvim_buf_get_name(buf))
     end
   end
   if #pinned == 0 then
@@ -317,9 +320,12 @@ local function restore_pinned_buffers()
   if not pinned then
     return
   end
-  local manual_groupings = vim.tbl_map(tonumber, vim.split(pinned, ",")) or {}
-  for _, buf_id in pairs(manual_groupings) do
-    set_manual_group(buf_id, PINNED_ID)
+  local manual_groupings = vim.split(pinned, ",") or {}
+  for _, path in ipairs(manual_groupings) do
+    local buf_id = fn.bufnr(path)
+    if buf_id ~= -1 then
+      set_manual_group(buf_id, PINNED_ID)
+    end
   end
   ui.refresh()
 end
@@ -455,7 +461,7 @@ function M.toggle_hidden(priority, name)
 end
 
 ---Get the names for all bufferline groups
----@param include_empty boolean
+---@param include_empty boolean?
 ---@return string[]
 function M.names(include_empty)
   if not state.user_groups then

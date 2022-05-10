@@ -165,6 +165,9 @@ end
 ---@field public group Group
 ---@field public group_fn string
 ---@field public length number the length of the buffer component
+---@field public visibility fun(): boolean
+---@field public current fun(): boolean
+---@field public visible fun(): boolean
 ---@deprecated public filename string the visible name for the file
 local Buffer = Component:new({ type = "buffer" })
 
@@ -265,7 +268,7 @@ end
 local Section = {}
 
 ---Create a segment of tab views
----@param n Section
+---@param n Section?
 ---@return Section
 function Section:new(n)
   local t = n or { length = 0, items = {} }
