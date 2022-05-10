@@ -251,13 +251,15 @@ end
 local function add_space(ctx, length)
   local options = config.options
   local curr_hl = ctx.current_highlights
+  local left_size, right_size = 0, 0
+  left_size = not options.show_buffer_close_icons and strwidth(modified_component()) or left_size
   -- pad each tab smaller than the max tab size to make it consistent
   local difference = options.tab_size - length
-  if difference <= 0 then
-    return
+  if difference > 0 then
+    local size = math.floor(difference / 2)
+    left_size, right_size = size + left_size, size + right_size
   end
-  local size = math.floor(difference / 2)
-  return pad(size, size, curr_hl.buffer.hl)
+  return pad(left_size, right_size, curr_hl.buffer.hl)
 end
 
 --- @param buffer Buffer
@@ -378,6 +380,9 @@ local function add_suffix(context)
   local element = context.tab
   local hl = context.current_highlights
   local symbol = modified_component()
+  -- If the buffer is modified add an icon, if it isn't pad
+  -- the buffer so it doesn't "jump" when it becomes modified i.e. due
+  -- to the sudden addition of a new character
   local modified = {
     text = element.modified and symbol or string.rep(padding, strwidth(symbol)),
     highlight = element.modified and hl.modified or nil,
