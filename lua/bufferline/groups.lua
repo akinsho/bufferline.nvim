@@ -323,10 +323,9 @@ local function restore_pinned_buffers()
   local manual_groupings = vim.split(pinned, ",") or {}
   for _, path in ipairs(manual_groupings) do
     local buf_id = fn.bufnr(path)
-    if buf_id == -1 then
-      return
+    if buf_id ~= -1 then
+      set_manual_group(buf_id, PINNED_ID)
     end
-    set_manual_group(buf_id, PINNED_ID)
   end
   ui.refresh()
 end
