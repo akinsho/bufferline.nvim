@@ -48,6 +48,7 @@ local Context = {}
 ---@field global boolean whether or not the attribute applies to other elements apart from the current one
 ---@field prefix string
 ---@field suffix string
+---@field extends number
 
 --- @class Segment
 --- @field text string
@@ -167,10 +168,21 @@ local function to_tabline_str(component)
   component = component or {}
   local str = ""
   local globals = {}
-  for _, part in ipairs(component) do
+  for idx, part in ipairs(component) do
     local attr = part.attr
     if attr and attr.global then
       table.insert(globals, { attr.prefix or "", attr.suffix or "" })
+    end
+    -- The extends field means that the components highlights should be continued
+    -- for n (it's value), number of following segments i.e. it stretches the highlight
+    -- of the current segment
+    if attr and attr.extends then
+      for i = 1, attr.extends, 1 do
+        local neighbour = component[idx + i]
+        if neighbour and neighbour.highlight then
+          neighbour.highlight = part.highlight or neighbour.highlight
+        end
+      end
     end
     str = str
       .. highlights.hl(part.highlight)
