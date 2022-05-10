@@ -500,19 +500,9 @@ function M.element(state, element)
   local suffix = add_suffix(ctx)
   local indicator = add_indicator(ctx)
   local left, right = add_separators(ctx)
-  local text_size = get_component_size(
-    name,
-    duplicate_prefix,
-    group_item,
-    diagnostic,
-    icon,
-    number_item,
-    suffix,
-    indicator,
-    left,
-    right
-  )
-  local left_space, right_space = add_space(ctx, text_size)
+  -- Guess how much space there will for padding based on the buffer's name
+  local name_size = get_component_size(name, icon, suffix)
+  local left_space, right_space = add_space(ctx, name_size)
 
   local component = vim.tbl_filter(is_not_nil, {
     tab_click_handler(element.id),
