@@ -114,15 +114,21 @@ function M.make_clickable(func_name, id, component)
   return component
 end
 
+---@class PadSide
+---@field size number
+---@field hl string
+
+---@class PadOpts
+---@field left PadSide?
+---@field right PadSide?
+
 ---Add padding to either side of a component
----@param left number?
----@param right number?
----@param left_hl string?
----@param right_hl string?
+---@param opts PadOpts
 ---@return Segment, Segment
-local function pad(left, right, left_hl, right_hl)
-  left, left_hl = left or 0, left_hl or ""
-  right, right_hl = right or 0, right_hl or left_hl
+local function pad(opts)
+  opts.left, opts.right = opts.left or {}, opts.right or {}
+  local left, left_hl = opts.left.size or 0, opts.left.hl or ""
+  local right, right_hl = opts.right.size or 0, opts.right.hl or left_hl
   local left_p, right_p = string.rep(padding, left), string.rep(padding, right)
   return { text = left_p, highlight = left_hl }, { text = right_p, highlight = right_hl }
 end
@@ -273,7 +279,10 @@ local function add_space(ctx, length)
     local size = math.floor(difference / 2)
     left_size, right_size = size + left_size, size + right_size
   end
-  return pad(left_size, right_size, curr_hl.buffer.hl)
+  return pad({
+    left = { size = left_size, hl = curr_hl.buffer.hl },
+    right = { size = right_size },
+  })
 end
 
 --- @param buffer Buffer
@@ -519,7 +528,7 @@ function M.element(state, element)
   local left, right = add_separators(ctx)
 
   local name = get_name(ctx)
-  local name_padding = pad(1, nil, curr_hl.buffer.hl)
+  local name_padding = pad({ left = { size = 1, hl = curr_hl.buffer.hl } })
   -- Guess how much space there will for padding based on the buffer's name
   local name_size = get_component_size(name, name_padding, icon, suffix)
   local left_space, right_space = add_space(ctx, name_size)
