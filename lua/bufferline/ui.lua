@@ -163,6 +163,7 @@ local function get_sections(components)
   return before, current, after
 end
 
+-- TODO: Write test cases for this logic
 ---@param component Segment[]
 local function to_tabline_str(component)
   component = component or {}
