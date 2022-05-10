@@ -507,7 +507,7 @@ function M.element(state, element)
   local name = get_name(ctx)
   local name_padding = pad(1, nil, curr_hl.buffer.hl)
   -- Guess how much space there will for padding based on the buffer's name
-  local name_size = get_component_size(name, icon, suffix)
+  local name_size = get_component_size(name, name_padding, icon, suffix)
   local left_space, right_space = add_space(ctx, name_size)
 
   local component = vim.tbl_filter(is_not_nil, {
