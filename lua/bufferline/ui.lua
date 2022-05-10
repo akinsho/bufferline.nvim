@@ -137,6 +137,7 @@ local function get_tab_close_button(options)
   if options.show_close_icon then
     return { { text = padding .. options.close_icon .. padding, attr = { prefix = "%999X" } } }
   end
+  return {}
 end
 
 ---@param components Component[]
