@@ -368,6 +368,8 @@ local function add_icon(context)
   end
 end
 
+--- The suffix can be either the modified icon, space to replace the icon if
+--- a user has turned them off or the close icon if the element is not currently modified
 --- @param context RenderContext
 --- @return Segment?
 local function add_suffix(context)
