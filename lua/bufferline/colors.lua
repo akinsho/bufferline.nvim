@@ -55,7 +55,7 @@ end
 --   of a given hl_name. 
 ---@param opts table
 ---@return integer
-function M.get_cterm_color(opts)
+function M.get_color(opts)
   local name, attribute, fallback, not_match =
     opts.name, opts.attribute, opts.fallback, opts.not_match
   -- translate from internal part to hl part

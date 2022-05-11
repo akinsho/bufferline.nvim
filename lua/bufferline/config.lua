@@ -95,7 +95,7 @@ local function convert_highlights(map)
       if type(value) == "table" then
         if value.highlight and value.attribute then
           if string.find(attribute, "cterm") then
-            updated[hl][attribute] = colors.get_cterm_color({
+            updated[hl][attribute] = colors.get_color({
               name = value.highlight,
               attribute = value.attribute,
             })
@@ -106,10 +106,8 @@ local function convert_highlights(map)
             })
           end
         else
-          if not string.find(attribute, "cterm") then
-            updated[hl][attribute] = nil
-            utils.notify(fmt("removing %s as it is not formatted correctly", hl), utils.W)
-          end
+          updated[hl][attribute] = nil
+          utils.notify(fmt("removing %s as it is not formatted correctly", hl), utils.W)
         end
       end
     end
