@@ -19,13 +19,9 @@ local fn = vim.fn
 --- @field user_groups table<string, Group>
 --- @field components_by_group table<string,number>[][]
 
---- @class Separator
---- @field component Segment
---- @field length number
-
 --- @class Separators
---- @field sep_start Separator
---- @field sep_end Separator
+--- @field sep_start Segment[]
+--- @field sep_end Segment[]
 
 ---@alias GroupSeparator fun(name: string, group:Group, hls: BufferlineHLGroup, count_item: string?): Separators
 ---@alias GroupSeparators table<string, GroupSeparator>
@@ -75,7 +71,7 @@ end
 local separator = {}
 
 local function space_end(hl_groups)
-  return { component = { highlight = hl_groups.fill.hl, text = padding } }
+  return { { highlight = hl_groups.fill.hl, text = padding } }
 end
 
 ---@param group Group,
@@ -96,7 +92,7 @@ function separator.pill(group, hls, count)
     { text = right, highlight = sep_hl },
     { text = padding, highlight = bg_hl },
   }
-  return { sep_start = { component = indicator }, sep_end = space_end(hls) }
+  return { sep_start = indicator, sep_end = space_end(hls) }
 end
 
 ---@param group Group,
@@ -112,7 +108,7 @@ function separator.tab(group, hls, count)
     { highlight = indicator_hl, text = padding .. group.name .. count .. padding },
     { highlight = hl, text = padding },
   }
-  return { sep_start = { component = indicator }, sep_end = space_end(hls) }
+  return { sep_start = indicator, sep_end = space_end(hls) }
 end
 
 ---@type GroupSeparator
@@ -468,8 +464,8 @@ end
 local function create_indicator(group, hls, count)
   local count_item = group.hidden and fmt("(%s)", count) or ""
   local seps = group.separator.style(group, hls, count_item)
-  if seps.sep_start.component then
-    ui.make_clickable("handle_group_click", group.priority, seps.sep_start.component)
+  if seps.sep_start then
+    ui.make_clickable("handle_group_click", group.priority, seps.sep_start)
   end
   return seps
 end
@@ -496,20 +492,27 @@ local function get_group_marker(group_id, components)
 
   local seps = create_indicator(group, hl_groups, #components)
   local s_start, s_end = seps.sep_start, seps.sep_end
-  local group_start = GroupView:new({
-    type = "group_start",
-    length = s_start.length,
-    component = function()
-      return s_start.component
-    end,
-  })
-  local group_end = GroupView:new({
-    type = "group_end",
-    length = s_end.length,
-    component = function()
-      return s_end.component
-    end,
-  })
+  local group_start, group_end
+  local s_start_length = ui.get_component_size(s_start)
+  local s_end_length = ui.get_component_size(s_end)
+  if s_start and s_start_length > 0 then
+    group_start = GroupView:new({
+      type = "group_start",
+      length = s_start_length,
+      component = function()
+        return s_start
+      end,
+    })
+  end
+  if s_end and s_end_length > 0 then
+    group_end = GroupView:new({
+      type = "group_end",
+      length = s_end_length,
+      component = function()
+        return s_end
+      end,
+    })
+  end
   return group_start, group_end
 end
 
