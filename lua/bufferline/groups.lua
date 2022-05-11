@@ -113,7 +113,7 @@ end
 
 ---@type GroupSeparator
 function separator.none()
-  return { sep_start = { component = {} }, sep_end = { component = {} } }
+  return { sep_start = {}, sep_end = {} }
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -465,7 +465,10 @@ local function create_indicator(group, hls, count)
   local count_item = group.hidden and fmt("(%s)", count) or ""
   local seps = group.separator.style(group, hls, count_item)
   if seps.sep_start then
-    ui.make_clickable("handle_group_click", group.priority, seps.sep_start)
+    table.insert(
+      seps.sep_start,
+      ui.make_clickable("handle_group_click", group.priority, { attr = { global = true } })
+    )
   end
   return seps
 end
@@ -495,7 +498,7 @@ local function get_group_marker(group_id, components)
   local group_start, group_end
   local s_start_length = ui.get_component_size(s_start)
   local s_end_length = ui.get_component_size(s_end)
-  if s_start and s_start_length > 0 then
+  if s_start_length > 0 then
     group_start = GroupView:new({
       type = "group_start",
       length = s_start_length,
@@ -504,7 +507,7 @@ local function get_group_marker(group_id, components)
       end,
     })
   end
-  if s_end and s_end_length > 0 then
+  if s_end_length > 0 then
     group_end = GroupView:new({
       type = "group_end",
       length = s_end_length,
