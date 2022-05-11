@@ -67,17 +67,12 @@ function M.get_cterm_color(opts)
   -- try and get hl from name
   -- XXX nvim_get_hl_by_name returns garbage values (pcall returns success)
   --     this happens for some groups only (TabLine fails but DevIconPl is ok)
-  -- attribute = attribute == "fg" and "foreground" or "background"
-  -- local success, hl = pcall(vim.api.nvim_get_hl_by_name, name, false)
-  -- if success and hl and hl[attribute] then
-  --   return hl[attribute]
-  -- end
-
-  local success, hl = pcall(vim.fn.synIDattr(vim.fn.synIDtrans(vim.fn.hlID(name)), attribute))
-  if success and hl then
-    return hl
+  attribute = attribute == "fg" and "foreground" or "background"
+  local success, hl = pcall(vim.api.nvim_get_hl_by_name, name, false)
+  if success and hl and hl[attribute] then
+    return hl[attribute]
   end
-
+ 
   -- we couldn't resolve the color
   return nil
 end

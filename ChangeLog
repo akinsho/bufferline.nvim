@@ -1,11 +1,32 @@
 Author: Girish Palya <girishji@gmail.com>
-Date:   Wed, 11 May 2022 10:38:21 +0200
+Date:   Wed, 11 May 2022 12:05:45 +0200
 
-Add doc and fix typo
+Refactored code
 
 
-M  doc/bufferline.txt
-M  lua/bufferline/highlights.lua
+M  lua/bufferline/colors.lua
+
+commit 5bdef49298678227e0cce2172a084153fe9bafba
+Merge: 077504e ee1d51e
+Author: gp <girishji@gmail.com>
+Date:   Wed May 11 11:30:43 2022 +0200
+
+    Merge branch 'akinsho:main' into cterm-color-support
+
+commit 077504ee124a1848df2022e716ccdc4ebd307d87
+Author: Girish Palya <girishji@gmail.com>
+Date:   Wed May 11 10:38:21 2022 +0200
+
+    Add doc and fix typo
+    
+    M  doc/bufferline.txt
+    M  lua/bufferline/highlights.lua
+
+commit ee1d51e44ce361b4a037ca5fbbb27f270d3ea03c
+Author: aloha <liu.qihuan@outlook.com>
+Date:   Wed May 11 16:16:17 2022 +0800
+
+    fix(duplicates): use utils.truncate_name to truncate ancestors (#414)
 
 commit 8e0cf44a5284cd0dac946e63e8c31a976b67ffed
 Author: Girish Palya <girishji@gmail.com>
