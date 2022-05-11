@@ -40,8 +40,13 @@ all of it's functionality though.
 
 ==============================================================================
 USAGE						        *bufferline-usage*
-You need to be using `termguicolors` for this plugin to work, as it reads the
-hex `gui` color values of various highlight groups. >
+
+You are advised to use `termguicolors` for this plugin, especially if you are
+using a colorscheme that uses rgb color values. However this plugin also works
+with native terminal colors. When `termguicolors` is enabled, it reads the hex
+`gui` color values of various highlight groups. Otherwise it expects user to
+explicitly specify color numbers (most modern terminals allow 256 color
+values).
 
     set termguicolors
     " In your init.vim or init.lua
@@ -586,9 +591,9 @@ A few of this plugins commands can be mapped for ease of use. >
 ==============================================================================
 HIGHLIGHTS                                           *bufferline-highlights*
 
-This plugin is designed to work automatically, deriving colours from the
-user's theme, you can change highlight groups by overriding the section you'd
-like to change.
+When `termguicolors`is enabled, this plugin is designed to work automatically,
+deriving colours from the user's theme, you can change highlight groups by
+overriding the section you'd like to change.
 
 Keep in mind that despite my best efforts not to change these they might
 require the occasional tweak (if you don't customise these too much you should
@@ -823,6 +828,24 @@ highlight command. See `:h highlight` .
         };
     }
 <
+When `termguicolors` is not enabled, user is expected to specify color values
+similar to the format above (use `ctermbg` and `ctermfg` instead). User can
+also directly specify [color
+numbers](https://www.ditig.com/256-colors-cheat-sheet).
+
+for example: >
+    highlights = {
+        fill = {
+            ctermbg = 7
+            ctermfg = 0
+            }
+        }
+    }
+
+This will set the background of the highlight group to gray and foreground to
+black. Here the colors are system determined, and the user may have changed
+the rgb values through customizing the terminal emulator itself. This is
+possible for color numbers 0-15.
 
 ==============================================================================
 COLORSCHEME DEVELOPMENT                                           *bufferline-colorscheme-development*

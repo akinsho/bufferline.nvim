@@ -54,7 +54,7 @@ local function convert_gui(guistr)
 end
 
 local keys = { guisp = "sp", guibg = "background", guifg = "foreground", default = "default" }
-if not nvim.o.termguicolors then
+if not vim.o.termguicolors then
   keys.ctermfg = "ctermfg"
   keys.ctermbg = "ctermbg"
   keys.cterm = "cterm"
