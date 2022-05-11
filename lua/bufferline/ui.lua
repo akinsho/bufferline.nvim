@@ -257,7 +257,9 @@ local function highlight_icon(buffer, color_icons, hl_defs)
   local new_hl = highlights.generate_name(hl, { visibility = state })
   local guifg = not color_icons and "fg" or colors.get_hex({ name = hl, attribute = "fg" })
   local guibg = colors.get_hex({ name = bg_hls[state], attribute = "bg" })
-  highlights.set_one(new_hl, { guibg = guibg, guifg = guifg })
+  local ctermfg = colors.get_cterm_color({ name = bg_hls[state], attribute = "fg" })
+  local ctermbg = colors.get_cterm_color({ name = bg_hls[state], attribute = "bg" })
+  highlights.set_one(new_hl, { guibg = guibg, guifg = guifg, ctermfg = ctermfg, ctermbg = ctermbg })
   return highlights.hl(new_hl) .. icon .. padding .. "%*"
 end
 

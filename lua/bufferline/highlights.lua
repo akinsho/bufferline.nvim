@@ -54,6 +54,11 @@ local function convert_gui(guistr)
 end
 
 local keys = { guisp = "sp", guibg = "background", guifg = "foreground", default = "default" }
+if not nvim.o.termguicolors then
+  keys.ctermfg = "ctermfg"
+  keys.ctermbg = "ctermbg"
+  keys.cterm = "cterm"
+end
 
 --- Transform legacy highlight keys to new nvim_set_hl api keys
 ---@param opts table<string, string>
