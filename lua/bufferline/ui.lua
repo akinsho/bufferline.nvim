@@ -80,13 +80,12 @@ local function is_not_nil(s)
   return s ~= nil
 end
 
----@vararg Segment
+---@param segments Segment[]
 ---@return integer
-local function get_component_size(...)
+local function get_component_size(segments)
+  assert(vim.tbl_islist(segments), "Segments must be a list")
   local sum = 0
-  for i = 1, select("#", ...) do
-    ---@type Segment
-    local s = select(i, ...)
+  for _, s in ipairs(segments) do
     if has_text(s) then
       sum = sum + strwidth(s.text)
     end
@@ -533,7 +532,7 @@ function M.element(state, element)
   local name = get_name(ctx)
   local name_padding = pad({ left = { size = 1, hl = curr_hl.buffer.hl } })
   -- Guess how much space there will for padding based on the buffer's name
-  local name_size = get_component_size(name, name_padding, icon, suffix)
+  local name_size = get_component_size({ name, name_padding, icon, suffix })
   local left_space, right_space = add_space(ctx, name_size)
 
   local component = vim.tbl_filter(is_not_nil, {
@@ -554,7 +553,9 @@ function M.element(state, element)
   element.component = create_renderer(left, right, component)
   -- NOTE: we must count the size of the separators here although we do not
   -- add them yet, since by the time they are added the component will already have rendered
-  element.length = get_component_size(left, right, unpack(component))
+  element.length = get_component_size(
+    vim.tbl_filter(is_not_nil, { left, right, unpack(component) })
+  )
   return element
 end
 
@@ -583,7 +584,7 @@ local function get_tab_indicators(indicators, options)
     return tab_components, tabs_length
   end
   for _, t in ipairs(indicators) do
-    tabs_length = tabs_length + get_component_size(unpack(t.component))
+    tabs_length = tabs_length + get_component_size(t.component)
     tab_components = tab_components .. to_tabline_str(t.component)
   end
   return tab_components, tabs_length
@@ -599,7 +600,7 @@ function M.tabline(components, tab_indicators)
   local right_align = "%="
 
   local tab_close_button = get_tab_close_button(options)
-  local tab_close_button_length = get_component_size(unpack(tab_close_button))
+  local tab_close_button_length = get_component_size(tab_close_button)
   local tab_close_button_component = to_tabline_str(tab_close_button)
 
   local tab_indicator_component, tab_indicator_length = get_tab_indicators(tab_indicators, options)
@@ -660,5 +661,7 @@ function M.tabline(components, tab_indicators)
 
   return tabline, visible_components, segments
 end
+
+M.get_component_size = get_component_size
 
 return M
