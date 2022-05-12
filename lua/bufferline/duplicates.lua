@@ -6,8 +6,6 @@ local config = lazy.require("bufferline.config")
 -- @module "bufferline.utils"
 local utils = require("bufferline.utils")
 
-local strwidth = vim.fn.strwidth
-
 local duplicates = {}
 
 function M.reset()

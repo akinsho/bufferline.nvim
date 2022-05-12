@@ -1,4 +1,3 @@
-local constants = require("bufferline.constants")
 local config = require("bufferline.config")
 
 ---@class NumbersFuncOpts
@@ -99,7 +98,7 @@ function M.component(context)
     return
   end
   local number_prefix = prefix(element, options.numbers)
-  local number_component = number_prefix ~= "" and number_prefix .. constants.padding or ""
+  local number_component = number_prefix or ""
   return { highlight = context.current_highlights.numbers, text = number_component }
 end
 

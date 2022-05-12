@@ -178,7 +178,7 @@ function M.component(context)
   local diag_highlight = highlights[diagnostics.level .. "_diagnostic"]
     or highlights.diagnostic
     or ""
-  return { text = indicator .. constants.padding, highlight = diag_highlight }
+  return { text = indicator, highlight = diag_highlight }
 end
 
 return M

@@ -44,7 +44,7 @@ function M.component(ctx)
     local left = string.rep(padding, math.floor((strwidth(element.icon) - 1) / 2))
     letter = left .. element.letter .. right
   end
-  return { text = letter .. padding, highlight = hl.pick }
+  return { text = letter, highlight = hl.pick }
 end
 
 return M

@@ -299,7 +299,7 @@ local function get_icon_with_highlight(buffer, color_icons, hl_defs)
     return
   end
   if not hl or hl == "" then
-    return { text = icon .. padding }
+    return { text = icon }
   end
 
   local state = buffer:visibility()
@@ -321,7 +321,7 @@ local function get_icon_with_highlight(buffer, color_icons, hl_defs)
     ctermbg = colors.get_color({ name = bg_hls[state], attribute = "bg", cterm = true }),
   }
   highlights.set_one(new_hl, hl_colors)
-  return { text = icon .. padding, highlight = new_hl, attr = { text = "%*" } }
+  return { text = icon, highlight = new_hl, attr = { text = "%*" } }
 end
 
 ---Determine if the separator style is one of the slant options
