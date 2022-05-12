@@ -175,17 +175,17 @@ local function get_tab_close_button(options)
   return {}
 end
 
----@param components Component[]
+---@param items Component[]
 ---@return Section
 ---@return Section
 ---@return Section
-local function get_sections(components)
+local function get_sections(items)
   local Section = require("bufferline.models").Section
   local current = Section:new()
   local before = Section:new()
   local after = Section:new()
 
-  for _, tab_view in ipairs(components) do
+  for _, tab_view in ipairs(items) do
     if not tab_view.hidden then
       if tab_view:current() then
         current:add(tab_view)
@@ -290,14 +290,14 @@ local function truncate(before, current, after, available_width, marker, visible
   local total_length = before.length + current.length + after.length + markers_length
 
   if available_width >= total_length then
-    local components = {}
+    local items = {}
     visible = utils.array_concat(before.items, current.items, after.items)
     for index, item in ipairs(visible) do
       local component = item.component(visible[index + 1])
-      table.insert(components, component)
+      table.insert(items, component)
       line = line .. to_tabline_str(component)
     end
-    return line, marker, visible, components
+    return line, marker, visible, items
     -- if we aren't even able to fit the current buffer into the
     -- available space that means the window is really narrow
     -- so don't show anything
@@ -667,10 +667,10 @@ local function get_tab_indicators(indicators, options)
 end
 
 --- TODO: All components should return Segment[] that are then combined in one go into a tabline
---- @param components Component[]
+--- @param items Component[]
 --- @param tab_indicators table[]
 --- @return string
-function M.tabline(components, tab_indicators)
+function M.tabline(items, tab_indicators)
   local options = config.options
   local hl = config.highlights
   local right_align = "%="
@@ -698,7 +698,7 @@ function M.tabline(components, tab_indicators)
     - tab_indicator_length
     - tab_close_button_length
 
-  local before, current, after = get_sections(components)
+  local before, current, after = get_sections(items)
   local line, marker, visible_components, segments = truncate(
     before,
     current,
