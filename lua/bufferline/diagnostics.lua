@@ -77,22 +77,15 @@ end
 
 local get_diagnostics = {
   nvim_lsp = function()
-    if utils.is_truthy(fn.has("nvim-0.6.1")) then
-      local results = {}
-      local diagnostics = vim.diagnostic.get()
-
-      for _, d in pairs(diagnostics) do
-        if not results[d.bufnr] then
-          results[d.bufnr] = {}
-        end
-
-        table.insert(results[d.bufnr], d)
+    local results = {}
+    local diagnostics = vim.diagnostic.get()
+    for _, d in pairs(diagnostics) do
+      if not results[d.bufnr] then
+        results[d.bufnr] = {}
       end
-
-      return results
+      table.insert(results[d.bufnr], d)
     end
-    ---@diagnostic disable-next-line: deprecated
-    return vim.lsp.diagnostic.get_all()
+    return results
   end,
 
   coc = (function()
