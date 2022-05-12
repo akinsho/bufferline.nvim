@@ -51,13 +51,14 @@ function M.color_is_bright(hex)
   return luminance > 0.5 -- if > 0.5 Bright colors, black font, otherwise Dark colors, white font
 end
 
--- parses the hex color code from the given hl_name
--- if unable to parse, uses the fallback value
+-- parses the gui hex color code (or cterm color number) from the given hl_name
+--   color number (0-255) is returned if cterm is set to true in opts
+--   if unable to parse, uses the fallback value
 ---@param opts table
----@return string
-function M.get_hex(opts)
-  local name, attribute, fallback, not_match =
-    opts.name, opts.attribute, opts.fallback, opts.not_match
+---@return string | number
+function M.get_color(opts)
+  local name, attribute, fallback, not_match, cterm =
+    opts.name, opts.attribute, opts.fallback, opts.not_match, opts.cterm
   -- translate from internal part to hl part
   assert(
     attribute == "fg" or attribute == "bg",
@@ -66,13 +67,25 @@ function M.get_hex(opts)
   attribute = attribute == "fg" and "foreground" or "background"
 
   -- try and get hl from name
-  local success, hl = pcall(vim.api.nvim_get_hl_by_name, name, true)
+  local success, hl = pcall(vim.api.nvim_get_hl_by_name, name, not cterm)
   if success and hl and hl[attribute] then
+    if cterm then
+      return hl[attribute]
+    end
     -- convert from decimal color value to hex (e.g. 14257292 => "#D98C8C")
     local hex = "#" .. bit.tohex(hl[attribute], 6)
     if not not_match or not_match ~= hex then
       return hex
     end
+  end
+  -- note: in case of cterm, nvim_get_hl_by_name may return incorrect color
+  --   numbers (but still < 256) for some highlight groups like TabLine,
+  --   but return correct numbers for groups like DevIconPl. this problem
+  --   does not happen for gui colors.
+
+  -- no fallback for cterm colors
+  if cterm then
+    return nil
   end
 
   -- basic fallback
@@ -86,7 +99,7 @@ function M.get_hex(opts)
       fallback.name and fallback.attribute,
       'Fallback should have "name" and "attribute" fields'
     )
-    return M.get_hex(fallback) -- allow chaining
+    return M.get_color(fallback) -- allow chaining
   end
 
   -- we couldn't resolve the color
