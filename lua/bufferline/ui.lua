@@ -212,7 +212,7 @@ local function to_tabline_str(component)
       table.insert(globals, { attr.prefix or "", attr.suffix or "" })
     end
     -- The extends field means that the components highlights should be applied
-    -- to another with a matching ID. So to keep the running linear I keep track of the
+    -- to another with a matching ID. So to keep this O(n) I keep track of the
     -- positions of the highlights I've already seen keyed by the ID of the segment
     -- and if there is a subsequent match, I replace the existing highlight in the string.
     -- Otherwise I know that the highlight must be ahead of me so I scan forwards
