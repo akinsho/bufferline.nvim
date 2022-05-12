@@ -37,13 +37,15 @@ function M.log.debug(msg)
   end
 end
 
----Takes all args and passes them on untouched
----@generic A
----@return A
-function M.identity(...)
-  return ...
+---Replace one substring with another
+---@param target string
+---@param pos_start number the start index
+---@param pos_end number the end index
+---@param replacement string
+---@return string
+function M.replace(target, pos_start, pos_end, replacement)
+  return target:sub(1, pos_start) .. replacement .. target:sub(pos_end + 1, -1)
 end
-
 ---Takes a list of items and runs the callback
 ---on each updating the initial value
 ---@generic T
@@ -57,15 +59,6 @@ function M.fold(accum, callback, list)
     accum = callback(accum, v, i)
   end
   return accum
-end
-
----Add a series of numbers together
----@vararg number
----@return number
-function M.sum(...)
-  return M.fold(0, function(accum, item)
-    return accum + item
-  end, { ... })
 end
 
 ---Variant of some that sums up the display size of characters
@@ -109,24 +102,6 @@ function M.find(list, callback)
   end
 end
 
---- A function which takes n number of functions and
---- passes the result of each function to the next
----@generic T
----@return fun(args: T): T
-function M.compose(...)
-  local funcs = { ... }
-  local function recurse(i, ...)
-    if i == #funcs then
-      return funcs[i](...)
-    end
-    return recurse(i + 1, funcs[i](...))
-  end
-
-  return function(...)
-    return recurse(1, ...)
-  end
-end
-
 -- return a new array containing the concatenation of all of its
 -- parameters. Scalar parameters are included in place, and array
 -- parameters have their values shallow-copied to the final array.
@@ -161,21 +136,6 @@ function M.for_each(list, callback, matcher)
       callback(item)
     end
   end
-end
-
---- @param array table
---- @return table
-function M.filter_duplicates(array)
-  local seen = {}
-  local res = {}
-
-  for _, v in ipairs(array) do
-    if not seen[v] then
-      res[#res + 1] = v
-      seen[v] = true
-    end
-  end
-  return res
 end
 
 --- creates a table whose keys are tbl's values and the value of these keys
@@ -267,17 +227,6 @@ function M.get_icon(opts)
     return "", ""
   end
   return icon, hl
-end
-
----Add click action to a component
----@param func_name string
----@param id number
----@param component string
----@return string
-function M.make_clickable(func_name, id, component)
-  -- v:lua does not support function references in vimscript so
-  -- the only way to implement this is using autoload vimscript functions
-  return "%" .. id .. "@nvim_bufferline#" .. func_name .. "@" .. component
 end
 
 local current_stable = {

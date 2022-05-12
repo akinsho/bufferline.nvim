@@ -30,14 +30,12 @@ function M.get(element)
 end
 
 ---@param ctx RenderContext
+---@return boolean, Segment?
 function M.component(ctx)
-  local utils = require("bufferline.utils")
   local padding = require("bufferline.constants").padding
   local options = require("bufferline.config").get("options")
 
   local element = ctx.tab
-  local length = ctx.length
-  local component = ctx.component
   local hl = ctx.current_highlights
   local letter = element.letter
 
@@ -46,10 +44,7 @@ function M.component(ctx)
     local left = string.rep(padding, math.floor((strwidth(element.icon) - 1) / 2))
     letter = left .. element.letter .. right
   end
-
-  component = utils.join(hl.pick, letter, padding, hl.background, component)
-  length = utils.sum(length, strwidth(letter), strwidth(padding))
-  return component, length
+  return { text = letter, highlight = hl.pick }
 end
 
 return M

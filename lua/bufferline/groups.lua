@@ -19,13 +19,9 @@ local fn = vim.fn
 --- @field user_groups table<string, Group>
 --- @field components_by_group table<string,number>[][]
 
---- @class Separator
---- @field component string
---- @field length number
-
 --- @class Separators
---- @field sep_start Separator
---- @field sep_end Separator
+--- @field sep_start Segment[]
+--- @field sep_end Segment[]
 
 ---@alias GroupSeparator fun(name: string, group:Group, hls: BufferlineHLGroup, count_item: string?): Separators
 ---@alias GroupSeparators table<string, GroupSeparator>
@@ -56,7 +52,6 @@ local PINNED_KEY = "BufferlinePinnedBuffers"
 
 local api = vim.api
 local fmt = string.format
-local strwidth = api.nvim_strwidth
 
 local M = {}
 
@@ -76,7 +71,7 @@ end
 local separator = {}
 
 local function space_end(hl_groups)
-  return { component = utils.join(hl_groups.fill.hl, padding), length = strwidth(padding) }
+  return { { highlight = hl_groups.fill.hl, text = padding } }
 end
 
 ---@param group Group,
@@ -90,20 +85,14 @@ function separator.pill(group, hls, count)
   local sep_hl = sep_grp and sep_grp.hl or hls.group_separator.hl
   local label_hl = label_grp and label_grp.hl or hls.group_label.hl
   local left, right = "█", "█"
-  local indicator = utils.join(
-    bg_hl,
-    padding,
-    sep_hl,
-    left,
-    label_hl,
-    display_name,
-    count,
-    sep_hl,
-    right,
-    padding
-  )
-  local length = utils.measure(left, right, display_name, count, padding, padding)
-  return { sep_start = { component = indicator, length = length }, sep_end = space_end(hls) }
+  local indicator = {
+    { text = padding, highlight = bg_hl },
+    { text = left, highlight = sep_hl },
+    { text = display_name .. count, highlight = label_hl },
+    { text = right, highlight = sep_hl },
+    { text = padding, highlight = bg_hl },
+  }
+  return { sep_start = indicator, sep_end = space_end(hls) }
 end
 
 ---@param group Group,
@@ -114,24 +103,17 @@ end
 function separator.tab(group, hls, count)
   local hl = hls.fill.hl
   local indicator_hl = hls.buffer.hl
-  local length = utils.measure(group.name, string.rep(padding, 4), count)
-  local indicator = utils.join(
-    hl,
-    padding,
-    indicator_hl,
-    padding,
-    group.name,
-    count,
-    padding,
-    hl,
-    padding
-  )
-  return { sep_start = { component = indicator, length = length }, sep_end = space_end(hls) }
+  local indicator = {
+    { higlight = hl, text = padding },
+    { highlight = indicator_hl, text = padding .. group.name .. count .. padding },
+    { highlight = hl, text = padding },
+  }
+  return { sep_start = indicator, sep_end = space_end(hls) }
 end
 
 ---@type GroupSeparator
 function separator.none()
-  return { sep_start = { component = "", length = 0 }, sep_end = { component = "", length = 0 } }
+  return { sep_start = {}, sep_end = {} }
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -267,21 +249,21 @@ end
 
 ---Add group styling to the buffer component
 ---@param ctx RenderContext
----@return string
----@return number
+---@return Segment?
 function M.component(ctx)
   local element = ctx.tab
   local hls = ctx.current_highlights
   local group = state.user_groups[element.group]
   if not group then
-    return ctx
+    return
   end
-  --- TODO: should there be default icons at all
-  local icon = group.icon and group.icon .. padding or ""
-  local icon_length = api.nvim_strwidth(icon)
-  local hl = hls[group.name] or ""
-  local component, length = hl .. icon .. ctx.component .. hls.buffer.hl, ctx.length + icon_length
-  return ctx:update({ component = component, length = length })
+  local group_hl = hls[group.name]
+  local hl = group_hl or hls.buffer.hl
+  local extends = (group.icon and group_hl) and ui.components.id.name or nil
+  if not group.icon then
+    return nil
+  end
+  return { text = group.icon, highlight = hl, attr = { extends = extends } }
 end
 
 ---Add highlight groups for a group
@@ -484,11 +466,10 @@ end
 local function create_indicator(group, hls, count)
   local count_item = group.hidden and fmt("(%s)", count) or ""
   local seps = group.separator.style(group, hls, count_item)
-  if seps.sep_start.length > 0 then
-    seps.sep_start.component = utils.make_clickable(
-      "handle_group_click",
-      group.priority,
-      seps.sep_start.component
+  if seps.sep_start then
+    table.insert(
+      seps.sep_start,
+      ui.make_clickable("handle_group_click", group.priority, { attr = { global = true } })
     )
   end
   return seps
@@ -516,20 +497,27 @@ local function get_group_marker(group_id, components)
 
   local seps = create_indicator(group, hl_groups, #components)
   local s_start, s_end = seps.sep_start, seps.sep_end
-  local group_start = GroupView:new({
-    type = "group_start",
-    length = s_start.length,
-    component = function()
-      return s_start.component
-    end,
-  })
-  local group_end = GroupView:new({
-    type = "group_end",
-    length = s_end.length,
-    component = function()
-      return s_end.component
-    end,
-  })
+  local group_start, group_end
+  local s_start_length = ui.get_component_size(s_start)
+  local s_end_length = ui.get_component_size(s_end)
+  if s_start_length > 0 then
+    group_start = GroupView:new({
+      type = "group_start",
+      length = s_start_length,
+      component = function()
+        return s_start
+      end,
+    })
+  end
+  if s_end_length > 0 then
+    group_end = GroupView:new({
+      type = "group_end",
+      length = s_end_length,
+      component = function()
+        return s_end
+      end,
+    })
+  end
   return group_start, group_end
 end
 

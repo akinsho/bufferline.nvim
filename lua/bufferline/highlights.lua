@@ -37,6 +37,9 @@ function M.generate_name(name, opts)
 end
 
 function M.hl(item)
+  if not item then
+    return ""
+  end
   return "%#" .. item .. "#"
 end
 
@@ -100,8 +103,7 @@ end
 function M.add_group(name, highlight)
   -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
   local formatted = PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
-  highlight.hl_name = formatted
-  highlight.hl = M.hl(formatted)
+  highlight.hl = formatted
 end
 
 --- Map through user colors and convert the keys to highlight names
@@ -109,13 +111,13 @@ end
 --- @param conf BufferlineConfig
 function M.set_all(conf)
   for name, tbl in pairs(conf.highlights) do
-    if not tbl or not tbl.hl_name then
+    if not tbl or not tbl.hl then
       utils.notify(
         fmt("Error setting highlight group: no name for %s - %s", name, vim.inspect(tbl), utils.E)
       )
     else
       tbl.default = conf.options.themable
-      M.set_one(tbl.hl_name, tbl)
+      M.set_one(tbl.hl, tbl)
     end
   end
 end

@@ -159,12 +159,13 @@ describe("Group tests - ", function()
     components = groups.render(components, function(t)
       return t
     end)
-    assert.equal(7, #components)
+    assert.equal(5, #components)
     local g_start = components[1]
     local g_end = components[4]
     assert.is_equal(g_start.type, "group_start")
     assert.is_equal(g_end.type, "group_end")
-    assert.is_truthy(g_start.component():match("test%-group"))
+    local component = g_start.component()
+    assert.is_true(utils.find_text(component, "test-group"))
   end)
 
   it("should sort each group individually", function()

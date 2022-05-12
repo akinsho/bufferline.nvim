@@ -1,6 +1,32 @@
 local M = {}
 
+local fn = vim.fn
+
 local MockBuffer = {}
+
+function M.tabline_from_components(components)
+  local str = ""
+  for _, c in ipairs(components) do
+    for _, v in ipairs(c) do
+      str = str .. (v.text or "")
+    end
+  end
+  return str
+end
+
+---helper to find text in a Segment[]
+---@param component Segment[]
+---@param text string
+---@return boolean
+function M.find_text(component, text)
+  local found = false
+  for _, item in ipairs(component) do
+    if item.text == text then
+      found = true
+    end
+  end
+  return found
+end
 
 function MockBuffer:new(o)
   self.__index = self
@@ -11,35 +37,6 @@ end
 
 function MockBuffer:as_element()
   return self
-end
-
-M.MockBuffer = MockBuffer
-
-local U = require("bufferline.utils")
-local fn = vim.fn
-
-local function strip_hls(str)
-  return fn.substitute(str, "%#[a-zA-Z]*#", "", "g")
-end
-
-local function strip_click_command(str)
-  return fn.substitute(str, "@[a-zA-Z|#|_]*@", "", "g")
-end
-
-local function strip_dangling_modifier(str)
-  return fn.substitute(str, "%[[:alnum:]|=]*%*%", "", "g")
-end
-
-local function strip_modifier_digit(str)
-  return fn.substitute(str, "%[[:digit:]*]*", "", "g")
-end
-
-local function strip_close(str)
-  return fn.substitute(str, "999X", "", "g")
-end
-
-local function strip_parens(str)
-  return fn.substitute(str, "[()]", "", "g")
 end
 
 ---@param name string
@@ -54,18 +51,6 @@ function M.find_buffer(name, state)
   end
 end
 
----Remove special tabline syntax from bufferline in order to inspect its appearance
----@param str string
----@return string
-function M.format_tabline(str)
-  return U.compose(
-    strip_hls,
-    strip_click_command,
-    strip_dangling_modifier,
-    strip_modifier_digit,
-    strip_close,
-    strip_parens
-  )(str)
-end
+M.MockBuffer = MockBuffer
 
 return M
