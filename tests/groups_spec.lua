@@ -159,7 +159,7 @@ describe("Group tests - ", function()
     components = groups.render(components, function(t)
       return t
     end)
-    assert.equal(7, #components)
+    assert.equal(5, #components)
     local g_start = components[1]
     local g_end = components[4]
     assert.is_equal(g_start.type, "group_start")
