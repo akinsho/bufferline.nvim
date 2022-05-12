@@ -258,8 +258,12 @@ local function highlight_icon(buffer, color_icons, hl_defs)
   local hl_colors = {
     guifg = not color_icons and "fg" or colors.get_color({ name = hl, attribute = "fg" }),
     guibg = colors.get_color({ name = bg_hls[state], attribute = "bg" }),
-    ctermfg = not color_icons and "fg" or colors.get_color({ name = hl, attribute = "fg", cterm = true }),
-    ctermbg = colors.get_color({ name = bg_hls[state], attribute = "bg", cterm = true })
+    ctermfg = not color_icons and "fg" or colors.get_color({
+      name = hl,
+      attribute = "fg",
+      cterm = true,
+    }),
+    ctermbg = colors.get_color({ name = bg_hls[state], attribute = "bg", cterm = true }),
   }
   highlights.set_one(new_hl, hl_colors)
   return highlights.hl(new_hl) .. icon .. padding .. "%*"

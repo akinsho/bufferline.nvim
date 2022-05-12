@@ -53,9 +53,14 @@ local function convert_gui(guistr)
   return gui
 end
 
-local keys = { 
-  guisp = "sp", guibg = "background", guifg = "foreground", default = "default",
-  ctermfg = "ctermfg", ctermbg = "ctermbg", cterm = "cterm"
+local keys = {
+  guisp = "sp",
+  guibg = "background",
+  guifg = "foreground",
+  default = "default",
+  ctermfg = "ctermfg",
+  ctermbg = "ctermbg",
+  cterm = "cterm",
 }
 
 --- Transform legacy highlight keys to new nvim_set_hl api keys

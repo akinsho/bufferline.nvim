@@ -78,8 +78,8 @@ function M.get_color(opts)
       return hex
     end
   end
-  -- note: in case of cterm, nvim_get_hl_by_name may return incorrect color 
-  --   numbers (but still < 256) for some highlight groups like TabLine, 
+  -- note: in case of cterm, nvim_get_hl_by_name may return incorrect color
+  --   numbers (but still < 256) for some highlight groups like TabLine,
   --   but return correct numbers for groups like DevIconPl. this problem
   --   does not happen for gui colors.
 
