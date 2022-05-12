@@ -41,7 +41,7 @@ all of it's functionality though.
 ==============================================================================
 USAGE						        *bufferline-usage*
 
-You are **strongly** advised to use `termguicolors` for this plugin,
+You are *strongly* advised to use `termguicolors` for this plugin,
 especially if you are using a colorscheme that uses rgb color values. However
 this plugin also works with native terminal colors. When `termguicolors` is
 enabled, it reads the hex `gui` color values of various highlight groups.
