@@ -207,7 +207,7 @@ describe("Group tests - ", function()
     components = vim.tbl_map(set_buf_group, components)
     components = groups.render(components, function(t)
       table.sort(t, function(a, b)
-        return a.name > b.name
+        return a:as_element().name > b:as_element().name
       end)
       return t
     end)

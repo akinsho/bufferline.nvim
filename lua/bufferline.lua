@@ -312,7 +312,7 @@ function _G.nvim_bufferline()
   return bufferline()
 end
 
----@param conf BufferlineConfig
+---@param conf BufferlineConfig?
 function M.setup(conf)
   if not utils.is_current_stable_release() then
     utils.notify(
