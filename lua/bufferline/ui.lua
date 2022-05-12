@@ -48,7 +48,8 @@ local Context = {}
 ---@field global boolean whether or not the attribute applies to other elements apart from the current one
 ---@field prefix string
 ---@field suffix string
----@field extends number
+---@field extends number how many positions the attribute extends for
+---@field depends number the relative position of the element upon which the current one depends
 
 --- @class Segment
 --- @field text string
