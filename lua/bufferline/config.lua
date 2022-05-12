@@ -94,12 +94,11 @@ local function convert_highlights(map)
     for attribute, value in pairs(attributes) do
       if type(value) == "table" then
         if value.highlight and value.attribute then
-          local opts = {
+          updated[hl][attribute] = colors.get_color({
             name = value.highlight,
             attribute = value.attribute,
-            cterm = string.find(attribute, "cterm")
-          }
-          updated[hl][attribute] = colors.get_color(opts)
+            cterm = attribute:match("cterm") ~= nil,
+          })
         else
           updated[hl][attribute] = nil
           utils.notify(fmt("removing %s as it is not formatted correctly", hl), utils.W)
