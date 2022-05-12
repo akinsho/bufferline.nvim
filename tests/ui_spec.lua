@@ -5,8 +5,8 @@ describe("UI Tests", function()
       local components = {
         { text = "|", highlight = "BufferlineIndicatorSelected" },
         { text = " ", highlight = "BufferlineSelected" },
-        { text = "buffer.txt", highlight = "BufferlineSelected", attr = { extends = 1 } },
-        { text = " ", highlight = "BufferlineExample" },
+        { text = "buffer.txt", highlight = "BufferlineSelected", attr = { extends = "example" } },
+        ui.set_id({ text = " ", highlight = "BufferlineExample" }, "example"),
         { text = "x", highlight = "BufferlineCloseButton" },
       }
       local str = ui.to_tabline_str(components)
