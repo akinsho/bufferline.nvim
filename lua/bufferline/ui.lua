@@ -142,10 +142,6 @@ local function pad(opts)
   return { text = left_p, highlight = left_hl }, { text = right_p, highlight = right_hl }
 end
 
-local function modified_component()
-  return config.options.modified_icon .. padding
-end
-
 ---@param options BufferlineOptions
 ---@return Segment[]?
 local function get_tab_close_button(options)
@@ -362,7 +358,7 @@ local function get_close_icon(buf_id, context)
   local close_button_hl = context.current_highlights.close_button
 
   local replacement = string.rep(padding, strwidth(buffer_close_icon))
-  local symbol = (options.show_buffer_close_icons and buffer_close_icon or replacement) .. padding
+  local symbol = (options.show_buffer_close_icons and buffer_close_icon or replacement)
   return M.make_clickable("handle_close_buffer", buf_id, {
     text = symbol,
     highlight = close_button_hl,
@@ -413,7 +409,7 @@ end
 local function add_suffix(context)
   local element = context.tab
   local hl = context.current_highlights
-  local symbol = modified_component()
+  local symbol = config.options.modified_icon
   -- If the buffer is modified add an icon, if it isn't pad
   -- the buffer so it doesn't "jump" when it becomes modified i.e. due
   -- to the sudden addition of a new character
@@ -448,7 +444,7 @@ end
 ---@param context RenderContext
 ---@return number
 local function get_max_length(context)
-  local modified = modified_component()
+  local modified = config.options.modified_icon
   local options = config.options
   local element = context.tab
   local icon_size = strwidth(element.icon)
@@ -566,6 +562,7 @@ function M.element(state, element)
     spacing({ depends = -1 }),
     right_space,
     suffix,
+    spacing({ depends = -1 }),
   })
 
   element.component = create_renderer(left, right, component)
