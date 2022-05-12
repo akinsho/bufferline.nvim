@@ -87,6 +87,18 @@ function M.join(...)
 end
 
 ---@generic T
+---@param callback fun(T, number, T): boolean
+function M.filter(callback, list)
+  local accum = {}
+  for index, item in pairs(list) do
+    if callback(item, index, list) then
+      table.insert(accum, item)
+    end
+  end
+  return accum
+end
+
+---@generic T
 ---@param callback fun(item: T, index: number): T
 ---@param list T[]
 ---@return T[]

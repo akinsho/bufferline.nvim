@@ -74,10 +74,16 @@ local function has_text(s)
   return true
 end
 
----@param s Segment?
----@return boolean
-local function is_not_nil(s)
-  return s ~= nil
+---@param parts Segment[]
+---@return Segment[]
+local function filter_invalid(parts)
+  return utils.filter(function(p, i)
+    local depends = vim.tbl_get(p or {}, "attr", "depends")
+    if depends and not parts[i + depends] then
+      return false
+    end
+    return p ~= nil
+  end, parts)
 end
 
 ---@param segments Segment[]
@@ -509,6 +515,14 @@ local function tab_click_handler(id)
   return M.make_clickable("handle_click", id, { attr = { global = true } })
 end
 
+---Create a spacing component that can be dependent on other items in a component
+---@param opts table<"depends", number>?
+---@return Segment
+local spacing = function(opts)
+  opts = opts or { depends = nil }
+  return { text = " ", attr = { depends = opts.depends } }
+end
+
 --- @param state BufferlineState
 --- @param element TabElement
 --- @return TabElement
@@ -530,22 +544,25 @@ function M.element(state, element)
   local left, right = add_separators(ctx)
 
   local name = get_name(ctx)
-  local name_padding = pad({ left = { size = 1, hl = curr_hl.buffer.hl } })
   -- Guess how much space there will for padding based on the buffer's name
-  local name_size = get_component_size({ name, name_padding, icon, suffix })
+  local name_size = get_component_size({ name, spacing(), icon, suffix })
   local left_space, right_space = add_space(ctx, name_size)
 
-  local component = vim.tbl_filter(is_not_nil, {
+  local component = filter_invalid({
     tab_click_handler(element.id),
     indicator,
     left_space,
     number_item,
+    spacing({ depends = -1 }),
     icon,
+    spacing({ depends = -1 }),
     group_item,
+    spacing({ depends = -1 }),
     duplicate_prefix,
     name,
-    name_padding,
+    spacing(),
     diagnostic,
+    spacing({ depends = -1 }),
     right_space,
     suffix,
   })
@@ -553,9 +570,7 @@ function M.element(state, element)
   element.component = create_renderer(left, right, component)
   -- NOTE: we must count the size of the separators here although we do not
   -- add them yet, since by the time they are added the component will already have rendered
-  element.length = get_component_size(
-    vim.tbl_filter(is_not_nil, { left, right, unpack(component) })
-  )
+  element.length = get_component_size(filter_invalid({ left, right, unpack(component) }))
   return element
 end
 
