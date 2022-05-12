@@ -41,12 +41,15 @@ all of it's functionality though.
 ==============================================================================
 USAGE						        *bufferline-usage*
 
-You are advised to use `termguicolors` for this plugin, especially if you are
-using a colorscheme that uses rgb color values. However this plugin also works
-with native terminal colors. When `termguicolors` is enabled, it reads the hex
-`gui` color values of various highlight groups. Otherwise it expects user to
-explicitly specify color numbers (most modern terminals allow 256 color
-values).
+You are **strongly** advised to use `termguicolors` for this plugin,
+especially if you are using a colorscheme that uses rgb color values. However
+this plugin also works with native terminal colors. When `termguicolors` is
+enabled, it reads the hex `gui` color values of various highlight groups.
+Otherwise it expects user to explicitly specify color numbers (most modern
+terminals allow 256 color values). Please be aware that if you choose to use
+this option it will be *your* responsibility to make the colours work to your
+liking. Please do not open an issue if you are unable to do so, as you use
+this option entirely at your discretion.
 
     set termguicolors
     " In your init.vim or init.lua

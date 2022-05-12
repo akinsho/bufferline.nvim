@@ -94,17 +94,12 @@ local function convert_highlights(map)
     for attribute, value in pairs(attributes) do
       if type(value) == "table" then
         if value.highlight and value.attribute then
-          if string.find(attribute, "cterm") then
-            updated[hl][attribute] = colors.get_color({
-              name = value.highlight,
-              attribute = value.attribute,
-            })
-          else
-            updated[hl][attribute] = colors.get_hex({
-              name = value.highlight,
-              attribute = value.attribute,
-            })
-          end
+          local opts = {
+            name = value.highlight,
+            attribute = value.attribute,
+            cterm = string.find(attribute, "cterm")
+          }
+          updated[hl][attribute] = colors.get_color(opts)
         else
           updated[hl][attribute] = nil
           utils.notify(fmt("removing %s as it is not formatted correctly", hl), utils.W)
@@ -227,7 +222,7 @@ local nightly = vim.fn.has("nvim-0.6") > 0
 ---Derive the colors for the bufferline
 ---@return BufferlineHighlights
 local function derive_colors()
-  local hex = colors.get_hex
+  local hex = colors.get_color
   local shade = colors.shade_color
 
   local comment_fg = hex({
