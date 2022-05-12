@@ -259,7 +259,7 @@ function M.component(ctx)
   end
   local group_hl = hls[group.name]
   local hl = group_hl or hls.buffer.hl
-  local extends = (group.icon and group_hl) and 2 or 0
+  local extends = (group.icon and group_hl) and ui.components.id.name or nil
   if not group.icon then
     return nil
   end

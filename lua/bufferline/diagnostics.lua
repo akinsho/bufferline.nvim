@@ -3,8 +3,8 @@ local lazy = require("bufferline.lazy")
 local utils = lazy.require("bufferline.utils")
 --- @module "bufferline.config"
 local config = lazy.require("bufferline.config")
---- @module "bufferline.constants"
-local constants = lazy.require("bufferline.constants")
+---@module "bufferline.ui"
+local ui = lazy.require("bufferline.ui")
 
 local M = {}
 
@@ -181,7 +181,7 @@ function M.component(context)
   return {
     text = indicator,
     highlight = diag_highlight,
-    attr = { extends = { pos = -2, highlight = highlight } },
+    attr = { extends = { target = ui.components.id.name, highlight = highlight } },
   }
 end
 

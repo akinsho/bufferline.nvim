@@ -32,6 +32,35 @@ local sep_chars = constants.sep_chars
 local strwidth = vim.api.nvim_strwidth
 local padding = constants.padding
 
+local components = {
+  id = {
+    diagnostics = "diagnostics",
+    name = "name",
+    icon = "icon",
+    number = "number",
+    groups = "groups",
+    duplicates = "duplicates",
+    close = "close",
+    modified = "modified",
+    pick = "pick",
+  },
+}
+
+---@param component Segment
+---@param id string
+---@return Segment
+local function set_id(component, id)
+  if component then
+    component.attr = component.attr or {}
+    component.attr.__id = id
+  end
+  return component
+end
+
+local function get_id(component)
+  return component and component.attr and component.attr.__id
+end
+
 -----------------------------------------------------------------------------//
 -- Context
 -----------------------------------------------------------------------------//
@@ -177,36 +206,38 @@ local function to_tabline_str(component)
   local str = ""
   local globals = {}
   local hl_map = {}
-  for idx, part in ipairs(component) do
+  for _, part in ipairs(component) do
     local attr = part.attr
     if attr and attr.global then
       table.insert(globals, { attr.prefix or "", attr.suffix or "" })
     end
-    -- The extends field means that the components highlights should be continued
-    -- for n (it's value), number of following segments i.e. it stretches the highlight
-    -- of the current segment
+    -- The extends field means that the components highlights should be applied
+    -- to another with a matching ID. So to keep the running linear I keep track of the
+    -- positions of the highlights I've already seen keyed by the ID of the segment
+    -- and if there is a subsequent match, I replace the existing highlight in the string.
+    -- Otherwise I know that the highlight must be ahead of me so I scan forwards
+    -- This is all in a bid to keep the running time down, as this function will run
+    -- a lot. It's probably a premature optimization as I did not benchmark this.
     if attr and attr.extends then
       local extends = attr.extends
-      local hl = part.highlight
-      if type(attr.extends) == "table" then
-        extends = attr.extends.pos
-        hl = attr.extends.highlight
-      end
-      local incr = extends < 0 and -1 or 1
-      for i = incr, extends, incr do
-        local target = idx + i
-        local neighbour = component[target]
-        if neighbour and neighbour.highlight then
-          local previous_match = hl_map[target]
-          if previous_match then
-            str = utils.replace(
-              str,
-              previous_match.pos_start,
-              previous_match.pos_end,
-              highlights.hl(hl)
-            )
-          else
-            neighbour.highlight = hl or neighbour.highlight
+      local is_tbl = type(attr.extends) == "table"
+      local target = is_tbl and attr.extends.target or attr.extends
+      local hl = is_tbl and attr.extends.highlight or part.highlight
+      local previous_match = hl_map[target]
+      if previous_match then
+        str = utils.replace(
+          str,
+          previous_match.pos_start,
+          previous_match.pos_end,
+          highlights.hl(hl)
+        )
+      else
+        for i = 1, #component, 1 do
+          if get_id(component[i]) == extends then
+            local neighbour = component[i]
+            if neighbour.highlight then
+              neighbour.highlight = hl or neighbour.highlight
+            end
           end
         end
       end
@@ -215,7 +246,10 @@ local function to_tabline_str(component)
     --- so that if we need to change a highlight we have already seen we can
     --- access it and replace it based on it's starting position
     local hl = highlights.hl(part.highlight)
-    hl_map[idx] = { pos_start = #str, pos_end = #str + #hl }
+    local id = get_id(part)
+    if id then
+      hl_map[id] = { pos_start = #str, pos_end = #str + #hl }
+    end
     str = str
       .. hl
       .. ((attr and not attr.global) and attr.prefix or "")
@@ -578,16 +612,16 @@ function M.element(state, element)
     tab_click_handler(element.id),
     indicator,
     left_space,
-    number_item,
+    set_id(number_item, components.id.number),
     spacing({ when = number_item }),
-    icon,
+    set_id(icon, components.id.icon),
     spacing({ when = icon }),
-    group_item,
+    set_id(group_item, components.id.groups),
     spacing({ when = group_item }),
-    duplicate_prefix,
-    name,
+    set_id(duplicate_prefix, components.id.duplicates),
+    set_id(name, components.id.name),
     spacing(),
-    diagnostic,
+    set_id(diagnostic, components.id.diagnostics),
     spacing({ when = diagnostic }),
     right_space,
     suffix,
@@ -705,9 +739,11 @@ function M.tabline(components, tab_indicators)
 end
 
 M.get_component_size = get_component_size
+M.components = components
 
 if utils.is_test() then
   M.to_tabline_str = to_tabline_str
+  M.set_id = set_id
 end
 
 return M
