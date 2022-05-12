@@ -71,7 +71,7 @@ describe("Bufferline tests:", function()
   describe("Snapshots - ", function()
     local snapshots = {
       "       a.txt       ▕       b.txt       ▕▎      c.txt       ",
-      "       a.txt      ▕       b.txt      ▕▎      c.txt       ",
+      "        a.txt       ▕        b.txt       ▕▎       c.txt       ",
       "       a.txt              b.txt              c.txt       ",
     }
     it("should add correct padding if close icons are present", function()
