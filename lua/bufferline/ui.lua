@@ -176,6 +176,7 @@ local function to_tabline_str(component)
   component = component or {}
   local str = ""
   local globals = {}
+  local hl_map = {}
   for idx, part in ipairs(component) do
     local attr = part.attr
     if attr and attr.global then
@@ -185,15 +186,38 @@ local function to_tabline_str(component)
     -- for n (it's value), number of following segments i.e. it stretches the highlight
     -- of the current segment
     if attr and attr.extends then
-      for i = 1, attr.extends, 1 do
-        local neighbour = component[idx + i]
+      local extends = attr.extends
+      local hl = part.highlight
+      if type(attr.extends) == "table" then
+        extends = attr.extends.pos
+        hl = attr.extends.highlight
+      end
+      local incr = extends < 0 and -1 or 1
+      for i = incr, extends, incr do
+        local target = idx + i
+        local neighbour = component[target]
         if neighbour and neighbour.highlight then
-          neighbour.highlight = part.highlight or neighbour.highlight
+          local previous_match = hl_map[target]
+          if previous_match then
+            str = utils.replace(
+              str,
+              previous_match.pos_start,
+              previous_match.pos_end,
+              highlights.hl(hl)
+            )
+          else
+            neighbour.highlight = hl or neighbour.highlight
+          end
         end
       end
     end
+    --- Maintain a map of the previous highlights positions in the string
+    --- so that if we need to change a highlight we have already seen we can
+    --- access it and replace it based on it's starting position
+    local hl = highlights.hl(part.highlight)
+    hl_map[idx] = { pos_start = #str, pos_end = #str + #hl }
     str = str
-      .. highlights.hl(part.highlight)
+      .. hl
       .. ((attr and not attr.global) and attr.prefix or "")
       .. (part.text or "")
       .. ((attr and not attr.global) and attr.suffix or "")

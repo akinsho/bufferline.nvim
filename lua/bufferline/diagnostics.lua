@@ -174,11 +174,15 @@ function M.component(context)
     return
   end
 
-  -- local highlight = highlights[diagnostics.level] or ""
+  local highlight = highlights[diagnostics.level] or ""
   local diag_highlight = highlights[diagnostics.level .. "_diagnostic"]
     or highlights.diagnostic
     or ""
-  return { text = indicator, highlight = diag_highlight }
+  return {
+    text = indicator,
+    highlight = diag_highlight,
+    attr = { extends = { pos = -2, highlight = highlight } },
+  }
 end
 
 return M

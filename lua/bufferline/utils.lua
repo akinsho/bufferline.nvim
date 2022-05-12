@@ -37,13 +37,15 @@ function M.log.debug(msg)
   end
 end
 
----Takes all args and passes them on untouched
----@generic A
----@return A
-function M.identity(...)
-  return ...
+---Replace one substring with another
+---@param target string
+---@param pos_start number the start index
+---@param pos_end number the end index
+---@param replacement string
+---@return string
+function M.replace(target, pos_start, pos_end, replacement)
+  return target:sub(1, pos_start) .. replacement .. target:sub(pos_end + 1, -1)
 end
-
 ---Takes a list of items and runs the callback
 ---on each updating the initial value
 ---@generic T
