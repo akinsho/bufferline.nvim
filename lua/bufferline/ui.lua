@@ -91,7 +91,7 @@ end
 local function get_component_size(segments)
   assert(vim.tbl_islist(segments), "Segments must be a list")
   local sum = 0
-  for _, s in ipairs(segments) do
+  for _, s in pairs(segments) do
     if has_text(s) then
       sum = sum + strwidth(s.text)
     end
@@ -545,7 +545,7 @@ function M.element(state, element)
 
   local name = get_name(ctx)
   -- Guess how much space there will for padding based on the buffer's name
-  local name_size = get_component_size({ name, spacing(), icon, suffix })
+  local name_size = get_component_size({ duplicate_prefix, name, spacing(), icon, suffix })
   local left_space, right_space = add_space(ctx, name_size)
 
   local component = filter_invalid({
