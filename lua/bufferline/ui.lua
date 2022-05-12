@@ -49,7 +49,6 @@ local Context = {}
 ---@field prefix string
 ---@field suffix string
 ---@field extends number how many positions the attribute extends for
----@field depends number the relative position of the element upon which the current one depends
 
 --- @class Segment
 --- @field text string
@@ -78,11 +77,7 @@ end
 ---@param parts Segment[]
 ---@return Segment[]
 local function filter_invalid(parts)
-  return utils.filter(function(p, i)
-    local depends = vim.tbl_get(p or {}, "attr", "depends")
-    if depends and not parts[i + depends] then
-      return false
-    end
+  return vim.tbl_filter(function(p)
     return p ~= nil
   end, parts)
 end
@@ -512,12 +507,18 @@ local function tab_click_handler(id)
   return M.make_clickable("handle_click", id, { attr = { global = true } })
 end
 
+---@class SpacingOpts
+---@field when boolean
+
 ---Create a spacing component that can be dependent on other items in a component
----@param opts table<"depends", number>?
+---@param opts SpacingOpts?
 ---@return Segment
-local spacing = function(opts)
-  opts = opts or { depends = nil }
-  return { text = " ", attr = { depends = opts.depends } }
+local function spacing(opts)
+  opts = opts or { when = true }
+  if not opts.when then
+    return
+  end
+  return { text = " " }
 end
 
 --- @param state BufferlineState
@@ -550,19 +551,19 @@ function M.element(state, element)
     indicator,
     left_space,
     number_item,
-    spacing({ depends = -1 }),
+    spacing({ when = number_item }),
     icon,
-    spacing({ depends = -1 }),
+    spacing({ when = icon }),
     group_item,
-    spacing({ depends = -1 }),
+    spacing({ when = group_item }),
     duplicate_prefix,
     name,
     spacing(),
     diagnostic,
-    spacing({ depends = -1 }),
+    spacing({ when = diagnostic }),
     right_space,
     suffix,
-    spacing({ depends = -1 }),
+    spacing({ when = suffix }),
   })
 
   element.component = create_renderer(left, right, component)
