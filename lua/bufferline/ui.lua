@@ -679,4 +679,8 @@ end
 
 M.get_component_size = get_component_size
 
+if utils.is_test() then
+  M.to_tabline_str = to_tabline_str
+end
+
 return M
