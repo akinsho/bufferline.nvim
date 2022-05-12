@@ -272,12 +272,16 @@ local function add_space(ctx, length)
   local options = config.options
   local curr_hl = ctx.current_highlights
   local left_size, right_size = 0, 0
-  left_size = not options.show_buffer_close_icons and strwidth(modified_component()) or left_size
+  local icon = options.buffer_close_icon
   -- pad each tab smaller than the max tab size to make it consistent
   local difference = options.tab_size - length
   if difference > 0 then
     local size = math.floor(difference / 2)
     left_size, right_size = size + left_size, size + right_size
+  end
+  if not options.show_buffer_close_icons then
+    right_size = right_size > 0 and right_size - strwidth(icon) or right_size
+    left_size = left_size + strwidth(icon)
   end
   return pad({
     left = { size = left_size, hl = curr_hl.buffer.hl },
@@ -351,11 +355,11 @@ local function get_close_icon(buf_id, context)
   local options = config.options
   local buffer_close_icon = options.buffer_close_icon
   local close_button_hl = context.current_highlights.close_button
-
-  local replacement = string.rep(padding, strwidth(buffer_close_icon))
-  local symbol = (options.show_buffer_close_icons and buffer_close_icon or replacement)
+  if not options.show_buffer_close_icons then
+    return
+  end
   return M.make_clickable("handle_close_buffer", buf_id, {
-    text = symbol,
+    text = buffer_close_icon,
     highlight = close_button_hl,
   })
 end
