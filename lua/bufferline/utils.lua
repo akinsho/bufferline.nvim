@@ -61,15 +61,6 @@ function M.fold(accum, callback, list)
   return accum
 end
 
----Add a series of numbers together
----@vararg number
----@return number
-function M.sum(...)
-  return M.fold(0, function(accum, item)
-    return accum + item
-  end, { ... })
-end
-
 ---Variant of some that sums up the display size of characters
 ---@vararg string
 ---@return number
@@ -86,18 +77,6 @@ function M.join(...)
   return M.fold("", function(accum, item)
     return accum .. item
   end, { ... })
-end
-
----@generic T
----@param callback fun(T, number, T): boolean
-function M.filter(callback, list)
-  local accum = {}
-  for index, item in pairs(list) do
-    if callback(item, index, list) then
-      table.insert(accum, item)
-    end
-  end
-  return accum
 end
 
 ---@generic T
@@ -120,24 +99,6 @@ function M.find(list, callback)
     if callback(v) then
       return v
     end
-  end
-end
-
---- A function which takes n number of functions and
---- passes the result of each function to the next
----@generic T
----@return fun(args: T): T
-function M.compose(...)
-  local funcs = { ... }
-  local function recurse(i, ...)
-    if i == #funcs then
-      return funcs[i](...)
-    end
-    return recurse(i + 1, funcs[i](...))
-  end
-
-  return function(...)
-    return recurse(1, ...)
   end
 end
 
@@ -175,21 +136,6 @@ function M.for_each(list, callback, matcher)
       callback(item)
     end
   end
-end
-
---- @param array table
---- @return table
-function M.filter_duplicates(array)
-  local seen = {}
-  local res = {}
-
-  for _, v in ipairs(array) do
-    if not seen[v] then
-      res[#res + 1] = v
-      seen[v] = true
-    end
-  end
-  return res
 end
 
 --- creates a table whose keys are tbl's values and the value of these keys
