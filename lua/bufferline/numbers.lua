@@ -98,8 +98,10 @@ function M.component(context)
     return
   end
   local number_prefix = prefix(element, options.numbers)
-  local number_component = number_prefix or ""
-  return { highlight = context.current_highlights.numbers, text = number_component }
+  if not number_prefix then
+    return
+  end
+  return { highlight = context.current_highlights.numbers, text = number_prefix }
 end
 
 if require("bufferline.utils").is_test() then
