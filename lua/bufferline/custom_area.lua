@@ -18,6 +18,7 @@ local function create_hl(index, side, section, guibg)
     guifg = section.guifg,
     guibg = section.guibg or guibg,
     gui = section.gui,
+    default = true,
   })
   return H.hl(name)
 end
