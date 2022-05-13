@@ -3,7 +3,6 @@ local utils = require("bufferline.utils")
 
 local M = {}
 
-local fn = vim.fn
 local api = vim.api
 local fmt = string.format
 
@@ -28,9 +27,6 @@ end
 ---@param text string
 ---@return number
 local function get_size(text)
-  if fn.has("nvim-0.7") < 1 then
-    return api.nvim_strwidth(text)
-  end
   return api.nvim_eval_statusline(text, { use_tabline = true }).width
 end
 

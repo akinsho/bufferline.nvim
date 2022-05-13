@@ -216,8 +216,6 @@ function Config:is_tabline()
   return self:mode() == "tabs"
 end
 
-local nightly = vim.fn.has("nvim-0.6") > 0
-
 ---Derive the colors for the bufferline
 ---@return BufferlineHighlights
 local function derive_colors()
@@ -234,10 +232,10 @@ local function derive_colors()
   local normal_bg = hex({ name = "Normal", attribute = "bg" })
   local string_fg = hex({ name = "String", attribute = "fg" })
 
-  local error_hl = nightly and "DiagnosticError" or "LspDiagnosticsDefaultError"
-  local warning_hl = nightly and "DiagnosticWarn" or "LspDiagnosticsDefaultWarning"
-  local info_hl = nightly and "DiagnosticInfo" or "LspDiagnosticsDefaultInformation"
-  local hint_hl = nightly and "DiagnosticHint" or "LspDiagnosticsDefaultHint"
+  local error_hl = "DiagnosticError"
+  local warning_hl = "DiagnosticWarn"
+  local info_hl = "DiagnosticInfo"
+  local hint_hl = "DiagnosticHint"
 
   local error_fg = hex({
     name = error_hl,
