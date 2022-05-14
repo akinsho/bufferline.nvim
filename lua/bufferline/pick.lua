@@ -1,5 +1,12 @@
+local lazy = require("bufferline.lazy")
+---@module "bufferline.state"
+local state = lazy.require("bufferline.state")
+---@module "bufferline.ui"
+local ui = lazy.require("bufferline.ui")
+
 local M = {}
 
+local fn = vim.fn
 local strwidth = vim.api.nvim_strwidth
 
 M.current = {}
@@ -8,6 +15,26 @@ local valid = "abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ"
 
 function M.reset()
   M.current = {}
+end
+
+-- Prompts user to select a buffer then applies a function to the buffer
+---@param func fun(id: number)
+function M.choose_then(func)
+  state.is_picking = true
+  ui.refresh()
+  -- NOTE: handle keyboard interrupts by catching any thrown errors
+  local ok, char = pcall(fn.getchar)
+  if ok then
+    local letter = fn.nr2char(char)
+    for _, item in ipairs(state.components) do
+      local element = item:as_element()
+      if element and letter == element.letter then
+        func(element.id)
+      end
+    end
+  end
+  state.is_picking = false
+  ui.refresh()
 end
 
 ---@param element Tabpage|Buffer

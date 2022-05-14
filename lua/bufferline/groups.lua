@@ -434,7 +434,7 @@ function M.set_hidden(id, value)
 end
 
 ---@param priority number
----@param name string
+---@param name string?
 function M.toggle_hidden(priority, name)
   local group = priority and group_by_priority(priority) or group_by_name(name)
   if group then

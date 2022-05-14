@@ -16,6 +16,8 @@ local groups = lazy.require("bufferline.groups")
 local sorters = lazy.require("bufferline.sorters")
 ---@module "bufferline.constants"
 local constants = lazy.require("bufferline.constants")
+---@module "bufferline.pick"
+local pick = lazy.require("bufferline.pick")
 
 local M = {}
 
@@ -116,7 +118,7 @@ end
 
 ---Execute an arbitrary user function on a visible by it's position buffer
 ---@param index number
----@param func fun(num: number)
+---@param func fun(num: number, table?)
 function M.exec(index, func)
   local target = state.visible_components[index]
   if target and type(func) == "function" then
@@ -124,31 +126,12 @@ function M.exec(index, func)
   end
 end
 
--- Prompts user to select a buffer then applies a function to the buffer
----@param func fun(id: number)
-local function select_element_apply(func)
-  state.is_picking = true
-  ui.refresh()
-
-  local char = vim.fn.getchar()
-  local letter = vim.fn.nr2char(char)
-  for _, item in ipairs(state.components) do
-    local element = item:as_element()
-    if element and letter == element.letter then
-      func(element.id)
-    end
-  end
-
-  state.is_picking = false
-  ui.refresh()
-end
-
 function M.pick()
-  select_element_apply(open_element)
+  pick.choose_then(open_element)
 end
 
 function M.close_with_pick()
-  select_element_apply(function(id)
+  pick.choose_then(function(id)
     M.handle_close(id)
   end)
 end
