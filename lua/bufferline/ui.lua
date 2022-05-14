@@ -22,6 +22,10 @@ local diagnostics = lazy.require("bufferline.diagnostics")
 local duplicates = lazy.require("bufferline.duplicates")
 ---@module "bufferline.numbers"
 local numbers = lazy.require("bufferline.numbers")
+---@module "bufferline.custom_area"
+local custom_area = lazy.require("bufferline.custom_area")
+---@module "bufferline.offset"
+local offset = lazy.require("bufferline.offset")
 
 local M = {}
 local visibility = constants.visibility
@@ -167,10 +171,17 @@ local function pad(opts)
 end
 
 ---@param options BufferlineOptions
+---@param hls BufferlineHighlights
 ---@return Segment[]?
-local function get_tab_close_button(options)
+local function get_tab_close_button(options, hls)
   if options.show_close_icon then
-    return { { text = padding .. options.close_icon .. padding, attr = { prefix = "%999X" } } }
+    return {
+      {
+        text = padding .. options.close_icon .. padding,
+        highlight = hls.tab_close.hl,
+        attr = { prefix = "%999X" },
+      },
+    }
   end
   return {}
 end
@@ -274,13 +285,11 @@ end
 ---@param after Section
 ---@param available_width number
 ---@param marker table
----@return string
+---@return Segment[][]
 ---@return table
 ---@return Buffer[]
----@return Segment[][]
 local function truncate(before, current, after, available_width, marker, visible)
   visible = visible or {}
-  local line = ""
 
   local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)
   local right_trunc_marker = get_marker_size(marker.right_count, marker.right_element_size)
@@ -291,13 +300,11 @@ local function truncate(before, current, after, available_width, marker, visible
 
   if available_width >= total_length then
     local items = {}
-    visible = utils.array_concat(before.items, current.items, after.items)
+    visible = utils.merge_lists(before.items, current.items, after.items)
     for index, item in ipairs(visible) do
-      local component = item.component(visible[index + 1])
-      table.insert(items, component)
-      line = line .. to_tabline_str(component)
+      table.insert(items, item.component(visible[index + 1]))
     end
-    return line, marker, visible, items
+    return items, marker, visible
     -- if we aren't even able to fit the current buffer into the
     -- available space that means the window is really narrow
     -- so don't show anything
@@ -649,48 +656,55 @@ local function get_trunc_marker(trunc_icon, count_hl, icon_hl, count)
   end
 end
 
----@param indicators table<string, table>
+---@param tab_indicators table<string, Segment>
 ---@param options BufferlineOptions
----@return string
+---@return Segment[]
 ---@return integer
-local function get_tab_indicators(indicators, options)
-  local tab_components = ""
-  local tabs_length = 0
-  if not options.show_tab_indicators or #indicators < 2 then
-    return tab_components, tabs_length
+local function get_tab_indicator(tab_indicators, options)
+  local items, length = {}, 0
+  if not options.show_tab_indicators or #tab_indicators <= 1 then
+    return items, length
   end
-  for _, t in ipairs(indicators) do
-    tabs_length = tabs_length + get_component_size(t.component)
-    tab_components = tab_components .. to_tabline_str(t.component)
+  for _, tab in ipairs(tab_indicators) do
+    local component = tab.component
+    table.insert(items, component)
+    length = length + get_component_size(component)
   end
-  return tab_components, tabs_length
+  return items, length
+end
+
+---@param list Segment[][]
+local function join(list)
+  local str = ""
+  for _, item in pairs(list) do
+    str = str .. to_tabline_str(item)
+  end
+  return str
 end
 
 --- TODO: All components should return Segment[] that are then combined in one go into a tabline
 --- @param items Component[]
---- @param tab_indicators table[]
+--- @param tab_indicators Segment[]
 --- @return string
 function M.tabline(items, tab_indicators)
   local options = config.options
   local hl = config.highlights
-  local right_align = "%="
+  local right_align = { { highlight = hl.fill.hl, text = "%=" } }
 
-  local tab_close_button = get_tab_close_button(options)
+  local tab_close_button = get_tab_close_button(options, hl)
   local tab_close_button_length = get_component_size(tab_close_button)
-  local tab_close_button_component = to_tabline_str(tab_close_button)
 
-  local tab_indicator_component, tab_indicator_length = get_tab_indicators(tab_indicators, options)
+  local tab_indicator_segments, tab_indicator_length = get_tab_indicator(tab_indicators, options)
 
-  -- Icons from https://fontawesome.com/cheatsheet
+  -- NOTE: this estimates the size of the truncation marker as we don't know how big it will be yet
   local left_trunc_icon = options.left_trunc_marker
   local right_trunc_icon = options.right_trunc_marker
-  -- NOTE: this estimates the size of the truncation marker as we don't know how big it will be yet
   local max_padding = string.rep(padding, 2)
   local left_element_size = utils.measure(max_padding, left_trunc_icon, max_padding)
   local right_element_size = utils.measure(max_padding, right_trunc_icon, max_padding)
 
-  local offset_size, left_offset, right_offset = require("bufferline.offset").get()
-  local custom_area_size, left_area, right_area = require("bufferline.custom_area").get()
+  local offset_size, left_offset, right_offset = offset.get()
+  local custom_area_size, left_area, right_area = custom_area.get()
 
   local available_width = vim.o.columns
     - custom_area_size
@@ -699,42 +713,31 @@ function M.tabline(items, tab_indicators)
     - tab_close_button_length
 
   local before, current, after = get_sections(items)
-  local line, marker, visible_components, segments = truncate(
-    before,
-    current,
-    after,
-    available_width,
-    {
-      left_count = 0,
-      right_count = 0,
-      left_element_size = left_element_size,
-      right_element_size = right_element_size,
-    }
+  local segments, marker, visible_components = truncate(before, current, after, available_width, {
+    left_count = 0,
+    right_count = 0,
+    left_element_size = left_element_size,
+    right_element_size = right_element_size,
+  })
+
+  local fill = hl.fill.hl
+  local left_marker = get_trunc_marker(left_trunc_icon, fill, fill, marker.left_count)
+  local right_marker = get_trunc_marker(right_trunc_icon, fill, fill, marker.right_count)
+
+  local core = join(
+    utils.merge_lists(
+      { left_marker },
+      segments,
+      { right_marker, right_align },
+      tab_indicator_segments,
+      { tab_close_button }
+    )
   )
 
-  local left_marker = get_trunc_marker(left_trunc_icon, hl.fill.hl, hl.fill.hl, marker.left_count)
-  local right_marker = get_trunc_marker(
-    right_trunc_icon,
-    hl.fill.hl,
-    hl.fill.hl,
-    marker.right_count
-  )
-
-  local tabline = utils.join(
-    left_offset,
-    left_area,
-    to_tabline_str(left_marker),
-    line,
-    to_tabline_str(right_marker),
-    highlights.hl(hl.fill.hl),
-    right_align,
-    tab_indicator_component,
-    highlights.hl(hl.tab_close.hl),
-    tab_close_button_component,
-    right_area,
-    right_offset
-  )
-
+  --- NOTE: the custom areas are essentially mini tablines a user can define so they can't
+  -- be set safely converted to segments so they are concatenated to string and join with
+  -- the rest of the tabline
+  local tabline = utils.join(left_offset, left_area, core, right_area, right_offset)
   return tabline, visible_components, segments
 end
 

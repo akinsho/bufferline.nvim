@@ -108,14 +108,14 @@ end
 -- Note that userdata and function values are treated as scalar.
 -- https://stackoverflow.com/questions/1410862/concatenation-of-tables-in-lua
 --- @generic T
---- @vararg any
+--- @vararg T
 --- @return T[]
-function M.array_concat(...)
+function M.merge_lists(...)
   local t = {}
   for n = 1, select("#", ...) do
     local arg = select(n, ...)
     if type(arg) == "table" then
-      for _, v in ipairs(arg) do
+      for _, v in pairs(arg) do
         t[#t + 1] = v
       end
     else
