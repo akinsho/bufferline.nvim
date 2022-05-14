@@ -79,6 +79,7 @@ local function convert_hl_keys(opts)
   if opts.gui then
     hls = vim.tbl_extend("force", hls, convert_gui(opts.gui))
   end
+  hls.default = vim.F.if_nil(opts.default, config.options.themable)
   return hls
 end
 
@@ -116,7 +117,6 @@ function M.set_all(conf)
         fmt("Error setting highlight group: no name for %s - %s", name, vim.inspect(tbl), utils.E)
       )
     else
-      tbl.default = conf.options.themable
       M.set_one(tbl.hl, tbl)
     end
   end
