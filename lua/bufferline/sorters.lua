@@ -133,7 +133,7 @@ end
 --- sorts a list of buffers in place
 --- @param elements TabElement[]
 --- @param sort_by string?
---- @param state BufferlineState
+--- @param state BufferlineState?
 function M.sort(elements, sort_by, state)
   sort_by = sort_by or config.options.sort_by
   if sort_by == "none" then
