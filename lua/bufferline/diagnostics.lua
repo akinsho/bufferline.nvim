@@ -181,7 +181,12 @@ function M.component(context)
   return {
     text = indicator,
     highlight = diag_highlight,
-    attr = { extends = { target = ui.components.id.name, highlight = highlight } },
+    attr = {
+      extends = {
+        { id = ui.components.id.name, highlight = highlight },
+        { id = ui.components.id.groups, highlight = highlight },
+      },
+    },
   }
 end
 

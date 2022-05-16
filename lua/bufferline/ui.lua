@@ -555,40 +555,28 @@ function M.element(state, element)
 end
 
 -- The extends field means that the components highlights should be applied
--- to another with a matching ID. So to keep this O(n) I keep track of the
--- positions of the highlights I've already seen keyed by the ID of the segment
--- and if there is a subsequent match, I replace the existing highlight in the string.
--- Otherwise I know that the highlight must be ahead of me so I scan forwards
--- This is all in a bid to keep the running time down, as this function will run
--- a lot. It's probably a premature optimization as I did not benchmark this.
----@param str string
----@param part Segment
----@param index number
----@param hl_map table<string, string|number>
+-- to another with a matching ID. This function does an initial scan of the component
+-- parts and updates the highlights for any part that has an extension.
 ---@param component Segment[]
----@return string
-local function extend_highlight(str, part, index, hl_map, component)
-  local attr = part.attr
-  if attr and attr.extends then
-    local extends = attr.extends
-    local is_tbl = type(attr.extends) == "table"
-    local target = is_tbl and attr.extends.target or attr.extends
-    local hl = is_tbl and attr.extends.highlight or part.highlight
-    local previous_match = hl_map[target]
-    if previous_match and not previous_match.extends then
-      str = utils.replace(str, previous_match.pos_start, previous_match.pos_end, highlights.hl(hl))
-    else
-      for i = index, #component, 1 do
-        local current = component[i]
-        if get_id(current) == extends then
-          if current.highlight then
-            current.highlight = hl or current.highlight
-          end
-        end
+---@return Segment[]
+local function extend_highlight(component)
+  local locations, extension_map = {}, {}
+  for index, part in pairs(component) do
+    local id = get_id(part)
+    if id then
+      locations[id] = index
+    end
+    local extends = vim.tbl_get(part, "attr", "extends")
+    if extends then
+      for _, target in pairs(extends) do
+        extension_map[target.id] = target.highlight or part.highlight
       end
     end
   end
-  return str
+  for id, hl in pairs(extension_map) do
+    component[locations[id]].highlight = hl
+  end
+  return component
 end
 
 --- Takes a list of Segments of the shape {text = <text>, highlight = <hl>, attr = <table>}
@@ -599,25 +587,13 @@ local function to_tabline_str(component)
   component = component or {}
   local str = ""
   local globals = {}
-  local hl_map = {}
-  for idx, part in ipairs(component) do
+  extend_highlight(component)
+  for _, part in ipairs(component) do
     local attr = part.attr
     if attr and attr.global then
       table.insert(globals, { attr.prefix or "", attr.suffix or "" })
     end
-    str = extend_highlight(str, part, idx, hl_map, component)
-    --- Maintain a map of the previous highlights positions in the string
-    --- so that if we need to change a highlight we have already seen we can
-    --- access it and replace it based on it's starting position
     local hl = highlights.hl(part.highlight)
-    local id = get_id(part)
-    if id and part then
-      hl_map[id] = {
-        pos_start = #str,
-        pos_end = #str + #hl,
-        extends = vim.tbl_get(part, "attr", "extends") ~= nil,
-      }
-    end
     str = str
       .. hl
       .. ((attr and not attr.global) and attr.prefix or "")

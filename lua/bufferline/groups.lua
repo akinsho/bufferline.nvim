@@ -259,11 +259,14 @@ function M.component(ctx)
   end
   local group_hl = hls[group.name]
   local hl = group_hl or hls.buffer.hl
-  local extends = (group.icon and group_hl) and ui.components.id.name or nil
   if not group.icon then
     return nil
   end
-  return { text = group.icon, highlight = hl, attr = { extends = extends } }
+  return {
+    text = group.icon,
+    highlight = hl,
+    attr = { extends = { { id = ui.components.id.name } } },
+  }
 end
 
 ---Add highlight groups for a group
