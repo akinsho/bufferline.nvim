@@ -574,7 +574,10 @@ local function extend_highlight(component)
     end
   end
   for id, hl in pairs(extension_map) do
-    component[locations[id]].highlight = hl
+    local target = component[locations[id]]
+    if target then
+      target.highlight = hl
+    end
   end
   return component
 end
