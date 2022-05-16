@@ -458,6 +458,7 @@ end
 
 ---@class SpacingOpts
 ---@field when boolean
+---@field highlight string
 
 ---Create a spacing component that can be dependent on other items in a component
 ---@param opts SpacingOpts?
@@ -467,7 +468,7 @@ local function spacing(opts)
   if not opts.when then
     return
   end
-  return { text = " " }
+  return { text = constants.padding, highlight = opts.highlight }
 end
 
 ---@param trunc_icon string
@@ -538,7 +539,7 @@ function M.element(state, element)
     spacing({ when = group_item }),
     set_id(duplicate_prefix, components.id.duplicates),
     set_id(name, components.id.name),
-    spacing(),
+    spacing({ when = name, highlight = curr_hl.buffer.hl }),
     set_id(diagnostic, components.id.diagnostics),
     spacing({ when = diagnostic }),
     right_space,
