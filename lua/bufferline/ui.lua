@@ -428,11 +428,7 @@ local function create_renderer(left_separator, right_separator, component)
     -- if using the non-slanted tab style then we must check if the component is at the end of
     -- of a section e.g. the end of a group and if so it should not be wrapped with separators
     -- as it can use those of the next item
-    if -- FIXME: empty group ends for pinned buffers do not have a separator but should
-      not is_slant(config.options.separator_style)
-      and next_item
-      and next_item:is_end()
-    then
+    if not is_slant(config.options.separator_style) and next_item and next_item:is_end() then
       return component
     end
 
