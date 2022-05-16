@@ -210,126 +210,6 @@ local function get_sections(items)
   return before, current, after
 end
 
--- TODO: Write test cases for this logic
----@param component Segment[]
-local function to_tabline_str(component)
-  component = component or {}
-  local str = ""
-  local globals = {}
-  local hl_map = {}
-  for _, part in ipairs(component) do
-    local attr = part.attr
-    if attr and attr.global then
-      table.insert(globals, { attr.prefix or "", attr.suffix or "" })
-    end
-    -- The extends field means that the components highlights should be applied
-    -- to another with a matching ID. So to keep this O(n) I keep track of the
-    -- positions of the highlights I've already seen keyed by the ID of the segment
-    -- and if there is a subsequent match, I replace the existing highlight in the string.
-    -- Otherwise I know that the highlight must be ahead of me so I scan forwards
-    -- This is all in a bid to keep the running time down, as this function will run
-    -- a lot. It's probably a premature optimization as I did not benchmark this.
-    if attr and attr.extends then
-      local extends = attr.extends
-      local is_tbl = type(attr.extends) == "table"
-      local target = is_tbl and attr.extends.target or attr.extends
-      local hl = is_tbl and attr.extends.highlight or part.highlight
-      local previous_match = hl_map[target]
-      if previous_match then
-        str = utils.replace(
-          str,
-          previous_match.pos_start,
-          previous_match.pos_end,
-          highlights.hl(hl)
-        )
-      else
-        for i = 1, #component, 1 do
-          if get_id(component[i]) == extends then
-            local neighbour = component[i]
-            if neighbour.highlight then
-              neighbour.highlight = hl or neighbour.highlight
-            end
-          end
-        end
-      end
-    end
-    --- Maintain a map of the previous highlights positions in the string
-    --- so that if we need to change a highlight we have already seen we can
-    --- access it and replace it based on it's starting position
-    local hl = highlights.hl(part.highlight)
-    local id = get_id(part)
-    if id then
-      hl_map[id] = { pos_start = #str, pos_end = #str + #hl }
-    end
-    str = str
-      .. hl
-      .. ((attr and not attr.global) and attr.prefix or "")
-      .. (part.text or "")
-      .. ((attr and not attr.global) and attr.suffix or "")
-  end
-  for _, attr in ipairs(globals) do
-    str = attr[1] .. str .. attr[2]
-  end
-  return str
-end
-
---- PREREQUISITE: active buffer always remains in view
---- 1. Find amount of available space in the window
---- 2. Find the amount of space the bufferline will take up
---- 3. If the bufferline will be too long remove one tab from the before or after
---- section
---- 4. Re-check the size, if still too long truncate recursively till it fits
---- 5. Add the number of truncated buffers as an indicator
----@param before Section
----@param current Section
----@param after Section
----@param available_width number
----@param marker table
----@return Segment[][]
----@return table
----@return Buffer[]
-local function truncate(before, current, after, available_width, marker, visible)
-  visible = visible or {}
-
-  local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)
-  local right_trunc_marker = get_marker_size(marker.right_count, marker.right_element_size)
-
-  local markers_length = left_trunc_marker + right_trunc_marker
-
-  local total_length = before.length + current.length + after.length + markers_length
-
-  if available_width >= total_length then
-    local items = {}
-    visible = utils.merge_lists(before.items, current.items, after.items)
-    for index, item in ipairs(visible) do
-      table.insert(items, item.component(visible[index + 1]))
-    end
-    return items, marker, visible
-    -- if we aren't even able to fit the current buffer into the
-    -- available space that means the window is really narrow
-    -- so don't show anything
-  elseif available_width < current.length then
-    return "", marker, visible
-  else
-    if before.length >= after.length then
-      before:drop(1)
-      marker.left_count = marker.left_count + 1
-    else
-      after:drop(#after.items)
-      marker.right_count = marker.right_count + 1
-    end
-    -- drop the markers if the window is too narrow
-    -- this assumes we have dropped both before and after
-    -- sections since if the space available is this small
-    -- we have likely removed these
-    if (current.length + markers_length) > available_width then
-      marker.left_count = 0
-      marker.right_count = 0
-    end
-    return truncate(before, current, after, available_width, marker, visible)
-  end
-end
-
 ---@param ctx RenderContext
 ---@param length number
 ---@return Segment?
@@ -578,6 +458,7 @@ end
 
 ---@class SpacingOpts
 ---@field when boolean
+---@field highlight string
 
 ---Create a spacing component that can be dependent on other items in a component
 ---@param opts SpacingOpts?
@@ -587,7 +468,38 @@ local function spacing(opts)
   if not opts.when then
     return
   end
-  return { text = " " }
+  return { text = constants.padding, highlight = opts.highlight }
+end
+
+---@param trunc_icon string
+---@param count_hl string
+---@param icon_hl string
+---@param count number
+---@return Segment[]?
+local function get_trunc_marker(trunc_icon, count_hl, icon_hl, count)
+  if count > 0 then
+    return {
+      { highlight = count_hl, text = padding .. count .. padding },
+      { highlight = icon_hl, text = trunc_icon .. padding },
+    }
+  end
+end
+
+---@param tab_indicators table<string, Segment>
+---@param options BufferlineOptions
+---@return Segment[]
+---@return integer
+local function get_tab_indicator(tab_indicators, options)
+  local items, length = {}, 0
+  if not options.show_tab_indicators or #tab_indicators <= 1 then
+    return items, length
+  end
+  for _, tab in ipairs(tab_indicators) do
+    local component = tab.component
+    table.insert(items, component)
+    length = length + get_component_size(component)
+  end
+  return items, length
 end
 
 --- @param state BufferlineState
@@ -627,7 +539,7 @@ function M.element(state, element)
     spacing({ when = group_item }),
     set_id(duplicate_prefix, components.id.duplicates),
     set_id(name, components.id.name),
-    spacing(),
+    spacing({ when = name, highlight = curr_hl.buffer.hl }),
     set_id(diagnostic, components.id.diagnostics),
     spacing({ when = diagnostic }),
     right_space,
@@ -642,35 +554,116 @@ function M.element(state, element)
   return element
 end
 
----@param trunc_icon string
----@param count_hl string
----@param icon_hl string
----@param count number
----@return Segment[]?
-local function get_trunc_marker(trunc_icon, count_hl, icon_hl, count)
-  if count > 0 then
-    return {
-      { highlight = count_hl, text = padding .. count .. padding },
-      { highlight = icon_hl, text = trunc_icon .. padding },
-    }
+-- The extends field means that the components highlights should be applied
+-- to another with a matching ID. This function does an initial scan of the component
+-- parts and updates the highlights for any part that has an extension.
+---@param component Segment[]
+---@return Segment[]
+local function extend_highlight(component)
+  local locations, extension_map = {}, {}
+  for index, part in pairs(component) do
+    local id = get_id(part)
+    if id then
+      locations[id] = index
+    end
+    local extends = vim.tbl_get(part, "attr", "extends")
+    if extends then
+      for _, target in pairs(extends) do
+        extension_map[target.id] = target.highlight or part.highlight
+      end
+    end
   end
+  for id, hl in pairs(extension_map) do
+    local target = component[locations[id]]
+    if target then
+      target.highlight = hl
+    end
+  end
+  return component
 end
 
----@param tab_indicators table<string, Segment>
----@param options BufferlineOptions
----@return Segment[]
----@return integer
-local function get_tab_indicator(tab_indicators, options)
-  local items, length = {}, 0
-  if not options.show_tab_indicators or #tab_indicators <= 1 then
-    return items, length
+--- Takes a list of Segments of the shape {text = <text>, highlight = <hl>, attr = <table>}
+--- and converts them into an nvim tabline format string i.e. `%#HL#text`. It handles cases
+--- like applying global or local attributes like click handlers. As well as extending highlights
+---@param component Segment[]
+local function to_tabline_str(component)
+  component = component or {}
+  local str = ""
+  local globals = {}
+  extend_highlight(component)
+  for _, part in ipairs(component) do
+    local attr = part.attr
+    if attr and attr.global then
+      table.insert(globals, { attr.prefix or "", attr.suffix or "" })
+    end
+    local hl = highlights.hl(part.highlight)
+    str = str
+      .. hl
+      .. ((attr and not attr.global) and attr.prefix or "")
+      .. (part.text or "")
+      .. ((attr and not attr.global) and attr.suffix or "")
   end
-  for _, tab in ipairs(tab_indicators) do
-    local component = tab.component
-    table.insert(items, component)
-    length = length + get_component_size(component)
+  for _, attr in ipairs(globals) do
+    str = attr[1] .. str .. attr[2]
   end
-  return items, length
+  return str
+end
+
+--- PREREQUISITE: active buffer always remains in view
+--- 1. Find amount of available space in the window
+--- 2. Find the amount of space the bufferline will take up
+--- 3. If the bufferline will be too long remove one tab from the before or after
+--- section
+--- 4. Re-check the size, if still too long truncate recursively till it fits
+--- 5. Add the number of truncated buffers as an indicator
+---@param before Section
+---@param current Section
+---@param after Section
+---@param available_width number
+---@param marker table
+---@return Segment[][]
+---@return table
+---@return Buffer[]
+local function truncate(before, current, after, available_width, marker, visible)
+  visible = visible or {}
+
+  local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)
+  local right_trunc_marker = get_marker_size(marker.right_count, marker.right_element_size)
+
+  local markers_length = left_trunc_marker + right_trunc_marker
+
+  local total_length = before.length + current.length + after.length + markers_length
+
+  if available_width >= total_length then
+    local items = {}
+    visible = utils.merge_lists(before.items, current.items, after.items)
+    for index, item in ipairs(visible) do
+      table.insert(items, item.component(visible[index + 1]))
+    end
+    return items, marker, visible
+    -- if we aren't even able to fit the current buffer into the
+    -- available space that means the window is really narrow
+    -- so don't show anything
+  elseif available_width < current.length then
+    return "", marker, visible
+  else
+    if before.length >= after.length then
+      before:drop(1)
+      marker.left_count = marker.left_count + 1
+    else
+      after:drop(#after.items)
+      marker.right_count = marker.right_count + 1
+    end
+    -- drop the markers if the window is too narrow
+    -- this assumes we have dropped both before and after
+    -- sections since if the space available is this small
+    -- we have likely removed these
+    if (current.length + markers_length) > available_width then
+      marker.left_count = 0
+      marker.right_count = 0
+    end
+    return truncate(before, current, after, available_width, marker, visible)
+  end
 end
 
 ---@param list Segment[][]
