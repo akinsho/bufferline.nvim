@@ -120,7 +120,7 @@ end
 local function toggle_bufferline()
   local item_count = config:is_tabline() and utils.get_tab_count() or utils.get_buf_count()
   local status = (config.options.always_show_bufferline or item_count > 1) and 2 or 0
-  if vim.o.showtabline ~= status then
+  if (not config:is_winbarline()) and vim.o.showtabline ~= status then
     vim.o.showtabline = status
   end
 end
@@ -312,6 +312,11 @@ function _G.nvim_bufferline()
   return bufferline()
 end
 
+---@private
+function _G.nvim_winbarline()
+  return bufferline()
+end
+
 ---@param conf BufferlineConfig
 function M.setup(conf)
   if not utils.is_current_stable_release() then
@@ -328,7 +333,11 @@ function M.setup(conf)
   highlights.set_all(preferences)
   setup_commands()
   setup_autocommands(preferences)
-  vim.o.tabline = "%!v:lua.nvim_bufferline()"
+  if config:is_winbarline() then
+    vim.o.winbar = "%!v:lua.nvim_winbarline()"
+  else
+    vim.o.tabline = "%!v:lua.nvim_bufferline()"
+  end
   toggle_bufferline()
 end
 

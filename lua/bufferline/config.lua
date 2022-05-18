@@ -21,7 +21,7 @@ local colors = lazy.require("bufferline.colors")
 ---@field options GroupOptions
 ---@field items Group[]
 
----@alias BufferlineMode "'tabs'" | "'buffers'"
+---@alias BufferlineMode "'tabs'" | "'buffers'" | "'window'"
 
 ---@alias DiagnosticIndicator fun(count: number, level: number, errors: table<string, any>, ctx: table<string, any>): string
 
@@ -209,6 +209,10 @@ end
 
 function Config:is_bufferline()
   return self:mode() == "buffers"
+end
+
+function Config:is_winbarline()
+  return self:mode() == "window"
 end
 
 function Config:is_tabline()
