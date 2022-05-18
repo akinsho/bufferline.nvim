@@ -744,6 +744,10 @@ not block rendering the tabline.
   If you are using `airline` make sure you set `let g:airline#extensions#tabline#enabled = 0`.
   If you are using `lightline` this also takes over the tabline by default and needs to be deactivated.
 
+  If you are on Windows and use the GUI version of nvim (nvim-qt.exe) then also ensure, that `GuiTabline`
+  is disabled. For this create a file called `ginit.vim` in your nvim config directory and put the line
+  `GuiTabline 0` in it. Otherwise the QT tabline will overlay any terminal tablines.
+
 - **Doesn't this plugin go against the "vim way"?**
 
   This is much better explained by [buftablines's author](https://github.com/ap/vim-buftabline#why-this-and-not-vim-tabs).
