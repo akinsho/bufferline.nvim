@@ -159,12 +159,13 @@ describe("Group tests - ", function()
     components = groups.render(components, function(t)
       return t
     end)
-    assert.equal(7, #components)
+    assert.equal(5, #components)
     local g_start = components[1]
     local g_end = components[4]
     assert.is_equal(g_start.type, "group_start")
     assert.is_equal(g_end.type, "group_end")
-    assert.is_truthy(g_start.component():match("test%-group"))
+    local component = g_start.component()
+    assert.is_true(utils.find_text(component, "test-group"))
   end)
 
   it("should sort each group individually", function()
@@ -207,7 +208,7 @@ describe("Group tests - ", function()
     components = vim.tbl_map(set_buf_group, components)
     components = groups.render(components, function(t)
       table.sort(t, function(a, b)
-        return a.name > b.name
+        return a:as_element().name > b:as_element().name
       end)
       return t
     end)

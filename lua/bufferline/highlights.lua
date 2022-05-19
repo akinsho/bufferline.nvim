@@ -37,6 +37,9 @@ function M.generate_name(name, opts)
 end
 
 function M.hl(item)
+  if not item then
+    return ""
+  end
   return "%#" .. item .. "#"
 end
 
@@ -53,7 +56,15 @@ local function convert_gui(guistr)
   return gui
 end
 
-local keys = { guisp = "sp", guibg = "background", guifg = "foreground", default = "default" }
+local keys = {
+  guisp = "sp",
+  guibg = "background",
+  guifg = "foreground",
+  default = "default",
+  ctermfg = "ctermfg",
+  ctermbg = "ctermbg",
+  cterm = "cterm",
+}
 
 --- Transform legacy highlight keys to new nvim_set_hl api keys
 ---@param opts table<string, string>
@@ -68,6 +79,7 @@ local function convert_hl_keys(opts)
   if opts.gui then
     hls = vim.tbl_extend("force", hls, convert_gui(opts.gui))
   end
+  hls.default = vim.F.if_nil(opts.default, config.options.themable)
   return hls
 end
 
@@ -92,8 +104,7 @@ end
 function M.add_group(name, highlight)
   -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
   local formatted = PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
-  highlight.hl_name = formatted
-  highlight.hl = M.hl(formatted)
+  highlight.hl = formatted
 end
 
 --- Map through user colors and convert the keys to highlight names
@@ -101,13 +112,12 @@ end
 --- @param conf BufferlineConfig
 function M.set_all(conf)
   for name, tbl in pairs(conf.highlights) do
-    if not tbl or not tbl.hl_name then
+    if not tbl or not tbl.hl then
       utils.notify(
         fmt("Error setting highlight group: no name for %s - %s", name, vim.inspect(tbl), utils.E)
       )
     else
-      tbl.default = conf.options.themable
-      M.set_one(tbl.hl_name, tbl)
+      M.set_one(tbl.hl, tbl)
     end
   end
 end

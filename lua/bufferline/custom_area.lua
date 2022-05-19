@@ -3,7 +3,6 @@ local utils = require("bufferline.utils")
 
 local M = {}
 
-local fn = vim.fn
 local api = vim.api
 local fmt = string.format
 
@@ -19,19 +18,17 @@ local function create_hl(index, side, section, guibg)
     guifg = section.guifg,
     guibg = section.guibg or guibg,
     gui = section.gui,
-    default = false,
+    default = true, -- We need to be able to constantly override these highlights so they should always be default
   })
   return H.hl(name)
 end
 
---- nvim_eval_statusline is not available in stable nvim yet
 ---@param text string
 ---@return number
 local function get_size(text)
-  if fn.has("nvim-0.7") < 1 then
-    return api.nvim_strwidth(text)
-  end
-  return api.nvim_eval_statusline(text, { use_tabline = true }).width
+  ---@type table<string, number>
+  local data = api.nvim_eval_statusline(text, { use_tabline = true })
+  return data.width
 end
 
 ---Create tabline segment for custom user specified sections

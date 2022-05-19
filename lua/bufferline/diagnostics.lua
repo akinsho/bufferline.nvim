@@ -3,8 +3,8 @@ local lazy = require("bufferline.lazy")
 local utils = lazy.require("bufferline.utils")
 --- @module "bufferline.config"
 local config = lazy.require("bufferline.config")
---- @module "bufferline.constants"
-local constants = lazy.require("bufferline.constants")
+---@module "bufferline.ui"
+local ui = lazy.require("bufferline.ui")
 
 local M = {}
 
@@ -77,22 +77,15 @@ end
 
 local get_diagnostics = {
   nvim_lsp = function()
-    if utils.is_truthy(fn.has("nvim-0.6.1")) then
-      local results = {}
-      local diagnostics = vim.diagnostic.get()
-
-      for _, d in pairs(diagnostics) do
-        if not results[d.bufnr] then
-          results[d.bufnr] = {}
-        end
-
-        table.insert(results[d.bufnr], d)
+    local results = {}
+    local diagnostics = vim.diagnostic.get()
+    for _, d in pairs(diagnostics) do
+      if not results[d.bufnr] then
+        results[d.bufnr] = {}
       end
-
-      return results
+      table.insert(results[d.bufnr], d)
     end
-    ---@diagnostic disable-next-line: deprecated
-    return vim.lsp.diagnostic.get_all()
+    return results
   end,
 
   coc = (function()
@@ -155,10 +148,11 @@ function M.get(opts)
 end
 
 ---@param context RenderContext
+---@return Segment?
 function M.component(context)
   local opts = config.get("options")
   if is_disabled(opts.diagnostics) then
-    return context
+    return
   end
 
   local user_indicator = opts.diagnostics_indicator
@@ -166,7 +160,7 @@ function M.component(context)
   local element = context.tab
   local diagnostics = element.diagnostics
   if not diagnostics or not diagnostics.count or diagnostics.count < 1 then
-    return context
+    return
   end
 
   local indicator = " (" .. diagnostics.count .. ")"
@@ -177,25 +171,23 @@ function M.component(context)
 
   --- Don't adjust the diagnostic indicator size if it is empty
   if not indicator or #indicator == 0 then
-    return context
+    return
   end
 
   local highlight = highlights[diagnostics.level] or ""
   local diag_highlight = highlights[diagnostics.level .. "_diagnostic"]
     or highlights.diagnostic
     or ""
-  local padding = constants.padding
-  local size = context.length + fn.strwidth(indicator) + fn.strwidth(padding)
-
-  return context:update({
-    length = size,
-    component = highlight
-      .. context.component
-      .. diag_highlight
-      .. indicator
-      .. highlights.background
-      .. padding,
-  })
+  return {
+    text = indicator,
+    highlight = diag_highlight,
+    attr = {
+      extends = {
+        { id = ui.components.id.name, highlight = highlight },
+        { id = ui.components.id.groups, highlight = highlight },
+      },
+    },
+  }
 end
 
 return M
