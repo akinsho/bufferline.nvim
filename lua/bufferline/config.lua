@@ -573,6 +573,7 @@ local function get_defaults()
     ---@type BufferlineOptions
     options = {
       mode = "buffers",
+      window_mode_ignore_filetypes = { "help", "NvimTree" },
       themable = true, -- whether or not bufferline highlights can be overriden externally
       numbers = "none",
       buffer_close_icon = "",
