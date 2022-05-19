@@ -209,6 +209,10 @@ function Buffer:visibility()
 end
 
 function Buffer:current()
+  if require("bufferline.config"):is_winbarline() then
+    return api.nvim_win_get_buf(vim.g.statusline_winid) == self.id
+  end
+
   return api.nvim_get_current_buf() == self.id
 end
 
