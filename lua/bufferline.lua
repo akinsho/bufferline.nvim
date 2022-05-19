@@ -314,7 +314,6 @@ end
 ---@private
 function _G.nvim_winbarline()
   local current_buf = vim.api.nvim_win_get_buf(vim.g.statusline_winid)
-  print(vim.g.statusline_winid)
   if vim.api.nvim_buf_get_option(current_buf, "filetype") == "help" then
     return ""
   end
