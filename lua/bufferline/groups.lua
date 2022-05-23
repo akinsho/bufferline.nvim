@@ -265,7 +265,7 @@ function M.component(ctx)
   return {
     text = group.icon,
     highlight = hl,
-    attr = { extends = { { id = ui.components.id.name } } },
+    attr = { extends = { { id = ui.components.id.name }, { id = ui.components.id.duplicates } } },
   }
 end
 
