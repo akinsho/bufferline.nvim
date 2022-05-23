@@ -262,10 +262,14 @@ function M.component(ctx)
   if not group.icon then
     return nil
   end
+  local extends = { { id = ui.components.id.name } }
+  if group_hl then
+    extends[#extends + 1] = { id = ui.components.id.duplicates }
+  end
   return {
     text = group.icon,
     highlight = hl,
-    attr = { extends = { { id = ui.components.id.name }, { id = ui.components.id.duplicates } } },
+    attr = { extends = extends },
   }
 end
 
