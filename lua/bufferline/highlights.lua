@@ -64,6 +64,13 @@ local keys = {
   ctermfg = "ctermfg",
   ctermbg = "ctermbg",
   cterm = "cterm",
+  foreground = "foreground",
+  background = "background",
+  italic = "italic",
+  bold = "bold",
+  underline = "underline",
+  undercurl = "undercurl",
+  underdot = "underdot",
 }
 
 --- Transform legacy highlight keys to new nvim_set_hl api keys
