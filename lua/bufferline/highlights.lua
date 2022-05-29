@@ -49,6 +49,9 @@ end
 
 local function convert_gui(guistr)
   local gui = {}
+  if guistr:lower():match("none") then
+    return gui
+  end
   local parts = vim.split(guistr, ",")
   for _, part in ipairs(parts) do
     gui[part] = true
@@ -64,6 +67,13 @@ local keys = {
   ctermfg = "ctermfg",
   ctermbg = "ctermbg",
   cterm = "cterm",
+  foreground = "foreground",
+  background = "background",
+  italic = "italic",
+  bold = "bold",
+  underline = "underline",
+  undercurl = "undercurl",
+  underdot = "underdot",
 }
 
 --- Transform legacy highlight keys to new nvim_set_hl api keys
