@@ -96,7 +96,6 @@ end
 --- @return string
 local function bufferline()
   local conf = config.get()
-  local tabs = tabpages.get()
   local is_tabline = conf:is_tabline()
   local components = is_tabline and tabpages.get_components(state) or buffers.get_components(state)
 
@@ -104,7 +103,7 @@ local function bufferline()
   --- state is not actually set till after sorting and component creation is done
   state.set({ current_element_index = get_current_index(state) })
   components = not is_tabline and groups.render(components, sorter) or sorter(components)
-  local tabline, visible_components = ui.render(components, tabs)
+  local tabline, visible_components, segments = ui.tabline(components, tabpages.get())
 
   state.set({
     --- store the full unfiltered lists
@@ -113,7 +112,7 @@ local function bufferline()
     components = filter_invisible(components),
     visible_components = filter_invisible(visible_components),
   })
-  return tabline
+  return tabline, segments
 end
 
 --- If the item count has changed and the next tabline status is different then update it
@@ -312,7 +311,7 @@ function _G.nvim_bufferline()
   return bufferline()
 end
 
----@param conf BufferlineConfig
+---@param conf BufferlineConfig?
 function M.setup(conf)
   if not utils.is_current_stable_release() then
     utils.notify(

@@ -94,9 +94,10 @@ local function convert_highlights(map)
     for attribute, value in pairs(attributes) do
       if type(value) == "table" then
         if value.highlight and value.attribute then
-          updated[hl][attribute] = colors.get_hex({
+          updated[hl][attribute] = colors.get_color({
             name = value.highlight,
             attribute = value.attribute,
+            cterm = attribute:match("cterm") ~= nil,
           })
         else
           updated[hl][attribute] = nil
@@ -215,12 +216,10 @@ function Config:is_tabline()
   return self:mode() == "tabs"
 end
 
-local nightly = vim.fn.has("nvim-0.6") > 0
-
 ---Derive the colors for the bufferline
 ---@return BufferlineHighlights
 local function derive_colors()
-  local hex = colors.get_hex
+  local hex = colors.get_color
   local shade = colors.shade_color
 
   local comment_fg = hex({
@@ -233,10 +232,10 @@ local function derive_colors()
   local normal_bg = hex({ name = "Normal", attribute = "bg" })
   local string_fg = hex({ name = "String", attribute = "fg" })
 
-  local error_hl = nightly and "DiagnosticError" or "LspDiagnosticsDefaultError"
-  local warning_hl = nightly and "DiagnosticWarn" or "LspDiagnosticsDefaultWarning"
-  local info_hl = nightly and "DiagnosticInfo" or "LspDiagnosticsDefaultInformation"
-  local hint_hl = nightly and "DiagnosticHint" or "LspDiagnosticsDefaultHint"
+  local error_hl = "DiagnosticError"
+  local warning_hl = "DiagnosticWarn"
+  local info_hl = "DiagnosticInfo"
+  local hint_hl = "DiagnosticHint"
 
   local error_fg = hex({
     name = error_hl,
@@ -537,6 +536,10 @@ local function derive_colors()
       guifg = tabline_sel_bg,
       guibg = normal_bg,
     },
+    indicator_visible = {
+      guifg = visible_bg,
+      guibg = visible_bg,
+    },
     pick_selected = {
       guifg = error_fg,
       guibg = normal_bg,
@@ -559,6 +562,7 @@ end
 -- to what you would get on other editors. The aim is that the default should
 -- be so nice it's what anyone using this plugin sticks with. It should ideally
 -- work across any well designed colorscheme deriving colors automagically.
+-- Icons from https://fontawesome.com/cheatsheet
 ---@return BufferlineConfig
 local function get_defaults()
   return {

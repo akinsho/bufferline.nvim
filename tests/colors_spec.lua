@@ -11,16 +11,16 @@ describe("Colors:", function()
     vim.cmd(fmt("highlight %s guifg=%s", hl1, color1))
   end)
 
-  describe("get_hex - ", function()
+  describe("get_color - ", function()
     it("should correctly derive normal color", function()
-      local norm_fg = colors.get_hex({ name = "Normal", attribute = "fg" })
+      local norm_fg = colors.get_color({ name = "Normal", attribute = "fg" })
       assert.is_truthy(norm_fg)
       assert.is_true(#norm_fg > 0)
     end)
 
     it("should use fallback if main is unavailable", function()
       local normal = fn.synIDattr(fn.hlID("Normal"), "fg#", "gui")
-      local norm_fg = colors.get_hex({
+      local norm_fg = colors.get_color({
         name = "FakeHighlight",
         attribute = "fg",
         fallback = { name = "Normal", attribute = "fg" },
@@ -31,7 +31,7 @@ describe("Colors:", function()
 
     it("should use fallbacks recursively", function()
       local actual_fg = fn.synIDattr(fn.hlID(hl1), "fg#", "gui")
-      local test_fg = colors.get_hex({
+      local test_fg = colors.get_color({
         name = "FakeHighlight",
         attribute = "fg",
         fallback = {
@@ -46,7 +46,7 @@ describe("Colors:", function()
 
     it("should not return a value if it set to not_match", function()
       local normal = fn.synIDattr(fn.hlID("Normal"), "fg#", "gui")
-      local norm_fg = colors.get_hex({
+      local norm_fg = colors.get_color({
         name = "Normal",
         attribute = "fg",
         not_match = normal,

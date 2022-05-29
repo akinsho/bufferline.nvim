@@ -1,20 +1,21 @@
 local lazy = require("bufferline.lazy")
--- @module "bufferline.ui"
+---@module "bufferline.ui"
 local ui = lazy.require("bufferline.ui")
--- @module "bufferline.pick"
+---@module "bufferline.pick"
 local pick = lazy.require("bufferline.pick")
--- @module "bufferline.config"
+---@module "bufferline.config"
 local config = lazy.require("bufferline.config")
--- @module "bufferline.constants"
+---@module "bufferline.constants"
 local constants = lazy.require("bufferline.constants")
--- @module "bufferline.diagnostics"
+---@module "bufferline.diagnostics"
 local diagnostics = lazy.require("bufferline.diagnostics")
+---@module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
 
 local api = vim.api
 
 local M = {}
 
-local strwidth = vim.fn.strwidth
 local padding = constants.padding
 
 local function tab_click_component(num)
@@ -26,30 +27,27 @@ local function render(tabpage, is_active, style, highlights)
   local hl = is_active and h.tab_selected.hl or h.tab.hl
   local separator_hl = is_active and h.separator_selected.hl or h.separator.hl
   local separator_component = style == "thick" and "▐" or "▕"
-  local separator = separator_hl .. separator_component
   local name = padding .. padding .. tabpage.tabnr .. padding
-  local length = strwidth(name) + strwidth(separator_component)
-  return hl .. tab_click_component(tabpage.tabnr) .. name .. separator, length
+  return {
+    { highlight = hl, text = name, attr = { prefix = tab_click_component(tabpage.tabnr) } },
+    { highlight = separator_hl, text = separator_component },
+  }
 end
 
 function M.get()
-  local tabpages = {}
   local tabs = vim.fn.gettabinfo()
   local current_tab = vim.fn.tabpagenr()
   local highlights = config.highlights
   local style = config.options.separator_style
-  for i, tab in ipairs(tabs) do
+  return utils.map(function(tab)
     local is_active_tab = current_tab == tab.tabnr
-    local component, length = render(tab, is_active_tab, style, highlights)
-
-    tabpages[i] = {
-      component = component,
-      length = length,
+    local components = render(tab, is_active_tab, style, highlights)
+    return {
+      component = components,
       id = tab.tabnr,
       windows = tab.windows,
     }
-  end
-  return tabpages
+  end, tabs)
 end
 
 ---@param tab_num integer
