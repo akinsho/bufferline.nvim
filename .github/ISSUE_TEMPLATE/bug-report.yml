@@ -25,6 +25,14 @@ body:
     validations:
       required: true
   - type: textarea
+    id: config
+    attributes:
+      label: Config
+      description: The configuration you use with bufferline that causes this issue
+      placeholder: Please add your bufferline configuration
+    validations:
+      required: true
+  - type: textarea
     id: additional-information
     attributes:
       label: Additional Information
