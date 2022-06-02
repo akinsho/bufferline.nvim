@@ -260,13 +260,14 @@ local function get_icon_with_highlight(buffer, color_icons, hl_defs)
   local hl_colors = {
     guifg = not color_icons and "fg" or colors.get_color({ name = hl, attribute = "fg" }),
     guibg = colors.get_color({ name = bg_hls[state], attribute = "bg" }),
-    ctermfg = not color_icons and "NONE" or colors.get_color({
-      name = hl,
-      attribute = "fg",
-      cterm = true,
-    }),
-    ctermbg = colors.get_color({ name = bg_hls[state], attribute = "bg", cterm = true }),
   }
+  ---These values will error if a theme does not set a normal ctermfg or ctermbg
+  ---@see: #433
+  if vim.o.termguicolors == 0 then
+    hl_colors.ctermbg = colors.get_color({ name = bg_hls[state], attribute = "bg", cterm = true })
+    hl_colors.ctermfg = not color_icons and "fg"
+      or colors.get_color({ name = hl, attribute = "fg", cterm = true })
+  end
   highlights.set_one(new_hl, hl_colors)
   return { text = icon, highlight = new_hl, attr = { text = "%*" } }
 end
