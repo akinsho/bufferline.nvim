@@ -260,7 +260,7 @@ local function get_icon_with_highlight(buffer, color_icons, hl_defs)
   local hl_colors = {
     guifg = not color_icons and "fg" or colors.get_color({ name = hl, attribute = "fg" }),
     guibg = colors.get_color({ name = bg_hls[state], attribute = "bg" }),
-    ctermfg = not color_icons and "fg" or colors.get_color({
+    ctermfg = not color_icons and "NONE" or colors.get_color({
       name = hl,
       attribute = "fg",
       cterm = true,
