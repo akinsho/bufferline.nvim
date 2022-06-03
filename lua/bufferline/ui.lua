@@ -122,7 +122,7 @@ local function get_component_size(segments)
   local sum = 0
   for _, s in pairs(segments) do
     if has_text(s) then
-      sum = sum + strwidth(s.text)
+      sum = sum + strwidth(tostring(s.text))
     end
   end
   return sum
