@@ -641,7 +641,7 @@ local function truncate(before, current, after, available_width, marker, visible
     -- available space that means the window is really narrow
     -- so don't show anything
   elseif available_width < current.length then
-    return "", marker, visible
+    return {}, marker, visible
   else
     if before.length >= after.length then
       before:drop(1)
