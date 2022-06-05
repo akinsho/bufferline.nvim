@@ -64,9 +64,6 @@ local keys = {
   guibg = "background",
   guifg = "foreground",
   default = "default",
-  ctermfg = "ctermfg",
-  ctermbg = "ctermbg",
-  cterm = "cterm",
   foreground = "foreground",
   background = "background",
   italic = "italic",
@@ -75,6 +72,13 @@ local keys = {
   undercurl = "undercurl",
   underdot = "underdot",
 }
+
+---These values will error if a theme does not set a normal ctermfg or ctermbg @see: #433
+if not vim.opt.termguicolors:get() then
+  keys.ctermfg = "ctermfg"
+  keys.ctermbg = "ctermbg"
+  keys.cterm = "cterm"
+end
 
 --- Transform legacy highlight keys to new nvim_set_hl api keys
 ---@param opts table<string, string>
