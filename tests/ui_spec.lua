@@ -5,7 +5,11 @@ describe("UI Tests", function()
       local components = {
         { text = "|", highlight = "BufferlineIndicatorSelected" },
         { text = " ", highlight = "BufferlineSelected" },
-        { text = "buffer.txt", highlight = "BufferlineSelected", attr = { extends = {{id = "example"}} } },
+        {
+          text = "buffer.txt",
+          highlight = "BufferlineSelected",
+          attr = { extends = { { id = "example" } } },
+        },
         ui.set_id({ text = " ", highlight = "BufferlineExample" }, "example"),
         { text = "x", highlight = "BufferlineCloseButton" },
       }
