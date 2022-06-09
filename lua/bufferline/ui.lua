@@ -26,6 +26,8 @@ local numbers = lazy.require("bufferline.numbers")
 local custom_area = lazy.require("bufferline.custom_area")
 ---@module "bufferline.offset"
 local offset = lazy.require("bufferline.offset")
+---@module "bufferline.state"
+local state = lazy.require("bufferline.state")
 
 local M = {}
 local visibility = constants.visibility
@@ -605,6 +607,34 @@ local function to_tabline_str(component)
   return str
 end
 
+---@alias TruncStrategy "centered" | "uncentered"
+---@alias TruncFunc fun(before: Section, after:Section, marker: table<string, number>, number):nil
+---@type table<TruncStrategy, TruncFunc>
+local trunc_strategy = {}
+
+---@type TruncFunc
+trunc_strategy.centered = function(before, after, marker, _)
+  if before.length >= after.length then
+    before:drop(1)
+    marker.left_count = marker.left_count + 1
+  else
+    after:drop(#after.items)
+    marker.right_count = marker.right_count + 1
+  end
+end
+---@type TruncFunc
+trunc_strategy.uncentered = function(before, after, marker, direction)
+  if direction <= 0 then
+    after:drop(#after.items)
+    marker.right_count = marker.right_count + 1
+  elseif direction > 0 then
+    before:drop(1)
+    marker.left_count = marker.left_count + 1
+  else
+    trunc_strategy.centered(before, after, marker, direction)
+  end
+end
+
 --- PREREQUISITE: active buffer always remains in view
 --- 1. Find amount of available space in the window
 --- 2. Find the amount of space the bufferline will take up
@@ -620,7 +650,7 @@ end
 ---@return Segment[][]
 ---@return table
 ---@return Buffer[]
-local function truncate(before, current, after, available_width, marker, visible)
+local function truncate(before, current, after, available_width, direction, marker, visible)
   visible = visible or {}
 
   local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)
@@ -643,22 +673,11 @@ local function truncate(before, current, after, available_width, marker, visible
   elseif available_width < current.length then
     return {}, marker, visible
   else
-    -- TODO: by changing the side that overflowing buffers are dropped from
+    -- by changing the side that overflowing buffers are dropped from
     -- the position of the current buffer will move within the line rather
     -- than always being centered
-    local to_drop, not_drop = after, before
-    if to_drop:count() > 0 then
-      to_drop:drop(1)
-    else
-      not_drop:drop(#not_drop.items)
-    end
-    -- if before.length >= after.length then
-    --   before:drop(1)
-    --   marker.left_count = marker.left_count + 1
-    -- else
-    --   after:drop(#after.items)
-    --   marker.right_count = marker.right_count + 1
-    -- end
+    local mode = "centered" -- FIXME: uncentered causes an infinite loop
+    trunc_strategy[mode](before, after, marker, direction)
     -- drop the markers if the window is too narrow
     -- this assumes we have dropped both before and after
     -- sections since if the space available is this small
@@ -667,7 +686,7 @@ local function truncate(before, current, after, available_width, marker, visible
       marker.left_count = 0
       marker.right_count = 0
     end
-    return truncate(before, current, after, available_width, marker, visible)
+    return truncate(before, current, after, available_width, direction, marker, visible)
   end
 end
 
@@ -711,12 +730,20 @@ function M.tabline(items, tab_indicators)
     - tab_close_button_length
 
   local before, current, after = get_sections(items)
-  local segments, marker, visible_components = truncate(before, current, after, available_width, {
-    left_count = 0,
-    right_count = 0,
-    left_element_size = left_element_size,
-    right_element_size = right_element_size,
-  })
+  local direction = state.current_element_pos - state.last_element_pos
+  local segments, marker, visible_components = truncate(
+    before,
+    current,
+    after,
+    available_width,
+    direction,
+    {
+      left_count = 0,
+      right_count = 0,
+      left_element_size = left_element_size,
+      right_element_size = right_element_size,
+    }
+  )
 
   local fill = hl.fill.hl
   local left_marker = get_trunc_marker(left_trunc_icon, fill, fill, marker.left_count)
