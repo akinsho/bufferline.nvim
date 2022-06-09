@@ -251,23 +251,23 @@ local function get_icon_with_highlight(buffer, color_icons, hl_defs)
     return { text = icon }
   end
 
-  local state = buffer:visibility()
+  local vis_state = buffer:visibility()
   local bg_hls = {
     [visibility.INACTIVE] = hl_defs.buffer_visible.hl,
     [visibility.SELECTED] = hl_defs.buffer_selected.hl,
     [visibility.NONE] = hl_defs.background.hl,
   }
 
-  local new_hl = highlights.generate_name(hl, { visibility = state })
+  local new_hl = highlights.generate_name(hl, { visibility = vis_state })
   local hl_colors = {
     guifg = not color_icons and "fg" or colors.get_color({ name = hl, attribute = "fg" }),
-    guibg = colors.get_color({ name = bg_hls[state], attribute = "bg" }),
+    guibg = colors.get_color({ name = bg_hls[vis_state], attribute = "bg" }),
     ctermfg = not color_icons and "fg" or colors.get_color({
       name = hl,
       attribute = "fg",
       cterm = true,
     }),
-    ctermbg = colors.get_color({ name = bg_hls[state], attribute = "bg", cterm = true }),
+    ctermbg = colors.get_color({ name = bg_hls[vis_state], attribute = "bg", cterm = true }),
   }
   highlights.set_one(new_hl, hl_colors)
   return { text = icon, highlight = new_hl, attr = { text = "%*" } }
@@ -500,15 +500,15 @@ local function get_tab_indicator(tab_indicators, options)
   return items, length
 end
 
---- @param state BufferlineState
+--- @param curr_state BufferlineState
 --- @param element TabElement
 --- @return TabElement
-function M.element(state, element)
+function M.element(curr_state, element)
   local curr_hl = highlights.for_element(element)
   local ctx = Context:new({
     tab = element,
     current_highlights = curr_hl,
-    is_picking = state.is_picking,
+    is_picking = curr_state.is_picking,
   })
 
   local duplicate_prefix = duplicates.component(ctx)
