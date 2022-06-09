@@ -613,7 +613,11 @@ end
 local trunc_strategy = {}
 
 ---@type TruncFunc
-trunc_strategy.centered = function(before, after, marker, _)
+---@param before Section
+---@param after Section
+---@param marker table<string, number>
+---@param _ number
+function trunc_strategy.centered(before, after, marker, _)
   if before.length >= after.length then
     before:drop(1)
     marker.left_count = marker.left_count + 1
@@ -623,11 +627,15 @@ trunc_strategy.centered = function(before, after, marker, _)
   end
 end
 ---@type TruncFunc
-trunc_strategy.uncentered = function(before, after, marker, direction)
-  if direction <= 0 then
+---@param before Section
+---@param after Section
+---@param marker table<string, number>
+---@param direction number
+function trunc_strategy.uncentered(before, after, marker, direction)
+  if direction > 0 and after:count() > 0 then
     after:drop(#after.items)
     marker.right_count = marker.right_count + 1
-  elseif direction > 0 then
+  elseif direction < 0 and before:count() > 0 then
     before:drop(1)
     marker.left_count = marker.left_count + 1
   else
@@ -676,7 +684,7 @@ local function truncate(before, current, after, available_width, direction, mark
     -- by changing the side that overflowing buffers are dropped from
     -- the position of the current buffer will move within the line rather
     -- than always being centered
-    local mode = "centered" -- FIXME: uncentered causes an infinite loop
+    local mode = "uncentered" -- FIXME: uncentered causes an infinite loop
     trunc_strategy[mode](before, after, marker, direction)
     -- drop the markers if the window is too narrow
     -- this assumes we have dropped both before and after
