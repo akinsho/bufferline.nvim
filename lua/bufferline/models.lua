@@ -296,6 +296,12 @@ function Section:drop(index)
   end
 end
 
+---The number of items in a section
+---@return integer
+function Section:count()
+  return #self.items
+end
+
 ---@param item TabElement
 function Section:add(item)
   table.insert(self.items, item)

@@ -643,13 +643,22 @@ local function truncate(before, current, after, available_width, marker, visible
   elseif available_width < current.length then
     return {}, marker, visible
   else
-    if before.length >= after.length then
-      before:drop(1)
-      marker.left_count = marker.left_count + 1
+    -- TODO: by changing the side that overflowing buffers are dropped from
+    -- the position of the current buffer will move within the line rather
+    -- than always being centered
+    local to_drop, not_drop = after, before
+    if to_drop:count() > 0 then
+      to_drop:drop(1)
     else
-      after:drop(#after.items)
-      marker.right_count = marker.right_count + 1
+      not_drop:drop(#not_drop.items)
     end
+    -- if before.length >= after.length then
+    --   before:drop(1)
+    --   marker.left_count = marker.left_count + 1
+    -- else
+    --   after:drop(#after.items)
+    --   marker.right_count = marker.right_count + 1
+    -- end
     -- drop the markers if the window is too narrow
     -- this assumes we have dropped both before and after
     -- sections since if the space available is this small
