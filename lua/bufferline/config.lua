@@ -25,7 +25,9 @@ local colors = lazy.require("bufferline.colors")
 
 ---@alias DiagnosticIndicator fun(count: number, level: number, errors: table<string, any>, ctx: table<string, any>): string
 
----@alias TruncStrategy "centered" | "uncentered"
+---@alias TruncStrategyType "centered" | "uncentered"
+---@alias TruncStrategyWithNum (TruncStrategy | number)[]
+---@alias TruncStrategy TruncStrategyType | TruncStrategyWithNum
 
 ---@class BufferlineOptions
 ---@field public mode BufferlineMode

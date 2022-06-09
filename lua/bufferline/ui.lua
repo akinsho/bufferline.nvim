@@ -607,9 +607,20 @@ local function to_tabline_str(component)
   return str
 end
 
----@alias TruncFunc fun(before: Section, after:Section, marker: table<string, number>, number):nil
+---@alias TruncFunc fun(before: Section, after:Section, marker: table<string, number>, number, number)
 ---@type table<TruncStrategy, TruncFunc>
 local trunc_strategy = {}
+
+---Convert a truncation strategy of type string or a tuple of string and offset
+---@param strategy TruncStrategy
+---@return TruncStrategyType
+---@return integer
+local function get_strategy(strategy)
+  if type(strategy) == "table" then
+    return unpack(strategy)
+  end
+  return strategy, 0
+end
 
 ---@type TruncFunc
 ---@param before Section
@@ -630,11 +641,13 @@ end
 ---@param after Section
 ---@param marker table<string, number>
 ---@param direction number
-function trunc_strategy.uncentered(before, after, marker, direction)
-  if direction > 0 and after:count() > 0 then
+---@param el_offset number the number of elements before or after the current to show
+function trunc_strategy.uncentered(before, after, marker, direction, el_offset)
+  el_offset = el_offset or 0
+  if direction > 0 and after:count() > el_offset then
     after:drop(#after.items)
     marker.right_count = marker.right_count + 1
-  elseif direction < 0 and before:count() > 0 then
+  elseif direction < 0 and before:count() > el_offset then
     before:drop(1)
     marker.left_count = marker.left_count + 1
   else
@@ -648,7 +661,8 @@ end
 ---@field after Section
 ---@field available_width number
 ---@field direction number
----@field trunc_style TruncStrategy
+---@field strategy TruncStrategyType
+---@field offset number
 ---@field marker table
 ---@field visible Component[]?
 
@@ -669,7 +683,8 @@ local function truncate(opts)
   local after = opts.after
   local available_width = opts.available_width
   local direction = opts.direction
-  local trunc_style = opts.trunc_style
+  local strategy = opts.strategy
+  local el_offset = opts.offset
   local marker = opts.marker
   local visible = opts.visible or {}
 
@@ -696,7 +711,7 @@ local function truncate(opts)
     -- by changing the side that overflowing buffers are dropped from
     -- the position of the current buffer will move within the line rather
     -- than always being centered
-    trunc_strategy[trunc_style](before, after, marker, direction)
+    trunc_strategy[strategy](before, after, marker, direction, el_offset)
     -- drop the markers if the window is too narrow
     -- this assumes we have dropped both before and after
     -- sections since if the space available is this small
@@ -750,13 +765,15 @@ function M.tabline(items, tab_indicators)
 
   local before, current, after = get_sections(items)
   local direction = state.current_element_pos - state.last_element_pos
+  local strategy, el_offset = get_strategy(config.options.truncation_style)
   local segments, marker, visible_components = truncate({
     before = before,
     current = current,
     after = after,
     available_width = available_width,
     direction = direction,
-    trunc_style = config.options.truncation_style,
+    strategy = strategy,
+    offset = el_offset,
     marker = {
       left_count = 0,
       right_count = 0,
