@@ -642,6 +642,16 @@ function trunc_strategy.uncentered(before, after, marker, direction)
   end
 end
 
+---@class TruncationOpts
+---@field before Section
+---@field current Section
+---@field after Section
+---@field available_width number
+---@field direction number
+---@field trunc_style TruncStrategy
+---@field marker table
+---@field visible Component[]?
+
 --- PREREQUISITE: active buffer always remains in view
 --- 1. Find amount of available space in the window
 --- 2. Find the amount of space the bufferline will take up
@@ -649,18 +659,19 @@ end
 --- section
 --- 4. Re-check the size, if still too long truncate recursively till it fits
 --- 5. Add the number of truncated buffers as an indicator
----@param before Section
----@param current Section
----@param after Section
----@param available_width number
----@param direction number
----@param trunc_style TruncStrategy
----@param marker table
+---@param opts TruncationOpts
 ---@return Segment[][]
 ---@return table
 ---@return Buffer[]
-local function truncate(before, current, after, available_width, direction, trunc_style, marker, visible)
-  visible = visible or {}
+local function truncate(opts)
+  local before = opts.before
+  local current = opts.current
+  local after = opts.after
+  local available_width = opts.available_width
+  local direction = opts.direction
+  local trunc_style = opts.trunc_style
+  local marker = opts.marker
+  local visible = opts.visible or {}
 
   local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)
   local right_trunc_marker = get_marker_size(marker.right_count, marker.right_element_size)
@@ -694,7 +705,7 @@ local function truncate(before, current, after, available_width, direction, trun
       marker.left_count = 0
       marker.right_count = 0
     end
-    return truncate(before, current, after, available_width, direction, trunc_style, marker, visible)
+    return truncate(opts)
   end
 end
 
@@ -739,20 +750,20 @@ function M.tabline(items, tab_indicators)
 
   local before, current, after = get_sections(items)
   local direction = state.current_element_pos - state.last_element_pos
-  local segments, marker, visible_components = truncate(
-    before,
-    current,
-    after,
-    available_width,
-    direction,
-    config.options.truncation_style,
-    {
+  local segments, marker, visible_components = truncate({
+    before = before,
+    current = current,
+    after = after,
+    available_width = available_width,
+    direction = direction,
+    trunc_style = config.options.truncation_style,
+    marker = {
       left_count = 0,
       right_count = 0,
       left_element_size = left_element_size,
       right_element_size = right_element_size,
-    }
-  )
+    },
+  })
 
   local fill = hl.fill.hl
   local left_marker = get_trunc_marker(left_trunc_icon, fill, fill, marker.left_count)
