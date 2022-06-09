@@ -6,12 +6,16 @@ local M = {}
 
 ---@class BufferlineState
 ---@field components Component[]
+---@field current_element_pos number
+---@field last_element_pos number
 ---@field current_element_index number?
 ---@field visible_components Component[]
 ---@field __components Component[]
 ---@field custom_sort number[]
 local state = {
   is_picking = false,
+  current_element_pos = 0,
+  last_element_pos = 0,
   current_element_index = nil,
   custom_sort = nil,
   __components = {},

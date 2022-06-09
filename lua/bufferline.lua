@@ -221,7 +221,23 @@ local function setup_autocommands(conf)
 
   api.nvim_create_autocmd("BufEnter", {
     pattern = "*",
-    callback = function()
+    callback = function(args)
+      for index, component in ipairs(state.components) do
+        if component.id == args.buf then
+          state.set({ current_element_pos = index })
+        end
+      end
+      handle_group_enter()
+    end,
+  })
+  api.nvim_create_autocmd("BufLeave", {
+    pattern = "*",
+    callback = function(args)
+      for index, component in ipairs(state.components) do
+        if component.id == args.buf then
+          state.set({ last_element_pos = index })
+        end
+      end
       handle_group_enter()
     end,
   })
