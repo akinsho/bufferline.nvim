@@ -607,7 +607,6 @@ local function to_tabline_str(component)
   return str
 end
 
----@alias TruncStrategy "centered" | "uncentered"
 ---@alias TruncFunc fun(before: Section, after:Section, marker: table<string, number>, number):nil
 ---@type table<TruncStrategy, TruncFunc>
 local trunc_strategy = {}
@@ -654,11 +653,13 @@ end
 ---@param current Section
 ---@param after Section
 ---@param available_width number
+---@param direction number
+---@param trunc_style TruncStrategy
 ---@param marker table
 ---@return Segment[][]
 ---@return table
 ---@return Buffer[]
-local function truncate(before, current, after, available_width, direction, marker, visible)
+local function truncate(before, current, after, available_width, direction, trunc_style, marker, visible)
   visible = visible or {}
 
   local left_trunc_marker = get_marker_size(marker.left_count, marker.left_element_size)
@@ -684,8 +685,7 @@ local function truncate(before, current, after, available_width, direction, mark
     -- by changing the side that overflowing buffers are dropped from
     -- the position of the current buffer will move within the line rather
     -- than always being centered
-    local mode = "uncentered" -- FIXME: uncentered causes an infinite loop
-    trunc_strategy[mode](before, after, marker, direction)
+    trunc_strategy[trunc_style](before, after, marker, direction)
     -- drop the markers if the window is too narrow
     -- this assumes we have dropped both before and after
     -- sections since if the space available is this small
@@ -694,7 +694,7 @@ local function truncate(before, current, after, available_width, direction, mark
       marker.left_count = 0
       marker.right_count = 0
     end
-    return truncate(before, current, after, available_width, direction, marker, visible)
+    return truncate(before, current, after, available_width, direction, trunc_style, marker, visible)
   end
 end
 
@@ -745,6 +745,7 @@ function M.tabline(items, tab_indicators)
     after,
     available_width,
     direction,
+    config.options.truncation_style,
     {
       left_count = 0,
       right_count = 0,

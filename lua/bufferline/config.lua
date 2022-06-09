@@ -25,11 +25,14 @@ local colors = lazy.require("bufferline.colors")
 
 ---@alias DiagnosticIndicator fun(count: number, level: number, errors: table<string, any>, ctx: table<string, any>): string
 
+---@alias TruncStrategy "centered" | "uncentered"
+
 ---@class BufferlineOptions
 ---@field public mode BufferlineMode
 ---@field public view string
 ---@field public debug DebugOpts
 ---@field public numbers string
+---@field public truncation_style TruncStrategy
 ---@field public buffer_close_icon string
 ---@field public modified_icon string
 ---@field public close_icon string
@@ -571,6 +574,7 @@ local function get_defaults()
       mode = "buffers",
       themable = true, -- whether or not bufferline highlights can be overriden externally
       numbers = "none",
+      truncation_style = "centered",
       buffer_close_icon = "",
       modified_icon = "●",
       close_icon = "",
