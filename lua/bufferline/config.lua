@@ -574,9 +574,9 @@ local function get_defaults()
       buffer_close_icon = "",
       modified_icon = "●",
       close_icon = "",
-      close_command = "bdelete! %d",
+      close_command = "bdelete %d",
       left_mouse_command = "buffer %d",
-      right_mouse_command = "bdelete! %d",
+      right_mouse_command = "bdelete %d",
       middle_mouse_command = nil,
       -- U+2590 ▐ Right half block, this character is right aligned so the
       -- background highlight doesn't appear in the middle

@@ -55,7 +55,7 @@ local function delete_element(id)
   if config:is_tabline() then
     vim.cmd("tabclose " .. id)
   else
-    api.nvim_buf_delete(id, { force = true })
+    api.nvim_buf_delete(id, {})
   end
 end
 
