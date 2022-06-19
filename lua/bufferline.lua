@@ -24,7 +24,7 @@ local highlights = lazy.require("bufferline.highlights")
 
 -- @v:lua@ in the tabline only supports global functions, so this is
 -- the only way to add click handlers without autoloaded vimscript functions
-_G.___bufferline_private = _G.__bufferline_private or {} -- to guard against reloads
+_G.___bufferline_private = _G.___bufferline_private or {} -- to guard against reloads
 
 local api = vim.api
 
