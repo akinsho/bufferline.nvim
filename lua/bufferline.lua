@@ -22,6 +22,10 @@ local constants = lazy.require("bufferline.constants")
 --- @module "bufferline.highlights"
 local highlights = lazy.require("bufferline.highlights")
 
+-- @v:lua@ in tabline only support global function so this is
+-- the only way without autoload vimscript functions
+_G.___bufferline_private = _G.__bufferline_private or {} -- to guard against reloads
+
 local api = vim.api
 
 local positions_key = constants.positions_key
