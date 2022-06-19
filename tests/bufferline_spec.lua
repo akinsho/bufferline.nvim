@@ -149,7 +149,7 @@ describe("Bufferline tests:", function()
           left_mouse_command = "vertical sbuffer %d",
         },
       })
-      bufferline.handle_click(bufnum, "l")
+      ___bufferline_private.handle_click(bufnum, nil, "l")
       vim.wait(10)
       assert.is_equal(#vim.api.nvim_list_wins(), 2)
     end)
@@ -161,7 +161,7 @@ describe("Bufferline tests:", function()
           middle_mouse_command = function(bufid) vim.bo[bufid].filetype = "test" end,
         },
       })
-      bufferline.handle_click(bufnum, "m")
+      ___bufferline_private.handle_click(bufnum, nil, "m")
       assert.is_equal(vim.bo[bufnum].filetype, "test")
     end)
 
@@ -172,7 +172,7 @@ describe("Bufferline tests:", function()
           right_mouse_command = "setfiletype egg",
         },
       })
-      bufferline.handle_click(bufnum, "r")
+      ___bufferline_private.handle_click(bufnum, nil, "r")
       vim.wait(10)
       assert.is_equal(vim.bo.filetype, "egg")
     end)
@@ -186,7 +186,7 @@ describe("Bufferline tests:", function()
           close_command = function(bufid) count = count + bufid end,
         },
       })
-      bufferline.handle_close(bufnum)
+      ___bufferline_private.handle_close(bufnum)
       assert.is_equal(count, expected)
     end)
   end)
@@ -239,6 +239,7 @@ describe("Bufferline tests:", function()
 
       vim.cmd("edit c.txt")
       local ok, err = pcall(bufferline.close_in_direction, "right", false)
+      vim.wait(10)
       assert.is_false(ok)
       assert.is_truthy(err:match("Failed to unload buffer"))
     end)

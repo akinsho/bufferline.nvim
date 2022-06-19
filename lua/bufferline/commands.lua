@@ -79,13 +79,13 @@ local function handle_user_command(command, id)
 end
 
 ---@param position number
-function M.handle_group_click(position)
+local function handle_group_click(position)
   groups.toggle_hidden(position)
   ui.refresh()
 end
 
 ---@param id number
-function M.handle_close(id)
+local function handle_close(id)
   local options = config.options
   local close = options.close_command
   handle_user_command(close, id)
@@ -105,7 +105,7 @@ local cmds = {
 ---Handler for each type of mouse click
 ---@param id number
 ---@param button string
-function M.handle_click(id, button)
+local function handle_click(id, _, button)
   local options = config.options
   if id then handle_user_command(options[cmds[button]], id) end
 end
@@ -121,7 +121,9 @@ end
 function M.pick() pick.choose_then(open_element) end
 
 function M.close_with_pick()
-  pick.choose_then(function(id) M.handle_close(id) end)
+  pick.choose_then(function(id)
+    handle_close(id)
+  end)
 end
 
 --- Open a element based on it's visible position in the list
@@ -220,5 +222,9 @@ function M.sort_by(sort_by)
   if opts.persist_buffer_sort then save_positions(state.custom_sort) end
   ui.refresh()
 end
+
+_G.___bufferline_private.handle_close = handle_close
+_G.___bufferline_private.handle_click = handle_click
+_G.___bufferline_private.handle_group_click = handle_group_click
 
 return M
