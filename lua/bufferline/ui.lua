@@ -145,7 +145,7 @@ function M.make_clickable(func_name, id, component)
   -- v:lua does not support function references in vimscript so
   -- the only way to implement this is using autoload vimscript functions
   component.attr = component.attr or {}
-  component.attr.prefix = "%" .. id .. "@nvim_bufferline#" .. func_name .. "@"
+  component.attr.prefix = "%" .. id .. "@v:lua.nvim_bufferline_" .. func_name .. "@"
   -- the %X works as a closing label. @see :h tabline
   component.attr.suffix = "%X"
   return component
@@ -303,7 +303,7 @@ local function get_close_icon(buf_id, context)
   if not options.show_buffer_close_icons then
     return
   end
-  return M.make_clickable("handle_close_buffer", buf_id, {
+  return M.make_clickable("handle_close", buf_id, {
     text = buffer_close_icon,
     highlight = close_button_hl,
   })
