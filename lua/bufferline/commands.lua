@@ -83,13 +83,13 @@ local function handle_user_command(command, id)
 end
 
 ---@param position number
-function M.handle_group_click(position)
+function _G.___bufferline_private.handle_group_click(position)
   groups.toggle_hidden(position)
   ui.refresh()
 end
 
 ---@param id number
-function M.handle_close(id)
+function _G.___bufferline_private.handle_close(id)
   local options = config.options
   local close = options.close_command
   handle_user_command(close, id)
@@ -109,7 +109,7 @@ local cmds = {
 ---Handler for each type of mouse click
 ---@param id number
 ---@param button string
-function M.handle_click(id, button)
+function _G.___bufferline_private.handle_click(id, _, button)
   local options = config.options
   if id then
     handle_user_command(options[cmds[button]], id)

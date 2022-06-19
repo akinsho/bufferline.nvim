@@ -122,6 +122,9 @@ function Tabpage:new(tab)
     extension = tab.extension,
     type = tab.buftype,
   })
+  if tab.name_formatter and type(tab.name_formatter) == "function" then
+    tab.name = tab.name_formatter({ name = tab.name, path = tab.path, tabnr = tab.id }) or tab.name
+  end
   setmetatable(tab, self)
   self.__index = self
   return tab
