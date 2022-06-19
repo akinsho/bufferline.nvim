@@ -149,7 +149,7 @@ describe("Bufferline tests:", function()
           left_mouse_command = "vertical sbuffer %d",
         },
       })
-      bufferline.handle_click(bufnum, "l")
+      ___bufferline_private.handle_click(bufnum, "l")
       assert.is_equal(#vim.api.nvim_list_wins(), 2)
     end)
 
@@ -162,7 +162,7 @@ describe("Bufferline tests:", function()
           end,
         },
       })
-      bufferline.handle_click(bufnum, "m")
+      ___bufferline_private.handle_click(bufnum, "m")
       assert.is_equal(vim.bo[bufnum].filetype, "test")
     end)
 
@@ -173,7 +173,7 @@ describe("Bufferline tests:", function()
           right_mouse_command = "setfiletype egg",
         },
       })
-      bufferline.handle_click(bufnum, "r")
+      ___bufferline_private.handle_click(bufnum, "r")
       assert.is_equal(vim.bo.filetype, "egg")
     end)
 
@@ -188,7 +188,7 @@ describe("Bufferline tests:", function()
           end,
         },
       })
-      bufferline.handle_close(bufnum)
+      ___bufferline_private.handle_close(bufnum)
       assert.is_equal(count, expected)
     end)
   end)
