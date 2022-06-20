@@ -178,6 +178,11 @@ function M.component(context)
   local diag_highlight = highlights[diagnostics.level .. "_diagnostic"]
     or highlights.diagnostic
     or ""
+
+  if config.options.diagnostics_pure then
+    indicator = ""
+  end
+
   return {
     text = indicator,
     highlight = diag_highlight,
