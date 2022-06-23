@@ -36,4 +36,4 @@ jobs:
             curl -Lo build/neovim/v0.7.0/nvim https://github.com/neovim/neovim/releases/download/v0.7.0/nvim.appimage
             chmod +x build/neovim/v0.7.0/nvim
           }
-          build/neovim/v0.7.0/nvim --headless --noplugin -u tests/minimal.vim -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal.vim'}"
+          build/neovim/v0.7.0/nvim --headless --noplugin -u tests/minimal_init.vim -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.vim'}"

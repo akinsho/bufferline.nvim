@@ -33,7 +33,7 @@ i.e.
 ---@class Component
 ---@field id number
 ---@field length number
----@field component function
+---@field component fun(BufferlineState): string
 ---@field hidden boolean
 ---@field focusable boolean
 ---@field type 'group_end' | 'group_start' | 'buffer' | 'tabpage'
@@ -172,6 +172,9 @@ end
 ---@field public visibility fun(): boolean
 ---@field public current fun(): boolean
 ---@field public visible fun(): boolean
+---@field public find_index fun(Buffer, BufferlineState): number
+---@field public is_new fun(Buffer, BufferlineState): boolean
+---@field public is_existing fun(Buffer, BufferlineState): boolean
 ---@deprecated public filename string the visible name for the file
 local Buffer = Component:new({ type = "buffer" })
 

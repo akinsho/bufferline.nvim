@@ -584,7 +584,7 @@ end
 ---@param component Segment[]
 local function to_tabline_str(component)
   component = component or {}
-  local str = ""
+  local str = {}
   local globals = {}
   extend_highlight(component)
   for _, part in ipairs(component) do
@@ -593,16 +593,18 @@ local function to_tabline_str(component)
       table.insert(globals, { attr.prefix or "", attr.suffix or "" })
     end
     local hl = highlights.hl(part.highlight)
-    str = str
-      .. hl
-      .. ((attr and not attr.global) and attr.prefix or "")
-      .. (part.text or "")
-      .. ((attr and not attr.global) and attr.suffix or "")
+    table.insert(str, {
+      hl,
+      ((attr and not attr.global) and attr.prefix or ""),
+      (part.text or ""),
+      ((attr and not attr.global) and attr.suffix or ""),
+    })
   end
   for _, attr in ipairs(globals) do
-    str = attr[1] .. str .. attr[2]
+    table.insert(str, 1, attr[1])
+    table.insert(str, #str + 1, attr[1])
   end
-  return str
+  return table.concat(vim.tbl_flatten(str))
 end
 
 --- PREREQUISITE: active buffer always remains in view
