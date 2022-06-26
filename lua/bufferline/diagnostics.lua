@@ -9,6 +9,7 @@ local ui = lazy.require("bufferline.ui")
 local M = {}
 
 local fn = vim.fn
+local fmt = string.format
 
 local severity_name = {
   [1] = "error",
@@ -163,15 +164,12 @@ function M.component(context)
     return
   end
 
-  local indicator = " (" .. diagnostics.count .. ")"
+  local indicator = ""
   if user_indicator and type(user_indicator) == "function" then
     local ctx = { buffer = element, tab = element }
     indicator = user_indicator(diagnostics.count, diagnostics.level, diagnostics.errors, ctx)
-  end
-
-  --- Don't adjust the diagnostic indicator size if it is empty
-  if not indicator or #indicator == 0 then
-    return
+  elseif indicator == nil then
+    indicator = fmt(" (%s)", diagnostics.count)
   end
 
   local highlight = highlights[diagnostics.level] or ""

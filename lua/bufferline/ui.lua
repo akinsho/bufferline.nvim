@@ -537,7 +537,7 @@ function M.element(state, element)
     set_id(name, components.id.name),
     spacing({ when = name, highlight = curr_hl.buffer.hl }),
     set_id(diagnostic, components.id.diagnostics),
-    spacing({ when = diagnostic }),
+    spacing({ when = diagnostic and #diagnostic.text > 0 }),
     right_space,
     suffix,
     spacing({ when = suffix }),
