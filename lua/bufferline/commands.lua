@@ -92,7 +92,7 @@ end
 function M.handle_close(id)
   local options = config.options
   local close = options.close_command
-  handle_user_command(close, api.nvim_tabpage_get_number(id))
+  handle_user_command(close, id)
 end
 
 ---@param id number
