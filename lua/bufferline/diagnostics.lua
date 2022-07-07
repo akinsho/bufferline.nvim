@@ -20,9 +20,7 @@ local severity_name = {
 }
 
 setmetatable(severity_name, {
-  __index = function()
-    return "other"
-  end,
+  __index = function() return "other" end,
 })
 
 local last_diagnostics_result = {}
@@ -35,9 +33,7 @@ local function get_err_dict(errs)
       -- calculate max severity
       local sev_num = err.severity
       local sev_level = severity_name[sev_num]
-      if sev_num < max then
-        max = sev_num
-      end
+      if sev_num < max then max = sev_num end
       -- increment diagnostics dict
       if ds[sev_level] then
         ds[sev_level] = ds[sev_level] + 1
@@ -51,9 +47,7 @@ local function get_err_dict(errs)
 end
 
 local mt = {
-  __index = function(_, _)
-    return { count = 0, level = nil }
-  end,
+  __index = function(_, _) return { count = 0, level = nil } end,
 }
 
 local is_valid_version = utils.is_truthy(fn.has("nvim-0.5"))
@@ -81,9 +75,7 @@ local get_diagnostics = {
     local results = {}
     local diagnostics = vim.diagnostic.get()
     for _, d in pairs(diagnostics) do
-      if not results[d.bufnr] then
-        results[d.bufnr] = {}
-      end
+      if not results[d.bufnr] then results[d.bufnr] = {} end
       table.insert(results[d.bufnr], d)
     end
     return results
@@ -94,9 +86,7 @@ local get_diagnostics = {
 
     function M.refresh_coc_diagnostics()
       pcall(fn.CocActionAsync, "diagnosticList", function(err, res)
-        if err ~= vim.NIL then
-          return
-        end
+        if err ~= vim.NIL then return end
         res = type(res) == "table" and res or {}
         local result = {}
         local bufname2bufnr = {}
@@ -120,17 +110,13 @@ local get_diagnostics = {
       [[autocmd User CocDiagnosticChange lua require('bufferline.diagnostics').refresh_coc_diagnostics()]]
     )
 
-    return function()
-      return diagnostics
-    end
+    return function() return diagnostics end
   end)(),
 }
 
 ---@param opts table
 function M.get(opts)
-  if is_disabled(opts.diagnostics) then
-    return setmetatable({}, mt)
-  end
+  if is_disabled(opts.diagnostics) then return setmetatable({}, mt) end
   if is_insert() and not opts.diagnostics_update_in_insert then
     return setmetatable(last_diagnostics_result, mt)
   end
@@ -152,17 +138,13 @@ end
 ---@return Segment?
 function M.component(context)
   local opts = config.get("options")
-  if is_disabled(opts.diagnostics) then
-    return
-  end
+  if is_disabled(opts.diagnostics) then return end
 
   local user_indicator = opts.diagnostics_indicator
   local highlights = context.current_highlights
   local element = context.tab
   local diagnostics = element.diagnostics
-  if not diagnostics or not diagnostics.count or diagnostics.count < 1 then
-    return
-  end
+  if not diagnostics or not diagnostics.count or diagnostics.count < 1 then return end
 
   local indicator = ""
   if user_indicator and type(user_indicator) == "function" then

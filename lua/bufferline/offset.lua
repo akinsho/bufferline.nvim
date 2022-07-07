@@ -23,9 +23,7 @@ local supported_win_types = {
 ---@return string
 local function get_section_text(size, highlight, offset)
   local text = offset.text
-  if type(text) == "function" then
-    text = text()
-  end
+  if type(text) == "function" then text = text() end
   local alignment = offset.text_align or "center"
   if not text then
     text = string.rep(" ", size)
@@ -64,15 +62,11 @@ local function guess_window_highlight(win_id, attribute, match)
   attribute = attribute or "bg"
   match = match or "Normal"
   local hl = vim.wo[win_id].winhighlight
-  if not hl then
-    return
-  end
+  if not hl then return end
   local parts = vim.split(hl, ",")
   for i = #parts, 1, -1 do
     local grp, hl_name = unpack(vim.split(parts[i], ":"))
-    if grp and grp:match(match) then
-      return hl_name
-    end
+    if grp and grp:match(match) then return hl_name end
   end
   return match
 end
@@ -91,9 +85,7 @@ end
 ---@return number
 local function is_valid_layout(windows)
   local win_type, win_id = windows[1], windows[2]
-  if vim.tbl_islist(win_id) and win_type == t.COLUMN then
-    win_id = win_id[1][2]
-  end
+  if vim.tbl_islist(win_id) and win_type == t.COLUMN then win_id = win_id[1][2] end
   return supported_win_types[win_type] and type(win_id) == "number", win_id
 end
 
@@ -107,18 +99,14 @@ end
 ---@return boolean
 local function is_offset_section(windows, offset)
   local wins = { windows[1] }
-  if #windows > 1 then
-    wins[#wins + 1] = windows[#windows]
-  end
+  if #windows > 1 then wins[#wins + 1] = windows[#windows] end
   for idx, win in ipairs(wins) do
     local valid_layout, win_id = is_valid_layout(win)
     if valid_layout then
       local buf = api.nvim_win_get_buf(win_id)
       local valid = buf and vim.bo[buf].filetype == offset.filetype
       local is_left = idx == 1
-      if valid then
-        return valid, win_id, is_left
-      end
+      if valid then return valid, win_id, is_left end
     end
   end
   return false, nil, nil

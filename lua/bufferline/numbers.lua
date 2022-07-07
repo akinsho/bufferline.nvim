@@ -49,19 +49,13 @@ local maps = {
 ---@param map table<string, string>?
 ---@return string
 local function construct_number(num, map)
-  if not map then
-    return num .. "."
-  end
+  if not map then return num .. "." end
   num = tostring(num)
-  return num:gsub(".", function(c)
-    return map[c] or ""
-  end)
+  return num:gsub(".", function(c) return map[c] or "" end)
 end
 
 local function to_style(map)
-  return function(num)
-    return construct_number(num, map)
-  end
+  return function(num) return construct_number(num, map) end
 end
 
 local lower, raise = to_style(subscript_numbers), to_style(superscript_numbers)
@@ -94,18 +88,12 @@ end
 function M.component(context)
   local element = context.tab
   local options = config.options
-  if options.numbers == "none" then
-    return
-  end
+  if options.numbers == "none" then return end
   local number_prefix = prefix(element, options.numbers)
-  if not number_prefix then
-    return
-  end
+  if not number_prefix then return end
   return { highlight = context.current_highlights.numbers, text = number_prefix }
 end
 
-if require("bufferline.utils").is_test() then
-  M.prefix = prefix
-end
+if require("bufferline.utils").is_test() then M.prefix = prefix end
 
 return M

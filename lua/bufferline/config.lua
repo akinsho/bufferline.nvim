@@ -84,9 +84,7 @@ local colors = lazy.require("bufferline.colors")
 --- Convert highlights specified as tables to the correct existing colours
 ---@param map BufferlineHighlights
 local function convert_highlights(map)
-  if not map or vim.tbl_isempty(map) then
-    return {}
-  end
+  if not map or vim.tbl_isempty(map) then return {} end
   -- we deep copy the highlights table as assigning the attributes
   -- will only pass the references so will mutate the original table otherwise
   local updated = vim.deepcopy(map)
@@ -158,9 +156,7 @@ local deprecations = {
 
 ---@param options BufferlineOptions
 local function handle_deprecations(options)
-  if not options then
-    return
-  end
+  if not options then return end
   for key, _ in pairs(options) do
     local deprecation = deprecations[key]
     if deprecation then
@@ -179,14 +175,10 @@ function Config:validate(defaults)
   if self.highlights then
     local incorrect = {}
     for k, _ in pairs(self.highlights) do
-      if not defaults.highlights[k] then
-        table.insert(incorrect, k)
-      end
+      if not defaults.highlights[k] then table.insert(incorrect, k) end
     end
     -- Don't continue if there are no incorrect highlights
-    if vim.tbl_isempty(incorrect) then
-      return
-    end
+    if vim.tbl_isempty(incorrect) then return end
     local is_plural = #incorrect > 1
     local verb = is_plural and " are " or " is "
     local article = is_plural and " " or " a "
@@ -204,17 +196,11 @@ function Config:validate(defaults)
   end
 end
 
-function Config:mode()
-  return self.options.mode
-end
+function Config:mode() return self.options.mode end
 
-function Config:is_bufferline()
-  return self:mode() == "buffers"
-end
+function Config:is_bufferline() return self:mode() == "buffers" end
 
-function Config:is_tabline()
-  return self:mode() == "tabs"
-end
+function Config:is_tabline() return self:mode() == "tabs" end
 
 ---Derive the colors for the bufferline
 ---@return BufferlineHighlights
@@ -628,9 +614,7 @@ function Config:resolve()
   -- If the sort by mechanism is "tabs" but the user is in tabline mode
   -- then the id will be that of the tabs so sort by should be id i.e. "tabs" sort
   -- is redundant in tabs mode
-  if is_tabline and self.options.sort_by == "tabs" then
-    self.options.sort_by = "id"
-  end
+  if is_tabline and self.options.sort_by == "tabs" then self.options.sort_by = "id" end
   if is_tabline then
     self.options.close_command = "tabclose %d"
     self.options.right_mouse_command = "tabclose %d"
@@ -665,9 +649,7 @@ end
 ---defaults are set. This is also so we can diff what the user set this is useful
 ---for setting the highlight groups etc. once this has been merged with the defaults
 ---@param conf BufferlineConfig
-function M.set(conf)
-  config = Config:new(conf or {})
-end
+function M.set(conf) config = Config:new(conf or {}) end
 
 ---Update highlight colours when the colour scheme changes
 function M.update_highlights()
@@ -683,20 +665,14 @@ end
 ---@overload fun(key: '"options"'): BufferlineOptions
 ---@overload fun(key: '"highlights"'): BufferlineHighlights
 function M.get(key)
-  if not config then
-    return
-  end
+  if not config then return end
   return config[key] or config
 end
 
 --- This function is only intended for use in tests
 ---@private
-function M.__reset()
-  config = nil
-end
+function M.__reset() config = nil end
 
 return setmetatable(M, {
-  __index = function(_, k)
-    return config[k]
-  end,
+  __index = function(_, k) return config[k] end,
 })

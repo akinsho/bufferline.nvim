@@ -37,21 +37,15 @@ function M.generate_name(name, opts)
 end
 
 function M.hl(item)
-  if not item then
-    return ""
-  end
+  if not item then return "" end
   return "%#" .. item .. "#"
 end
 
-function M.hl_exists(name)
-  return vim.fn.hlexists(name) > 0
-end
+function M.hl_exists(name) return vim.fn.hlexists(name) > 0 end
 
 local function convert_gui(guistr)
   local gui = {}
-  if guistr:lower():match("none") then
-    return gui
-  end
+  if guistr:lower():match("none") then return gui end
   local parts = vim.split(guistr, ",")
   for _, part in ipairs(parts) do
     gui[part] = true
@@ -86,13 +80,9 @@ end
 local function convert_hl_keys(opts)
   local hls = {}
   for key, value in pairs(opts) do
-    if keys[key] then
-      hls[keys[key]] = value
-    end
+    if keys[key] then hls[keys[key]] = value end
   end
-  if opts.gui then
-    hls = vim.tbl_extend("force", hls, convert_gui(opts.gui))
-  end
+  if opts.gui then hls = vim.tbl_extend("force", hls, convert_gui(opts.gui)) end
   hls.default = vim.F.if_nil(opts.default, config.options.themable)
   return hls
 end
@@ -198,9 +188,7 @@ function M.for_element(element)
     hl.numbers = h.numbers.hl
   end
 
-  if element.group then
-    groups.set_current_hl(element, h, hl)
-  end
+  if element.group then groups.set_current_hl(element, h, hl) end
 
   return hl
 end

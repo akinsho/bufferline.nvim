@@ -13,9 +13,7 @@ M.current = {}
 
 local valid = "abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ"
 
-function M.reset()
-  M.current = {}
-end
+function M.reset() M.current = {} end
 
 -- Prompts user to select a buffer then applies a function to the buffer
 ---@param func fun(id: number)
@@ -28,9 +26,7 @@ function M.choose_then(func)
     local letter = fn.nr2char(char)
     for _, item in ipairs(state.components) do
       local element = item:as_element()
-      if element and letter == element.letter then
-        func(element.id)
-      end
+      if element and letter == element.letter then func(element.id) end
     end
   end
   state.is_picking = false

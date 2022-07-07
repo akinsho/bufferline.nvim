@@ -13,9 +13,7 @@ local function hex_to_rgb(color)
   return tonumber(hex:sub(1, 2), 16), tonumber(hex:sub(3, 4), 16), tonumber(hex:sub(5), 16)
 end
 
-local function alter(attr, percent)
-  return math.floor(attr * (100 + percent) / 100)
-end
+local function alter(attr, percent) return math.floor(attr * (100 + percent) / 100) end
 
 ---@source https://stackoverflow.com/q/5560248
 ---@see: https://stackoverflow.com/a/37797380
@@ -25,9 +23,7 @@ end
 ---@return string
 function M.shade_color(color, percent)
   local r, g, b = hex_to_rgb(color)
-  if not r or not g or not b then
-    return "NONE"
-  end
+  if not r or not g or not b then return "NONE" end
   r, g, b = alter(r, percent), alter(g, percent), alter(b, percent)
   r, g, b = math.min(r, 255), math.min(g, 255), math.min(b, 255)
   return string.format("#%02x%02x%02x", r, g, b)
@@ -38,14 +34,10 @@ end
 --- 1. https://stackoverflow.com/a/1855903/837964
 --- 2. https://stackoverflow.com/a/596243
 function M.color_is_bright(hex)
-  if not hex then
-    return false
-  end
+  if not hex then return false end
   local r, g, b = hex_to_rgb(hex)
   -- If any of the colors are missing return false
-  if not r or not g or not b then
-    return false
-  end
+  if not r or not g or not b then return false end
   -- Counting the perceptive luminance - human eye favors green color
   local luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
   return luminance > 0.5 -- if > 0.5 Bright colors, black font, otherwise Dark colors, white font
@@ -69,14 +61,10 @@ function M.get_color(opts)
   -- try and get hl from name
   local success, hl = pcall(vim.api.nvim_get_hl_by_name, name, not cterm)
   if success and hl and hl[attribute] then
-    if cterm then
-      return hl[attribute]
-    end
+    if cterm then return hl[attribute] end
     -- convert from decimal color value to hex (e.g. 14257292 => "#D98C8C")
     local hex = "#" .. bit.tohex(hl[attribute], 6)
-    if not not_match or not_match ~= hex then
-      return hex
-    end
+    if not not_match or not_match ~= hex then return hex end
   end
   -- note: in case of cterm, nvim_get_hl_by_name may return incorrect color
   --   numbers (but still < 256) for some highlight groups like TabLine,
@@ -84,14 +72,10 @@ function M.get_color(opts)
   --   does not happen for gui colors.
 
   -- no fallback for cterm colors
-  if cterm then
-    return nil
-  end
+  if cterm then return nil end
 
   -- basic fallback
-  if fallback and type(fallback) == "string" then
-    return fallback
-  end
+  if fallback and type(fallback) == "string" then return fallback end
 
   -- bit of recursive fallback logic
   if fallback and type(fallback) == "table" then

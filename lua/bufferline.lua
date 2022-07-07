@@ -49,24 +49,18 @@ local M = {
 -----------------------------------------------------------------------------//
 local function restore_positions()
   local str = vim.g[positions_key]
-  if not str then
-    return str
-  end
+  if not str then return str end
   -- these are converted to strings when stored
   -- so have to be converted back before usage
   local ids = vim.split(str, ",")
-  if ids and #ids > 0 then
-    state.custom_sort = vim.tbl_map(tonumber, ids)
-  end
+  if ids and #ids > 0 then state.custom_sort = vim.tbl_map(tonumber, ids) end
 end
 
 ---@param list Component[]
 ---@return Component[]
 local function filter_invisible(list)
   return utils.fold({}, function(accum, item)
-    if item.focusable ~= false and not item.hidden then
-      table.insert(accum, item)
-    end
+    if item.focusable ~= false and not item.hidden then table.insert(accum, item) end
     return accum
   end, list)
 end
@@ -76,9 +70,7 @@ end
 ---@return Component[]
 local function sorter(list)
   -- if the user has reshuffled the buffers manually don't try and sort them
-  if state.custom_sort then
-    return list
-  end
+  if state.custom_sort then return list end
   return sorters.sort(list, nil, state)
 end
 
@@ -87,9 +79,7 @@ end
 ---@return number
 local function get_current_index(current_state)
   for index, component in ipairs(current_state.components) do
-    if component:current() then
-      return index
-    end
+    if component:current() then return index end
   end
 end
 
@@ -119,9 +109,7 @@ end
 local function toggle_bufferline()
   local item_count = config:is_tabline() and utils.get_tab_count() or utils.get_buf_count()
   local status = (config.options.always_show_bufferline or item_count > 1) and 2 or 0
-  if vim.o.showtabline ~= status then
-    vim.o.showtabline = status
-  end
+  if vim.o.showtabline ~= status then vim.o.showtabline = status end
 end
 
 local function apply_colors()
@@ -136,9 +124,7 @@ end
 function M.group_action(name, action)
   assert(name, "A name must be passed to execute a group action")
   if action == "close" then
-    groups.command(name, function(b)
-      api.nvim_buf_delete(b.id, { force = true })
-    end)
+    groups.command(name, function(b) api.nvim_buf_delete(b.id, { force = true }) end)
   elseif action == "toggle" then
     groups.toggle_hidden(nil, name)
     ui.refresh()
@@ -160,14 +146,10 @@ end
 local function handle_group_enter()
   local options = config.options
   local _, element = commands.get_current_element_index(state, { include_hidden = true })
-  if not element or not element.group then
-    return
-  end
+  if not element or not element.group then return end
   local current_group = groups.get_by_id(element.group)
   if options.groups.options.toggle_hidden_on_enter then
-    if current_group.hidden then
-      groups.set_hidden(current_group.id, false)
-    end
+    if current_group.hidden then groups.set_hidden(current_group.id, false) end
   end
   utils.for_each(state.components, function(tab)
     local group = groups.get_by_id(tab.group)
@@ -184,20 +166,14 @@ local function setup_autocommands(conf)
   api.nvim_create_autocmd("ColorScheme", {
     pattern = "*",
     group = BUFFERLINE_GROUP,
-    callback = function()
-      apply_colors()
-    end,
+    callback = function() apply_colors() end,
   })
-  if not options or vim.tbl_isempty(options) then
-    return
-  end
+  if not options or vim.tbl_isempty(options) then return end
   if options.persist_buffer_sort then
     api.nvim_create_autocmd("SessionLoadPost", {
       pattern = "*",
       group = BUFFERLINE_GROUP,
-      callback = function()
-        restore_positions()
-      end,
+      callback = function() restore_positions() end,
     })
   end
   if not options.always_show_bufferline then
@@ -205,25 +181,19 @@ local function setup_autocommands(conf)
     api.nvim_create_autocmd({ "BufAdd", "TabEnter" }, {
       pattern = "*",
       group = BUFFERLINE_GROUP,
-      callback = function()
-        toggle_bufferline()
-      end,
+      callback = function() toggle_bufferline() end,
     })
   end
 
   api.nvim_create_autocmd("BufRead", {
     pattern = "*",
     once = true,
-    callback = function()
-      vim.schedule(handle_group_enter)
-    end,
+    callback = function() vim.schedule(handle_group_enter) end,
   })
 
   api.nvim_create_autocmd("BufEnter", {
     pattern = "*",
-    callback = function()
-      handle_group_enter()
-    end,
+    callback = function() handle_group_enter() end,
   })
 end
 
@@ -232,76 +202,54 @@ end
 ---@param cursor_pos number
 ---@return string[]
 ---@diagnostic disable-next-line: unused-local
-local function complete_groups(arg_lead, cmd_line, cursor_pos)
-  return groups.names()
-end
+local function complete_groups(arg_lead, cmd_line, cursor_pos) return groups.names() end
 
 local function setup_commands()
   local cmd = api.nvim_create_user_command
 
-  cmd("BufferLinePick", function()
-    M.pick_buffer()
-  end, {})
+  cmd("BufferLinePick", function() M.pick_buffer() end, {})
 
-  cmd("BufferLinePickClose", function()
-    M.close_buffer_with_pick()
-  end, {})
+  cmd("BufferLinePickClose", function() M.close_buffer_with_pick() end, {})
 
-  cmd("BufferLineCycleNext", function()
-    M.cycle(1)
-  end, {})
+  cmd("BufferLineCycleNext", function() M.cycle(1) end, {})
 
-  cmd("BufferLineCyclePrev", function()
-    M.cycle(-1)
-  end, {})
+  cmd("BufferLineCyclePrev", function() M.cycle(-1) end, {})
 
-  cmd("BufferLineCloseRight", function()
-    M.close_in_direction("right")
-  end, {})
+  cmd("BufferLineCloseRight", function() M.close_in_direction("right") end, {})
 
-  cmd("BufferLineCloseLeft", function()
-    M.close_in_direction("left")
-  end, {})
+  cmd("BufferLineCloseLeft", function() M.close_in_direction("left") end, {})
 
-  cmd("BufferLineMoveNext", function()
-    M.move(1)
-  end, {})
+  cmd("BufferLineMoveNext", function() M.move(1) end, {})
 
-  cmd("BufferLineMovePrev", function()
-    M.move(-1)
-  end, {})
+  cmd("BufferLineMovePrev", function() M.move(-1) end, {})
 
-  cmd("BufferLineSortByExtension", function()
-    M.sort_buffers_by("extension")
-  end, {})
+  cmd("BufferLineSortByExtension", function() M.sort_buffers_by("extension") end, {})
 
-  cmd("BufferLineSortByDirectory", function()
-    M.sort_buffers_by("directory")
-  end, {})
+  cmd("BufferLineSortByDirectory", function() M.sort_buffers_by("directory") end, {})
 
-  cmd("BufferLineSortByRelativeDirectory", function()
-    M.sort_buffers_by("relative_directory")
-  end, {})
+  cmd(
+    "BufferLineSortByRelativeDirectory",
+    function() M.sort_buffers_by("relative_directory") end,
+    {}
+  )
 
-  cmd("BufferLineSortByTabs", function()
-    M.sort_buffers_by("tabs")
-  end, {})
+  cmd("BufferLineSortByTabs", function() M.sort_buffers_by("tabs") end, {})
 
-  cmd("BufferLineGoToBuffer", function(opts)
-    M.go_to_buffer(opts.args)
-  end, { nargs = 1 })
+  cmd("BufferLineGoToBuffer", function(opts) M.go_to_buffer(opts.args) end, { nargs = 1 })
 
-  cmd("BufferLineGroupClose", function(opts)
-    M.group_action(opts.args, "close")
-  end, { nargs = 1, complete = complete_groups })
+  cmd(
+    "BufferLineGroupClose",
+    function(opts) M.group_action(opts.args, "close") end,
+    { nargs = 1, complete = complete_groups }
+  )
 
-  cmd("BufferLineGroupToggle", function(opts)
-    M.group_action(opts.args, "toggle")
-  end, { nargs = 1, complete = complete_groups })
+  cmd(
+    "BufferLineGroupToggle",
+    function(opts) M.group_action(opts.args, "toggle") end,
+    { nargs = 1, complete = complete_groups }
+  )
 
-  cmd("BufferLineTogglePin", function()
-    M.toggle_pin()
-  end, { nargs = 0 })
+  cmd("BufferLineTogglePin", function() M.toggle_pin() end, { nargs = 0 })
 end
 
 ---@private

@@ -61,9 +61,7 @@ local function set_id(component, id)
   return component
 end
 
-local function get_id(component)
-  return component and component.attr and component.attr.__id
-end
+local function get_id(component) return component and component.attr and component.attr.__id end
 
 -----------------------------------------------------------------------------//
 -- Context
@@ -101,18 +99,14 @@ end
 ---@param s Segment?
 ---@return boolean
 local function has_text(s)
-  if s == nil or s.text == nil or s.text == "" then
-    return false
-  end
+  if s == nil or s.text == nil or s.text == "" then return false end
   return true
 end
 
 ---@param parts Segment[]
 ---@return Segment[]
 local function filter_invalid(parts)
-  return vim.tbl_filter(function(p)
-    return p ~= nil
-  end, parts)
+  return vim.tbl_filter(function(p) return p ~= nil end, parts)
 end
 
 ---@param segments Segment[]
@@ -121,9 +115,7 @@ local function get_component_size(segments)
   assert(vim.tbl_islist(segments), "Segments must be a list")
   local sum = 0
   for _, s in pairs(segments) do
-    if has_text(s) then
-      sum = sum + strwidth(tostring(s.text))
-    end
+    if has_text(s) then sum = sum + strwidth(tostring(s.text)) end
   end
   return sum
 end
@@ -242,12 +234,8 @@ local function get_icon_with_highlight(buffer, color_icons, hl_defs)
   local icon = buffer.icon
   local hl = buffer.icon_highlight
 
-  if not icon or icon == "" then
-    return
-  end
-  if not hl or hl == "" then
-    return { text = icon }
-  end
+  if not icon or icon == "" then return end
+  if not hl or hl == "" then return { text = icon } end
 
   local state = buffer:visibility()
   local bg_hls = {
@@ -283,14 +271,10 @@ end
 --- @param focused boolean
 --- @param style table | string
 local function get_separator(focused, style)
-  if type(style) == "table" then
-    return focused and style[1] or style[2]
-  end
+  if type(style) == "table" then return focused and style[1] or style[2] end
   ---@diagnostic disable-next-line: undefined-field
   local chars = sep_chars[style] or sep_chars.thin
-  if is_slant(style) then
-    return chars[1], chars[2]
-  end
+  if is_slant(style) then return chars[1], chars[2] end
   return focused and chars[1] or chars[2]
 end
 
@@ -300,9 +284,7 @@ local function get_close_icon(buf_id, context)
   local options = config.options
   local buffer_close_icon = options.buffer_close_icon
   local close_button_hl = context.current_highlights.close_button
-  if not options.show_buffer_close_icons then
-    return
-  end
+  if not options.show_buffer_close_icons then return end
   return M.make_clickable("handle_close_buffer", buf_id, {
     text = buffer_close_icon,
     highlight = close_button_hl,
@@ -318,9 +300,7 @@ local function add_indicator(context)
   local options = config.options
   local style = options.separator_style
   local symbol, highlight = padding, nil
-  if is_slant(style) then
-    return { text = symbol, highlight = highlight }
-  end
+  if is_slant(style) then return { text = symbol, highlight = highlight } end
 
   local is_current = element:current()
 
@@ -395,9 +375,7 @@ local function get_max_length(context)
   local padding_size = strwidth(padding) * 2
   local max_length = options.max_name_length
 
-  if not options.enforce_regular_tabs then
-    return max_length
-  end
+  if not options.enforce_regular_tabs then return max_length end
   -- estimate the maximum allowed size of a filename given that it will be
   -- padded and prefixed with a file icon
   return options.tab_size - strwidth(modified) - icon_size - padding_size
@@ -438,9 +416,7 @@ local function create_renderer(left_separator, right_separator, component)
       return component
     end
 
-    if next_item then
-      table.insert(component, right_separator)
-    end
+    if next_item then table.insert(component, right_separator) end
 
     return component
   end
@@ -461,9 +437,7 @@ end
 ---@return Segment
 local function spacing(opts)
   opts = opts or { when = true }
-  if not opts.when then
-    return
-  end
+  if not opts.when then return end
   return { text = constants.padding, highlight = opts.highlight }
 end
 
@@ -487,9 +461,7 @@ end
 ---@return integer
 local function get_tab_indicator(tab_indicators, options)
   local items, length = {}, 0
-  if not options.show_tab_indicators or #tab_indicators <= 1 then
-    return items, length
-  end
+  if not options.show_tab_indicators or #tab_indicators <= 1 then return items, length end
   for _, tab in ipairs(tab_indicators) do
     local component = tab.component
     table.insert(items, component)
@@ -559,9 +531,7 @@ local function extend_highlight(component)
   local locations, extension_map = {}, {}
   for index, part in pairs(component) do
     local id = get_id(part)
-    if id then
-      locations[id] = index
-    end
+    if id then locations[id] = index end
     local extends = vim.tbl_get(part, "attr", "extends")
     if extends then
       for _, target in pairs(extends) do
@@ -571,9 +541,7 @@ local function extend_highlight(component)
   end
   for id, hl in pairs(extension_map) do
     local target = component[locations[id]]
-    if target then
-      target.highlight = hl
-    end
+    if target then target.highlight = hl end
   end
   return component
 end
@@ -589,9 +557,7 @@ local function to_tabline_str(component)
   extend_highlight(component)
   for _, part in ipairs(component) do
     local attr = part.attr
-    if attr and attr.global then
-      table.insert(globals, { attr.prefix or "", attr.suffix or "" })
-    end
+    if attr and attr.global then table.insert(globals, { attr.prefix or "", attr.suffix or "" }) end
     local hl = highlights.hl(part.highlight)
     table.insert(str, {
       hl,
@@ -639,9 +605,9 @@ local function truncate(before, current, after, available_width, marker, visible
       table.insert(items, item.component(visible[index + 1]))
     end
     return items, marker, visible
-    -- if we aren't even able to fit the current buffer into the
-    -- available space that means the window is really narrow
-    -- so don't show anything
+  -- if we aren't even able to fit the current buffer into the
+  -- available space that means the window is really narrow
+  -- so don't show anything
   elseif available_width < current.length then
     return {}, marker, visible
   else

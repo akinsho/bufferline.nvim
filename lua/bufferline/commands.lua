@@ -35,9 +35,7 @@ end
 --- @param elements TabElement[]
 --- @return number[]
 local function get_ids(elements)
-  return vim.tbl_map(function(item)
-    return item.id
-  end, elements)
+  return vim.tbl_map(function(item) return item.id end, elements)
 end
 
 --- open the current element
@@ -62,9 +60,7 @@ end
 ---Get the current element i.e. tab or buffer
 ---@return number
 local function get_current_element()
-  if config:is_tabline() then
-    return api.nvim_get_current_tabpage()
-  end
+  if config:is_tabline() then return api.nvim_get_current_tabpage() end
   return api.nvim_get_current_buf()
 end
 
@@ -72,9 +68,7 @@ end
 ---@param command string|function
 ---@param id string
 local function handle_user_command(command, id)
-  if not command then
-    return
-  end
+  if not command then return end
   if type(command) == "function" then
     command(id)
   elseif type(command) == "string" then
@@ -111,9 +105,7 @@ local cmds = {
 ---@param button string
 function M.handle_click(id, button)
   local options = config.options
-  if id then
-    handle_user_command(options[cmds[button]], id)
-  end
+  if id then handle_user_command(options[cmds[button]], id) end
 end
 
 ---Execute an arbitrary user function on a visible by it's position buffer
@@ -121,19 +113,13 @@ end
 ---@param func fun(num: number, table?)
 function M.exec(index, func)
   local target = state.visible_components[index]
-  if target and type(func) == "function" then
-    func(target, state.visible_components)
-  end
+  if target and type(func) == "function" then func(target, state.visible_components) end
 end
 
-function M.pick()
-  pick.choose_then(open_element)
-end
+function M.pick() pick.choose_then(open_element) end
 
 function M.close_with_pick()
-  pick.choose_then(function(id)
-    M.handle_close(id)
-  end)
+  pick.choose_then(function(id) M.handle_close(id) end)
 end
 
 --- Open a element based on it's visible position in the list
@@ -145,9 +131,7 @@ function M.go_to(num, absolute)
   num = type(num) == "string" and tonumber(num) or num
   local list = absolute and state.components or state.visible_components
   local element = list[num]
-  if element then
-    open_element(element.id)
-  end
+  if element then open_element(element.id) end
 end
 
 ---@param current_state BufferlineState
@@ -159,18 +143,14 @@ function M.get_current_element_index(current_state, opts)
   local list = opts.include_hidden and current_state.__components or current_state.components
   for index, item in ipairs(list) do
     local element = item:as_element()
-    if element and element.id == get_current_element() then
-      return index, element
-    end
+    if element and element.id == get_current_element() then return index, element end
   end
 end
 
 --- @param direction number
 function M.move(direction)
   local index = M.get_current_element_index(state)
-  if not index then
-    return utils.notify("Unable to find buffer to move, sorry", utils.W)
-  end
+  if not index then return utils.notify("Unable to find buffer to move, sorry", utils.W) end
   local next_index = index + direction
   if next_index >= 1 and next_index <= #state.components then
     local item = state.components[index]
@@ -179,18 +159,14 @@ function M.move(direction)
     state.components[index] = destination_buf
     state.custom_sort = get_ids(state.components)
     local opts = config.options
-    if opts.persist_buffer_sort then
-      save_positions(state.custom_sort)
-    end
+    if opts.persist_buffer_sort then save_positions(state.custom_sort) end
     ui.refresh()
   end
 end
 
 function M.cycle(direction)
   local index = M.get_current_element_index(state)
-  if not index then
-    return
-  end
+  if not index then return end
   local length = #state.components
   local next_index = index + direction
 
@@ -203,9 +179,7 @@ function M.cycle(direction)
   end
 
   local item = state.components[next_index]
-  if not item then
-    return utils.notify(fmt("This %s does not exist", item.type), utils.E)
-  end
+  if not item then return utils.notify(fmt("This %s does not exist", item.type), utils.E) end
   open_element(item.id)
 end
 
@@ -214,9 +188,7 @@ end
 ---@param direction Direction
 function M.close_in_direction(direction)
   local index = M.get_current_element_index(state)
-  if not index then
-    return
-  end
+  if not index then return end
   local length = #state.components
   if
     not (index == length and direction == "right") and not (index == 1 and direction == "left")
@@ -238,9 +210,7 @@ function M.sort_by(sort_by)
   sorters.sort(state.components, sort_by)
   state.custom_sort = get_ids(state.components)
   local opts = config.options
-  if opts.persist_buffer_sort then
-    save_positions(state.custom_sort)
-  end
+  if opts.persist_buffer_sort then save_positions(state.custom_sort) end
   ui.refresh()
 end
 

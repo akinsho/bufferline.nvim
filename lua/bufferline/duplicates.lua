@@ -8,9 +8,7 @@ local utils = require("bufferline.utils")
 
 local duplicates = {}
 
-function M.reset()
-  duplicates = {}
-end
+function M.reset() duplicates = {} end
 
 --- This function marks any duplicate buffers granted
 --- the buffer names have changes
@@ -19,9 +17,7 @@ end
 function M.mark(buffers)
   return vim.tbl_map(function(current)
     -- Do not attempt to mark unnamed files
-    if current.path == "" then
-      return current
-    end
+    if current.path == "" then return current end
     local duplicate = duplicates[current.name]
     if not duplicate then
       duplicates[current.name] = { current }
@@ -34,15 +30,11 @@ function M.mark(buffers)
           -- short circuit if we have gone up 10 directories, we don't expect to have
           -- to look that far to find a non-matching ancestor and we might be looping
           -- endlessly
-          if buf_depth >= limit then
-            return
-          end
+          if buf_depth >= limit then return end
 
           buf_depth = buf_depth + 1
         end
-        if buf_depth > depth then
-          depth = buf_depth
-        end
+        if buf_depth > depth then depth = buf_depth end
         buf.duplicated = true
         buf.prefix_count = buf_depth
         buffers[buf.ordinal] = buf
@@ -59,9 +51,7 @@ end
 --- @param depth number
 --- @param max_size number
 local function truncate(dir, depth, max_size)
-  if #dir <= max_size then
-    return dir
-  end
+  if #dir <= max_size then return dir end
   -- we truncate any section of the ancestor which is too long
   -- by dividing the allotted space for each section by the depth i.e.
   -- the amount of ancestors which will be prefixed
@@ -79,9 +69,10 @@ function M.component(context)
   -- user if we are going to potentially increase the tab length by
   -- prefixing it with the parent dir(s)
   if element.duplicated and not options.enforce_regular_tabs then
-    local dir = element:ancestor(element.prefix_count, function(dir, depth)
-      return truncate(dir, depth, options.max_prefix_length)
-    end)
+    local dir = element:ancestor(
+      element.prefix_count,
+      function(dir, depth) return truncate(dir, depth, options.max_prefix_length) end
+    )
     return { text = dir, highlight = hl.duplicate }
   end
 end
