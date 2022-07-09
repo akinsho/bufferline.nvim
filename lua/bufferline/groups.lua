@@ -15,20 +15,21 @@ local fn = vim.fn
 ----------------------------------------------------------------------------------------------------
 
 --- @class GroupState
---- @field manual_groupings table<string, string>
+--- @field manual_groupings table<number, string>
 --- @field user_groups table<string, Group>
---- @field components_by_group table<string,number>[][]
+--- @field components_by_group table<string, number>[][]
 
 --- @class Separators
 --- @field sep_start Segment[]
 --- @field sep_end Segment[]
 
----@alias GroupSeparator fun(name: string, group:Group, hls: BufferlineHLGroup, count_item: string?): Separators
+---@alias GroupSeparator fun(group:Group, hls: BufferlineHLGroup, count_item: string?): Separators
 ---@alias GroupSeparators table<string, GroupSeparator>
 ---@alias grouper fun(b: Buffer): boolean
 
 ---@class Group
----@field public id number used for identifying the group in the tabline
+---@field public id string
+---@field public string number used for identifying the group in the tabline
 ---@field public name string 'formatted name of the group'
 ---@field public display_name string original name including special characters
 ---@field public matcher grouper
@@ -73,7 +74,7 @@ local function space_end(hl_groups) return { { highlight = hl_groups.fill.hl, te
 ---@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
----@return string, number
+---@return Separators
 function separator.pill(group, hls, count)
   local bg_hl = hls.fill.hl
   local name, display_name = group.name, group.display_name
@@ -94,7 +95,7 @@ end
 ---@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
----@return string, number
+---@return Separators
 ---@type GroupSeparator
 function separator.tab(group, hls, count)
   local hl = hls.fill.hl
@@ -188,13 +189,13 @@ local function persist_pinned_buffers()
 end
 
 ---@param buffer Buffer
----@return number
+---@return string
 local function get_manual_group(buffer) return state.manual_groupings[buffer.id] end
 
 --- Wrapper to abstract interacting directly with manual groups as the access mechanism
 -- can vary i.e. buffer id or path and this should be changed in a centralised way.
----@param id string
----@param group_id number?
+---@param id number
+---@param group_id string?
 local function set_manual_group(id, group_id)
   state.manual_groupings[id] = group_id
   if group_id == PINNED_ID then persist_pinned_buffers() end
@@ -213,7 +214,7 @@ function M.set_id(buffer)
   return UNGROUPED_ID
 end
 
----@param id number
+---@param id string
 ---@return Group
 function M.get_by_id(id) return state.user_groups[id] end
 
@@ -392,7 +393,7 @@ function M.set_hidden(id, value)
   if group then group.hidden = value end
 end
 
----@param priority number
+---@param priority number?
 ---@param name string?
 function M.toggle_hidden(priority, name)
   local group = priority and group_by_priority(priority) or group_by_name(name)
@@ -431,8 +432,8 @@ end
 ---Create the visual indicators bookending buffer groups
 ---@param group_id number
 ---@param components Component[]
----@return Component
----@return Component
+---@return Component?
+---@return Component?
 local function get_group_marker(group_id, components)
   local group = state.user_groups[group_id]
   if not group then return end
@@ -471,7 +472,7 @@ end
 --- to sort string keys as well as numerical keys in a table, this way each sublist has
 --- not only the group information but contains it's buffers
 ---@param components Component[]
----@return Component[]
+---@return Component[], Component[]?
 local function sort_by_groups(components)
   local sorted = {}
   local clustered = generate_sublists(vim.tbl_count(state.user_groups))

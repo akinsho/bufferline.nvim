@@ -150,7 +150,7 @@ function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 ---@field public duplicated boolean
 ---@field public prefix_count boolean
 ---@field public component BufferComponent
----@field public group Group
+---@field public group number the group ID
 ---@field public group_fn string
 ---@field public length number the length of the buffer component
 ---@field public visibility fun(): boolean
