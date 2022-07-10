@@ -16,6 +16,8 @@ local diagnostics = require("bufferline.diagnostics")
 
 local M = {}
 
+local api = vim.api
+
 --- sorts buf_names in place, but doesn't add/remove any values
 --- @param buf_nums number[]
 --- @param sorted number[]
@@ -68,7 +70,7 @@ function M.get_components(state)
   local Buffer = require("bufferline.models").Buffer
   for i, buf_id in ipairs(buf_nums) do
     local buf = Buffer:new({
-      path = vim.fn.bufname(buf_id),
+      path = api.nvim_buf_get_name(buf_id),
       id = buf_id,
       ordinal = i,
       diagnostics = all_diagnostics[buf_id],
