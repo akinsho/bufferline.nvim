@@ -137,20 +137,20 @@ function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
 ---@field public name_formatter function? dictates how the name should be shown
----@field public id integer the buffer number
+---@field public id integer|number the buffer number
 ---@field public name string the visible name for the file
 ---@field public icon string the icon
----@field public icon_highlight string
+---@field public icon_highlight string?
 ---@field public diagnostics table
 ---@field public modified boolean
 ---@field public modifiable boolean
 ---@field public buftype string
----@field public letter string
+---@field public letter string?
 ---@field public ordinal number
 ---@field public duplicated boolean
 ---@field public prefix_count boolean
 ---@field public component BufferComponent
----@field public group number the group ID
+---@field public group string?
 ---@field public group_fn string
 ---@field public length number the length of the buffer component
 ---@field public visibility fun(): boolean

@@ -204,7 +204,7 @@ end
 
 ---@param ctx RenderContext
 ---@param length number
----@return Segment?
+---@return Segment?, Segment?
 local function add_space(ctx, length)
   local options = config.options
   local curr_hl = ctx.current_highlights

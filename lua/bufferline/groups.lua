@@ -28,8 +28,7 @@ local fn = vim.fn
 ---@alias grouper fun(b: Buffer): boolean
 
 ---@class Group
----@field public id string
----@field public string number used for identifying the group in the tabline
+---@field public id string used for identifying the group in the tabline
 ---@field public name string 'formatted name of the group'
 ---@field public display_name string original name including special characters
 ---@field public matcher grouper
@@ -74,7 +73,7 @@ local function space_end(hl_groups) return { { highlight = hl_groups.fill.hl, te
 ---@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
----@return Separators
+---@return string
 function separator.pill(group, hls, count)
   local bg_hl = hls.fill.hl
   local name, display_name = group.name, group.display_name
@@ -95,7 +94,7 @@ end
 ---@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
----@return Separators
+---@return string
 ---@type GroupSeparator
 function separator.tab(group, hls, count)
   local hl = hls.fill.hl
@@ -190,7 +189,9 @@ end
 
 ---@param buffer Buffer
 ---@return string
-local function get_manual_group(buffer) return state.manual_groupings[buffer.id] end
+local function get_manual_group(buffer)
+  return state.manual_groupings[buffer.id]
+end
 
 --- Wrapper to abstract interacting directly with manual groups as the access mechanism
 -- can vary i.e. buffer id or path and this should be changed in a centralised way.
@@ -204,6 +205,7 @@ end
 ---Group buffers based on user criteria
 ---buffers only carry a copy of the group ID which is then used to retrieve the correct group
 ---@param buffer Buffer
+---@return string?
 function M.set_id(buffer)
   if vim.tbl_isempty(state.user_groups) then return end
   local manual_group = get_manual_group(buffer)

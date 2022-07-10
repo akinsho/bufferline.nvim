@@ -18,10 +18,11 @@ local function alter(attr, percent) return math.floor(attr * (100 + percent) / 1
 ---@source https://stackoverflow.com/q/5560248
 ---@see: https://stackoverflow.com/a/37797380
 ---Darken a specified hex color
----@param color string
+---@param color string?
 ---@param percent number
 ---@return string
 function M.shade_color(color, percent)
+  if not color then return "NONE" end
   local r, g, b = hex_to_rgb(color)
   if not r or not g or not b then return "NONE" end
   r, g, b = alter(r, percent), alter(g, percent), alter(b, percent)
@@ -47,7 +48,7 @@ end
 --   color number (0-255) is returned if cterm is set to true in opts
 --   if unable to parse, uses the fallback value
 ---@param opts table
----@return string | number
+---@return string? | number?
 function M.get_color(opts)
   local name, attribute, fallback, not_match, cterm =
     opts.name, opts.attribute, opts.fallback, opts.not_match, opts.cterm

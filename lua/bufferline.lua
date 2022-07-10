@@ -76,14 +76,14 @@ end
 
 ---Get the index of the current element
 ---@param current_state BufferlineState
----@return number
+---@return number?
 local function get_current_index(current_state)
   for index, component in ipairs(current_state.components) do
     if component:current() then return index end
   end
 end
 
---- @return string
+--- @return string, Segment[][]
 local function bufferline()
   local conf = config.get()
   local is_tabline = conf:is_tabline()
