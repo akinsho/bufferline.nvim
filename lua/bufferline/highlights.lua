@@ -131,6 +131,7 @@ end
 function M.for_element(element)
   local hl = {}
   local h = config.get("highlights")
+  if not h then return hl end
   --- TODO: find a tidier way to do this if possible
   if element:current() then
     hl.background = h.buffer_selected.hl

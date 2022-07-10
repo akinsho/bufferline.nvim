@@ -31,6 +31,7 @@ i.e.
 --- The base class that represents a visual tab in the tabline
 --- i.e. not necessarily representative of a vim tab or buffer
 ---@class Component
+---@field name string?
 ---@field id number
 ---@field length number
 ---@field component fun(BufferlineState): string
@@ -64,7 +65,7 @@ function Component:current() not_implemented("current") end
 ---@return boolean
 function Component:is_end() return self.type:match("group") end
 
----@return TabElement?
+---@return Component?
 function Component:as_element()
   if vim.tbl_contains({ "buffer", "tab" }, self.type) then return self end
 end
@@ -153,7 +154,7 @@ function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 ---@field public group string?
 ---@field public group_fn string
 ---@field public length number the length of the buffer component
----@field public visibility fun(): boolean
+---@field public visibility fun(): number
 ---@field public current fun(): boolean
 ---@field public visible fun(): boolean
 ---@field public find_index fun(Buffer, BufferlineState): number

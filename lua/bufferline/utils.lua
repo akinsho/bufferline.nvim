@@ -89,7 +89,7 @@ end
 ---@generic T
 ---@param list T[]
 ---@param callback fun(item: T): boolean
----@return T
+---@return T?
 function M.find(list, callback)
   for _, v in ipairs(list) do
     if callback(v) then return v end

@@ -37,7 +37,7 @@ function MockBuffer:as_element() return self end
 
 ---@param name string
 ---@param state BufferlineState
----@return TabElement
+---@return Component?
 function M.find_buffer(name, state)
   for _, component in ipairs(state.components) do
     local element = component:as_element()

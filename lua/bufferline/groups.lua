@@ -324,7 +324,7 @@ end
 
 --- Add the current highlight for a specific buffer
 --- NOTE: this function mutates the current highlights.
----@param buffer Buffer
+---@param buffer TabElement
 ---@param highlights table<string, table<string, string>>
 ---@param current_hl table<string, string>
 function M.set_current_hl(buffer, highlights, current_hl)
@@ -416,7 +416,7 @@ end
 
 --- Draw the separator start component for a group
 ---@param group Group
----@param hls BufferlineHighlights
+---@param hls BufferlineHighlights?
 ---@param count number
 ---@return Separators
 local function create_indicator(group, hls, count)

@@ -86,6 +86,7 @@ end
 --- @return string, Segment[][]
 local function bufferline()
   local conf = config.get()
+  if not conf then return "", {} end
   local is_tabline = conf:is_tabline()
   local components = is_tabline and tabpages.get_components(state) or buffers.get_components(state)
 

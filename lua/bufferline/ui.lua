@@ -50,9 +50,9 @@ local components = {
   },
 }
 
----@param component Segment
+---@param component Segment?
 ---@param id string
----@return Segment
+---@return Segment?
 local function set_id(component, id)
   if component then
     component.attr = component.attr or {}
@@ -144,7 +144,7 @@ function M.make_clickable(func_name, id, component)
 end
 
 ---@class PadSide
----@field size number
+---@field size integer
 ---@field hl string
 
 ---@class PadOpts
@@ -164,7 +164,7 @@ end
 
 ---@param options BufferlineOptions
 ---@param hls BufferlineHighlights
----@return Segment[]?
+---@return Segment[]
 local function get_tab_close_button(options, hls)
   if options.show_close_icon then
     return {
@@ -178,7 +178,7 @@ local function get_tab_close_button(options, hls)
   return {}
 end
 
----@param items Component[]
+---@param items Component?[]
 ---@return Section
 ---@return Section
 ---@return Section
@@ -226,7 +226,7 @@ local function add_space(ctx, length)
   })
 end
 
---- @param buffer Buffer
+--- @param buffer TabElement
 --- @param color_icons boolean whether or not to color the filetype icons
 --- @param hl_defs BufferlineHighlights
 --- @return Segment?
@@ -279,7 +279,7 @@ local function get_separator(focused, style)
 end
 
 --- @param buf_id number
---- @return Segment
+--- @return Segment?
 local function get_close_icon(buf_id, context)
   local options = config.options
   local buffer_close_icon = options.buffer_close_icon
@@ -393,8 +393,8 @@ end
 
 ---Create the render function that components need to position their
 ---separators once rendering calculations are complete
----@param left_separator Segment
----@param right_separator Segment
+---@param left_separator Segment?
+---@param right_separator Segment?
 ---@param component Segment[]
 ---@return fun(next: Component): Segment[]
 local function create_renderer(left_separator, right_separator, component)
@@ -429,12 +429,12 @@ local function tab_click_handler(id)
 end
 
 ---@class SpacingOpts
----@field when boolean
+---@field when any
 ---@field highlight string
 
 ---Create a spacing component that can be dependent on other items in a component
 ---@param opts SpacingOpts?
----@return Segment
+---@return Segment?
 local function spacing(opts)
   opts = opts or { when = true }
   if not opts.when then return end
@@ -642,7 +642,7 @@ end
 --- TODO: All components should return Segment[] that are then combined in one go into a tabline
 --- @param items Component[]
 --- @param tab_indicators Segment[]
---- @return string
+--- @return string, TabElement[], Segment[][]
 function M.tabline(items, tab_indicators)
   local options = config.options
   local hl = config.highlights
