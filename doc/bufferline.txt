@@ -206,6 +206,9 @@ The highlighting for the filename if there is an error can be changed by
 replacing the highlights for `error`, `error_visible`, `error_selected`,
 `warning`, `warning_visible`, `warning_selected`.
 
+The diagnostics indicator can be set to `false` to remove the indicators
+completely whilst still keeping the highlight of the buffer name.
+
 ==============================================================================
 GROUPS                                                      *bufferline-groups*
 

@@ -7,14 +7,10 @@ local M = {}
 local fnamemodify = vim.fn.fnamemodify
 
 -- @param path string
-local function full_path(path)
-  return fnamemodify(path, ":p")
-end
+local function full_path(path) return fnamemodify(path, ":p") end
 
 -- @param path string
-local function is_relative_path(path)
-  return full_path(path) ~= path
-end
+local function is_relative_path(path) return full_path(path) ~= path end
 
 --- @param buf_a Buffer
 --- @param buf_b Buffer
@@ -27,20 +23,14 @@ end
 local function sort_by_relative_directory(buf_a, buf_b)
   local ra = is_relative_path(buf_a.path)
   local rb = is_relative_path(buf_b.path)
-  if ra and not rb then
-    return false
-  end
-  if rb and not ra then
-    return true
-  end
+  if ra and not rb then return false end
+  if rb and not ra then return true end
   return buf_a.path < buf_b.path
 end
 
 --- @param buf_a Buffer
 --- @param buf_b Buffer
-local function sort_by_directory(buf_a, buf_b)
-  return full_path(buf_a.path) < full_path(buf_b.path)
-end
+local function sort_by_directory(buf_a, buf_b) return full_path(buf_a.path) < full_path(buf_b.path) end
 
 --- @param buf_a Buffer
 --- @param buf_b Buffer
@@ -58,9 +48,7 @@ local function init_buffer_tabnr(buf)
   local maxinteger = 1000000000
   -- If the buffer is visible, then its initial value shouldn't be
   -- maxed to prevent sorting it to the end of the list.
-  if next(vim.fn.win_findbuf(buf.id)) ~= nil then
-    return 0
-  end
+  if next(vim.fn.win_findbuf(buf.id)) ~= nil then return 0 end
   -- We use the max integer as a default tab number for hidden buffers,
   -- to order them at the end of the buffer list, since they won't be
   -- found in tab pages.

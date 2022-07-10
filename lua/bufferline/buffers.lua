@@ -16,14 +16,14 @@ local diagnostics = require("bufferline.diagnostics")
 
 local M = {}
 
+local api = vim.api
+
 --- sorts buf_names in place, but doesn't add/remove any values
 --- @param buf_nums number[]
 --- @param sorted number[]
 --- @return number[]
 local function get_updated_buffers(buf_nums, sorted)
-  if not sorted then
-    return buf_nums
-  end
+  if not sorted then return buf_nums end
   local nums = { unpack(buf_nums) }
   local reverse_lookup_sorted = utils.tbl_reverse_lookup(sorted)
 
@@ -31,12 +31,8 @@ local function get_updated_buffers(buf_nums, sorted)
   local sort_by_sorted = function(buf_id_1, buf_id_2)
     local buf_1_rank = reverse_lookup_sorted[buf_id_1]
     local buf_2_rank = reverse_lookup_sorted[buf_id_2]
-    if not buf_1_rank then
-      return false
-    end
-    if not buf_2_rank then
-      return true
-    end
+    if not buf_1_rank then return false end
+    if not buf_2_rank then return true end
     return buf_1_rank < buf_2_rank
   end
   table.sort(nums, sort_by_sorted)
@@ -48,14 +44,10 @@ end
 ---@param callback fun(buf: integer, bufs: integer[]): boolean
 ---@return integer[]
 local function apply_buffer_filter(buf_nums, callback)
-  if type(callback) ~= "function" then
-    return buf_nums
-  end
+  if type(callback) ~= "function" then return buf_nums end
   local filtered = {}
   for _, buf in ipairs(buf_nums) do
-    if callback(buf, buf_nums) then
-      table.insert(filtered, buf)
-    end
+    if callback(buf, buf_nums) then table.insert(filtered, buf) end
   end
   return filtered
 end
@@ -78,7 +70,7 @@ function M.get_components(state)
   local Buffer = require("bufferline.models").Buffer
   for i, buf_id in ipairs(buf_nums) do
     local buf = Buffer:new({
-      path = vim.fn.bufname(buf_id),
+      path = api.nvim_buf_get_name(buf_id),
       id = buf_id,
       ordinal = i,
       diagnostics = all_diagnostics[buf_id],
@@ -89,9 +81,7 @@ function M.get_components(state)
     components[i] = buf
   end
 
-  return vim.tbl_map(function(buf)
-    return ui.element(state, buf)
-  end, duplicates.mark(components))
+  return vim.tbl_map(function(buf) return ui.element(state, buf) end, duplicates.mark(components))
 end
 
 return M

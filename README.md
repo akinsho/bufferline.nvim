@@ -240,6 +240,7 @@ require('bufferline').setup {
     tab_size = 18,
     diagnostics = false | "nvim_lsp" | "coc",
     diagnostics_update_in_insert = false,
+    -- The diagnostics indicator can be set to nil to keep the buffer name highlight but delete the highlighting
     diagnostics_indicator = function(count, level, diagnostics_dict, context)
       return "("..count..")"
     end,

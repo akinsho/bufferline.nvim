@@ -18,9 +18,7 @@ local M = {}
 
 local padding = constants.padding
 
-local function tab_click_component(num)
-  return "%" .. num .. "T"
-end
+local function tab_click_component(num) return "%" .. num .. "T" end
 
 local function render(tabpage, is_active, style, highlights)
   local h = highlights
@@ -66,9 +64,10 @@ local function get_buffer_name(buf)
 end
 
 local function get_valid_tabs()
-  return vim.tbl_filter(function(t)
-    return api.nvim_tabpage_is_valid(t)
-  end, api.nvim_list_tabpages())
+  return vim.tbl_filter(
+    function(t) return api.nvim_tabpage_is_valid(t) end,
+    api.nvim_list_tabpages()
+  )
 end
 
 ---Filter the buffers to show based on the user callback passed in
@@ -76,14 +75,10 @@ end
 ---@param callback fun(buf: integer, bufs: integer[]): boolean
 ---@return integer[]
 local function apply_buffer_filter(buf_nums, callback)
-  if type(callback) ~= "function" then
-    return buf_nums
-  end
+  if type(callback) ~= "function" then return buf_nums end
   local filtered = {}
   for _, buf in ipairs(buf_nums) do
-    if callback(buf, buf_nums) then
-      table.insert(filtered, buf)
-    end
+    if callback(buf, buf_nums) then table.insert(filtered, buf) end
   end
   return next(filtered) and filtered or buf_nums
 end
@@ -142,9 +137,7 @@ function M.get_components(state)
     tab.letter = pick.get(tab)
     components[#components + 1] = tab
   end
-  return vim.tbl_map(function(tab)
-    return ui.element(state, tab)
-  end, components)
+  return vim.tbl_map(function(tab) return ui.element(state, tab) end, components)
 end
 
 return M

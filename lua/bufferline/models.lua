@@ -49,12 +49,8 @@ function Component:new(t)
   assert(t.type, "all components must have a type")
   self.length = t.length or 0
   self.focusable = true
-  if t.focusable ~= nil then
-    self.focusable = t.focusable
-  end
-  self.component = t.component or function()
-    not_implemented("component")
-  end
+  if t.focusable ~= nil then self.focusable = t.focusable end
+  self.component = t.component or function() not_implemented("component") end
   setmetatable(t, self)
   self.__index = self
   return t
@@ -62,21 +58,15 @@ end
 
 -- TODO: this should be handled based on the type of entity
 -- e.g. a buffer should report if it's current but other things shouldn't
-function Component:current()
-  not_implemented("current")
-end
+function Component:current() not_implemented("current") end
 
 ---Determine if the current view tab should be treated as the end of a section
 ---@return boolean
-function Component:is_end()
-  return self.type:match("group")
-end
+function Component:is_end() return self.type:match("group") end
 
 ---@return TabElement?
 function Component:as_element()
-  if vim.tbl_contains({ "buffer", "tab" }, self.type) then
-    return self
-  end
+  if vim.tbl_contains({ "buffer", "tab" }, self.type) then return self end
 end
 
 local GroupView = Component:new({ type = "group", focusable = false })
@@ -90,9 +80,7 @@ function GroupView:new(group)
   return group
 end
 
-function GroupView:current()
-  return false
-end
+function GroupView:current() return false end
 
 ---@alias TabElement Tabpage|Buffer
 
@@ -136,14 +124,10 @@ function Tabpage:visibility()
     or visibility.NONE
 end
 
-function Tabpage:current()
-  return api.nvim_get_current_tabpage() == self.id
-end
+function Tabpage:current() return api.nvim_get_current_tabpage() == self.id end
 
 --- NOTE: A visible tab page is the current tab page
-function Tabpage:visible()
-  return api.nvim_get_current_tabpage() == self.id
-end
+function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 
 ---@alias BufferComponent fun(index: number, buf_count: number): string
 
@@ -166,7 +150,7 @@ end
 ---@field public duplicated boolean
 ---@field public prefix_count boolean
 ---@field public component BufferComponent
----@field public group Group
+---@field public group number the group ID
 ---@field public group_fn string
 ---@field public length number the length of the buffer component
 ---@field public visibility fun(): boolean
@@ -215,38 +199,28 @@ function Buffer:visibility()
     or visibility.NONE
 end
 
-function Buffer:current()
-  return api.nvim_get_current_buf() == self.id
-end
+function Buffer:current() return api.nvim_get_current_buf() == self.id end
 
 --- If the buffer is already part of state then it is existing
 --- otherwise it is new
 ---@param state BufferlineState
 ---@return boolean
 function Buffer:is_existing(state)
-  return utils.find(state.components, function(component)
-    return component.id == self.id
-  end) ~= nil
+  return utils.find(state.components, function(component) return component.id == self.id end) ~= nil
 end
 
 -- Find and return the index of the matching buffer (by id) in the list in state
 --- @param state BufferlineState
 function Buffer:find_index(state)
   for index, component in ipairs(state.components) do
-    if component.id == self.id then
-      return index
-    end
+    if component.id == self.id then return index end
   end
 end
 
 -- @param state BufferlineState
-function Buffer:is_new(state)
-  return not self:is_existing(state)
-end
+function Buffer:is_new(state) return not self:is_existing(state) end
 
-function Buffer:visible()
-  return fn.bufwinnr(self.id) > 0
-end
+function Buffer:visible() return fn.bufwinnr(self.id) > 0 end
 
 --- @param depth number
 --- @param formatter function(string, number)
@@ -257,12 +231,8 @@ function Buffer:ancestor(depth, formatter)
   for index = 1, depth do
     local modifier = string.rep(":h", index)
     local dir = fn.fnamemodify(self.path, ":p" .. modifier .. ":t")
-    if dir == "" then
-      break
-    end
-    if formatter then
-      dir = formatter(dir, depth)
-    end
+    if dir == "" then break end
+    if formatter then dir = formatter(dir, depth) end
 
     ancestor = dir .. require("bufferline.utils").path_sep .. ancestor
   end
@@ -284,9 +254,7 @@ function Section:new(n)
   return t
 end
 
-function Section.__add(a, b)
-  return a.length + b.length
-end
+function Section.__add(a, b) return a.length + b.length end
 
 -- Take a section and remove an item arbitrarily
 -- reducing the length is very important as otherwise we don't know

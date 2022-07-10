@@ -19,21 +19,21 @@ function M.is_test()
 end
 
 ---@return boolean
-local function check_logging()
-  return config.options.debug.logging
-end
+local function check_logging() return config.options.debug.logging end
 
 ---@param msg string
 function M.log.debug(msg)
   if check_logging() then
     local info = debug.getinfo(2, "S")
-    vim.schedule(function()
-      M.notify(
-        fmt("[bufferline]: %s\n%s:%s", msg, info.linedefined, info.short_src),
-        M.D,
-        { once = true }
-      )
-    end)
+    vim.schedule(
+      function()
+        M.notify(
+          fmt("[bufferline]: %s\n%s:%s", msg, info.linedefined, info.short_src),
+          M.D,
+          { once = true }
+        )
+      end
+    )
   end
 end
 
@@ -65,18 +65,14 @@ end
 ---@vararg string
 ---@return number
 function M.measure(...)
-  return M.fold(0, function(accum, item)
-    return accum + api.nvim_strwidth(item)
-  end, { ... })
+  return M.fold(0, function(accum, item) return accum + api.nvim_strwidth(item) end, { ... })
 end
 
 ---Concatenate a series of strings together
 ---@vararg string
 ---@return string
 function M.join(...)
-  return M.fold("", function(accum, item)
-    return accum .. item
-  end, { ... })
+  return M.fold("", function(accum, item) return accum .. item end, { ... })
 end
 
 ---@generic T
@@ -96,9 +92,7 @@ end
 ---@return T
 function M.find(list, callback)
   for _, v in ipairs(list) do
-    if callback(v) then
-      return v
-    end
+    if callback(v) then return v end
   end
 end
 
@@ -132,9 +126,7 @@ end
 ---@param matcher (fun(item: `T`):boolean)?
 function M.for_each(list, callback, matcher)
   for _, item in ipairs(list) do
-    if not matcher or matcher(item) then
-      callback(item)
-    end
+    if not matcher or matcher(item) then callback(item) end
   end
 end
 
@@ -156,27 +148,19 @@ M.path_sep = vim.loop.os_uname().sysname == "Windows" and "\\" or "/"
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
 function M.is_valid(buf_num)
-  if not buf_num or buf_num < 1 then
-    return false
-  end
+  if not buf_num or buf_num < 1 then return false end
   local exists = vim.api.nvim_buf_is_valid(buf_num)
   return vim.bo[buf_num].buflisted and exists
 end
 
 ---@return number
-function M.get_buf_count()
-  return #fn.getbufinfo({ buflisted = 1 })
-end
+function M.get_buf_count() return #fn.getbufinfo({ buflisted = 1 }) end
 
 ---@return number[]
-function M.get_valid_buffers()
-  return vim.tbl_filter(M.is_valid, vim.api.nvim_list_bufs())
-end
+function M.get_valid_buffers() return vim.tbl_filter(M.is_valid, vim.api.nvim_list_bufs()) end
 
 ---@return number
-function M.get_tab_count()
-  return #fn.gettabinfo()
-end
+function M.get_tab_count() return #fn.gettabinfo() end
 
 M.W = vim.log.levels.WARN
 M.E = vim.log.levels.ERROR
@@ -189,9 +173,7 @@ M.D = vim.log.levels.DEBUG
 function M.notify(msg, level, opts)
   opts = opts or {}
   local nopts = { title = "Bufferline" }
-  if opts.once then
-    return vim.notify_once(msg, level, nopts)
-  end
+  if opts.once then return vim.notify_once(msg, level, nopts) end
   vim.notify(msg, level, nopts)
 end
 
@@ -216,16 +198,12 @@ function M.get_icon(opts)
     end
     return "", ""
   end
-  if type == "terminal" then
-    return webdev_icons.get_icon(type)
-  end
+  if type == "terminal" then return webdev_icons.get_icon(type) end
   local name = fn.fnamemodify(opts.path, ":t")
   local icon, hl = webdev_icons.get_icon(name, opts.extension, {
     default = config.options.show_buffer_default_icon,
   })
-  if not icon then
-    return "", ""
-  end
+  if not icon then return "", "" end
   return icon, hl
 end
 
@@ -235,9 +213,7 @@ local current_stable = {
   patch = 0,
 }
 
-function M.is_current_stable_release()
-  return vim.version().minor >= current_stable.minor
-end
+function M.is_current_stable_release() return vim.version().minor >= current_stable.minor end
 
 -- truncate a string based on number of display columns/cells it occupies
 -- so that multibyte characters are not broken up mid character
@@ -245,9 +221,7 @@ end
 ---@param col_limit number
 ---@return string
 local function truncate_by_cell(str, col_limit)
-  if str and str:len() == api.nvim_strwidth(str) then
-    return fn.strcharpart(str, 0, col_limit)
-  end
+  if str and str:len() == api.nvim_strwidth(str) then return fn.strcharpart(str, 0, col_limit) end
   local short = fn.strcharpart(str, 0, col_limit)
   if api.nvim_strwidth(short) > col_limit then
     while api.nvim_strwidth(short) > col_limit do
@@ -259,15 +233,11 @@ end
 
 function M.truncate_name(name, word_limit)
   local trunc_symbol = "…"
-  if api.nvim_strwidth(name) <= word_limit then
-    return name
-  end
+  if api.nvim_strwidth(name) <= word_limit then return name end
   -- truncate nicely by seeing if we can drop the extension first
   -- to make things fit if not then truncate abruptly
   local without_prefix = fn.fnamemodify(name, ":t:r")
-  if api.nvim_strwidth(without_prefix) < word_limit then
-    return without_prefix .. trunc_symbol
-  end
+  if api.nvim_strwidth(without_prefix) < word_limit then return without_prefix .. trunc_symbol end
   return truncate_by_cell(name, word_limit - 1) .. trunc_symbol
 end
 
