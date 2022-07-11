@@ -135,11 +135,12 @@ function M.group_action(name, action)
 end
 
 function M.toggle_pin()
-  local _, buffer = commands.get_current_element_index(state)
-  if groups.is_pinned(buffer) then
-    groups.remove_from_group("pinned", buffer)
+  local _, element = commands.get_current_element_index(state)
+  if not element then return end
+  if groups.is_pinned(element) then
+    groups.remove_from_group("pinned", element)
   else
-    groups.add_to_group("pinned", buffer)
+    groups.add_to_group("pinned", element)
   end
   ui.refresh()
 end

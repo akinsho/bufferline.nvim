@@ -82,8 +82,10 @@ local function convert_hl_keys(opts)
   for key, value in pairs(opts) do
     if keys[key] then hls[keys[key]] = value end
   end
+  ---@diagnostic disable-next-line: cast-local-type
   if opts.gui then hls = vim.tbl_extend("force", hls, convert_gui(opts.gui)) end
   hls.default = vim.F.if_nil(opts.default, config.options.themable)
+  ---@diagnostic disable-next-line: return-type-mismatch
   return hls
 end
 

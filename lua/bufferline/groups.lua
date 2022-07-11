@@ -14,10 +14,12 @@ local fn = vim.fn
 -- Types
 ----------------------------------------------------------------------------------------------------
 
+---@alias ComponentsByGroup (Group | Component[])[]
+
 --- @class GroupState
 --- @field manual_groupings table<number, string>
 --- @field user_groups table<string, Group>
---- @field components_by_group table<string, number>[][]
+--- @field components_by_group ComponentsByGroup
 
 --- @class Separators
 --- @field sep_start Segment[]
@@ -125,6 +127,7 @@ function Group:new(o, index)
   o = o or { priority = index }
   self.__index = self
   local name = format_name(o.name)
+  ---@diagnostic disable-next-line: cast-local-type
   o = vim.tbl_extend("force", o, {
     id = o.id or name,
     hidden = o.hidden == nil and false or o.hidden,
@@ -132,6 +135,7 @@ function Group:new(o, index)
     display_name = o.name,
     priority = o.priority or index,
   })
+  ---@diagnostic disable-next-line: return-type-mismatch, param-type-mismatch
   return setmetatable(o, self)
 end
 
@@ -187,11 +191,9 @@ local function persist_pinned_buffers()
   vim.g[PINNED_KEY] = table.concat(pinned, ",")
 end
 
----@param buffer Buffer
+---@param element TabElement
 ---@return string
-local function get_manual_group(buffer)
-  return state.manual_groupings[buffer.id]
-end
+local function get_manual_group(element) return state.manual_groupings[element.id] end
 
 --- Wrapper to abstract interacting directly with manual groups as the access mechanism
 -- can vary i.e. buffer id or path and this should be changed in a centralised way.
@@ -366,24 +368,24 @@ end
 local group_by_name = group_by("name")
 local group_by_priority = group_by("priority")
 
----@param buffer Buffer
-function M.is_pinned(buffer) return get_manual_group(buffer) == PINNED_ID end
+---@param element TabElement
+function M.is_pinned(element) return get_manual_group(element) == PINNED_ID end
 
 --- Add a buffer to a group manually
 ---@param group_name string
----@param buffer Buffer
-function M.add_to_group(group_name, buffer)
+---@param element TabElement?
+function M.add_to_group(group_name, element)
   local group = group_by_name(group_name)
-  if group then set_manual_group(buffer.id, group.id) end
+  if group and element then set_manual_group(element.id, group.id) end
 end
 
 ---@param group_name string
----@param buffer Buffer
-function M.remove_from_group(group_name, buffer)
+---@param element TabElement
+function M.remove_from_group(group_name, element)
   local group = group_by_name(group_name)
   if group then
-    local id = get_manual_group(buffer)
-    set_manual_group(buffer.id, id ~= group.id and id or nil)
+    local id = get_manual_group(element)
+    set_manual_group(element.id, id ~= group.id and id or nil)
   end
 end
 
@@ -420,6 +422,7 @@ end
 ---@param count number
 ---@return Separators
 local function create_indicator(group, hls, count)
+  hls = hls or {}
   local count_item = group.hidden and fmt("(%s)", count) or ""
   local seps = group.separator.style(group, hls, count_item)
   if seps.sep_start then
@@ -432,7 +435,7 @@ local function create_indicator(group, hls, count)
 end
 
 ---Create the visual indicators bookending buffer groups
----@param group_id number
+---@param group_id string
 ---@param components Component[]
 ---@return Component?
 ---@return Component?
@@ -474,7 +477,7 @@ end
 --- to sort string keys as well as numerical keys in a table, this way each sublist has
 --- not only the group information but contains it's buffers
 ---@param components Component[]
----@return Component[], Component[]?
+---@return Component[], ComponentsByGroup
 local function sort_by_groups(components)
   local sorted = {}
   local clustered = generate_sublists(vim.tbl_count(state.user_groups))

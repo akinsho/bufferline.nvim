@@ -35,6 +35,7 @@ end
 --- @param elements TabElement[]
 --- @return number[]
 local function get_ids(elements)
+  ---@diagnostic disable-next-line: return-type-mismatch
   return vim.tbl_map(function(item) return item.id end, elements)
 end
 
@@ -138,7 +139,7 @@ end
 ---@param current_state BufferlineState
 ---@param opts table?
 ---@return number?
----@return Component?
+---@return TabElement?
 function M.get_current_element_index(current_state, opts)
   opts = opts or { include_hidden = false }
   local list = opts.include_hidden and current_state.__components or current_state.components

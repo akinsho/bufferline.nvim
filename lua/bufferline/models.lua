@@ -65,8 +65,10 @@ function Component:current() not_implemented("current") end
 ---@return boolean
 function Component:is_end() return self.type:match("group") end
 
----@return Component?
+---@return TabElement?
 function Component:as_element()
+  -- TODO: Figure out how to correctly type cast a component to a TabElement
+  ---@diagnostic disable-next-line: return-type-mismatch
   if vim.tbl_contains({ "buffer", "tab" }, self.type) then return self end
 end
 
@@ -90,7 +92,7 @@ function GroupView:current() return false end
 ---@field public buf number
 ---@field public icon string
 ---@field public name string
----@field public group number
+---@field public group string
 ---@field public letter string
 ---@field public modified boolean
 ---@field public modifiable boolean
