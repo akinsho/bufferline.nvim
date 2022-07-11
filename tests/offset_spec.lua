@@ -14,17 +14,13 @@ local function open_test_panel(direction, ft, on_open)
   local new_ft = fmt("%s_%d", ft, win_id)
   vim.cmd(fmt("setfiletype %s", new_ft))
   api.nvim_win_set_width(api.nvim_get_current_win(), 20)
-  if on_open then
-    on_open()
-  end
+  if on_open then on_open() end
   api.nvim_set_current_win(win)
   vim.wo[win_id].winfixwidth = true
   return new_ft, win_id
 end
 
-local function remove_highlight(str)
-  return str:gsub("%%#Normal#", "")
-end
+local function remove_highlight(str) return str:gsub("%%#Normal#", "") end
 
 describe("Offset tests:", function()
   local bufferline

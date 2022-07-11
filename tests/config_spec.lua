@@ -4,9 +4,7 @@ describe("Config tests", function()
   local whitesmoke = "#F5F5F5"
   local config = require("bufferline.config")
 
-  after_each(function()
-    config.__reset()
-  end)
+  after_each(function() config.__reset() end)
 
   describe("Setting config", function()
     it("should add defaults to user values", function()

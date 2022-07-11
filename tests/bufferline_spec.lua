@@ -24,9 +24,7 @@ describe("Bufferline tests:", function()
     icons.setup({ default = true })
   end)
 
-  after_each(function()
-    vim.cmd("silent %bwipeout!")
-  end)
+  after_each(function() vim.cmd("silent %bwipeout!") end)
 
   describe("render buffer - ", function()
     it("should create corresponding buffers in state", function()
@@ -55,9 +53,7 @@ describe("Bufferline tests:", function()
       bufferline.setup({
         options = {
           name_formatter = function(buf)
-            if buf.path:match("test.txt") then
-              return "TEST"
-            end
+            if buf.path:match("test.txt") then return "TEST" end
           end,
         },
       })
@@ -157,9 +153,7 @@ describe("Bufferline tests:", function()
       local bufnum = vim.api.nvim_get_current_buf()
       bufferline.setup({
         options = {
-          middle_mouse_command = function(bufid)
-            vim.bo[bufid].filetype = "test"
-          end,
+          middle_mouse_command = function(bufid) vim.bo[bufid].filetype = "test" end,
         },
       })
       bufferline.handle_click(bufnum, "m")
@@ -183,9 +177,7 @@ describe("Bufferline tests:", function()
       local expected = bufnum + count
       bufferline.setup({
         options = {
-          close_command = function(bufid)
-            count = count + bufid
-          end,
+          close_command = function(bufid) count = count + bufid end,
         },
       })
       bufferline.handle_close(bufnum)
