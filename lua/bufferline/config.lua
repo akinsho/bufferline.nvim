@@ -80,6 +80,8 @@ local colors = lazy.require("bufferline.colors")
 ---@field private merge fun(self:BufferlineConfig, BufferlineConfig): BufferlineConfig
 ---@field private validate fun(self:BufferlineConfig, BufferlineConfig): nil
 ---@field private resolve fun()
+---@field private resolve_highlights fun(BufferlineConfig, BufferlineHighlights):BufferlineHighlights
+---@field private is_tabline fun():boolean
 
 --- Convert highlights specified as tables to the correct existing colours
 ---@param map BufferlineHighlights
@@ -633,10 +635,18 @@ local function add_highlight_groups(map)
   end
 end
 
+function Config:resolve_highlights(defaults)
+  if self.highlights and type(self.highlights) == "function" then
+    local resolved = self.highlights(defaults)
+    self.highlights, self.original.highlights = resolved, resolved
+  end
+end
+
 --- Merge user config with defaults
 --- @return BufferlineConfig
 function M.apply()
   local defaults = get_defaults()
+  config:resolve_highlights(defaults)
   config:validate(defaults)
   config:merge(defaults)
   config:resolve()
