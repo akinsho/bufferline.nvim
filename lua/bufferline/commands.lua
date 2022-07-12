@@ -131,6 +131,7 @@ function M.go_to(num, absolute)
   num = type(num) == "string" and tonumber(num) or num
   local list = absolute and state.components or state.visible_components
   local element = list[num]
+  if num == -1 then element = list[#list] end
   if element then open_element(element.id) end
 end
 

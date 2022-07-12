@@ -620,8 +620,8 @@ Likewise, `BufferLinePickClose` closes the buffer instead of viewing it.
 
 You can select a buffer by it's _visible_ position in the bufferline using the `BufferLineGoToBuffer`
 command. This means that if you have 60 buffers open but only 7 visible in the bufferline
-then using `BufferLineGoToBuffer 4` will go to the 4th visible buffer not necessarily the 5 in the
-absolute list of open buffers.
+using `BufferLineGoToBuffer 4` will go to the 4th visible buffer but not necessarily the 5th in the
+absolute list of open buffers. To select the last visible buffer, you can also use `BufferLineGoToBuffer -1`.
 
 ```
 <- (30) | buf31 | buf32 | buf33 | buf34 | buf35 | buf36 | buf37 (24) ->
@@ -641,6 +641,7 @@ nnoremap <silent><leader>6 <Cmd>BufferLineGoToBuffer 6<CR>
 nnoremap <silent><leader>7 <Cmd>BufferLineGoToBuffer 7<CR>
 nnoremap <silent><leader>8 <Cmd>BufferLineGoToBuffer 8<CR>
 nnoremap <silent><leader>9 <Cmd>BufferLineGoToBuffer 9<CR>
+nnoremap <silent><leader>$ <Cmd>BufferLineGoToBuffer -1<CR>
 ```
 
 Alternatively, if you want to instead jump to the _absolute_ position of the buffer in the bufferline (as displayed by the ordinal buffer numbers), you can use the `lua` API to set it up
@@ -655,7 +656,7 @@ nnoremap <silent><leader>6 <cmd>lua require("bufferline").go_to_buffer(6, true)<
 nnoremap <silent><leader>7 <cmd>lua require("bufferline").go_to_buffer(7, true)<cr>
 nnoremap <silent><leader>8 <cmd>lua require("bufferline").go_to_buffer(8, true)<cr>
 nnoremap <silent><leader>9 <cmd>lua require("bufferline").go_to_buffer(9, true)<cr>
-
+nnoremap <silent><leader>$ <cmd>lua require("bufferline").go_to_buffer(-1, true)<cr>
 ```
 
 ### Mouse actions
