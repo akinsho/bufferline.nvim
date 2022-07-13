@@ -31,6 +31,7 @@ i.e.
 --- The base class that represents a visual tab in the tabline
 --- i.e. not necessarily representative of a vim tab or buffer
 ---@class Component
+---@field name string?
 ---@field id number
 ---@field length number
 ---@field component fun(BufferlineState): string
@@ -66,6 +67,8 @@ function Component:is_end() return self.type:match("group") end
 
 ---@return TabElement?
 function Component:as_element()
+  -- TODO: Figure out how to correctly type cast a component to a TabElement
+  ---@diagnostic disable-next-line: return-type-mismatch
   if vim.tbl_contains({ "buffer", "tab" }, self.type) then return self end
 end
 
@@ -89,7 +92,7 @@ function GroupView:current() return false end
 ---@field public buf number
 ---@field public icon string
 ---@field public name string
----@field public group number
+---@field public group string
 ---@field public letter string
 ---@field public modified boolean
 ---@field public modifiable boolean
@@ -137,23 +140,23 @@ function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
 ---@field public name_formatter function? dictates how the name should be shown
----@field public id integer the buffer number
+---@field public id integer|number the buffer number
 ---@field public name string the visible name for the file
 ---@field public icon string the icon
----@field public icon_highlight string
+---@field public icon_highlight string?
 ---@field public diagnostics table
 ---@field public modified boolean
 ---@field public modifiable boolean
 ---@field public buftype string
----@field public letter string
+---@field public letter string?
 ---@field public ordinal number
 ---@field public duplicated boolean
 ---@field public prefix_count boolean
 ---@field public component BufferComponent
----@field public group number the group ID
+---@field public group string?
 ---@field public group_fn string
 ---@field public length number the length of the buffer component
----@field public visibility fun(): boolean
+---@field public visibility fun(): number
 ---@field public current fun(): boolean
 ---@field public visible fun(): boolean
 ---@field public find_index fun(Buffer, BufferlineState): number

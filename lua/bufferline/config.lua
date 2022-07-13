@@ -34,16 +34,16 @@ local colors = lazy.require("bufferline.colors")
 ---@field public buffer_close_icon string
 ---@field public modified_icon string
 ---@field public close_icon string
----@field public close_command string
+---@field public close_command string | function
 ---@field public custom_filter fun(buf: number, bufnums: number[]): boolean
 ---@field public left_mouse_command string | function
 ---@field public right_mouse_command string | function
----@field public middle_mouse_command string | function
+---@field public middle_mouse_command (string | function)?
 ---@field public indicator_icon string
 ---@field public left_trunc_marker string
 ---@field public right_trunc_marker string
 ---@field public separator_style string
----@field public name_formatter fun(path: string):string
+---@field public name_formatter (fun(path: string):string)?
 ---@field public tab_size number
 ---@field public max_name_length number
 ---@field public color_icons boolean
@@ -135,14 +135,11 @@ end
 ---@return BufferlineConfig
 function Config:merge(defaults)
   assert(defaults and type(defaults) == "table", "A valid config table must be passed to merge")
+  ---@diagnostic disable-next-line: assign-type-mismatch
   self.options = vim.tbl_deep_extend("keep", self.options or {}, defaults.options or {})
-
-  self.highlights = vim.tbl_deep_extend(
-    "force",
-    defaults.highlights,
-    -- convert highlight link syntax to resolved highlight colors
-    convert_highlights(self.original.highlights)
-  )
+  ---@diagnostic disable-next-line: assign-type-mismatch
+  self.highlights =
+    vim.tbl_deep_extend("force", defaults.highlights, convert_highlights(self.original.highlights))
   return self
 end
 
@@ -673,7 +670,7 @@ end
 
 ---Get the user's configuration or a key from it
 ---@param key string?
----@return BufferlineConfig
+---@return BufferlineConfig?
 ---@overload fun(key: '"options"'): BufferlineOptions
 ---@overload fun(key: '"highlights"'): BufferlineHighlights
 function M.get(key)
@@ -683,6 +680,7 @@ end
 
 --- This function is only intended for use in tests
 ---@private
+---@diagnostic disable-next-line: cast-local-type
 function M.__reset() config = nil end
 
 return setmetatable(M, {

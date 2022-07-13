@@ -17,7 +17,7 @@ local supported_win_types = {
 }
 
 ---Format the content of a neighbouring offset's text
----@param size number
+---@param size integer
 ---@param highlight string
 ---@param offset table
 ---@return string
@@ -28,7 +28,8 @@ local function get_section_text(size, highlight, offset)
   if not text then
     text = string.rep(" ", size)
   else
-    local text_size = fn.strwidth(text)
+    local text_size = api.nvim_strwidth(text)
+    ---@type integer, integer
     local left, right
     if text_size + 2 >= size then
       text = text:sub(1, size - 2)
@@ -54,8 +55,8 @@ end
 
 ---A heuristic to attempt to derive a windows background color from a winhighlight
 ---@param win_id number
----@param attribute string
----@param match string
+---@param attribute string?
+---@param match string?
 ---@return string|nil
 local function guess_window_highlight(win_id, attribute, match)
   assert(win_id, 'A window id must be passed to "guess_window_highlight"')
@@ -95,8 +96,8 @@ end
 ---@param windows table[]
 ---@param offset table
 ---@return boolean
----@return number
----@return boolean
+---@return number?
+---@return boolean?
 local function is_offset_section(windows, offset)
   local wins = { windows[1] }
   if #windows > 1 then wins[#wins + 1] = windows[#windows] end
@@ -128,7 +129,7 @@ function M.get()
       -- don't bother proceeding if there are no vertical splits
       if layout[1] == t.ROW then
         local is_valid, win_id, is_left = is_offset_section(layout[2], offset)
-        if is_valid then
+        if is_valid and win_id then
           local width = api.nvim_win_get_width(win_id) + (offset.padding or 0)
 
           local hl_name = offset.highlight

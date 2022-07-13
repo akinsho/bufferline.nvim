@@ -120,16 +120,16 @@ end
 
 --- sorts a list of buffers in place
 --- @param elements TabElement[]
---- @param sort_by string?
+--- @param sort_by (string|function)?
 --- @param state BufferlineState?
 function M.sort(elements, sort_by, state)
   sort_by = sort_by or config.options.sort_by
   if sort_by == "none" then
     return elements
   elseif sort_by == "insert_after_current" then
-    table.sort(elements, sort_by_new_after_current(state))
+    if state then table.sort(elements, sort_by_new_after_current(state)) end
   elseif sort_by == "insert_at_end" then
-    table.sort(elements, sort_by_new_after_existing(state))
+    if state then table.sort(elements, sort_by_new_after_existing(state)) end
   elseif sort_by == "extension" then
     table.sort(elements, sort_by_extension)
   elseif sort_by == "directory" then

@@ -37,15 +37,6 @@ function M.log.debug(msg)
   end
 end
 
----Replace one substring with another
----@param target string
----@param pos_start number the start index
----@param pos_end number the end index
----@param replacement string
----@return string
-function M.replace(target, pos_start, pos_end, replacement)
-  return target:sub(1, pos_start) .. replacement .. target:sub(pos_end + 1, -1)
-end
 ---Takes a list of items and runs the callback
 ---on each updating the initial value
 ---@generic T
@@ -65,7 +56,11 @@ end
 ---@vararg string
 ---@return number
 function M.measure(...)
-  return M.fold(0, function(accum, item) return accum + api.nvim_strwidth(item) end, { ... })
+  return M.fold(
+    0,
+    function(accum, item) return accum + api.nvim_strwidth(tostring(item)) end,
+    { ... }
+  )
 end
 
 ---Concatenate a series of strings together
@@ -89,7 +84,7 @@ end
 ---@generic T
 ---@param list T[]
 ---@param callback fun(item: T): boolean
----@return T
+---@return T?
 function M.find(list, callback)
   for _, v in ipairs(list) do
     if callback(v) then return v end
@@ -157,6 +152,7 @@ end
 function M.get_buf_count() return #fn.getbufinfo({ buflisted = 1 }) end
 
 ---@return number[]
+---@diagnostic disable-next-line: return-type-mismatch
 function M.get_valid_buffers() return vim.tbl_filter(M.is_valid, vim.api.nvim_list_bufs()) end
 
 ---@return number

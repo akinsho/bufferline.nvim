@@ -50,8 +50,9 @@ local maps = {
 ---@return string
 local function construct_number(num, map)
   if not map then return num .. "." end
-  num = tostring(num)
-  return num:gsub(".", function(c) return map[c] or "" end)
+  local str = tostring(num)
+  local match = str:gsub(".", function(c) return map[c] or "" end)
+  return match
 end
 
 local function to_style(map)
@@ -61,7 +62,7 @@ end
 local lower, raise = to_style(subscript_numbers), to_style(superscript_numbers)
 
 ---Add a number prefix to the buffer matching a user's preference
----@param buffer Buffer
+---@param buffer TabElement
 ---@param numbers numbers_opt
 ---@return string
 local function prefix(buffer, numbers)
