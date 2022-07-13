@@ -127,7 +127,6 @@ function Group:new(o, index)
   o = o or { priority = index }
   self.__index = self
   local name = format_name(o.name)
-  ---@diagnostic disable-next-line: cast-local-type
   o = vim.tbl_extend("force", o, {
     id = o.id or name,
     hidden = o.hidden == nil and false or o.hidden,
@@ -135,7 +134,6 @@ function Group:new(o, index)
     display_name = o.name,
     priority = o.priority or index,
   })
-  ---@diagnostic disable-next-line: return-type-mismatch, param-type-mismatch
   return setmetatable(o, self)
 end
 
