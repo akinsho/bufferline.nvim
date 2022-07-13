@@ -162,6 +162,8 @@ function M.get_valid_buffers() return vim.tbl_filter(M.is_valid, vim.api.nvim_li
 ---@return number
 function M.get_tab_count() return #fn.gettabinfo() end
 
+function M.close_tab(tabhandle) vim.cmd("tabclose " .. api.nvim_tabpage_get_number(tabhandle)) end
+
 M.W = vim.log.levels.WARN
 M.E = vim.log.levels.ERROR
 M.I = vim.log.levels.INFO

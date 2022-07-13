@@ -1,5 +1,6 @@
 local M = {}
 
+local api = vim.api
 local fmt = string.format
 local lazy = require("bufferline.lazy")
 --- @module "bufferline.groups"
@@ -77,9 +78,9 @@ local colors = lazy.require("bufferline.colors")
 ---@field public options BufferlineOptions
 ---@field public highlights BufferlineHighlights
 ---@field private original BufferlineConfig original copy of user preferences
----@field private merge fun(self:BufferlineConfig, BufferlineConfig): BufferlineConfig
----@field private validate fun(self:BufferlineConfig, BufferlineConfig): nil
----@field private resolve fun()
+---@field private merge fun(self: BufferlineConfig, defaults: BufferlineConfig): BufferlineConfig
+---@field private validate fun(self: BufferlineConfig, defaults: BufferlineConfig): nil
+---@field private resolve fun(self: BufferlineConfig, defaults: BufferlineConfig)
 ---@field private resolve_highlights fun(BufferlineConfig, BufferlineHighlights):BufferlineHighlights
 ---@field private is_tabline fun():boolean
 
@@ -198,7 +199,10 @@ function Config:validate(defaults)
   end
 end
 
-function Config:mode() return self.options.mode end
+function Config:mode()
+  if not self.options then return "buffers" end
+  return self.options.mode
+end
 
 function Config:is_bufferline() return self:mode() == "buffers" end
 
@@ -607,21 +611,24 @@ end
 
 --- Resolve/change any incompatible options based on the values of other options
 --- e.g. in tabline only certain values are valid/certain options no longer make sense.
-function Config:resolve()
-  local is_tabline = self:is_tabline()
-  -- Don't show tab indicators in tabline mode
-  if is_tabline and self.options.show_tab_indicators then
-    self.options.show_tab_indicators = false
+function Config:resolve(defaults)
+  if self.highlights and type(self.highlights) == "function" then
+    local resolved = self.highlights(defaults)
+    self.highlights, self.original.highlights = resolved, resolved
   end
-  -- If the sort by mechanism is "tabs" but the user is in tabline mode
-  -- then the id will be that of the tabs so sort by should be id i.e. "tabs" sort
-  -- is redundant in tabs mode
-  if is_tabline and self.options.sort_by == "tabs" then self.options.sort_by = "id" end
-  if is_tabline then
-    self.options.close_command =
-      function(tabhandle) vim.cmd("tabclose " .. vim.api.nvim_tabpage_get_number(tabhandle)) end
-    self.options.right_mouse_command = "tabclose %d"
-    self.options.left_mouse_command = vim.api.nvim_set_current_tabpage
+  if self:is_tabline() then
+    local opts = defaults.options
+    -- If the sort by mechanism is "tabs" but the user is in tabline mode
+    -- then the id will be that of the tabs so sort by should be id i.e. "tabs" sort
+    -- is redundant in tabs mode
+    if opts.sort_by == "tabs" then opts.sort_by = "id" end
+
+    -- Don't show tab indicators in tabline mode
+    if opts.show_tab_indicators then opts.show_tab_indicators = false end
+
+    opts.close_command = utils.close_tab
+    opts.right_mouse_command = "tabclose %d"
+    opts.left_mouse_command = api.nvim_set_current_tabpage
   end
 end
 
@@ -635,21 +642,15 @@ local function add_highlight_groups(map)
   end
 end
 
-function Config:resolve_highlights(defaults)
-  if self.highlights and type(self.highlights) == "function" then
-    local resolved = self.highlights(defaults)
-    self.highlights, self.original.highlights = resolved, resolved
-  end
-end
+function Config:resolve_highlights(defaults) end
 
 --- Merge user config with defaults
 --- @return BufferlineConfig
 function M.apply()
   local defaults = get_defaults()
-  config:resolve_highlights(defaults)
+  config:resolve(defaults)
   config:validate(defaults)
   config:merge(defaults)
-  config:resolve()
   -- TODO: Can setting up of group highlights be constrained to the config module
   groups.setup(config)
   add_highlight_groups(config.highlights)
