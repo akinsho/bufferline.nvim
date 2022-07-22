@@ -701,6 +701,36 @@ highlight command. See `:h highlight` .
                 guibg = '<color-value-here>',
                 gui = "bold,italic"
             },
+            hint = {
+                guifg = '<color-value-here>',
+                guisp = '<color-value-here>',
+                guibg = '<color-value-here>'
+            },
+            hint_visible = {
+                guifg = '<color-value-here>',
+                guibg = '<color-value-here>'
+            },
+            hint_selected = {
+                guifg = '<color-value-here>',
+                guibg = '<color-value-here>',
+                gui = "bold,italic",
+                guisp = '<color-value-here>'
+            },
+            hint_diagnostic = {
+                guifg = '<color-value-here>',
+                guisp = '<color-value-here>',
+                guibg = '<color-value-here>'
+            },
+            hint_diagnostic_visible = {
+                guifg = '<color-value-here>',
+                guibg = '<color-value-here>'
+            },
+            hint_diagnostic_selected = {
+                guifg = '<color-value-here>',
+                guibg = '<color-value-here>',
+                gui = "bold,italic",
+                guisp = '<color-value-here>'
+            },
             info = {
                 guifg = '<color-value-here>',
                 guisp = '<color-value-here>',
