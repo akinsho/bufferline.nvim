@@ -8,7 +8,7 @@ local config = lazy.require("bufferline.config")
 ---@module "bufferline.constants"
 local constants = lazy.require("bufferline.constants")
 --- @module "bufferline.duplicates"
-local duplicates = require("bufferline.duplicates")
+local duplicates = lazy.require("bufferline.duplicates")
 ---@module "bufferline.diagnostics"
 local diagnostics = lazy.require("bufferline.diagnostics")
 ---@module "bufferline.utils"
