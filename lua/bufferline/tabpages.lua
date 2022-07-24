@@ -7,6 +7,8 @@ local pick = lazy.require("bufferline.pick")
 local config = lazy.require("bufferline.config")
 ---@module "bufferline.constants"
 local constants = lazy.require("bufferline.constants")
+--- @module "bufferline.duplicates"
+local duplicates = lazy.require("bufferline.duplicates")
 ---@module "bufferline.diagnostics"
 local diagnostics = lazy.require("bufferline.diagnostics")
 ---@module "bufferline.utils"
@@ -103,6 +105,7 @@ function M.get_components(state)
   ---@type Tabpage[]
   local components = {}
   pick.reset()
+  duplicates.reset()
 
   local filter = options.custom_filter
 
@@ -137,7 +140,7 @@ function M.get_components(state)
     tab.letter = pick.get(tab)
     components[#components + 1] = tab
   end
-  return vim.tbl_map(function(tab) return ui.element(state, tab) end, components)
+  return vim.tbl_map(function(tab) return ui.element(state, tab) end, duplicates.mark(components))
 end
 
 return M
