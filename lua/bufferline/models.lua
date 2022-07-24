@@ -93,6 +93,7 @@ function GroupView:current() return false end
 ---@field public letter string
 ---@field public modified boolean
 ---@field public modifiable boolean
+---@field public duplicated boolean
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
 local Tabpage = Component:new({ type = "tab" })
@@ -128,6 +129,23 @@ function Tabpage:current() return api.nvim_get_current_tabpage() == self.id end
 
 --- NOTE: A visible tab page is the current tab page
 function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
+
+--- @param depth number
+--- @param formatter function(string, number)
+--- @returns string
+function Tabpage:ancestor(depth, formatter)
+  depth = (depth and depth > 1) and depth or 1
+  local ancestor = ""
+  for index = 1, depth do
+    local modifier = string.rep(":h", index)
+    local dir = fn.fnamemodify(self.path, ":p" .. modifier .. ":t")
+    if dir == "" then break end
+    if formatter then dir = formatter(dir, depth) end
+
+    ancestor = dir .. require("bufferline.utils").path_sep .. ancestor
+  end
+  return ancestor
+end
 
 ---@alias BufferComponent fun(index: number, buf_count: number): string
 
