@@ -118,7 +118,7 @@ local function apply_colors()
   highlights.set_all(current_prefs)
 end
 
----@alias group_actions '"close"' | '"toggle"'
+---@alias group_actions "close" | "toggle"
 ---Execute an action on a group of buffers
 ---@param name string
 ---@param action group_actions | fun(b: Buffer)

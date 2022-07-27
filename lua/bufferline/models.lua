@@ -32,8 +32,8 @@ i.e.
 --- i.e. not necessarily representative of a vim tab or buffer
 ---@class Component
 ---@field name string?
----@field id number
----@field length number
+---@field id integer
+---@field length integer
 ---@field component fun(BufferlineState): string
 ---@field hidden boolean
 ---@field focusable boolean
@@ -88,8 +88,8 @@ function GroupView:current() return false end
 ---@alias TabElement Tabpage|Buffer
 
 ---@class Tabpage
----@field public id number
----@field public buf number
+---@field public id integer
+---@field public buf integer
 ---@field public icon string
 ---@field public name string
 ---@field public group string
@@ -132,7 +132,7 @@ function Tabpage:current() return api.nvim_get_current_tabpage() == self.id end
 --- NOTE: A visible tab page is the current tab page
 function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 
----@alias BufferComponent fun(index: number, buf_count: number): string
+---@alias BufferComponent fun(index: integer, buf_count: integer): string
 
 -- A single buffer class
 -- this extends the [Component] class
@@ -140,7 +140,7 @@ function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
 ---@field public name_formatter function? dictates how the name should be shown
----@field public id integer|number the buffer number
+---@field public id integer the buffer number
 ---@field public name string the visible name for the file
 ---@field public icon string the icon
 ---@field public icon_highlight string?
@@ -149,17 +149,17 @@ function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 ---@field public modifiable boolean
 ---@field public buftype string
 ---@field public letter string?
----@field public ordinal number
+---@field public ordinal integer
 ---@field public duplicated boolean
 ---@field public prefix_count boolean
 ---@field public component BufferComponent
 ---@field public group string?
 ---@field public group_fn string
----@field public length number the length of the buffer component
----@field public visibility fun(): number
+---@field public length integer the length of the buffer component
+---@field public visibility fun(): integer
 ---@field public current fun(): boolean
 ---@field public visible fun(): boolean
----@field public find_index fun(Buffer, BufferlineState): number
+---@field public find_index fun(Buffer, BufferlineState): integer
 ---@field public is_new fun(Buffer, BufferlineState): boolean
 ---@field public is_existing fun(Buffer, BufferlineState): boolean
 ---@deprecated public filename string the visible name for the file
@@ -225,8 +225,8 @@ function Buffer:is_new(state) return not self:is_existing(state) end
 
 function Buffer:visible() return fn.bufwinnr(self.id) > 0 end
 
---- @param depth number
---- @param formatter function(string, number)
+--- @param depth integer
+--- @param formatter function(string, integer)
 --- @returns string
 function Buffer:ancestor(depth, formatter)
   depth = (depth and depth > 1) and depth or 1
@@ -244,7 +244,7 @@ end
 
 ---@class Section
 ---@field items Component[]
----@field length number
+---@field length integer
 local Section = {}
 
 ---Create a segment of tab views

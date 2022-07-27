@@ -75,7 +75,7 @@ local function space_end(hl_groups) return { { highlight = hl_groups.fill.hl, te
 ---@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
----@return string
+---@return Separators
 function separator.pill(group, hls, count)
   local bg_hl = hls.fill.hl
   local name, display_name = group.name, group.display_name
@@ -96,7 +96,7 @@ end
 ---@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
----@return string
+---@return Separators
 ---@type GroupSeparator
 function separator.tab(group, hls, count)
   local hl = hls.fill.hl
