@@ -96,6 +96,7 @@ function GroupView:current() return false end
 ---@field public letter string
 ---@field public modified boolean
 ---@field public modifiable boolean
+---@field public duplicated boolean
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
 local Tabpage = Component:new({ type = "tab" })
