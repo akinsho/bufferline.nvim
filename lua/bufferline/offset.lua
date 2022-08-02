@@ -30,8 +30,8 @@ local function get_section_text(size, highlight, offset)
   else
     local text_size = fn.strwidth(text)
     local left, right
-    if text_size + 2 >= size then
-      text = text:sub(1, size - 2)
+    if text_size >= size then
+      text = text:sub(1, size - 1) .. "…"
       left, right = 1, 1
     else
       local remainder = size - text_size
