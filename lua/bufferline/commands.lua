@@ -167,6 +167,10 @@ function M.move(direction)
 end
 
 function M.cycle(direction)
+  if vim.opt.showtabline == 0 then
+    if direction > 0 then vim.cmd("bnext") end
+    if direction < 0 then vim.cmd("bprev") end
+  end
   local index = M.get_current_element_index(state)
   if not index then return end
   local length = #state.components
