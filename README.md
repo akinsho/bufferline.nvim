@@ -141,6 +141,15 @@ Plug 'akinsho/bufferline.nvim', { 'tag': 'v2.*' }
 This plugin, as the name implies, shows a user their buffers but can also show tabs if using the `tabs` mode. If you're unclear as to what the difference
 is please read `:help tabpage`.
 
+## How do I see only buffers per tab?
+
+This behaviour is *not native in neovim* there is no internal concept of localised buffers to tabs as
+that is not how tabs were designed to work. They were designed to show an arbitrary layout of windows per tab.
+
+You can get this behaviour using [scope.nvim](https://github.com/tiagovla/scope.nvim) with this plugin. Although I believe a better
+long-term solution for users who want this functionality is to ask for real native support
+for this upstream.
+
 ## Caveats
 
 - This won't appeal to everyone's tastes. This plugin is opinionated about how the tabline
