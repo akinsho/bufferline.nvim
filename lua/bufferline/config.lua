@@ -65,6 +65,9 @@ local colors = lazy.require("bufferline.colors")
 ---@field public themable boolean
 
 ---@class BufferlineHLGroup
+---@field fg string
+---@field bg string
+---@field sp string
 ---@field foreground string
 ---@field background string
 ---@field special string

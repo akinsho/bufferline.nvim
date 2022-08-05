@@ -254,9 +254,10 @@ end
 ---@param group Group
 ---@param hls BufferlineHighlights
 local function set_group_highlights(group, hls)
-  local hl = highlights.convert(group.highlight)
+  local hl = group.highlight
   local name = group.name
   if not hl or type(hl) ~= "table" then return end
+  hl = highlights.convert(hl)
   hls[fmt("%s_separator", name)] = {
     fg = hl.foreground or hl.sp or hls.group_separator.foreground,
     bg = hls.fill.background,
@@ -270,10 +271,10 @@ local function set_group_highlights(group, hls)
   hls[name] = vim.tbl_extend("keep", hl, hls.buffer)
 end
 
----@param highlights BufferlineHighlights
-function M.reset_highlights(highlights)
+---@param hl BufferlineHighlights
+function M.reset_highlights(hl)
   for _, group in pairs(state.user_groups) do
-    set_group_highlights(group, highlights)
+    set_group_highlights(group, hl)
   end
 end
 
@@ -327,17 +328,17 @@ end
 --- Add the current highlight for a specific buffer
 --- NOTE: this function mutates the current highlights.
 ---@param buffer TabElement
----@param highlights table<string, table<string, string>>
+---@param hls table<string, table<string, string>>
 ---@param current_hl table<string, string>
-function M.set_current_hl(buffer, highlights, current_hl)
+function M.set_current_hl(buffer, hls, current_hl)
   local group = state.user_groups[buffer.group]
   if not group or not group.name or not group.highlight then return end
   local name = group.name
   local hl_name = buffer:current() and fmt("%s_selected", name)
     or buffer:visible() and fmt("%s_visible", name)
     or name
-  if highlights[hl_name] then
-    current_hl[name] = highlights[hl_name].hl
+  if hls[hl_name] then
+    current_hl[name] = hls[hl_name].hl
   else
     utils.log.debug(fmt("%s group highlight not found", name))
   end

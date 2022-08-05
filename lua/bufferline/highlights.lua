@@ -81,7 +81,7 @@ end
 ---@param opts table<string, string>
 ---@return table<string, string|boolean>
 function M.convert(opts)
-  if not opts or type(opts) ~= "table" then return opts end
+  assert(opts, '"opts" must be passed for conversion')
   local hls = {}
   for key, value in pairs(opts) do
     if keys[key] then hls[keys[key]] = value end
