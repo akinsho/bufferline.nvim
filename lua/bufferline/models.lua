@@ -123,9 +123,9 @@ function Tabpage:new(tab)
 end
 
 function Tabpage:visibility()
-  return self:current() and visibility.SELECTED
-    or self:visible() and visibility.INACTIVE
-    or visibility.NONE
+  if self:current() then return visibility.SELECTED end
+  if self:visible() then return visibility.INACTIVE end
+  return visibility.NONE
 end
 
 function Tabpage:current() return api.nvim_get_current_tabpage() == self.id end
@@ -198,9 +198,9 @@ function Buffer:new(buf)
 end
 
 function Buffer:visibility()
-  return self:current() and visibility.SELECTED
-    or self:visible() and visibility.INACTIVE
-    or visibility.NONE
+  if self:current() then return visibility.SELECTED end
+  if self:visible() then return visibility.INACTIVE end
+  return visibility.NONE
 end
 
 function Buffer:current() return api.nvim_get_current_buf() == self.id end

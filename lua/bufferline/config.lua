@@ -176,28 +176,27 @@ end
 ---@param defaults BufferlineConfig
 function Config:validate(defaults)
   handle_deprecations(self.options)
-  if self.highlights then
-    local incorrect = {}
-    for k, _ in pairs(self.highlights) do
-      if not defaults.highlights[k] then table.insert(incorrect, k) end
-    end
-    -- Don't continue if there are no incorrect highlights
-    if vim.tbl_isempty(incorrect) then return end
-    local is_plural = #incorrect > 1
-    local verb = is_plural and " are " or " is "
-    local article = is_plural and " " or " a "
-    local object = is_plural and " groups. " or " group. "
-    local msg = table.concat({
-      table.concat(incorrect, ", "),
-      verb,
-      "not",
-      article,
-      "valid highlight",
-      object,
-      "Please check the README for all valid highlights",
-    })
-    utils.notify(msg, utils.E)
+  if not self.highlights then return end
+  local incorrect = {}
+  for k, _ in pairs(self.highlights) do
+    if not defaults.highlights[k] then table.insert(incorrect, k) end
   end
+  -- Don't continue if there are no incorrect highlights
+  if vim.tbl_isempty(incorrect) then return end
+  local is_plural = #incorrect > 1
+  local verb = is_plural and " are " or " is "
+  local article = is_plural and " " or " a "
+  local object = is_plural and " groups. " or " group. "
+  local msg = table.concat({
+    table.concat(incorrect, ", "),
+    verb,
+    "not",
+    article,
+    "valid highlight",
+    object,
+    "Please check the README for all valid highlights",
+  })
+  utils.notify(msg, utils.E)
 end
 
 function Config:mode()
