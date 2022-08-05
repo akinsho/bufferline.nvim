@@ -21,9 +21,7 @@ end
 function M.find_text(component, text)
   local found = false
   for _, item in ipairs(component) do
-    if item.text == text then
-      found = true
-    end
+    if item.text == text then found = true end
   end
   return found
 end
@@ -35,19 +33,15 @@ function MockBuffer:new(o)
   return o
 end
 
-function MockBuffer:as_element()
-  return self
-end
+function MockBuffer:as_element() return self end
 
 ---@param name string
 ---@param state BufferlineState
----@return TabElement
+---@return Component?
 function M.find_buffer(name, state)
   for _, component in ipairs(state.components) do
     local element = component:as_element()
-    if fn.matchstr(element.name, name) ~= "" then
-      return component
-    end
+    if element and fn.matchstr(element.name, name) ~= "" then return component end
   end
 end
 

@@ -84,6 +84,7 @@ local function convert_hl_keys(opts)
   end
   if opts.gui then hls = vim.tbl_extend("force", hls, convert_gui(opts.gui)) end
   hls.default = vim.F.if_nil(opts.default, config.options.themable)
+  ---@diagnostic disable-next-line: return-type-mismatch
   return hls
 end
 
@@ -131,6 +132,7 @@ end
 function M.for_element(element)
   local hl = {}
   local h = config.get("highlights")
+  if not h then return hl end
   --- TODO: find a tidier way to do this if possible
   if element:current() then
     hl.background = h.buffer_selected.hl

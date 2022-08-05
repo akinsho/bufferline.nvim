@@ -35,6 +35,7 @@ end
 --- @param elements TabElement[]
 --- @return number[]
 local function get_ids(elements)
+  ---@diagnostic disable-next-line: return-type-mismatch
   return vim.tbl_map(function(item) return item.id end, elements)
 end
 
@@ -66,7 +67,7 @@ end
 
 ---Handle a user "command" which can be a string or a function
 ---@param command string|function
----@param id string
+---@param id number
 local function handle_user_command(command, id)
   if not command then return end
   if type(command) == "function" then
@@ -138,7 +139,7 @@ end
 ---@param current_state BufferlineState
 ---@param opts table?
 ---@return number?
----@return Buffer
+---@return TabElement?
 function M.get_current_element_index(current_state, opts)
   opts = opts or { include_hidden = false }
   local list = opts.include_hidden and current_state.__components or current_state.components
@@ -166,6 +167,10 @@ function M.move(direction)
 end
 
 function M.cycle(direction)
+  if vim.opt.showtabline == 0 then
+    if direction > 0 then vim.cmd("bnext") end
+    if direction < 0 then vim.cmd("bprev") end
+  end
   local index = M.get_current_element_index(state)
   if not index then return end
   local length = #state.components
@@ -203,7 +208,7 @@ function M.close_in_direction(direction)
 end
 
 --- sorts all elements
---- @param sort_by string|function
+--- @param sort_by (string|function)?
 function M.sort_by(sort_by)
   if next(state.components) == nil then
     return utils.notify("Unable to find elements to sort, sorry", utils.W)

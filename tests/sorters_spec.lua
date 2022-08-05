@@ -13,9 +13,7 @@ describe("Sorters - ", function()
     state = require("bufferline.state")
   end)
 
-  after_each(function()
-    vim.cmd("silent %bwipeout!")
-  end)
+  after_each(function() vim.cmd("silent %bwipeout!") end)
 
   it("should always return a list", function()
     bufferline.setup({ options = { sort_by = "none" } })
@@ -29,9 +27,7 @@ describe("Sorters - ", function()
     local bufs = { { id = 12 }, { id = 2 }, { id = 3 }, { id = 8 } }
     local list = sorters.sort(bufs)
     assert.is_true(vim.tbl_islist(list))
-    local ids = vim.tbl_map(function(buf)
-      return buf.id
-    end, list)
+    local ids = vim.tbl_map(function(buf) return buf.id end, list)
     assert.same(ids, { 12, 2, 3, 8 })
   end)
 
@@ -39,9 +35,7 @@ describe("Sorters - ", function()
     bufferline.setup({ options = { sort_by = "id" } })
     local bufs = { { id = 12 }, { id = 2 }, { id = 3 }, { id = 8 } }
     sorters.sort(bufs)
-    local ids = vim.tbl_map(function(buf)
-      return buf.id
-    end, bufs)
+    local ids = vim.tbl_map(function(buf) return buf.id end, bufs)
     assert.same(ids, { 2, 3, 8, 12 })
   end)
 
@@ -51,15 +45,14 @@ describe("Sorters - ", function()
     vim.cmd("tabnew file2.txt")
     vim.cmd("tabnew file3.txt")
     vim.cmd("bunload file2.txt")
-    local bufs = vim.tbl_map(function(id)
-      return { id = id }
-    end, vim.api.nvim_list_bufs())
+    local bufs = vim.tbl_map(function(id) return { id = id } end, vim.api.nvim_list_bufs())
 
     sorters.sort(bufs)
 
-    local buf_names = vim.tbl_map(function(buf)
-      return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf.id), ":p:t")
-    end, bufs)
+    local buf_names = vim.tbl_map(
+      function(buf) return vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf.id), ":p:t") end,
+      bufs
+    )
     assert.same({ "file1.txt", "file3.txt", "file2.txt" }, buf_names)
   end)
 

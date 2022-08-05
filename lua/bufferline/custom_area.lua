@@ -10,7 +10,7 @@ local fmt = string.format
 ---@param index integer
 ---@param side string
 ---@param section table
----@param guibg string
+---@param guibg string?
 local function create_hl(index, side, section, guibg)
   local name = fmt("BufferLine%sCustomAreaText%d", side:gsub("^%l", string.upper), index)
   local H = require("bufferline.highlights")
@@ -44,10 +44,11 @@ function M.get()
   if areas then
     for side, section_fn in pairs(areas) do
       if type(section_fn) ~= "function" then
-        return utils.notify(
+        utils.notify(
           fmt("each side should be a function but you passed in %s", vim.inspect(side)),
           utils.E
         )
+        return 0, "", ""
       end
       -- if the user doesn't specify a background use the default
       local hls = config.highlights or {}

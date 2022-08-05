@@ -31,8 +31,9 @@ i.e.
 --- The base class that represents a visual tab in the tabline
 --- i.e. not necessarily representative of a vim tab or buffer
 ---@class Component
----@field id number
----@field length number
+---@field name string?
+---@field id integer
+---@field length integer
 ---@field component fun(BufferlineState): string
 ---@field hidden boolean
 ---@field focusable boolean
@@ -66,6 +67,8 @@ function Component:is_end() return self.type:match("group") end
 
 ---@return TabElement?
 function Component:as_element()
+  -- TODO: Figure out how to correctly type cast a component to a TabElement
+  ---@diagnostic disable-next-line: return-type-mismatch
   if vim.tbl_contains({ "buffer", "tab" }, self.type) then return self end
 end
 
@@ -85,11 +88,11 @@ function GroupView:current() return false end
 ---@alias TabElement Tabpage|Buffer
 
 ---@class Tabpage
----@field public id number
----@field public buf number
+---@field public id integer
+---@field public buf integer
 ---@field public icon string
 ---@field public name string
----@field public group number
+---@field public group string
 ---@field public letter string
 ---@field public modified boolean
 ---@field public modifiable boolean
@@ -130,24 +133,7 @@ function Tabpage:current() return api.nvim_get_current_tabpage() == self.id end
 --- NOTE: A visible tab page is the current tab page
 function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 
---- @param depth number
---- @param formatter function(string, number)
---- @returns string
-function Tabpage:ancestor(depth, formatter)
-  depth = (depth and depth > 1) and depth or 1
-  local ancestor = ""
-  for index = 1, depth do
-    local modifier = string.rep(":h", index)
-    local dir = fn.fnamemodify(self.path, ":p" .. modifier .. ":t")
-    if dir == "" then break end
-    if formatter then dir = formatter(dir, depth) end
-
-    ancestor = dir .. require("bufferline.utils").path_sep .. ancestor
-  end
-  return ancestor
-end
-
----@alias BufferComponent fun(index: number, buf_count: number): string
+---@alias BufferComponent fun(index: integer, buf_count: integer): string
 
 -- A single buffer class
 -- this extends the [Component] class
@@ -158,23 +144,23 @@ end
 ---@field public id integer the buffer number
 ---@field public name string the visible name for the file
 ---@field public icon string the icon
----@field public icon_highlight string
+---@field public icon_highlight string?
 ---@field public diagnostics table
 ---@field public modified boolean
 ---@field public modifiable boolean
 ---@field public buftype string
----@field public letter string
----@field public ordinal number
+---@field public letter string?
+---@field public ordinal integer
 ---@field public duplicated boolean
 ---@field public prefix_count boolean
 ---@field public component BufferComponent
----@field public group number the group ID
+---@field public group string?
 ---@field public group_fn string
----@field public length number the length of the buffer component
----@field public visibility fun(): boolean
+---@field public length integer the length of the buffer component
+---@field public visibility fun(): integer
 ---@field public current fun(): boolean
 ---@field public visible fun(): boolean
----@field public find_index fun(Buffer, BufferlineState): number
+---@field public find_index fun(Buffer, BufferlineState): integer
 ---@field public is_new fun(Buffer, BufferlineState): boolean
 ---@field public is_existing fun(Buffer, BufferlineState): boolean
 ---@deprecated public filename string the visible name for the file
@@ -240,8 +226,8 @@ function Buffer:is_new(state) return not self:is_existing(state) end
 
 function Buffer:visible() return fn.bufwinnr(self.id) > 0 end
 
---- @param depth number
---- @param formatter function(string, number)
+--- @param depth integer
+--- @param formatter function(string, integer)
 --- @returns string
 function Buffer:ancestor(depth, formatter)
   depth = (depth and depth > 1) and depth or 1
@@ -259,7 +245,7 @@ end
 
 ---@class Section
 ---@field items Component[]
----@field length number
+---@field length integer
 local Section = {}
 
 ---Create a segment of tab views

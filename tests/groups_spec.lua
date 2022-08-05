@@ -33,9 +33,7 @@ describe("Group tests - ", function()
           items = {
             {
               name = "test-group",
-              matcher = function(buf)
-                return buf.name:match("dummy")
-              end,
+              matcher = function(buf) return buf.name:match("dummy") end,
             },
           },
         },
@@ -52,9 +50,7 @@ describe("Group tests - ", function()
           items = {
             {
               name = "test group",
-              matcher = function(buf)
-                return buf.name:match("dummy")
-              end,
+              matcher = function(buf) return buf.name:match("dummy") end,
             },
           },
         },
@@ -89,9 +85,7 @@ describe("Group tests - ", function()
             {
               name = "test-group",
               highlight = { guifg = "red" },
-              matcher = function(buf)
-                return buf.name:match("dummy")
-              end,
+              matcher = function(buf) return buf.name:match("dummy") end,
             },
           },
         },
@@ -112,9 +106,7 @@ describe("Group tests - ", function()
           items = {
             {
               name = "test-group",
-              matcher = function(buf)
-                return buf.name:match("dummy")
-              end,
+              matcher = function(buf) return buf.name:match("dummy") end,
             },
           },
         },
@@ -141,9 +133,7 @@ describe("Group tests - ", function()
           items = {
             {
               name = "test-group",
-              matcher = function(buf)
-                return buf.name:match("dummy")
-              end,
+              matcher = function(buf) return buf.name:match("dummy") end,
             },
           },
         },
@@ -156,9 +146,7 @@ describe("Group tests - ", function()
       Buffer:new({ name = "file-2.txt" }),
     }
     components = vim.tbl_map(set_buf_group, components)
-    components = groups.render(components, function(t)
-      return t
-    end)
+    components = groups.render(components, function(t) return t end)
     assert.equal(5, #components)
     local g_start = components[1]
     local g_end = components[4]
@@ -176,21 +164,15 @@ describe("Group tests - ", function()
           items = {
             {
               name = "A",
-              matcher = function(buf)
-                return buf.name:match("%.txt")
-              end,
+              matcher = function(buf) return buf.name:match("%.txt") end,
             },
             {
               name = "B",
-              matcher = function(buf)
-                return buf.name:match("%.js")
-              end,
+              matcher = function(buf) return buf.name:match("%.js") end,
             },
             {
               name = "C",
-              matcher = function(buf)
-                return buf.name:match("%.dart")
-              end,
+              matcher = function(buf) return buf.name:match("%.dart") end,
             },
           },
         },
@@ -207,9 +189,7 @@ describe("Group tests - ", function()
     }
     components = vim.tbl_map(set_buf_group, components)
     components = groups.render(components, function(t)
-      table.sort(t, function(a, b)
-        return a:as_element().name > b:as_element().name
-      end)
+      table.sort(t, function(a, b) return a:as_element().name > b:as_element().name end)
       return t
     end)
     assert.is_equal(components[2]:as_element().name, "b.txt")
@@ -253,9 +233,7 @@ describe("Group tests - ", function()
           items = {
             {
               name = "A",
-              matcher = function(buf)
-                return buf.name:match("%.txt")
-              end,
+              matcher = function(buf) return buf.name:match("%.txt") end,
             },
           },
         },
