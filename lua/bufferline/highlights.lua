@@ -87,7 +87,7 @@ function M.convert(opts)
     if keys[key] then hls[keys[key]] = value end
   end
   if opts.gui then hls = vim.tbl_extend("force", hls, convert_gui(opts.gui)) end
-  hls.default = vim.F.if_nil(opts.default, config.options.themable)
+  hls.default = opts.default or (config.options and config.options.themable)
   return hls
 end
 
