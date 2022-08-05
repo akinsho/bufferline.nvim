@@ -92,7 +92,7 @@ local colors = lazy.require("bufferline.colors")
 
 --- Convert highlights specified as tables to the correct existing colours
 ---@param map BufferlineHighlights
-local function convert_highlights(map)
+local function hl_table_to_color(map)
   if not map or vim.tbl_isempty(map) then return {} end
   -- we deep copy the highlights table as assigning the attributes
   -- will only pass the references so will mutate the original table otherwise
@@ -142,8 +142,7 @@ end
 function Config:merge(defaults)
   assert(defaults and type(defaults) == "table", "A valid config table must be passed to merge")
   self.options = vim.tbl_deep_extend("keep", self.options or {}, defaults.options or {})
-  local hls = convert_highlights(self.user_config.highlights)
-  self.highlights = vim.tbl_deep_extend("force", defaults.highlights, hls)
+  self.highlights = vim.tbl_deep_extend("force", defaults.highlights, self.highlights)
   return self
 end
 
@@ -627,14 +626,16 @@ end
 --- e.g. in tabline only certain values are valid/certain options no longer make sense.
 function Config:resolve(defaults)
   if self.highlights then
-    if type(self.highlights) == "function" then self.highlights = self.highlights(defaults) end
+    local hls, user = self.highlights, self.user_config.highlights
 
-    self.highlights = utils.fold({}, function(accum, item, key)
+    if type(user) == "function" then hls = user(defaults) end
+    hls = hl_table_to_color(hls)
+    hls = utils.fold(function(accum, item, key)
       accum[key] = highlights.translate_legacy_options(item)
       return accum
-    end, self.highlights)
+    end, hls)
 
-    self.user_config.highlights = self.highlights
+    self.highlights = hls
   end
 
   if self:is_tabline() then
@@ -643,7 +644,6 @@ function Config:resolve(defaults)
     -- then the id will be that of the tabs so sort by should be id i.e. "tabs" sort
     -- is redundant in tabs mode
     if opts.sort_by == "tabs" then opts.sort_by = "id" end
-
     -- Don't show tab indicators in tabline mode
     if opts.show_tab_indicators then opts.show_tab_indicators = false end
 
