@@ -255,7 +255,7 @@ function M.setup(conf)
     )
     return
   end
-  config.set(conf or {})
+  config.set(conf)
   local preferences = config.apply()
   groups.setup(preferences)
   -- on loading (and reloading) the plugin's config reset all the highlights

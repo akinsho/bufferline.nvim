@@ -142,7 +142,7 @@ end
 function Config:merge(defaults)
   assert(defaults and type(defaults) == "table", "A valid config table must be passed to merge")
   self.options = vim.tbl_deep_extend("keep", self.options or {}, defaults.options or {})
-  self.highlights = vim.tbl_deep_extend("force", defaults.highlights, self.highlights)
+  self.highlights = vim.tbl_deep_extend("force", defaults.highlights, self.highlights or {})
   return self
 end
 
@@ -700,7 +700,7 @@ end
 ---Keep track of a users config for use throughout the plugin as well as ensuring
 ---defaults are set. This is also so we can diff what the user set this is useful
 ---for setting the highlight groups etc. once this has been merged with the defaults
----@param conf BufferlineConfig
+---@param conf BufferlineConfig?
 function M.set(conf) config = Config:new(conf or {}) end
 
 ---Update highlight colours when the colour scheme changes
