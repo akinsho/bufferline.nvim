@@ -255,9 +255,10 @@ function M.setup(conf)
     )
     return
   end
+  conf = conf or {}
   config.set(conf)
+  groups.setup(conf) -- Groups must be set up before the config is applied
   local preferences = config.apply()
-  groups.setup(preferences)
   -- on loading (and reloading) the plugin's config reset all the highlights
   highlights.set_all(preferences)
   setup_commands()

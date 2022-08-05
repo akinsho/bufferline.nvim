@@ -266,7 +266,7 @@ end
 ---@param config BufferlineConfig
 function M.setup(config)
   if not config then return end
-  local groups = config.options.groups.items or {}
+  local groups = vim.tbl_get(config, "options", "groups", "items") or {}
 
   -- NOTE: if the user has already set the pinned builtin themselves
   -- then we want each group to have a priority based on it's position in the list

@@ -9,6 +9,8 @@ describe("Group tests - ", function()
   local groups
   --- @module "bufferline.state"
   local state
+  --- @module "bufferline.config"
+  local config
   --- @module "bufferline"
   local bufferline
 
@@ -16,9 +18,11 @@ describe("Group tests - ", function()
     package.loaded["bufferline"] = nil
     package.loaded["bufferline.groups"] = nil
     package.loaded["bufferline.state"] = nil
+    package.loaded["bufferline.config"] = nil
     groups = require("bufferline.groups")
     bufferline = require("bufferline")
     state = require("bufferline.state")
+    config = require("bufferline.config")
   end)
 
   local function set_buf_group(buffer)
@@ -60,7 +64,7 @@ describe("Group tests - ", function()
   end)
 
   it("should set highlights on setup", function()
-    local config = {
+    local c = {
       highlights = {
         buffer_selected = {
           guifg = "black",
@@ -91,12 +95,15 @@ describe("Group tests - ", function()
         },
       },
     }
-    groups.setup(config)
-    assert.truthy(config.highlights.test_group_selected)
-    assert.truthy(config.highlights.test_group_visible)
-    assert.truthy(config.highlights.test_group)
+    groups.setup(c)
+    config.set(c)
+    local conf = config.apply()
+    local hls = conf.highlights
+    assert.truthy(hls.test_group_selected)
+    assert.truthy(hls.test_group_visible)
+    assert.truthy(hls.test_group)
 
-    assert.equal(config.highlights.test_group.guifg, "red")
+    assert.equal(hls.test_group.foreground, "red")
   end)
 
   it("should sort components by groups", function()
@@ -126,7 +133,7 @@ describe("Group tests - ", function()
   end)
 
   it("should add group markers", function()
-    local config = {
+    local conf = {
       highlights = {},
       options = {
         groups = {
@@ -139,7 +146,7 @@ describe("Group tests - ", function()
         },
       },
     }
-    bufferline.setup(config)
+    bufferline.setup(conf)
     local components = {
       Buffer:new({ name = "dummy-1.txt" }),
       Buffer:new({ name = "dummy-2.txt" }),
@@ -157,7 +164,7 @@ describe("Group tests - ", function()
   end)
 
   it("should sort each group individually", function()
-    local config = {
+    local conf = {
       highlights = {},
       options = {
         groups = {
@@ -178,7 +185,7 @@ describe("Group tests - ", function()
         },
       },
     }
-    bufferline.setup(config)
+    bufferline.setup(conf)
     local components = {
       Buffer:new({ name = "a.txt" }),
       Buffer:new({ name = "b.txt" }),
