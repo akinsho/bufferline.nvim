@@ -60,6 +60,9 @@ local keys = {
   default = "default",
   foreground = "foreground",
   background = "background",
+  fg = "foreground",
+  bg = "background",
+  sp = "special",
   italic = "italic",
   bold = "bold",
   underline = "underline",
@@ -77,15 +80,22 @@ end
 --- Transform legacy highlight keys to new nvim_set_hl api keys
 ---@param opts table<string, string>
 ---@return table<string, string|boolean>
-local function convert_hl_keys(opts)
+function M.convert(opts)
+  if not opts or type(opts) ~= "table" then return opts end
   local hls = {}
   for key, value in pairs(opts) do
     if keys[key] then hls[keys[key]] = value end
   end
   if opts.gui then hls = vim.tbl_extend("force", hls, convert_gui(opts.gui)) end
   hls.default = vim.F.if_nil(opts.default, config.options.themable)
-  ---@diagnostic disable-next-line: return-type-mismatch
   return hls
+end
+
+local function filter_invalid_keys(hl)
+  return utils.fold(function(accum, item, key)
+    if keys[key] then accum[key] = item end
+    return accum
+  end, hl)
 end
 
 ---Apply a single highlight
@@ -93,8 +103,8 @@ end
 ---@param opts table<string, string>
 function M.set_one(name, opts)
   if opts and not vim.tbl_isempty(opts) then
-    local hls = convert_hl_keys(opts)
-    local ok, msg = pcall(api.nvim_set_hl, 0, name, hls)
+    local hl = filter_invalid_keys(opts)
+    local ok, msg = pcall(api.nvim_set_hl, 0, name, hl)
     if not ok then
       utils.notify(
         fmt("Failed setting %s  highlight, something isn't configured correctly: %s", name, msg),

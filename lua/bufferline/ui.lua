@@ -246,8 +246,8 @@ local function get_icon_with_highlight(buffer, color_icons, hl_defs)
 
   local new_hl = highlights.generate_name(hl, { visibility = state })
   local hl_colors = {
-    guifg = not color_icons and "fg" or colors.get_color({ name = hl, attribute = "fg" }),
-    guibg = colors.get_color({ name = bg_hls[state], attribute = "bg" }),
+    fg = not color_icons and "fg" or colors.get_color({ name = hl, attribute = "fg" }),
+    bg = colors.get_color({ name = bg_hls[state], attribute = "bg" }),
     ctermfg = not color_icons and "fg" or colors.get_color({
       name = hl,
       attribute = "fg",

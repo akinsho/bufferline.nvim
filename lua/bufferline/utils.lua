@@ -44,9 +44,15 @@ end
 ---@param callback fun(accum:T, item: T, index: number): T
 ---@param list T[]
 ---@return T
+---@overload fun(callback: fun(accum: T, item: T, index: number): T, list: T[]): T
 function M.fold(accum, callback, list)
   assert(accum and callback, "An initial value and callback must be passed to fold")
-  for i, v in ipairs(list) do
+  if type(accum) == "function" and type(callback) == "table" then
+    list = callback
+    callback = accum
+    accum = {}
+  end
+  for i, v in pairs(list) do
     accum = callback(accum, v, i)
   end
   return accum
@@ -75,10 +81,11 @@ end
 ---@param list T[]
 ---@return T[]
 function M.map(callback, list)
-  return M.fold({}, function(accum, item, index)
-    table.insert(accum, callback(item, index))
-    return accum
-  end, list)
+  local accum = {}
+  for index, item in ipairs(list) do
+    accum[index] = callback(item, index)
+  end
+  return accum
 end
 
 ---@generic T

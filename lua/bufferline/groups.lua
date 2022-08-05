@@ -7,6 +7,8 @@ local padding = lazy.require("bufferline.constants").padding
 local models = lazy.require("bufferline.models")
 --- @module "bufferline.ui"
 local ui = lazy.require("bufferline.ui")
+--- @module "bufferline.highlights"
+local highlights = lazy.require("bufferline.highlights")
 
 local fn = vim.fn
 
@@ -252,16 +254,16 @@ end
 ---@param group Group
 ---@param hls BufferlineHighlights
 local function set_group_highlights(group, hls)
-  local hl = group.highlight
+  local hl = highlights.convert(group.highlight)
   local name = group.name
   if not hl or type(hl) ~= "table" then return end
   hls[fmt("%s_separator", name)] = {
-    guifg = hl.guifg or hl.guisp or hls.group_separator.guifg,
-    guibg = hls.fill.guibg,
+    fg = hl.foreground or hl.sp or hls.group_separator.foreground,
+    bg = hls.fill.background,
   }
   hls[fmt("%s_label", name)] = {
-    guifg = hls.fill.guibg,
-    guibg = hl.guifg or hl.guisp or hls.group_separator.guifg,
+    fg = hls.fill.background,
+    bg = hl.fg or hl.sp or hls.group_separator.foreground,
   }
   hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, hls.buffer_selected)
   hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, hls.buffer_visible)

@@ -128,7 +128,7 @@ function Config:new(o)
   -- save a copy of the user's preferences so we can reference exactly what they
   -- wanted after the config and defaults have been merged. Do this using a copy
   -- so that reference isn't unintentionally mutated
-  self.original = vim.deepcopy(o)
+  self.user_config = vim.deepcopy(o)
   setmetatable(o, self)
   return o
 end
@@ -139,7 +139,7 @@ end
 function Config:merge(defaults)
   assert(defaults and type(defaults) == "table", "A valid config table must be passed to merge")
   self.options = vim.tbl_deep_extend("keep", self.options or {}, defaults.options or {})
-  local hls = convert_highlights(self.original.highlights)
+  local hls = convert_highlights(self.user_config.highlights)
   self.highlights = vim.tbl_deep_extend("force", defaults.highlights, hls)
   return self
 end
@@ -624,10 +624,17 @@ end
 --- Resolve/change any incompatible options based on the values of other options
 --- e.g. in tabline only certain values are valid/certain options no longer make sense.
 function Config:resolve(defaults)
-  if self.highlights and type(self.highlights) == "function" then
-    local resolved = self.highlights(defaults)
-    self.highlights, self.original.highlights = resolved, resolved
+  if self.highlights then
+    if type(self.highlights) == "function" then self.highlights = self.highlights(defaults) end
+
+    self.highlights = utils.fold({}, function(accum, item, key)
+      accum[key] = highlights.convert(item)
+      return accum
+    end, self.highlights)
+
+    self.user_config.highlights = self.highlights
   end
+
   if self:is_tabline() then
     local opts = defaults.options
     -- If the sort by mechanism is "tabs" but the user is in tabline mode
@@ -653,8 +660,6 @@ local function add_highlight_groups(map)
     highlights.add_group(name, tbl)
   end
 end
-
-function Config:resolve_highlights(defaults) end
 
 --- Merge user config with defaults
 --- @return BufferlineConfig
