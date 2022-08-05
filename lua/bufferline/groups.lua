@@ -7,8 +7,6 @@ local padding = lazy.require("bufferline.constants").padding
 local models = lazy.require("bufferline.models")
 --- @module "bufferline.ui"
 local ui = lazy.require("bufferline.ui")
---- @module "bufferline.highlights"
-local highlights = lazy.require("bufferline.highlights")
 
 local fn = vim.fn
 
@@ -250,34 +248,6 @@ function M.component(ctx)
   }
 end
 
----Add highlight groups for a group
----@param group Group
----@param hls BufferlineHighlights
-local function set_group_highlights(group, hls)
-  local hl = group.highlight
-  local name = group.name
-  if not hl or type(hl) ~= "table" then return end
-  hl = highlights.translate_legacy_options(hl)
-  hls[fmt("%s_separator", name)] = {
-    fg = hl.foreground or hl.sp or hls.group_separator.foreground,
-    bg = hls.fill.background,
-  }
-  hls[fmt("%s_label", name)] = {
-    fg = hls.fill.background,
-    bg = hl.fg or hl.sp or hls.group_separator.foreground,
-  }
-  hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, hls.buffer_selected)
-  hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, hls.buffer_visible)
-  hls[name] = vim.tbl_extend("keep", hl, hls.buffer)
-end
-
----@param hl BufferlineHighlights
-function M.reset_highlights(hl)
-  for _, group in pairs(state.user_groups) do
-    set_group_highlights(group, hl)
-  end
-end
-
 --- Pull pinned buffers saved in a vim.g global variable and restore them
 --- to the manual_groupings table.
 local function restore_pinned_buffers()
@@ -296,7 +266,6 @@ end
 ---@param config BufferlineConfig
 function M.setup(config)
   if not config then return end
-
   local groups = config.options.groups.items or {}
 
   -- NOTE: if the user has already set the pinned builtin themselves
@@ -317,31 +286,8 @@ function M.setup(config)
       priority = vim.tbl_count(state.user_groups) + 1,
     })
   end
-  for _, group in pairs(state.user_groups) do
-    set_group_highlights(group, config.highlights)
-  end
-
   -- Restore pinned buffer from the previous session
   api.nvim_create_autocmd("SessionLoadPost", { once = true, callback = restore_pinned_buffers })
-end
-
---- Add the current highlight for a specific buffer
---- NOTE: this function mutates the current highlights.
----@param buffer TabElement
----@param hls table<string, table<string, string>>
----@param current_hl table<string, string>
-function M.set_current_hl(buffer, hls, current_hl)
-  local group = state.user_groups[buffer.group]
-  if not group or not group.name or not group.highlight then return end
-  local name = group.name
-  local hl_name = buffer:current() and fmt("%s_selected", name)
-    or buffer:visible() and fmt("%s_visible", name)
-    or name
-  if hls[hl_name] then
-    current_hl[name] = hls[hl_name].hl
-  else
-    utils.log.debug(fmt("%s group highlight not found", name))
-  end
 end
 
 ---Execute a command on each buffer of a group
@@ -500,6 +446,8 @@ local function sort_by_groups(components)
   end
   return sorted, clustered
 end
+
+function M.get_all() return state.user_groups end
 
 -- FIXME:
 -- 1. this function does a lot of looping that can maybe be consolidated

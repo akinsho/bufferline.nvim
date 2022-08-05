@@ -137,6 +137,25 @@ function M.set_all(conf)
   end
 end
 
+--- Add the current highlight for a specific element
+--- NOTE: this function mutates the current highlights.
+---@param element TabElement
+---@param hls table<string, table<string, string>>
+---@param current_hl table<string, string>
+local function add_element_group_hl(element, hls, current_hl)
+  if not element.group then return end
+  local group = groups.get_all()[element.group]
+  if not group or not group.name or not group.highlight then return end
+  local name = group.name
+  local hl_name = element:current() and fmt("%s_selected", name)
+    or element:visible() and fmt("%s_visible", name)
+    or name
+  if hls[hl_name] then
+    current_hl[name] = hls[hl_name].hl
+  else
+    utils.log.debug(fmt("%s group highlight not found", name))
+  end
+end
 ---@param element Buffer | Tabpage
 ---@return table
 function M.for_element(element)
@@ -202,6 +221,7 @@ function M.for_element(element)
 
   if element.group then groups.set_current_hl(element, h, hl) end
 
+  add_element_group_hl(element, h, hl)
   return hl
 end
 

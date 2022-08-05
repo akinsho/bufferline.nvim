@@ -663,6 +663,28 @@ local function add_highlight_groups(map)
   end
 end
 
+---Add highlight groups for a group
+---@param hls BufferlineHighlights
+local function set_group_highlights(hls)
+  for _, group in pairs(groups.get_all()) do
+    local hl = group.highlight
+    local name = group.name
+    if not hl or type(hl) ~= "table" then return end
+    hl = highlights.translate_legacy_options(hl)
+    hls[fmt("%s_separator", name)] = {
+      fg = hl.foreground or hl.sp or hls.group_separator.foreground,
+      bg = hls.fill.background,
+    }
+    hls[fmt("%s_label", name)] = {
+      fg = hls.fill.background,
+      bg = hl.fg or hl.sp or hls.group_separator.foreground,
+    }
+    hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, hls.buffer_selected)
+    hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, hls.buffer_visible)
+    hls[name] = vim.tbl_extend("keep", hl, hls.buffer)
+  end
+end
+
 --- Merge user config with defaults
 --- @return BufferlineConfig
 function M.apply()
@@ -670,9 +692,8 @@ function M.apply()
   config:resolve(defaults)
   config:validate(defaults)
   config:merge(defaults)
-  -- TODO: Can setting up of group highlights be constrained to the config module
-  groups.setup(config)
   add_highlight_groups(config.highlights)
+  set_group_highlights(config.highlights)
   return config
 end
 
@@ -683,12 +704,7 @@ end
 function M.set(conf) config = Config:new(conf or {}) end
 
 ---Update highlight colours when the colour scheme changes
-function M.update_highlights()
-  config:merge({ highlights = derive_colors() })
-  groups.reset_highlights(config.highlights)
-  add_highlight_groups(config.highlights)
-  return config
-end
+function M.update_highlights() return M.apply() end
 
 ---Get the user's configuration or a key from it
 ---@param key string?
