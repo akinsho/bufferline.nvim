@@ -630,7 +630,7 @@ function Config:resolve(defaults)
     if type(self.highlights) == "function" then self.highlights = self.highlights(defaults) end
 
     self.highlights = utils.fold({}, function(accum, item, key)
-      accum[key] = highlights.convert(item)
+      accum[key] = highlights.translate_legacy_options(item)
       return accum
     end, self.highlights)
 

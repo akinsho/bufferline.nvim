@@ -80,7 +80,7 @@ end
 --- Transform legacy highlight keys to new nvim_set_hl api keys
 ---@param opts table<string, string>
 ---@return table<string, string|boolean>
-function M.convert(opts)
+function M.translate_legacy_options(opts)
   assert(opts, '"opts" must be passed for conversion')
   local hls = {}
   for key, value in pairs(opts) do
@@ -141,7 +141,7 @@ end
 ---@return table
 function M.for_element(element)
   local hl = {}
-  local h = config.get("highlights")
+  local h = config.highlights
   if not h then return hl end
   --- TODO: find a tidier way to do this if possible
   if element:current() then

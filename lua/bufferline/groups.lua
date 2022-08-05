@@ -257,7 +257,7 @@ local function set_group_highlights(group, hls)
   local hl = group.highlight
   local name = group.name
   if not hl or type(hl) ~= "table" then return end
-  hl = highlights.convert(hl)
+  hl = highlights.translate_legacy_options(hl)
   hls[fmt("%s_separator", name)] = {
     fg = hl.foreground or hl.sp or hls.group_separator.foreground,
     bg = hls.fill.background,
