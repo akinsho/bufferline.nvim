@@ -1,5 +1,10 @@
-local config = require("bufferline.config")
-local utils = require("bufferline.utils")
+local lazy = require("bufferline.lazy")
+---@module "bufferline.config"
+local config = lazy.require("bufferline.config")
+---@module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
+---@module "highlights"
+local highlights = lazy.require("bufferline.highlights")
 
 local M = {}
 
@@ -10,17 +15,15 @@ local fmt = string.format
 ---@param index integer
 ---@param side string
 ---@param section table
----@param guibg string?
-local function create_hl(index, side, section, guibg)
+---@param bg string?
+local function create_hl(index, side, section, bg)
   local name = fmt("BufferLine%sCustomAreaText%d", side:gsub("^%l", string.upper), index)
-  local H = require("bufferline.highlights")
-  H.set_one(name, {
-    guifg = section.guifg,
-    guibg = section.guibg or guibg,
-    gui = section.gui,
-    default = true, -- We need to be able to constantly override these highlights so they should always be default
-  })
-  return H.hl(name)
+  local opts = highlights.translate_legacy_options(section)
+  -- We need to be able to constantly override these highlights so they should always be default
+  opts.background = section.background or bg
+  opts.default = true
+  highlights.set_one(name, opts)
+  return highlights.hl(name)
 end
 
 ---@param text string
