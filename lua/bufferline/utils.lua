@@ -41,10 +41,10 @@ end
 ---on each updating the initial value
 ---@generic T
 ---@param accum T
----@param callback fun(accum:T, item: T, index: number): T
----@param list T[]
+---@param callback fun(accum:T, item: T, key: number|string): T
+---@param list table<number|string, T>
 ---@return T
----@overload fun(callback: fun(accum: T, item: T, index: number): T, list: T[]): T
+---@overload fun(callback: fun(accum: any, item: any, key: (number|string)), list: any[]): any
 function M.fold(accum, callback, list)
   assert(accum and callback, "An initial value and callback must be passed to fold")
   if type(accum) == "function" and type(callback) == "table" then
