@@ -103,7 +103,7 @@ describe("Group tests - ", function()
     assert.truthy(hls.test_group_visible)
     assert.truthy(hls.test_group)
 
-    assert.equal(hls.test_group.foreground, "red")
+    assert.equal(hls.test_group.fg, "red")
   end)
 
   it("should sort components by groups", function()

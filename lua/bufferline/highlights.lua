@@ -56,13 +56,13 @@ end
 
 local keys = {
   guisp = "sp",
-  guibg = "background",
-  guifg = "foreground",
+  guibg = "bg",
+  guifg = "fg",
   default = "default",
-  foreground = "foreground",
-  background = "background",
-  fg = "foreground",
-  bg = "background",
+  foreground = "fg",
+  background = "fg",
+  fg = "fg",
+  bg = "bg",
   sp = "special",
   italic = "italic",
   bold = "bold",
@@ -129,9 +129,8 @@ end
 function M.set_all(conf)
   for name, tbl in pairs(conf.highlights) do
     if not tbl or not tbl.hl then
-      utils.notify(
-        fmt("Error setting highlight group: no name for %s - %s", name, vim.inspect(tbl), utils.E)
-      )
+      local msg = fmt("Error setting highlight group: no name for %s - %s", name, vim.inspect(tbl))
+      utils.notify(msg, utils.E)
     else
       M.set_one(tbl.hl, tbl)
     end

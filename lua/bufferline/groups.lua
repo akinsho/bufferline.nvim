@@ -266,6 +266,7 @@ end
 ---@param config BufferlineConfig
 function M.setup(config)
   if not config then return end
+  ---@type Group[]
   local groups = vim.tbl_get(config, "options", "groups", "items") or {}
 
   -- NOTE: if the user has already set the pinned builtin themselves

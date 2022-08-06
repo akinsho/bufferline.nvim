@@ -68,8 +68,6 @@ local colors = lazy.require("bufferline.colors")
 ---@field fg string
 ---@field bg string
 ---@field sp string
----@field foreground string
----@field background string
 ---@field special string
 ---@field bold boolean
 ---@field italic boolean
@@ -574,7 +572,7 @@ local function get_defaults()
     ---@type BufferlineOptions
     options = {
       mode = "buffers",
-      themable = true, -- whether or not bufferline highlights can be overriden externally
+      themable = true, -- whether or not bufferline highlights can be overridden externally
       numbers = "none",
       buffer_close_icon = "",
       modified_icon = "●",
