@@ -667,21 +667,28 @@ end
 ---@param hls BufferlineHighlights
 local function set_group_highlights(hls)
   for _, group in pairs(groups.get_all()) do
-    local hl = group.highlight
-    local name = group.name
-    if not hl or type(hl) ~= "table" then return end
-    hl = highlights.translate_legacy_options(hl)
-    hls[fmt("%s_separator", name)] = {
-      fg = hl.foreground or hl.sp or hls.group_separator.foreground,
-      bg = hls.fill.background,
-    }
-    hls[fmt("%s_label", name)] = {
-      fg = hls.fill.background,
-      bg = hl.fg or hl.sp or hls.group_separator.foreground,
-    }
-    hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, hls.buffer_selected)
-    hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, hls.buffer_visible)
-    hls[name] = vim.tbl_extend("keep", hl, hls.buffer)
+    local group_hl, name = group.highlight, group.name
+    if group_hl and type(group_hl) == "table" then
+      group_hl = highlights.translate_legacy_options(group_hl)
+      local sep_name = fmt("%s_separator", name)
+      local label_name = fmt("%s_label", name)
+      local selected_name = fmt("%s_selected", name)
+      local visible_name = fmt("%s_visible", name)
+      hls[sep_name] = {
+        fg = group_hl.fg or group_hl.sp or hls.group_separator.fg,
+        bg = hls.fill.bg,
+      }
+      hls[label_name] = {
+        fg = hls.fill.bg,
+        bg = group_hl.fg or group_hl.sp or hls.group_separator.fg,
+      }
+      hls[selected_name] = vim.tbl_extend("keep", group_hl, hls.buffer_selected)
+      hls[visible_name] = vim.tbl_extend("keep", group_hl, hls.buffer_visible)
+      hls[name] = vim.tbl_extend("keep", group_hl, hls.buffer)
+
+      highlights.add_group(sep_name, hls[sep_name])
+      highlights.add_group(label_name, hls[label_name])
+    end
   end
 end
 
