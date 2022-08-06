@@ -178,8 +178,8 @@ M.D = vim.log.levels.DEBUG
 function M.notify(msg, level, opts)
   opts = opts or {}
   local nopts = { title = "Bufferline" }
-  if opts.once then return vim.notify_once(msg, level, nopts) end
-  vim.notify(msg, level, nopts)
+  if opts.once then return vim.schedule(function() vim.notify_once(msg, level, nopts) end) end
+  vim.schedule(function() vim.notify(msg, level, nopts) end)
 end
 
 ---@class GetIconOpts

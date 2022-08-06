@@ -156,7 +156,7 @@ local deprecations = {
 }
 
 ---@param options BufferlineOptions
-local function handle_deprecations(options)
+local function handle_option_deprecations(options)
   if not options then return end
   for key, _ in pairs(options) do
     local deprecation = deprecations[key]
@@ -172,28 +172,37 @@ end
 ---Ensure the user has only specified highlight groups that exist
 ---@param defaults BufferlineConfig
 function Config:validate(defaults)
-  handle_deprecations(self.options)
-  if not self.highlights then return end
-  local incorrect = {}
-  for k, _ in pairs(self.highlights) do
-    if not defaults.highlights[k] then table.insert(incorrect, k) end
+  local opts, hls = self.user_config.options, self.user_config.highlights
+  handle_option_deprecations(opts)
+  if not hls then return end
+  local incorrect = { invalid_hl = {}, invalid_attrs = {} }
+  for k, hl in pairs(hls) do
+    for key, _ in pairs(hl) do
+      if key:match("gui") then table.insert(incorrect.invalid_attrs, k) end
+    end
+    if not defaults.highlights[k] then table.insert(incorrect.invalid_hl, k) end
   end
   -- Don't continue if there are no incorrect highlights
-  if vim.tbl_isempty(incorrect) then return end
-  local is_plural = #incorrect > 1
-  local verb = is_plural and " are " or " is "
-  local article = is_plural and " " or " a "
-  local object = is_plural and " groups. " or " group. "
-  local msg = table.concat({
-    table.concat(incorrect, ", "),
-    verb,
-    "not",
-    article,
-    "valid highlight",
-    object,
-    "Please check the README for all valid highlights",
-  })
-  utils.notify(msg, utils.E)
+  if next(incorrect.invalid_hl) then
+    local is_plural = #incorrect > 1
+    local msg = table.concat({
+      table.concat(incorrect.invalid_hl, ", "),
+      is_plural and " are " or " is ",
+      "not",
+      is_plural and " " or " a ",
+      "valid highlight",
+      is_plural and " groups. " or " group. ",
+      "Please check :help bufferline-highlights for all valid highlights",
+    })
+    utils.notify(msg, utils.E)
+  end
+  if next(incorrect.invalid_attrs) then
+    local msg = table.concat({
+      "Using `gui`, `guifg`, `guibg`, `guisp` is deprecated please",
+      " see :help bufferline-highlights for how to update your highlights",
+    })
+    utils.notify(msg, utils.E)
+  end
 end
 
 function Config:mode()
@@ -626,14 +635,16 @@ function Config:resolve(defaults)
   if self.highlights then
     local hls, user = self.highlights, self.user_config.highlights
 
-    if type(user) == "function" then hls = user(defaults) end
-    hls = hl_table_to_color(hls)
-    hls = utils.fold(function(accum, item, key)
+    if type(user) == "function" then
+      hls = user(defaults)
+      -- If the user's highlights are a function then to ensure they are accessible in the future
+      -- they must be converted to a table
+      self.user_config.highlights = hls
+    end
+    self.highlights = utils.fold(function(accum, item, key)
       accum[key] = highlights.translate_legacy_options(item)
       return accum
-    end, hls)
-
-    self.highlights = hls
+    end, hl_table_to_color(hls))
   end
 
   if self:is_tabline() then
