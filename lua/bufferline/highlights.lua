@@ -10,6 +10,7 @@ local config = lazy.require("bufferline.config")
 local groups = lazy.require("bufferline.groups")
 
 local api = vim.api
+local v = constants.visibility
 ---------------------------------------------------------------------------//
 -- Highlights
 ---------------------------------------------------------------------------//
@@ -18,9 +19,9 @@ local M = {}
 local PREFIX = "BufferLine"
 
 local visibility_suffix = {
-  [constants.visibility.INACTIVE] = "Inactive",
-  [constants.visibility.SELECTED] = "Selected",
-  [constants.visibility.NONE] = "",
+  [v.INACTIVE] = "Inactive",
+  [v.SELECTED] = "Selected",
+  [v.NONE] = "",
 }
 
 --- @class NameGenerationArgs
@@ -137,6 +138,14 @@ function M.set_all(conf)
   end
 end
 
+---@param vis 1|2|3
+---@return string
+local function get_name_by_state(vis, name, base)
+  if not base then base = name end
+  local s = { [v.INACTIVE] = "%s_visible", [v.SELECTED] = "%s_selected" }
+  return s[vis] and fmt(s[vis], name) or base
+end
+
 --- Add the current highlight for a specific element
 --- NOTE: this function mutates the current highlights.
 ---@param element TabElement
@@ -147,26 +156,11 @@ local function add_element_group_hl(element, hls, current_hl)
   local group = groups.get_all()[element.group]
   if not group or not group.name or not group.highlight then return end
   local name = group.name
-  local hl_name = element:current() and fmt("%s_selected", name)
-    or element:visible() and fmt("%s_visible", name)
-    or name
+  local hl_name = get_name_by_state(element:visibility(), name)
   if hls[hl_name] then
     current_hl[name] = hls[hl_name].hl
   else
     utils.log.debug(fmt("%s group highlight not found", name))
-  end
-end
-
---- Get the current style for a highlight depending on visibility state
----@param vis 1|2|3
----@param hls BufferlineHighlights
----@return fun(name: string, base: string?): BufferlineHLGroup
-local function style_per_state(vis, hls)
-  local v = constants.visibility
-  return function(name, base)
-    if not base then base = name end
-    local s = { [v.INACTIVE] = "%s_visible", [v.SELECTED] = "%s_selected" }
-    return hls[s[vis] and fmt(s[vis], name) or base] or {}
   end
 end
 
@@ -177,7 +171,12 @@ function M.for_element(element)
   local h = config.highlights
   if not h then return hl end
 
-  local current_state = style_per_state(element:visibility(), h)
+  ---@param name string
+  ---@param base string?
+  ---@return BufferlineHLGroup
+  local function current_state(name, base)
+    return h[get_name_by_state(element:visibility(), name, base)] or {}
+  end
 
   hl.modified = current_state("modified").hl
   hl.duplicate = current_state("duplicate").hl
