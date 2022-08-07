@@ -41,12 +41,18 @@ end
 ---on each updating the initial value
 ---@generic T
 ---@param accum T
----@param callback fun(accum:T, item: T, index: number): T
----@param list T[]
+---@param callback fun(accum:T, item: T, key: number|string): T
+---@param list table<number|string, T>
 ---@return T
+---@overload fun(callback: fun(accum: any, item: any, key: (number|string)), list: any[]): any
 function M.fold(accum, callback, list)
   assert(accum and callback, "An initial value and callback must be passed to fold")
-  for i, v in ipairs(list) do
+  if type(accum) == "function" and type(callback) == "table" then
+    list = callback
+    callback = accum
+    accum = {}
+  end
+  for i, v in pairs(list) do
     accum = callback(accum, v, i)
   end
   return accum
@@ -75,10 +81,11 @@ end
 ---@param list T[]
 ---@return T[]
 function M.map(callback, list)
-  return M.fold({}, function(accum, item, index)
-    table.insert(accum, callback(item, index))
-    return accum
-  end, list)
+  local accum = {}
+  for index, item in ipairs(list) do
+    accum[index] = callback(item, index)
+  end
+  return accum
 end
 
 ---@generic T
@@ -171,8 +178,8 @@ M.D = vim.log.levels.DEBUG
 function M.notify(msg, level, opts)
   opts = opts or {}
   local nopts = { title = "Bufferline" }
-  if opts.once then return vim.notify_once(msg, level, nopts) end
-  vim.notify(msg, level, nopts)
+  if opts.once then return vim.schedule(function() vim.notify_once(msg, level, nopts) end) end
+  vim.schedule(function() vim.notify(msg, level, nopts) end)
 end
 
 ---@class GetIconOpts

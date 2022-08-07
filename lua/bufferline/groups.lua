@@ -248,33 +248,6 @@ function M.component(ctx)
   }
 end
 
----Add highlight groups for a group
----@param group Group
----@param hls BufferlineHighlights
-local function set_group_highlights(group, hls)
-  local hl = group.highlight
-  local name = group.name
-  if not hl or type(hl) ~= "table" then return end
-  hls[fmt("%s_separator", name)] = {
-    guifg = hl.guifg or hl.guisp or hls.group_separator.guifg,
-    guibg = hls.fill.guibg,
-  }
-  hls[fmt("%s_label", name)] = {
-    guifg = hls.fill.guibg,
-    guibg = hl.guifg or hl.guisp or hls.group_separator.guifg,
-  }
-  hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, hls.buffer_selected)
-  hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, hls.buffer_visible)
-  hls[name] = vim.tbl_extend("keep", hl, hls.buffer)
-end
-
----@param highlights BufferlineHighlights
-function M.reset_highlights(highlights)
-  for _, group in pairs(state.user_groups) do
-    set_group_highlights(group, highlights)
-  end
-end
-
 --- Pull pinned buffers saved in a vim.g global variable and restore them
 --- to the manual_groupings table.
 local function restore_pinned_buffers()
@@ -293,8 +266,8 @@ end
 ---@param config BufferlineConfig
 function M.setup(config)
   if not config then return end
-
-  local groups = config.options.groups.items or {}
+  ---@type Group[]
+  local groups = vim.tbl_get(config, "options", "groups", "items") or {}
 
   -- NOTE: if the user has already set the pinned builtin themselves
   -- then we want each group to have a priority based on it's position in the list
@@ -314,31 +287,8 @@ function M.setup(config)
       priority = vim.tbl_count(state.user_groups) + 1,
     })
   end
-  for _, group in pairs(state.user_groups) do
-    set_group_highlights(group, config.highlights)
-  end
-
   -- Restore pinned buffer from the previous session
   api.nvim_create_autocmd("SessionLoadPost", { once = true, callback = restore_pinned_buffers })
-end
-
---- Add the current highlight for a specific buffer
---- NOTE: this function mutates the current highlights.
----@param buffer TabElement
----@param highlights table<string, table<string, string>>
----@param current_hl table<string, string>
-function M.set_current_hl(buffer, highlights, current_hl)
-  local group = state.user_groups[buffer.group]
-  if not group or not group.name or not group.highlight then return end
-  local name = group.name
-  local hl_name = buffer:current() and fmt("%s_selected", name)
-    or buffer:visible() and fmt("%s_visible", name)
-    or name
-  if highlights[hl_name] then
-    current_hl[name] = highlights[hl_name].hl
-  else
-    utils.log.debug(fmt("%s group highlight not found", name))
-  end
 end
 
 ---Execute a command on each buffer of a group
@@ -497,6 +447,8 @@ local function sort_by_groups(components)
   end
   return sorted, clustered
 end
+
+function M.get_all() return state.user_groups end
 
 -- FIXME:
 -- 1. this function does a lot of looping that can maybe be consolidated

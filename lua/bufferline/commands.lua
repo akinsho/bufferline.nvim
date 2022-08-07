@@ -27,15 +27,11 @@ local fmt = string.format
 local api = vim.api
 
 ---@param ids number[]
-local function save_positions(ids)
-  local positions = table.concat(ids, ",")
-  vim.g[positions_key] = positions
-end
+local function save_positions(ids) vim.g[positions_key] = table.concat(ids, ",") end
 
 --- @param elements TabElement[]
 --- @return number[]
 local function get_ids(elements)
-  ---@diagnostic disable-next-line: return-type-mismatch
   return vim.tbl_map(function(item) return item.id end, elements)
 end
 
