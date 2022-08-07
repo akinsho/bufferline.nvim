@@ -3,7 +3,7 @@ local lazy = require("bufferline.lazy")
 local config = lazy.require("bufferline.config")
 ---@module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
----@module "highlights"
+---@module "bufferline.highlights"
 local highlights = lazy.require("bufferline.highlights")
 
 local M = {}
@@ -19,8 +19,8 @@ local fmt = string.format
 local function create_hl(index, side, section, bg)
   local name = fmt("BufferLine%sCustomAreaText%d", side:gsub("^%l", string.upper), index)
   local opts = highlights.translate_legacy_options(section)
+  opts.bg = opts.bg or bg
   -- We need to be able to constantly override these highlights so they should always be default
-  opts.background = section.background or bg
   opts.default = true
   highlights.set_one(name, opts)
   return highlights.hl(name)
