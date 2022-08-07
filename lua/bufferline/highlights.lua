@@ -169,13 +169,12 @@ function M.for_element(element)
   local hl = {}
   local h = config.highlights
   if not h then return hl end
+  local vis = element:visibility()
 
   ---@param name string
   ---@param base string?
   ---@return BufferlineHLGroup
-  local function current_state(name, base)
-    return h[get_name_by_state(element:visibility(), name, base)] or {}
-  end
+  local function current_state(name, base) return h[get_name_by_state(vis, name, base)] or {} end
 
   hl.modified = current_state("modified").hl
   hl.duplicate = current_state("duplicate").hl
