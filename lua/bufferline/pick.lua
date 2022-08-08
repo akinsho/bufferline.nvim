@@ -33,7 +33,7 @@ function M.choose_then(func)
   ui.refresh()
 end
 
----@param element Tabpage|Buffer
+---@param element NvimTab|NvimBuffer
 ---@return string?
 function M.get(element)
   local first_letter = element.name:sub(1, 1)

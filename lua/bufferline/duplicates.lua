@@ -12,8 +12,8 @@ function M.reset() duplicates = {} end
 
 --- This function marks any duplicate buffers granted
 --- the buffer names have changes
----@param buffers Buffer[]
----@return Buffer[]
+---@param buffers NvimBuffer[]
+---@return NvimBuffer[]
 function M.mark(buffers)
   return vim.tbl_map(function(current)
     -- Do not attempt to mark unnamed files

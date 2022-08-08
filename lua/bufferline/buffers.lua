@@ -54,7 +54,7 @@ end
 
 ---Return a list of the buffers open in nvim as Components
 ---@param state BufferlineState
----@return Buffer[]
+---@return NvimBuffer[]
 function M.get_components(state)
   local options = config.options
   local buf_nums = utils.get_valid_buffers()
@@ -64,7 +64,7 @@ function M.get_components(state)
 
   pick.reset()
   duplicates.reset()
-  ---@type Buffer[]
+  ---@type NvimBuffer[]
   local components = {}
   local all_diagnostics = diagnostics.get(options)
   local Buffer = require("bufferline.models").Buffer

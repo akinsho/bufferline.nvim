@@ -163,7 +163,7 @@ local function add_element_group_hl(element, hls, current_hl)
   end
 end
 
----@param element Buffer | Tabpage
+---@param element NvimBuffer | NvimTab
 ---@return table
 function M.for_element(element)
   local hl = {}

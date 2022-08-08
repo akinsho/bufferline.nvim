@@ -27,7 +27,7 @@ local fn = vim.fn
 
 ---@alias GroupSeparator fun(group:Group, hls: BufferlineHLGroup, count_item: string?): Separators
 ---@alias GroupSeparators table<string, GroupSeparator>
----@alias grouper fun(b: Buffer): boolean
+---@alias grouper fun(b: NvimBuffer): boolean
 
 ---@class Group
 ---@field public id string used for identifying the group in the tabline
@@ -204,7 +204,7 @@ end
 
 ---Group buffers based on user criteria
 ---buffers only carry a copy of the group ID which is then used to retrieve the correct group
----@param buffer Buffer
+---@param buffer NvimBuffer
 ---@return string?
 function M.set_id(buffer)
   if vim.tbl_isempty(state.user_groups) then return end
@@ -293,7 +293,7 @@ end
 
 ---Execute a command on each buffer of a group
 ---@param group_name string
----@param callback fun(b: Buffer)
+---@param callback fun(b: NvimBuffer)
 function M.command(group_name, callback)
   local group = utils.find(
     state.components_by_group,

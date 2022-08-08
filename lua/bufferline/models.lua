@@ -46,6 +46,8 @@ local function not_implemented(field)
   error(fmt("%s is not implemented yet", field))
 end
 
+---@param t table
+---@return Component
 function Component:new(t)
   assert(t.type, "all components must have a type")
   self.length = t.length or 0
@@ -85,9 +87,9 @@ end
 
 function GroupView:current() return false end
 
----@alias TabElement Tabpage|Buffer
+---@alias TabElement NvimTab|NvimBuffer
 
----@class Tabpage
+---@class NvimTab
 ---@field public id integer
 ---@field public buf integer
 ---@field public icon string
@@ -154,7 +156,7 @@ end
 
 -- A single buffer class
 -- this extends the [Component] class
----@class Buffer
+---@class NvimBuffer
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
 ---@field public name_formatter function? dictates how the name should be shown
@@ -177,6 +179,7 @@ end
 ---@field public visibility fun(): integer
 ---@field public current fun(): boolean
 ---@field public visible fun(): boolean
+---@field private ancestor fun(self: NvimBuffer, formatter: fun(string): string, depth: integer): string
 ---@field public find_index fun(Buffer, BufferlineState): integer
 ---@field public is_new fun(Buffer, BufferlineState): boolean
 ---@field public is_existing fun(Buffer, BufferlineState): boolean
@@ -184,8 +187,8 @@ end
 local Buffer = Component:new({ type = "buffer" })
 
 ---create a new buffer class
----@param buf Buffer
----@return Buffer
+---@param buf NvimBuffer
+---@return NvimBuffer
 function Buffer:new(buf)
   assert(buf, "A buffer must be passed to create a buffer class")
   buf.modifiable = vim.bo[buf.id].modifiable

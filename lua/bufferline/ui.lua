@@ -70,7 +70,7 @@ local function get_id(component) return component and component.attr and compone
 ---@class RenderContext
 ---@field preferences BufferlineConfig
 ---@field current_highlights table<string, table<string, string>>
----@field tab Tabpage | Buffer
+---@field tab NvimTab | NvimBuffer
 ---@field is_picking boolean
 ---@type RenderContext
 local Context = {}
@@ -587,7 +587,7 @@ end
 ---@param marker table
 ---@return Segment[][]
 ---@return table
----@return Buffer[]
+---@return NvimBuffer[]
 local function truncate(before, current, after, available_width, marker, visible)
   visible = visible or {}
 

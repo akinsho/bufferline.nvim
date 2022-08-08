@@ -121,7 +121,7 @@ end
 ---@alias group_actions "close" | "toggle"
 ---Execute an action on a group of buffers
 ---@param name string
----@param action group_actions | fun(b: Buffer)
+---@param action group_actions | fun(b: NvimBuffer)
 function M.group_action(name, action)
   assert(name, "A name must be passed to execute a group action")
   if action == "close" then

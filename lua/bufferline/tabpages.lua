@@ -96,13 +96,13 @@ local function get_tab_buffers(tab_num)
 end
 
 ---@param state BufferlineState
----@return Tabpage[]
+---@return NvimTab[]
 function M.get_components(state)
   local options = config.options
   local tabs = get_valid_tabs()
 
   local Tabpage = require("bufferline.models").Tabpage
-  ---@type Tabpage[]
+  ---@type NvimTab[]
   local components = {}
   pick.reset()
   duplicates.reset()
