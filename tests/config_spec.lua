@@ -30,7 +30,7 @@ describe("Config tests", function()
       local under_test = config.apply()
 
       assert.equal(under_test.highlights.fill.fg, "red")
-      assert.equal(under_test.highlights.fill.hl, "BufferLineFill")
+      assert.equal(under_test.highlights.fill.hl_group, "BufferLineFill")
     end)
 
     it("should derive colors from the existing highlights", function()

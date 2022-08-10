@@ -73,7 +73,7 @@ local colors = lazy.require("bufferline.colors")
 ---@field italic boolean
 ---@field underline boolean
 ---@field undercurl boolean
----@field hl string
+---@field hl_group string
 ---@field hl_name string
 
 ---@alias BufferlineHighlights table<string, BufferlineHLGroup>
@@ -699,8 +699,8 @@ end
 --- TODO: can this become part of a metatable for each highlight group so it is done at the point
 ---of usage
 local function add_highlight_groups(map)
-  for name, tbl in pairs(map) do
-    highlights.add_group(name, tbl)
+  for name, opts in pairs(map) do
+    opts.hl_group = highlights.add_group(name)
   end
 end
 
@@ -727,8 +727,8 @@ local function set_group_highlights(hls)
       hls[visible_name] = vim.tbl_extend("keep", group_hl, hls.buffer_visible)
       hls[name] = vim.tbl_extend("keep", group_hl, hls.buffer)
 
-      highlights.add_group(sep_name, hls[sep_name])
-      highlights.add_group(label_name, hls[label_name])
+      hls[sep_name].hl_group = highlights.add_group(sep_name)
+      hls[label_name].hl_group = highlights.add_group(label_name)
     end
   end
 end

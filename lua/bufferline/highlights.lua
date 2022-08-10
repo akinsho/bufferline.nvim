@@ -108,20 +108,17 @@ function M.set_one(name, opts)
     local ok, msg = pcall(api.nvim_set_hl, 0, name, hl)
     if not ok then
       utils.notify(
-        fmt("Failed setting %s  highlight, something isn't configured correctly: %s", name, msg),
+        fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, msg),
         utils.E
       )
     end
   end
 end
 
----Generate highlight groups from user
----@param highlight table
-function M.add_group(name, highlight)
-  -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
-  local formatted = PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
-  highlight.hl = formatted
-end
+--- Generate highlight groups names i.e
+--- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
+---@param name string
+function M.add_group(name) return PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper) end
 
 --- Map through user colors and convert the keys to highlight names
 --- by changing the strings to pascal case and using those for highlight name
@@ -157,7 +154,7 @@ local function add_element_group_hl(element, hls, current_hl)
   local name = group.name
   local hl_name = get_name_by_state(element:visibility(), name)
   if not hls[hl_name] then return utils.log.debug(fmt("%s group highlight not found", name)) end
-  current_hl[name] = hls[hl_name].hl
+  current_hl[name] = hls[hl_name].hl_group
 end
 
 ---@param element NvimBuffer | NvimTab
@@ -173,23 +170,23 @@ function M.for_element(element)
   ---@return BufferlineHLGroup
   local function current_state(name, base) return h[get_name_by_state(vis, name, base)] or {} end
 
-  hl.modified = current_state("modified").hl
-  hl.duplicate = current_state("duplicate").hl
-  hl.pick = current_state("pick").hl
-  hl.separator = current_state("separator").hl
-  hl.diagnostic = current_state("diagnostic").hl
-  hl.error = current_state("error").hl
-  hl.error_diagnostic = current_state("error_diagnostic").hl
-  hl.warning = current_state("warning").hl
-  hl.warning_diagnostic = current_state("warning_diagnostic").hl
-  hl.info = current_state("info").hl
-  hl.info_diagnostic = current_state("info_diagnostic").hl
-  hl.hint = current_state("hint").hl
-  hl.hint_diagnostic = current_state("hint_diagnostic").hl
-  hl.close_button = current_state("close_button").hl
-  hl.numbers = current_state("numbers").hl
+  hl.modified = current_state("modified").hl_group
+  hl.duplicate = current_state("duplicate").hl_group
+  hl.pick = current_state("pick").hl_group
+  hl.separator = current_state("separator").hl_group
+  hl.diagnostic = current_state("diagnostic").hl_group
+  hl.error = current_state("error").hl_group
+  hl.error_diagnostic = current_state("error_diagnostic").hl_group
+  hl.warning = current_state("warning").hl_group
+  hl.warning_diagnostic = current_state("warning_diagnostic").hl_group
+  hl.info = current_state("info").hl_group
+  hl.info_diagnostic = current_state("info_diagnostic").hl_group
+  hl.hint = current_state("hint").hl_group
+  hl.hint_diagnostic = current_state("hint_diagnostic").hl_group
+  hl.close_button = current_state("close_button").hl_group
+  hl.numbers = current_state("numbers").hl_group
   hl.buffer = current_state("buffer", "background")
-  hl.background = hl.buffer.hl
+  hl.background = hl.buffer.hl_group
 
   add_element_group_hl(element, h, hl)
   return hl

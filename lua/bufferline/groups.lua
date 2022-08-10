@@ -70,18 +70,20 @@ local function format_name(name) return name:gsub("[^%w]+", "_") end
 ----------------------------------------------------------------------------------------------------
 local separator = {}
 
-local function space_end(hl_groups) return { { highlight = hl_groups.fill.hl, text = padding } } end
+local function space_end(hl_groups)
+  return { { highlight = hl_groups.fill.hl_group, text = padding } }
+end
 
 ---@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
 ---@return Separators
 function separator.pill(group, hls, count)
-  local bg_hl = hls.fill.hl
+  local bg_hl = hls.fill.hl_group
   local name, display_name = group.name, group.display_name
   local sep_grp, label_grp = hls[fmt("%s_separator", name)], hls[fmt("%s_label", name)]
-  local sep_hl = sep_grp and sep_grp.hl or hls.group_separator.hl
-  local label_hl = label_grp and label_grp.hl or hls.group_label.hl
+  local sep_hl = sep_grp and sep_grp.hl_group or hls.group_separator.hl_group
+  local label_hl = label_grp and label_grp.hl_group or hls.group_label.hl_group
   local left, right = "█", "█"
   local indicator = {
     { text = padding, highlight = bg_hl },
@@ -99,8 +101,8 @@ end
 ---@return Separators
 ---@type GroupSeparator
 function separator.tab(group, hls, count)
-  local hl = hls.fill.hl
-  local indicator_hl = hls.buffer.hl
+  local hl = hls.fill.hl_group
+  local indicator_hl = hls.buffer.hl_group
   local indicator = {
     { higlight = hl, text = padding },
     { highlight = indicator_hl, text = padding .. group.name .. count .. padding },
@@ -237,7 +239,7 @@ function M.component(ctx)
   local group = state.user_groups[element.group]
   if not group then return end
   local group_hl = hls[group.name]
-  local hl = group_hl or hls.buffer.hl
+  local hl = group_hl or hls.buffer.hl_group
   if not group.icon then return nil end
   local extends = { { id = ui.components.id.name } }
   if group_hl then extends[#extends + 1] = { id = ui.components.id.duplicates } end
