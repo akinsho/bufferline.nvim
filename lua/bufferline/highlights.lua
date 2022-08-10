@@ -156,11 +156,8 @@ local function add_element_group_hl(element, hls, current_hl)
   if not group or not group.name or not group.highlight then return end
   local name = group.name
   local hl_name = get_name_by_state(element:visibility(), name)
-  if hls[hl_name] then
-    current_hl[name] = hls[hl_name].hl
-  else
-    utils.log.debug(fmt("%s group highlight not found", name))
-  end
+  if not hls[hl_name] then return utils.log.debug(fmt("%s group highlight not found", name)) end
+  current_hl[name] = hls[hl_name].hl
 end
 
 ---@param element NvimBuffer | NvimTab
