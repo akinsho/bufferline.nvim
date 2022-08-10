@@ -124,13 +124,16 @@ function M.add_group(name) return PREFIX .. name:gsub("_(.)", name.upper):gsub("
 --- by changing the strings to pascal case and using those for highlight name
 --- @param conf BufferlineConfig
 function M.set_all(conf)
-  for name, tbl in pairs(conf.highlights) do
-    if not tbl or not tbl.hl then
-      local msg = fmt("Error setting highlight group: no name for %s - %s", name, vim.inspect(tbl))
-      utils.notify(msg, utils.E)
+  local msgs = {}
+  for name, opts in pairs(conf.highlights) do
+    if not opts or not opts.hl_group then
+      msgs[#msgs + 1] = fmt("* %s - %s", name, vim.inspect(opts))
     else
-      M.set_one(tbl.hl, tbl)
+      M.set_one(opts.hl_group, opts)
     end
+  end
+  if next(msgs) then
+    utils.notify(fmt("Error setting highlight group(s) for: \n", table.concat(msgs, "\n")), utils.E)
   end
 end
 
