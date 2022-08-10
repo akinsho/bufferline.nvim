@@ -81,11 +81,10 @@ local colors = lazy.require("bufferline.colors")
 ---@class BufferlineConfig
 ---@field public options BufferlineOptions
 ---@field public highlights BufferlineHighlights
----@field private user_config BufferlineConfig original copy of user preferences
+---@field private user BufferlineConfig original copy of user preferences
 ---@field private merge fun(self: BufferlineConfig, defaults: BufferlineConfig): BufferlineConfig
----@field private validate fun(self: BufferlineConfig, defaults: BufferlineConfig): nil
+---@field private validate fun(self: BufferlineConfig, defaults: BufferlineConfig, resolved: BufferlineHighlights): nil
 ---@field private resolve fun(self: BufferlineConfig, defaults: BufferlineConfig)
----@field private __resolve_highlights fun(BufferlineConfig, BufferlineHighlights):BufferlineHighlights
 ---@field private is_tabline fun():boolean
 
 --- Convert highlights specified as tables to the correct existing colours
@@ -129,7 +128,7 @@ function Config:new(o)
   -- save a copy of the user's preferences so we can reference exactly what they
   -- wanted after the config and defaults have been merged. Do this using a copy
   -- so that reference isn't unintentionally mutated
-  self.user_config = vim.deepcopy(o)
+  self.user = vim.deepcopy(o)
   setmetatable(o, self)
   return o
 end
@@ -156,7 +155,7 @@ local deprecations = {
 }
 
 ---@param options BufferlineOptions
-local function handle_option_deprecations(options)
+local function validate_user_options(options)
   if not options then return end
   for key, _ in pairs(options) do
     local deprecation = deprecations[key]
@@ -191,14 +190,7 @@ local function get_group_highlights(options)
   end, options.groups.items)
 end
 
----Ensure the user has only specified highlight groups that exist
----@param defaults BufferlineConfig
-function Config:validate(defaults)
-  local opts, hls = self.user_config.options, self.user_config.highlights
-
-  handle_option_deprecations(opts)
-
-  if type(hls) == "function" then hls = hls(defaults) end
+local function validate_user_highlights(opts, defaults, hls)
   if not hls then return end
   local incorrect = { invalid_hl = {}, invalid_attrs = {} }
 
@@ -238,6 +230,14 @@ function Config:validate(defaults)
     })
     utils.notify(msg, utils.E)
   end
+end
+
+---Ensure the user has only specified highlight groups that exist
+---@param defaults BufferlineConfig
+---@param resolved BufferlineHighlights
+function Config:validate(defaults, resolved)
+  validate_user_options(self.user.options)
+  validate_user_highlights(self.user.options, defaults, resolved)
 end
 
 function Config:mode()
@@ -664,20 +664,16 @@ local function get_defaults()
   }
 end
 
-function Config:__resolve_highlights(defaults)
-  local user, hl = self.user_config.highlights, self.highlights
+--- Resolve (and update) any incompatible options based on the values of other options
+--- e.g. in tabline only certain values are valid/certain options no longer make sense.
+function Config:resolve(defaults)
+  local user, hl = self.user.highlights, self.highlights
   if type(user) == "function" then hl = user(defaults) end
 
   self.highlights = utils.fold(function(accum, opts, hl_name)
     accum[hl_name] = highlights.translate_legacy_options(opts)
     return accum
   end, hl_table_to_color(hl))
-end
-
---- Resolve/change any incompatible options based on the values of other options
---- e.g. in tabline only certain values are valid/certain options no longer make sense.
-function Config:resolve(defaults)
-  if self.highlights then self:__resolve_highlights(defaults) end
 
   if self:is_tabline() then
     local opts = defaults.options
@@ -685,20 +681,19 @@ function Config:resolve(defaults)
     -- then the id will be that of the tabs so sort by should be id i.e. "tabs" sort
     -- is redundant in tabs mode
     if opts.sort_by == "tabs" then opts.sort_by = "id" end
-    -- Don't show tab indicators in tabline mode
     if opts.show_tab_indicators then opts.show_tab_indicators = false end
-
     opts.close_command = utils.close_tab
     opts.right_mouse_command = "tabclose %d"
     opts.left_mouse_command = api.nvim_set_current_tabpage
   end
+  return hl
 end
 
 ---Generate highlight groups from user
 ---@param map table<string, table>
 --- TODO: can this become part of a metatable for each highlight group so it is done at the point
 ---of usage
-local function add_highlight_groups(map)
+local function set_highlight_groups(map)
   for name, opts in pairs(map) do
     opts.hl_group = highlights.generate_name(name)
   end
@@ -734,13 +729,14 @@ local function set_group_highlights(hls)
 end
 
 --- Merge user config with defaults
+--- @param quiet boolean? whether or not to validate the configuration
 --- @return BufferlineConfig
-function M.apply()
+function M.apply(quiet)
   local defaults = get_defaults()
-  config:resolve(defaults)
-  config:validate(defaults)
+  local resolved = config:resolve(defaults)
+  if not quiet then config:validate(defaults, resolved) end
   config:merge(defaults)
-  add_highlight_groups(config.highlights)
+  set_highlight_groups(config.highlights)
   set_group_highlights(config.highlights)
   return config
 end
@@ -752,14 +748,7 @@ end
 function M.set(conf) config = Config:new(conf or {}) end
 
 ---Update highlight colours when the colour scheme changes
-function M.update_highlights()
-  local defaults = get_defaults()
-  config:__resolve_highlights(defaults)
-  config:merge({ highlights = defaults.highlights })
-  add_highlight_groups(config.highlights)
-  set_group_highlights(config.highlights)
-  return config
-end
+function M.update_highlights() return M.apply(true) end
 
 ---Get the user's configuration or a key from it
 ---@param key string?
