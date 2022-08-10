@@ -85,7 +85,7 @@ local colors = lazy.require("bufferline.colors")
 ---@field private merge fun(self: BufferlineConfig, defaults: BufferlineConfig): BufferlineConfig
 ---@field private validate fun(self: BufferlineConfig, defaults: BufferlineConfig): nil
 ---@field private resolve fun(self: BufferlineConfig, defaults: BufferlineConfig)
----@field private resolve_highlights fun(BufferlineConfig, BufferlineHighlights):BufferlineHighlights
+---@field private __resolve_highlights fun(BufferlineConfig, BufferlineHighlights):BufferlineHighlights
 ---@field private is_tabline fun():boolean
 
 --- Convert highlights specified as tables to the correct existing colours
@@ -198,6 +198,7 @@ function Config:validate(defaults)
 
   handle_option_deprecations(opts)
 
+  if type(hls) == "function" then hls = hls(defaults) end
   if not hls then return end
   local incorrect = { invalid_hl = {}, invalid_attrs = {} }
 
@@ -663,21 +664,20 @@ local function get_defaults()
   }
 end
 
+function Config:__resolve_highlights(defaults)
+  local user, hl = self.user_config.highlights, self.highlights
+  if type(user) == "function" then hl = user(defaults) end
+
+  self.highlights = utils.fold(function(accum, opts, hl_name)
+    accum[hl_name] = highlights.translate_legacy_options(opts)
+    return accum
+  end, hl_table_to_color(hl))
+end
+
 --- Resolve/change any incompatible options based on the values of other options
 --- e.g. in tabline only certain values are valid/certain options no longer make sense.
 function Config:resolve(defaults)
-  if self.highlights then
-    local hls, user = self.highlights, self.user_config.highlights
-
-    if type(user) == "function" then
-      hls = user(defaults)
-      self.user_config.highlights = hls
-    end
-    self.highlights = utils.fold(function(accum, item, key)
-      accum[key] = highlights.translate_legacy_options(item)
-      return accum
-    end, hl_table_to_color(hls))
-  end
+  if self.highlights then self:__resolve_highlights(defaults) end
 
   if self:is_tabline() then
     local opts = defaults.options
@@ -752,13 +752,20 @@ end
 function M.set(conf) config = Config:new(conf or {}) end
 
 ---Update highlight colours when the colour scheme changes
-function M.update_highlights() return M.apply() end
+function M.update_highlights()
+  local defaults = get_defaults()
+  config:__resolve_highlights(defaults)
+  config:merge({ highlights = defaults.highlights })
+  add_highlight_groups(config.highlights)
+  set_group_highlights(config.highlights)
+  return config
+end
 
 ---Get the user's configuration or a key from it
 ---@param key string?
 ---@return BufferlineConfig?
----@overload fun(key: '"options"'): BufferlineOptions
----@overload fun(key: '"highlights"'): BufferlineHighlights
+---@overload fun(key: "options"): BufferlineOptions
+---@overload fun(key: "highlights"): BufferlineHighlights
 function M.get(key)
   if not config then return end
   return config[key] or config
