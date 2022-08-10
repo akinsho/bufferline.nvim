@@ -105,7 +105,7 @@ end
 -- https://stackoverflow.com/questions/1410862/concatenation-of-tables-in-lua
 --- @generic T
 --- @vararg T
---- @return T[]
+--- @return T
 function M.merge_lists(...)
   local t = {}
   for n = 1, select("#", ...) do

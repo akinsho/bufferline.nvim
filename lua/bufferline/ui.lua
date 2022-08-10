@@ -585,6 +585,7 @@ end
 ---@param after Section
 ---@param available_width number
 ---@param marker table
+---@param visible Component[]
 ---@return Segment[][]
 ---@return table
 ---@return NvimBuffer[]

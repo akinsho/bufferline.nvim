@@ -46,8 +46,9 @@ local function not_implemented(field)
   error(fmt("%s is not implemented yet", field))
 end
 
+---@generic T
 ---@param t table
----@return Component
+---@return T
 function Component:new(t)
   assert(t.type, "all components must have a type")
   self.length = t.length or 0
@@ -171,7 +172,7 @@ end
 ---@field public letter string?
 ---@field public ordinal integer
 ---@field public duplicated boolean
----@field public prefix_count boolean
+---@field public prefix_count integer
 ---@field public component BufferComponent
 ---@field public group string?
 ---@field public group_fn string
