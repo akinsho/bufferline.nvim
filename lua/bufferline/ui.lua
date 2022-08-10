@@ -244,7 +244,7 @@ local function get_icon_with_highlight(buffer, color_icons, hl_defs)
     [visibility.NONE] = hl_defs.background.hl_group,
   })[state]
 
-  local new_hl = highlights.generate_name(hl, { visibility = state })
+  local new_hl = highlights.generate_name_for_state(hl, { visibility = state })
   local hl_colors = {
     fg = not color_icons and "fg" or colors.get_color({ name = hl, attribute = "fg" }),
     bg = colors.get_color({ name = bg, attribute = "bg" }),

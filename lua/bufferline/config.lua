@@ -700,7 +700,7 @@ end
 ---of usage
 local function add_highlight_groups(map)
   for name, opts in pairs(map) do
-    opts.hl_group = highlights.add_group(name)
+    opts.hl_group = highlights.generate_name(name)
   end
 end
 
@@ -727,8 +727,8 @@ local function set_group_highlights(hls)
       hls[visible_name] = vim.tbl_extend("keep", group_hl, hls.buffer_visible)
       hls[name] = vim.tbl_extend("keep", group_hl, hls.buffer)
 
-      hls[sep_name].hl_group = highlights.add_group(sep_name)
-      hls[label_name].hl_group = highlights.add_group(label_name)
+      hls[sep_name].hl_group = highlights.generate_name(sep_name)
+      hls[label_name].hl_group = highlights.generate_name(label_name)
     end
   end
 end

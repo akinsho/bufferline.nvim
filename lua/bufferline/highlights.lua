@@ -18,12 +18,6 @@ local M = {}
 
 local PREFIX = "BufferLine"
 
-local visibility_suffix = {
-  [v.INACTIVE] = "Inactive",
-  [v.SELECTED] = "Selected",
-  [v.NONE] = "",
-}
-
 --- @class NameGenerationArgs
 --- @field visibility number
 
@@ -32,14 +26,26 @@ local visibility_suffix = {
 ---@param name string
 ---@param opts NameGenerationArgs
 ---@return string
-function M.generate_name(name, opts)
+function M.generate_name_for_state(name, opts)
   opts = opts or {}
-  return fmt("%s%s%s", PREFIX, name, visibility_suffix[opts.visibility])
+  local visibility_suffix = ({
+    [v.INACTIVE] = "Inactive",
+    [v.SELECTED] = "Selected",
+    [v.NONE] = "",
+  })[opts.visibility]
+  return fmt("%s%s%s", PREFIX, name, visibility_suffix)
+end
+
+--- Generate highlight groups names i.e
+--- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
+---@param name string
+function M.generate_name(name)
+  return PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
 end
 
 function M.hl(item)
   if not item then return "" end
-  return "%#" .. item .. "#"
+  return fmt("%%#%s#", item)
 end
 
 function M.hl_exists(name) return vim.fn.hlexists(name) > 0 end
@@ -114,11 +120,6 @@ function M.set_one(name, opts)
     end
   end
 end
-
---- Generate highlight groups names i.e
---- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
----@param name string
-function M.add_group(name) return PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper) end
 
 --- Map through user colors and convert the keys to highlight names
 --- by changing the strings to pascal case and using those for highlight name
