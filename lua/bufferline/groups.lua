@@ -239,7 +239,7 @@ function M.component(ctx)
   local group = state.user_groups[element.group]
   if not group then return end
   local group_hl = hls[group.name]
-  local hl = group_hl or hls.buffer.hl_group
+  local hl = group_hl or hls.buffer
   if not group.icon then return nil end
   local extends = { { id = ui.components.id.name } }
   if group_hl then extends[#extends + 1] = { id = ui.components.id.duplicates } end

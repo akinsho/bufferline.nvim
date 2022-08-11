@@ -69,7 +69,7 @@ local function get_id(component) return component and component.attr and compone
 
 ---@class RenderContext
 ---@field preferences BufferlineConfig
----@field current_highlights table<string, table<string, string>>
+---@field current_highlights table<string, string>
 ---@field tab NvimTab | NvimBuffer
 ---@field is_picking boolean
 ---@type RenderContext
@@ -221,7 +221,7 @@ local function add_space(ctx, length)
     left_size = left_size + strwidth(icon)
   end
   return pad({
-    left = { size = left_size, hl = curr_hl.buffer.hl_group },
+    left = { size = left_size, hl = curr_hl.buffer },
     right = { size = right_size },
   })
 end
@@ -307,7 +307,7 @@ local function add_indicator(context)
   symbol = is_current and options.indicator_icon or symbol
   highlight = is_current and hl.indicator_selected.hl_group
     or element:visible() and hl.indicator_visible.hl_group
-    or curr_hl.buffer.hl_group
+    or curr_hl.buffer
 
   -- since all non-current buffers do not have an indicator they need
   -- to be padded to make up the difference in size
@@ -388,7 +388,7 @@ local function get_name(ctx)
   local name = utils.truncate_name(ctx.tab.name, max_length)
   -- escape filenames that contain "%" as this breaks in statusline patterns
   name = name:gsub("%%", "%%%1")
-  return { text = name, highlight = ctx.current_highlights.buffer.hl_group }
+  return { text = name, highlight = ctx.current_highlights.buffer }
 end
 
 ---Create the render function that components need to position their
@@ -507,7 +507,7 @@ function M.element(state, element)
     spacing({ when = group_item }),
     set_id(duplicate_prefix, components.id.duplicates),
     set_id(name, components.id.name),
-    spacing({ when = name, highlight = curr_hl.buffer.hl_group }),
+    spacing({ when = name, highlight = curr_hl.buffer }),
     set_id(diagnostic, components.id.diagnostics),
     spacing({ when = diagnostic and #diagnostic.text > 0 }),
     right_space,

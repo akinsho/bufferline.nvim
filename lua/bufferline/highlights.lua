@@ -162,7 +162,7 @@ local function add_element_group_hl(element, hls, current_hl)
 end
 
 ---@param element NvimBuffer | NvimTab
----@return table
+---@return table<string, string>
 function M.for_element(element)
   local hl = {}
   local h = config.highlights
@@ -172,25 +172,27 @@ function M.for_element(element)
   ---@param name string
   ---@param base string?
   ---@return BufferlineHLGroup
-  local function current_state(name, base) return h[get_name_by_state(vis, name, base)] or {} end
+  local function current_state(name, base)
+    return h[get_name_by_state(vis, name, base)].hl_group or {}
+  end
 
-  hl.modified = current_state("modified").hl_group
-  hl.duplicate = current_state("duplicate").hl_group
-  hl.pick = current_state("pick").hl_group
-  hl.separator = current_state("separator").hl_group
-  hl.diagnostic = current_state("diagnostic").hl_group
-  hl.error = current_state("error").hl_group
-  hl.error_diagnostic = current_state("error_diagnostic").hl_group
-  hl.warning = current_state("warning").hl_group
-  hl.warning_diagnostic = current_state("warning_diagnostic").hl_group
-  hl.info = current_state("info").hl_group
-  hl.info_diagnostic = current_state("info_diagnostic").hl_group
-  hl.hint = current_state("hint").hl_group
-  hl.hint_diagnostic = current_state("hint_diagnostic").hl_group
-  hl.close_button = current_state("close_button").hl_group
-  hl.numbers = current_state("numbers").hl_group
+  hl.modified = current_state("modified")
+  hl.duplicate = current_state("duplicate")
+  hl.pick = current_state("pick")
+  hl.separator = current_state("separator")
+  hl.diagnostic = current_state("diagnostic")
+  hl.error = current_state("error")
+  hl.error_diagnostic = current_state("error_diagnostic")
+  hl.warning = current_state("warning")
+  hl.warning_diagnostic = current_state("warning_diagnostic")
+  hl.info = current_state("info")
+  hl.info_diagnostic = current_state("info_diagnostic")
+  hl.hint = current_state("hint")
+  hl.hint_diagnostic = current_state("hint_diagnostic")
+  hl.close_button = current_state("close_button")
+  hl.numbers = current_state("numbers")
   hl.buffer = current_state("buffer", "background")
-  hl.background = hl.buffer.hl_group
+  hl.background = hl.buffer
 
   add_element_group_hl(element, h, hl)
   return hl
