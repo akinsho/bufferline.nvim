@@ -142,8 +142,8 @@ end
 ---@return string
 local function get_name_by_state(vis, name, base)
   if not base then base = name end
-  local s = { [v.INACTIVE] = "%s_visible", [v.SELECTED] = "%s_selected" }
-  return s[vis] and fmt(s[vis], name) or base
+  local s = { [v.INACTIVE] = "visible", [v.SELECTED] = "selected" }
+  return s[vis] and fmt("%s_%s", name, s[vis]) or base
 end
 
 --- Add the current highlight for a specific element
