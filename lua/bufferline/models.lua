@@ -29,6 +29,8 @@ i.e.
 * this list is not exhaustive
 --]]
 
+--- @alias Visibility 1 | 2 | 3
+
 --- The base class that represents a visual tab in the tabline
 --- i.e. not necessarily representative of a vim tab or buffer
 ---@class Component
@@ -126,6 +128,7 @@ function Tabpage:new(tab)
   return tab
 end
 
+--- @return Visibility
 function Tabpage:visibility()
   if self:current() then return visibility.SELECTED end
   if self:visible() then return visibility.INACTIVE end
@@ -219,6 +222,7 @@ function Buffer:new(buf)
   return buf
 end
 
+---@return Visibility
 function Buffer:visibility()
   if self:current() then return visibility.SELECTED end
   if self:visible() then return visibility.INACTIVE end
