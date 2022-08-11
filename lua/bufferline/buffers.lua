@@ -13,6 +13,8 @@ local pick = require("bufferline.pick")
 local duplicates = require("bufferline.duplicates")
 --- @module "bufferline.diagnostics"
 local diagnostics = require("bufferline.diagnostics")
+--- @module "bufferline.models"
+local models = require("bufferline.models")
 
 local M = {}
 
@@ -67,7 +69,7 @@ function M.get_components(state)
   ---@type NvimBuffer[]
   local components = {}
   local all_diagnostics = diagnostics.get(options)
-  local Buffer = require("bufferline.models").Buffer
+  local Buffer = models.Buffer
   for i, buf_id in ipairs(buf_nums) do
     local buf = Buffer:new({
       path = api.nvim_buf_get_name(buf_id),
