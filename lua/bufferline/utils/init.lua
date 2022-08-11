@@ -7,34 +7,14 @@ local constants = lazy.require("bufferline.constants")
 --- @module "bufferline.config"
 local config = lazy.require("bufferline.config")
 
-local M = { log = {} }
+local M = {}
 
-local fmt = string.format
 local fn = vim.fn
 local api = vim.api
 
 function M.is_test()
   ---@diagnostic disable-next-line: undefined-global
   return __TEST
-end
-
----@return boolean
-local function check_logging() return config.options.debug.logging end
-
----@param msg string
-function M.log.debug(msg)
-  if check_logging() then
-    local info = debug.getinfo(2, "S")
-    vim.schedule(
-      function()
-        M.notify(
-          fmt("[bufferline]: %s\n%s:%s", msg, info.linedefined, info.short_src),
-          M.D,
-          { once = true }
-        )
-      end
-    )
-  end
 end
 
 ---Takes a list of items and runs the callback

@@ -8,6 +8,8 @@ local constants = lazy.require("bufferline.constants")
 local config = lazy.require("bufferline.config")
 --- @module "bufferline.groups"
 local groups = lazy.require("bufferline.groups")
+--- @module "bufferline.utils.log"
+local log = lazy.require("bufferline.utils.log")
 
 local api = vim.api
 local v = constants.visibility

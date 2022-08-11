@@ -1,6 +1,8 @@
 local lazy = require("bufferline.lazy")
 --- @module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
+--- @module "bufferline.utils.log"
+local log = lazy.require("bufferline.utils.log")
 --- @module "bufferline.constants"
 local constants = lazy.require("bufferline.constants")
 
@@ -9,7 +11,6 @@ local M = {}
 local api = vim.api
 local fn = vim.fn
 local fmt = string.format
-local log = utils.log
 local visibility = constants.visibility
 
 --[[
