@@ -153,12 +153,12 @@ local function handle_group_enter()
   if options.groups.options.toggle_hidden_on_enter then
     if current_group.hidden then groups.set_hidden(current_group.id, false) end
   end
-  utils.for_each(state.components, function(tab)
+  utils.for_each(function(tab)
     local group = groups.get_by_id(tab.group)
     if group and group.auto_close and group.id ~= current_group.id then
       groups.set_hidden(group.id, true)
     end
-  end)
+  end, state.components)
 end
 
 ---@param conf BufferlineConfig

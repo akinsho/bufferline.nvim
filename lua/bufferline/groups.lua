@@ -298,10 +298,10 @@ end
 ---@param callback fun(b: NvimBuffer)
 function M.command(group_name, callback)
   local group = utils.find(
-    state.components_by_group,
-    function(list) return list.name == group_name end
+    function(list) return list.name == group_name end,
+    state.components_by_group
   )
-  utils.for_each(group, callback)
+  utils.for_each(callback, group)
 end
 
 ---@generic T
