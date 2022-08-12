@@ -30,17 +30,20 @@ i.e.
 --]]
 
 --- @alias Visibility 1 | 2 | 3
+--- @alias Duplicate "path" | "element" | nil
 
 --- The base class that represents a visual tab in the tabline
 --- i.e. not necessarily representative of a vim tab or buffer
 ---@class Component
 ---@field name string?
 ---@field id integer
+---@field path string?
 ---@field length integer
 ---@field component fun(BufferlineState): string
 ---@field hidden boolean
 ---@field focusable boolean
 ---@field type 'group_end' | 'group_start' | 'buffer' | 'tabpage'
+---@field __ancestor fun(self: Component, depth: integer, formatter: (fun(string, integer): string)?): string
 local Component = {}
 
 ---@param field string
@@ -78,6 +81,20 @@ function Component:as_element()
   if vim.tbl_contains({ "buffer", "tab" }, self.type) then return self end
 end
 
+---Find the directory prefix of an element up to a certain depth
+---@param depth integer
+---@param formatter (fun(path: string, depth: integer): string)?
+---@return string
+function Component:__ancestor(depth, formatter)
+  if self.type ~= "buffer" and self.type ~= "tab" then return "" end
+  local parts = vim.split(self.path, utils.path_sep, { trimempty = true })
+  local index = (depth and depth > #parts) and 1 or (#parts - depth) + 1
+  local dir = table.concat(parts, utils.path_sep, index, #parts - 1) .. utils.path_sep
+  if dir == "" then return "" end
+  if formatter then dir = formatter(dir, depth) end
+  return dir
+end
+
 local GroupView = Component:new({ type = "group", focusable = false })
 
 function GroupView:new(group)
@@ -102,9 +119,10 @@ function GroupView:current() return false end
 ---@field public letter string
 ---@field public modified boolean
 ---@field public modifiable boolean
----@field public duplicated boolean
+---@field public duplicated Duplicate
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
+---@field __ancestor fun(self: Component, depth: integer, formatter: (fun(string, integer): string)?): string
 local Tabpage = Component:new({ type = "tab" })
 
 function Tabpage:new(tab)
@@ -144,17 +162,8 @@ function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 --- @param formatter function(string, number)
 --- @returns string
 function Tabpage:ancestor(depth, formatter)
-  depth = (depth and depth > 1) and depth or 1
-  local ancestor = ""
-  for index = 1, depth do
-    local modifier = string.rep(":h", index)
-    local dir = fn.fnamemodify(self.path, ":p" .. modifier .. ":t")
-    if dir == "" then break end
-    if formatter then dir = formatter(dir, depth) end
-
-    ancestor = dir .. require("bufferline.utils").path_sep .. ancestor
-  end
-  return ancestor
+  if self.duplicated == "element" then return "(duplicated) " end
+  return self:__ancestor(depth, formatter)
 end
 
 ---@alias BufferComponent fun(index: integer, buf_count: integer): string
@@ -175,7 +184,7 @@ end
 ---@field public buftype string
 ---@field public letter string?
 ---@field public ordinal integer
----@field public duplicated boolean
+---@field public duplicated Duplicate
 ---@field public prefix_count integer
 ---@field public component BufferComponent
 ---@field public group string?
@@ -185,10 +194,10 @@ end
 ---@field public current fun(): boolean
 ---@field public visible fun(): boolean
 ---@field private ancestor fun(self: NvimBuffer, formatter: fun(string): string, depth: integer): string
+---@field private __ancestor fun(self: Component, depth: integer, formatter: (fun(string, integer): string)?): string
 ---@field public find_index fun(Buffer, BufferlineState): integer
 ---@field public is_new fun(Buffer, BufferlineState): boolean
 ---@field public is_existing fun(Buffer, BufferlineState): boolean
----@deprecated public filename string the visible name for the file
 local Buffer = Component:new({ type = "buffer" })
 
 ---create a new buffer class
@@ -236,7 +245,7 @@ function Buffer:current() return api.nvim_get_current_buf() == self.id end
 ---@param state BufferlineState
 ---@return boolean
 function Buffer:is_existing(state)
-  return utils.find(state.components, function(component) return component.id == self.id end) ~= nil
+  return utils.find(function(component) return component.id == self.id end, state.components) ~= nil
 end
 
 -- Find and return the index of the matching buffer (by id) in the list in state
@@ -255,19 +264,7 @@ function Buffer:visible() return fn.bufwinnr(self.id) > 0 end
 --- @param depth integer
 --- @param formatter function(string, integer)
 --- @returns string
-function Buffer:ancestor(depth, formatter)
-  depth = (depth and depth > 1) and depth or 1
-  local ancestor = ""
-  for index = 1, depth do
-    local modifier = string.rep(":h", index)
-    local dir = fn.fnamemodify(self.path, ":p" .. modifier .. ":t")
-    if dir == "" then break end
-    if formatter then dir = formatter(dir, depth) end
-
-    ancestor = dir .. require("bufferline.utils").path_sep .. ancestor
-  end
-  return ancestor
-end
+function Buffer:ancestor(depth, formatter) return self:__ancestor(depth, formatter) end
 
 ---@class Section
 ---@field items Component[]

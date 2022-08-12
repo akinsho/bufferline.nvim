@@ -72,7 +72,7 @@ end
 ---@param list T[]
 ---@param callback fun(item: T): boolean
 ---@return T?
-function M.find(list, callback)
+function M.find(callback, list)
   for _, v in ipairs(list) do
     if callback(v) then return v end
   end
@@ -106,7 +106,7 @@ end
 ---@param list T[]
 ---@param callback fun(item: `T`)
 ---@param matcher (fun(item: `T`):boolean)?
-function M.for_each(list, callback, matcher)
+function M.for_each(callback, list, matcher)
   for _, item in ipairs(list) do
     if not matcher or matcher(item) then callback(item) end
   end

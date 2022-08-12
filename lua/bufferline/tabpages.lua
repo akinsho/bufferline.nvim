@@ -13,6 +13,8 @@ local duplicates = lazy.require("bufferline.duplicates")
 local diagnostics = lazy.require("bufferline.diagnostics")
 ---@module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
+---@module "bufferline.models"
+local models = lazy.require("bufferline.models")
 
 local api = vim.api
 
@@ -101,7 +103,7 @@ function M.get_components(state)
   local options = config.options
   local tabs = get_valid_tabs()
 
-  local Tabpage = require("bufferline.models").Tabpage
+  local Tabpage = models.Tabpage
   ---@type NvimTab[]
   local components = {}
   pick.reset()
