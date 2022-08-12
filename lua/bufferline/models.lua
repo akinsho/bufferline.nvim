@@ -36,6 +36,7 @@ i.e.
 ---@class Component
 ---@field name string?
 ---@field id integer
+---@field path string?
 ---@field length integer
 ---@field component fun(BufferlineState): string
 ---@field hidden boolean
@@ -76,6 +77,20 @@ function Component:as_element()
   -- TODO: Figure out how to correctly type cast a component to a TabElement
   ---@diagnostic disable-next-line: return-type-mismatch
   if vim.tbl_contains({ "buffer", "tab" }, self.type) then return self end
+end
+
+---Find the directory prefix of an element up to a certain depth
+---@param depth integer
+---@param formatter (fun(path: string, depth: integer): string)?
+---@return string
+function Component:ancestor(depth, formatter)
+  if not self.type ~= "buffer" or self.type ~= "tab" then return "" end
+  local parts = vim.split(self.path, utils.path_sep, { trimempty = true })
+  local index = (depth and depth > #parts) and 1 or (#parts - depth) + 1
+  local dir = table.concat(parts, utils.path_sep, index, #parts - 1) .. utils.path_sep
+  if dir == "" then return "" end
+  if formatter then dir = formatter(dir, depth) end
+  return dir
 end
 
 local GroupView = Component:new({ type = "group", focusable = false })
@@ -145,12 +160,7 @@ function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 --- @returns string
 function Tabpage:ancestor(depth, formatter)
   if self.duplicated == "element" then return "(duplicated) " end
-  local parts = vim.split(self.path, utils.path_sep, { trimempty = true })
-  local index = (depth and depth > #parts) and 1 or (#parts - depth) + 1
-  local dir = table.concat(parts, utils.path_sep, index, #parts - 1) .. utils.path_sep
-  if dir == "" then return "" end
-  if formatter then dir = formatter(dir, depth) end
-  return dir
+  return self:ancestor(depth, formatter)
 end
 
 ---@alias BufferComponent fun(index: integer, buf_count: integer): string
@@ -251,19 +261,7 @@ function Buffer:visible() return fn.bufwinnr(self.id) > 0 end
 --- @param depth integer
 --- @param formatter function(string, integer)
 --- @returns string
-function Buffer:ancestor(depth, formatter)
-  depth = (depth and depth > 1) and depth or 1
-  local ancestor = ""
-  for index = 1, depth do
-    local modifier = string.rep(":h", index)
-    local dir = fn.fnamemodify(self.path, ":p" .. modifier .. ":t")
-    if dir == "" then break end
-    if formatter then dir = formatter(dir, depth) end
-
-    ancestor = dir .. require("bufferline.utils").path_sep .. ancestor
-  end
-  return ancestor
-end
+function Buffer:ancestor(depth, formatter) return self:ancestor(depth, formatter) end
 
 ---@class Section
 ---@field items Component[]
