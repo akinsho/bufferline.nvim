@@ -1,10 +1,13 @@
 local Tabpage = require("bufferline.models").Tabpage
 
 describe("Duplicate Tests - ", function()
-  local duplicates = require("bufferline.duplicates")
+  local duplicates
+  local config
+
   before_each(function()
     package.loaded["bufferline.duplicates"] = nil
     duplicates = require("bufferline.duplicates")
+    config = require("bufferline.config")
   end)
 
   it("should mark duplicate files", function()
@@ -77,7 +80,7 @@ describe("Duplicate Tests - ", function()
     assert.falsy(result[3].prefix_count)
   end)
 
-  it("should return a truncated element", function()
+  it("should return a prefixed element if duplicated", function()
     local config = require("bufferline.config")
     config.set({ options = { enforce_regular_tabs = false } })
     config.apply()
@@ -119,5 +122,29 @@ describe("Duplicate Tests - ", function()
 
     assert.truthy(component.text)
     assert.is_equal(component.text, "test/dir_a/")
+  end)
+
+  it("should truncate a very long directory name", function()
+    config.set({ options = { enforce_regular_tabs = false, max_prefix_length = 10 } })
+    config.apply()
+
+    local component = duplicates.component({
+      current_highlights = { duplicate = "TestHighlight" },
+      tab = Tabpage:new({
+        path = "very_long_directory_name/dir_a/result.txt",
+        buf = 1,
+        buffers = { 1 },
+        id = 1,
+        ordinal = 1,
+        diagnostics = {},
+        hidden = false,
+        focusable = true,
+        duplicated = true,
+        prefix_count = 3,
+      }),
+    })
+
+    assert.is_true(vim.api.nvim_strwidth(component.text) <= 10)
+    assert.is_equal(component.text, "ver…/dir…/")
   end)
 end)

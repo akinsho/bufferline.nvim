@@ -58,12 +58,12 @@ local function truncate(dir, depth, max_size)
   -- we truncate any section of the ancestor which is too long
   -- by dividing the allotted space for each section by the depth i.e.
   -- the amount of ancestors which will be prefixed
-  local allowed_size = math.ceil(max_size / depth)
+  local allowed_size = math.floor(max_size / depth) + 1 -- Add one to account for the path separator
   local truncated = utils.map(
-    function(part) return utils.truncate_name(part, allowed_size + 1) end,
+    function(part) return utils.truncate_name(part, allowed_size) end,
     vim.split(dir, utils.path_sep)
   )
-  return table.concat(truncated, utils.path_sep) .. utils.path_sep
+  return table.concat(truncated, utils.path_sep)
 end
 
 --- @param context RenderContext
