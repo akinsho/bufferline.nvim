@@ -46,7 +46,7 @@ function M.mark(elements)
       end
       current.prefix_count = depth
       current.duplicated = is_repeated and "element" or "path"
-      table.insert(duplicate, current)
+      duplicate[#duplicate + 1] = current
     end
     return current
   end, elements)
