@@ -102,7 +102,7 @@ function GroupView:current() return false end
 ---@field public letter string
 ---@field public modified boolean
 ---@field public modifiable boolean
----@field public duplicated boolean
+---@field public duplicated "path" | "element" | nil
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
 local Tabpage = Component:new({ type = "tab" })
@@ -144,17 +144,13 @@ function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 --- @param formatter function(string, number)
 --- @returns string
 function Tabpage:ancestor(depth, formatter)
-  depth = (depth and depth > 1) and depth or 1
-  local ancestor = ""
-  for index = 1, depth do
-    local modifier = string.rep(":h", index)
-    local dir = fn.fnamemodify(self.path, ":p" .. modifier .. ":t")
-    if dir == "" then break end
-    if formatter then dir = formatter(dir, depth) end
-
-    ancestor = dir .. utils.path_sep .. ancestor
-  end
-  return ancestor
+  if self.duplicated == "element" then return "(duplicated) " end
+  local parts = vim.split(self.path, utils.path_sep, { trimempty = true })
+  local index = (depth and depth > #parts) and 1 or (#parts - depth) + 1
+  local dir = table.concat(parts, utils.path_sep, index, #parts - 1) .. utils.path_sep
+  if dir == "" then return "" end
+  if formatter then dir = formatter(dir, depth) end
+  return dir
 end
 
 ---@alias BufferComponent fun(index: integer, buf_count: integer): string

@@ -8,6 +8,8 @@ local utils = require("bufferline.utils")
 
 local duplicates = {}
 
+local api = vim.api
+
 function M.reset() duplicates = {} end
 
 local function is_same_path(a, b, depth)
@@ -23,25 +25,27 @@ end
 ---@return TabElement[]
 function M.mark(elements)
   return utils.map(function(current)
-    -- Do not attempt to mark unnamed files
     if current.path == "" then return current end
     local duplicate = duplicates[current.name]
     if not duplicate then
       duplicates[current.name] = { current }
     else
-      local depth, limit = 1, 10
+      local depth, limit, is_repeated = 1, 10, false
       for _, element in ipairs(duplicate) do
         local element_depth = 1
         while is_same_path(current.path, element.path, element_depth) do
-          if element_depth >= limit then break end
+          if element_depth >= limit then
+            is_repeated = true
+            break
+          end
           element_depth = element_depth + 1
         end
         if element_depth > depth then depth = element_depth end
         elements[element.ordinal].prefix_count = element_depth
-        elements[element.ordinal].duplicated = true
+        elements[element.ordinal].duplicated = is_repeated and "element" or "path"
       end
-      current.duplicated = true
       current.prefix_count = depth
+      current.duplicated = is_repeated and "element" or "path"
       table.insert(duplicate, current)
     end
     return current
@@ -52,12 +56,16 @@ end
 --- @param depth number
 --- @param max_size number
 local function truncate(dir, depth, max_size)
-  if #dir <= max_size then return dir end
+  if api.nvim_strwidth(dir) <= max_size then return dir end
   -- we truncate any section of the ancestor which is too long
   -- by dividing the allotted space for each section by the depth i.e.
   -- the amount of ancestors which will be prefixed
   local allowed_size = math.ceil(max_size / depth)
-  return utils.truncate_name(dir, allowed_size + 1)
+  local truncated = utils.map(
+    function(part) return utils.truncate_name(part, allowed_size + 1) end,
+    vim.split(dir, utils.path_sep)
+  )
+  return table.concat(truncated, utils.path_sep) .. utils.path_sep
 end
 
 --- @param context RenderContext
