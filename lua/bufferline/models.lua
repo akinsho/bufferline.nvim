@@ -84,7 +84,7 @@ end
 ---@param formatter (fun(path: string, depth: integer): string)?
 ---@return string
 function Component:ancestor(depth, formatter)
-  if not self.type ~= "buffer" or self.type ~= "tab" then return "" end
+  if self.type ~= "buffer" and self.type ~= "tab" then return "" end
   local parts = vim.split(self.path, utils.path_sep, { trimempty = true })
   local index = (depth and depth > #parts) and 1 or (#parts - depth) + 1
   local dir = table.concat(parts, utils.path_sep, index, #parts - 1) .. utils.path_sep
