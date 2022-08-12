@@ -15,8 +15,8 @@ function M.reset() duplicates = {} end
 local function is_same_path(a, b, depth)
   local a_path = vim.split(a, utils.path_sep)
   local b_path = vim.split(b, utils.path_sep)
-  local a_index = (#a_path - depth) + 1
-  local b_index = (#b_path - depth) + 1
+  local a_index = depth <= #a_path and (#a_path - depth) + 1 or 1
+  local b_index = depth <= #b_path and (#b_path - depth) + 1 or 1
   return b_path[b_index] == a_path[a_index]
 end
 --- This function marks any duplicate buffers granted
@@ -30,22 +30,20 @@ function M.mark(elements)
     if not duplicate then
       duplicates[current.name] = { current }
     else
-      local depth, limit, is_repeated = 1, 10, false
+      local depth, limit, is_same_buffer = 1, 10, false
       for _, element in ipairs(duplicate) do
         local element_depth = 1
-        while is_same_path(current.path, element.path, element_depth) do
-          if element_depth >= limit then
-            is_repeated = true
-            break
-          end
+        is_same_buffer = current.path == element.path
+        while is_same_path(current.path, element.path, element_depth) and not is_same_buffer do
+          if element_depth >= limit then break end
           element_depth = element_depth + 1
         end
         if element_depth > depth then depth = element_depth end
         elements[element.ordinal].prefix_count = element_depth
-        elements[element.ordinal].duplicated = is_repeated and "element" or "path"
+        elements[element.ordinal].duplicated = is_same_buffer and "element" or "path"
       end
       current.prefix_count = depth
-      current.duplicated = is_repeated and "element" or "path"
+      current.duplicated = is_same_buffer and "element" or "path"
       duplicate[#duplicate + 1] = current
     end
     return current

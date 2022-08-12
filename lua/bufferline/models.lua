@@ -30,6 +30,7 @@ i.e.
 --]]
 
 --- @alias Visibility 1 | 2 | 3
+--- @alias Duplicate "path" | "element" | nil
 
 --- The base class that represents a visual tab in the tabline
 --- i.e. not necessarily representative of a vim tab or buffer
@@ -42,6 +43,7 @@ i.e.
 ---@field hidden boolean
 ---@field focusable boolean
 ---@field type 'group_end' | 'group_start' | 'buffer' | 'tabpage'
+---@field __ancestor fun(self: Component, depth: integer, formatter: (fun(string, integer): string)?): string
 local Component = {}
 
 ---@param field string
@@ -83,7 +85,7 @@ end
 ---@param depth integer
 ---@param formatter (fun(path: string, depth: integer): string)?
 ---@return string
-function Component:ancestor(depth, formatter)
+function Component:__ancestor(depth, formatter)
   if self.type ~= "buffer" and self.type ~= "tab" then return "" end
   local parts = vim.split(self.path, utils.path_sep, { trimempty = true })
   local index = (depth and depth > #parts) and 1 or (#parts - depth) + 1
@@ -117,9 +119,10 @@ function GroupView:current() return false end
 ---@field public letter string
 ---@field public modified boolean
 ---@field public modifiable boolean
----@field public duplicated "path" | "element" | nil
+---@field public duplicated Duplicate
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
+---@field __ancestor fun(self: Component, depth: integer, formatter: (fun(string, integer): string)?): string
 local Tabpage = Component:new({ type = "tab" })
 
 function Tabpage:new(tab)
@@ -160,7 +163,7 @@ function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 --- @returns string
 function Tabpage:ancestor(depth, formatter)
   if self.duplicated == "element" then return "(duplicated) " end
-  return self:ancestor(depth, formatter)
+  return self:__ancestor(depth, formatter)
 end
 
 ---@alias BufferComponent fun(index: integer, buf_count: integer): string
@@ -181,7 +184,7 @@ end
 ---@field public buftype string
 ---@field public letter string?
 ---@field public ordinal integer
----@field public duplicated boolean
+---@field public duplicated Duplicate
 ---@field public prefix_count integer
 ---@field public component BufferComponent
 ---@field public group string?
@@ -191,10 +194,10 @@ end
 ---@field public current fun(): boolean
 ---@field public visible fun(): boolean
 ---@field private ancestor fun(self: NvimBuffer, formatter: fun(string): string, depth: integer): string
+---@field private __ancestor fun(self: Component, depth: integer, formatter: (fun(string, integer): string)?): string
 ---@field public find_index fun(Buffer, BufferlineState): integer
 ---@field public is_new fun(Buffer, BufferlineState): boolean
 ---@field public is_existing fun(Buffer, BufferlineState): boolean
----@deprecated public filename string the visible name for the file
 local Buffer = Component:new({ type = "buffer" })
 
 ---create a new buffer class
@@ -261,7 +264,7 @@ function Buffer:visible() return fn.bufwinnr(self.id) > 0 end
 --- @param depth integer
 --- @param formatter function(string, integer)
 --- @returns string
-function Buffer:ancestor(depth, formatter) return self:ancestor(depth, formatter) end
+function Buffer:ancestor(depth, formatter) return self:__ancestor(depth, formatter) end
 
 ---@class Section
 ---@field items Component[]
