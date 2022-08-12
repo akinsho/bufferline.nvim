@@ -10,41 +10,42 @@ local duplicates = {}
 
 function M.reset() duplicates = {} end
 
+local function is_same_path(a, b, depth)
+  local a_path = vim.split(a, utils.path_sep)
+  local b_path = vim.split(b, utils.path_sep)
+  local a_index = (#a_path - depth) + 1
+  local b_index = (#b_path - depth) + 1
+  return b_path[b_index] == a_path[a_index]
+end
 --- This function marks any duplicate buffers granted
 --- the buffer names have changes
----@param buffers NvimBuffer[]
----@return NvimBuffer[]
-function M.mark(buffers)
-  return vim.tbl_map(function(current)
+---@param elements TabElement[]
+---@return TabElement[]
+function M.mark(elements)
+  return utils.map(function(current)
     -- Do not attempt to mark unnamed files
     if current.path == "" then return current end
     local duplicate = duplicates[current.name]
     if not duplicate then
       duplicates[current.name] = { current }
     else
-      local depth = 1
-      local limit = 10
-      for _, buf in ipairs(duplicate) do
-        local buf_depth = 1
-        while current:ancestor(buf_depth) == buf:ancestor(buf_depth) do
-          -- short circuit if we have gone up 10 directories, we don't expect to have
-          -- to look that far to find a non-matching ancestor and we might be looping
-          -- endlessly
-          if buf_depth >= limit then return end
-
-          buf_depth = buf_depth + 1
+      local depth, limit = 1, 10
+      for _, element in ipairs(duplicate) do
+        local element_depth = 1
+        while is_same_path(current.path, element.path, element_depth) do
+          if element_depth >= limit then break end
+          element_depth = element_depth + 1
         end
-        if buf_depth > depth then depth = buf_depth end
-        buf.duplicated = true
-        buf.prefix_count = buf_depth
-        buffers[buf.ordinal] = buf
+        if element_depth > depth then depth = element_depth end
+        elements[element.ordinal].prefix_count = element_depth
+        elements[element.ordinal].duplicated = true
       end
       current.duplicated = true
       current.prefix_count = depth
       table.insert(duplicate, current)
     end
     return current
-  end, buffers)
+  end, elements)
 end
 
 --- @param dir string

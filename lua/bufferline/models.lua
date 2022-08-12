@@ -152,7 +152,7 @@ function Tabpage:ancestor(depth, formatter)
     if dir == "" then break end
     if formatter then dir = formatter(dir, depth) end
 
-    ancestor = dir .. require("bufferline.utils").path_sep .. ancestor
+    ancestor = dir .. utils.path_sep .. ancestor
   end
   return ancestor
 end
