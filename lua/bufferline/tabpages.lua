@@ -13,6 +13,8 @@ local duplicates = lazy.require("bufferline.duplicates")
 local diagnostics = lazy.require("bufferline.diagnostics")
 ---@module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
+---@module "bufferline.models"
+local models = lazy.require("bufferline.models")
 
 local api = vim.api
 
@@ -24,8 +26,8 @@ local function tab_click_component(num) return "%" .. num .. "T" end
 
 local function render(tabpage, is_active, style, highlights)
   local h = highlights
-  local hl = is_active and h.tab_selected.hl or h.tab.hl
-  local separator_hl = is_active and h.separator_selected.hl or h.separator.hl
+  local hl = is_active and h.tab_selected.hl_group or h.tab.hl_group
+  local separator_hl = is_active and h.separator_selected.hl_group or h.separator.hl_group
   local separator_component = style == "thick" and "▐" or "▕"
   local name = padding .. padding .. tabpage.tabnr .. padding
   return {
@@ -96,13 +98,13 @@ local function get_tab_buffers(tab_num)
 end
 
 ---@param state BufferlineState
----@return Tabpage[]
+---@return NvimTab[]
 function M.get_components(state)
   local options = config.options
   local tabs = get_valid_tabs()
 
-  local Tabpage = require("bufferline.models").Tabpage
-  ---@type Tabpage[]
+  local Tabpage = models.Tabpage
+  ---@type NvimTab[]
   local components = {}
   pick.reset()
   duplicates.reset()

@@ -7,9 +7,8 @@ local constants = lazy.require("bufferline.constants")
 --- @module "bufferline.config"
 local config = lazy.require("bufferline.config")
 
-local M = { log = {} }
+local M = {}
 
-local fmt = string.format
 local fn = vim.fn
 local api = vim.api
 
@@ -18,35 +17,22 @@ function M.is_test()
   return __TEST
 end
 
----@return boolean
-local function check_logging() return config.options.debug.logging end
-
----@param msg string
-function M.log.debug(msg)
-  if check_logging() then
-    local info = debug.getinfo(2, "S")
-    vim.schedule(
-      function()
-        M.notify(
-          fmt("[bufferline]: %s\n%s:%s", msg, info.linedefined, info.short_src),
-          M.D,
-          { once = true }
-        )
-      end
-    )
-  end
-end
-
 ---Takes a list of items and runs the callback
 ---on each updating the initial value
 ---@generic T
 ---@param accum T
----@param callback fun(accum:T, item: T, index: number): T
----@param list T[]
+---@param callback fun(accum:T, item: T, key: number|string): T
+---@param list table<number|string, T>
 ---@return T
+---@overload fun(callback: fun(accum: any, item: any, key: (number|string)), list: any[]): any
 function M.fold(accum, callback, list)
   assert(accum and callback, "An initial value and callback must be passed to fold")
-  for i, v in ipairs(list) do
+  if type(accum) == "function" and type(callback) == "table" then
+    list = callback
+    callback = accum
+    accum = {}
+  end
+  for i, v in pairs(list) do
     accum = callback(accum, v, i)
   end
   return accum
@@ -75,17 +61,18 @@ end
 ---@param list T[]
 ---@return T[]
 function M.map(callback, list)
-  return M.fold({}, function(accum, item, index)
-    table.insert(accum, callback(item, index))
-    return accum
-  end, list)
+  local accum = {}
+  for index, item in ipairs(list) do
+    accum[index] = callback(item, index)
+  end
+  return accum
 end
 
 ---@generic T
 ---@param list T[]
 ---@param callback fun(item: T): boolean
 ---@return T?
-function M.find(list, callback)
+function M.find(callback, list)
   for _, v in ipairs(list) do
     if callback(v) then return v end
   end
@@ -98,7 +85,7 @@ end
 -- https://stackoverflow.com/questions/1410862/concatenation-of-tables-in-lua
 --- @generic T
 --- @vararg T
---- @return T[]
+--- @return T
 function M.merge_lists(...)
   local t = {}
   for n = 1, select("#", ...) do
@@ -119,7 +106,7 @@ end
 ---@param list T[]
 ---@param callback fun(item: `T`)
 ---@param matcher (fun(item: `T`):boolean)?
-function M.for_each(list, callback, matcher)
+function M.for_each(callback, list, matcher)
   for _, item in ipairs(list) do
     if not matcher or matcher(item) then callback(item) end
   end
@@ -171,8 +158,8 @@ M.D = vim.log.levels.DEBUG
 function M.notify(msg, level, opts)
   opts = opts or {}
   local nopts = { title = "Bufferline" }
-  if opts.once then return vim.notify_once(msg, level, nopts) end
-  vim.notify(msg, level, nopts)
+  if opts.once then return vim.schedule(function() vim.notify_once(msg, level, nopts) end) end
+  vim.schedule(function() vim.notify(msg, level, nopts) end)
 end
 
 ---@class GetIconOpts

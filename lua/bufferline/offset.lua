@@ -134,7 +134,7 @@ function M.get()
 
           local hl_name = offset.highlight
             or guess_window_highlight(win_id)
-            or config.highlights.fill.hl
+            or config.highlights.fill.hl_group
 
           local hl = require("bufferline.highlights").hl(hl_name)
           local component = get_section_text(width, hl, offset)

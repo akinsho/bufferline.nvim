@@ -65,11 +65,15 @@ local colors = lazy.require("bufferline.colors")
 ---@field public themable boolean
 
 ---@class BufferlineHLGroup
----@field guifg string
----@field guibg string
----@field guisp string
----@field gui string
----@field hl string
+---@field fg string
+---@field bg string
+---@field sp string
+---@field special string
+---@field bold boolean
+---@field italic boolean
+---@field underline boolean
+---@field undercurl boolean
+---@field hl_group string
 ---@field hl_name string
 
 ---@alias BufferlineHighlights table<string, BufferlineHLGroup>
@@ -77,16 +81,15 @@ local colors = lazy.require("bufferline.colors")
 ---@class BufferlineConfig
 ---@field public options BufferlineOptions
 ---@field public highlights BufferlineHighlights
----@field private original BufferlineConfig original copy of user preferences
+---@field private user BufferlineConfig original copy of user preferences
 ---@field private merge fun(self: BufferlineConfig, defaults: BufferlineConfig): BufferlineConfig
----@field private validate fun(self: BufferlineConfig, defaults: BufferlineConfig): nil
+---@field private validate fun(self: BufferlineConfig, defaults: BufferlineConfig, resolved: BufferlineHighlights): nil
 ---@field private resolve fun(self: BufferlineConfig, defaults: BufferlineConfig)
----@field private resolve_highlights fun(BufferlineConfig, BufferlineHighlights):BufferlineHighlights
 ---@field private is_tabline fun():boolean
 
 --- Convert highlights specified as tables to the correct existing colours
 ---@param map BufferlineHighlights
-local function convert_highlights(map)
+local function hl_table_to_color(map)
   if not map or vim.tbl_isempty(map) then return {} end
   -- we deep copy the highlights table as assigning the attributes
   -- will only pass the references so will mutate the original table otherwise
@@ -125,7 +128,7 @@ function Config:new(o)
   -- save a copy of the user's preferences so we can reference exactly what they
   -- wanted after the config and defaults have been merged. Do this using a copy
   -- so that reference isn't unintentionally mutated
-  self.original = vim.deepcopy(o)
+  self.user = vim.deepcopy(o)
   setmetatable(o, self)
   return o
 end
@@ -136,8 +139,7 @@ end
 function Config:merge(defaults)
   assert(defaults and type(defaults) == "table", "A valid config table must be passed to merge")
   self.options = vim.tbl_deep_extend("keep", self.options or {}, defaults.options or {})
-  local hls = convert_highlights(self.original.highlights)
-  self.highlights = vim.tbl_deep_extend("force", defaults.highlights, hls)
+  self.highlights = vim.tbl_deep_extend("force", defaults.highlights, self.highlights or {})
   return self
 end
 
@@ -153,7 +155,7 @@ local deprecations = {
 }
 
 ---@param options BufferlineOptions
-local function handle_deprecations(options)
+local function validate_user_options(options)
   if not options then return end
   for key, _ in pairs(options) do
     local deprecation = deprecations[key]
@@ -166,32 +168,81 @@ local function handle_deprecations(options)
   end
 end
 
----Ensure the user has only specified highlight groups that exist
----@param defaults BufferlineConfig
-function Config:validate(defaults)
-  handle_deprecations(self.options)
-  if self.highlights then
-    local incorrect = {}
-    for k, _ in pairs(self.highlights) do
-      if not defaults.highlights[k] then table.insert(incorrect, k) end
+---@param options BufferlineOptions
+---@return table[]
+local function get_offset_highlights(options)
+  if not options or not options.offsets then return {} end
+  return utils.fold(function(accum, offset, i)
+    if offset.highlight and type(offset.highlight) == "table" then
+      accum[fmt("offset_%d", i)] = offset.highlight
     end
-    -- Don't continue if there are no incorrect highlights
-    if vim.tbl_isempty(incorrect) then return end
+    return accum
+  end, options.offsets)
+end
+
+---@param options BufferlineOptions
+---@return table[]
+local function get_group_highlights(options)
+  if not options or not options.groups then return {} end
+  return utils.fold(function(accum, group)
+    if group.highlight then accum[group.name] = group.highlight end
+    return accum
+  end, options.groups.items)
+end
+
+local function validate_user_highlights(opts, defaults, hls)
+  if not hls then return end
+  local incorrect = { invalid_hl = {}, invalid_attrs = {} }
+
+  local offset_highlights = get_offset_highlights(opts)
+  local group_highlights = get_group_highlights(opts)
+  local all_hls = vim.tbl_extend("force", {}, hls, offset_highlights, group_highlights)
+
+  for k, hl in pairs(all_hls) do
+    for key, _ in pairs(hl) do
+      if key:match("gui") then table.insert(incorrect.invalid_attrs, fmt("- %s", k)) end
+    end
+    if hls[k] then
+      if not defaults.highlights[k] then table.insert(incorrect.invalid_hl, k) end
+    end
+  end
+
+  -- Don't continue if there are no incorrect highlights
+  if next(incorrect.invalid_hl) then
     local is_plural = #incorrect > 1
-    local verb = is_plural and " are " or " is "
-    local article = is_plural and " " or " a "
-    local object = is_plural and " groups. " or " group. "
     local msg = table.concat({
-      table.concat(incorrect, ", "),
-      verb,
+      table.concat(incorrect.invalid_hl, ", "),
+      is_plural and " are " or " is ",
       "not",
-      article,
+      is_plural and " " or " a ",
       "valid highlight",
-      object,
-      "Please check the README for all valid highlights",
+      is_plural and " groups. " or " group. ",
+      "Please check :help bufferline-highlights for all valid highlights",
     })
     utils.notify(msg, utils.E)
   end
+  if next(incorrect.invalid_attrs) then
+    local msg = table.concat({
+      "Using `gui`, `guifg`, `guibg`, `guisp` is deprecated please, convert these as follows: ",
+      "- guifg -> fg",
+      "- guibg -> bg",
+      "- guisp -> sp",
+      "- gui -> underline = true, undercurl = true, italic = true",
+      " see :help bufferline-highlights for more details on how to update your highlights",
+      "",
+      "Please fix: ",
+      unpack(incorrect.invalid_attrs),
+    }, "\n")
+    utils.notify(msg, utils.E)
+  end
+end
+
+---Ensure the user has only specified highlight groups that exist
+---@param defaults BufferlineConfig
+---@param resolved BufferlineHighlights
+function Config:validate(defaults, resolved)
+  validate_user_options(self.user.options)
+  validate_user_highlights(self.user.options, defaults, resolved)
 end
 
 function Config:mode()
@@ -282,265 +333,279 @@ local function derive_colors()
 
   return {
     fill = {
-      guifg = comment_fg,
-      guibg = separator_background_color,
+      fg = comment_fg,
+      bg = separator_background_color,
     },
     group_separator = {
-      guifg = comment_fg,
-      guibg = separator_background_color,
+      fg = comment_fg,
+      bg = separator_background_color,
     },
     group_label = {
-      guibg = comment_fg,
-      guifg = separator_background_color,
+      bg = comment_fg,
+      fg = separator_background_color,
     },
     tab = {
-      guifg = comment_fg,
-      guibg = background_color,
+      fg = comment_fg,
+      bg = background_color,
     },
     tab_selected = {
-      guifg = tabline_sel_bg,
-      guibg = normal_bg,
+      fg = tabline_sel_bg,
+      bg = normal_bg,
     },
     tab_close = {
-      guifg = comment_fg,
-      guibg = background_color,
+      fg = comment_fg,
+      bg = background_color,
     },
     close_button = {
-      guifg = comment_fg,
-      guibg = background_color,
+      fg = comment_fg,
+      bg = background_color,
     },
     close_button_visible = {
-      guifg = comment_fg,
-      guibg = visible_bg,
+      fg = comment_fg,
+      bg = visible_bg,
     },
     close_button_selected = {
-      guifg = normal_fg,
-      guibg = normal_bg,
+      fg = normal_fg,
+      bg = normal_bg,
     },
     background = {
-      guifg = comment_fg,
-      guibg = background_color,
+      fg = comment_fg,
+      bg = background_color,
     },
     buffer = {
-      guifg = comment_fg,
-      guibg = background_color,
+      fg = comment_fg,
+      bg = background_color,
     },
     buffer_visible = {
-      guifg = comment_fg,
-      guibg = visible_bg,
+      fg = comment_fg,
+      bg = visible_bg,
     },
     buffer_selected = {
-      guifg = normal_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
+      fg = normal_fg,
+      bg = normal_bg,
+      bold = true,
+      italic = true,
     },
     numbers = {
-      guifg = comment_fg,
-      guibg = background_color,
+      fg = comment_fg,
+      bg = background_color,
     },
     numbers_selected = {
-      guifg = normal_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
+      fg = normal_fg,
+      bg = normal_bg,
+      bold = true,
+      italic = true,
     },
     numbers_visible = {
-      guifg = comment_fg,
-      guibg = visible_bg,
+      fg = comment_fg,
+      bg = visible_bg,
     },
     diagnostic = {
-      guifg = comment_diagnostic_fg,
-      guibg = background_color,
+      fg = comment_diagnostic_fg,
+      bg = background_color,
     },
     diagnostic_visible = {
-      guifg = comment_diagnostic_fg,
-      guibg = visible_bg,
+      fg = comment_diagnostic_fg,
+      bg = visible_bg,
     },
     diagnostic_selected = {
-      guifg = normal_diagnostic_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
+      fg = normal_diagnostic_fg,
+      bg = normal_bg,
+      bold = true,
+      italic = true,
     },
     hint = {
-      guifg = comment_fg,
-      guisp = hint_fg,
-      guibg = background_color,
+      fg = comment_fg,
+      sp = hint_fg,
+      bg = background_color,
     },
     hint_visible = {
-      guifg = comment_fg,
-      guibg = visible_bg,
+      fg = comment_fg,
+      bg = visible_bg,
     },
     hint_selected = {
-      guifg = hint_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
-      guisp = hint_fg,
+      fg = hint_fg,
+      bg = normal_bg,
+      bold = true,
+      italic = true,
+      sp = hint_fg,
     },
     hint_diagnostic = {
-      guifg = comment_diagnostic_fg,
-      guisp = hint_diagnostic_fg,
-      guibg = background_color,
+      fg = comment_diagnostic_fg,
+      sp = hint_diagnostic_fg,
+      bg = background_color,
     },
     hint_diagnostic_visible = {
-      guifg = comment_diagnostic_fg,
-      guibg = visible_bg,
+      fg = comment_diagnostic_fg,
+      bg = visible_bg,
     },
     hint_diagnostic_selected = {
-      guifg = hint_diagnostic_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
-      guisp = hint_diagnostic_fg,
+      fg = hint_diagnostic_fg,
+      bg = normal_bg,
+      bold = true,
+      italic = true,
+      sp = hint_diagnostic_fg,
     },
     info = {
-      guifg = comment_fg,
-      guisp = info_fg,
-      guibg = background_color,
+      fg = comment_fg,
+      sp = info_fg,
+      bg = background_color,
     },
     info_visible = {
-      guifg = comment_fg,
-      guibg = visible_bg,
+      fg = comment_fg,
+      bg = visible_bg,
     },
     info_selected = {
-      guifg = info_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
-      guisp = info_fg,
+      fg = info_fg,
+      bg = normal_bg,
+      bold = true,
+      italic = true,
+      sp = info_fg,
     },
     info_diagnostic = {
-      guifg = comment_diagnostic_fg,
-      guisp = info_diagnostic_fg,
-      guibg = background_color,
+      fg = comment_diagnostic_fg,
+      sp = info_diagnostic_fg,
+      bg = background_color,
     },
     info_diagnostic_visible = {
-      guifg = comment_diagnostic_fg,
-      guibg = visible_bg,
+      fg = comment_diagnostic_fg,
+      bg = visible_bg,
     },
     info_diagnostic_selected = {
-      guifg = info_diagnostic_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
-      guisp = info_diagnostic_fg,
+      fg = info_diagnostic_fg,
+      bg = normal_bg,
+      bold = true,
+      italic = true,
+      sp = info_diagnostic_fg,
     },
     warning = {
-      guifg = comment_fg,
-      guisp = warning_fg,
-      guibg = background_color,
+      fg = comment_fg,
+      sp = warning_fg,
+      bg = background_color,
     },
     warning_visible = {
-      guifg = comment_fg,
-      guibg = visible_bg,
+      fg = comment_fg,
+      bg = visible_bg,
     },
     warning_selected = {
-      guifg = warning_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
-      guisp = warning_fg,
+      fg = warning_fg,
+      bg = normal_bg,
+      bold = true,
+      italic = true,
+      sp = warning_fg,
     },
     warning_diagnostic = {
-      guifg = comment_diagnostic_fg,
-      guisp = warning_diagnostic_fg,
-      guibg = background_color,
+      fg = comment_diagnostic_fg,
+      sp = warning_diagnostic_fg,
+      bg = background_color,
     },
     warning_diagnostic_visible = {
-      guifg = comment_diagnostic_fg,
-      guibg = visible_bg,
+      fg = comment_diagnostic_fg,
+      bg = visible_bg,
     },
     warning_diagnostic_selected = {
-      guifg = warning_diagnostic_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
-      guisp = warning_diagnostic_fg,
+      fg = warning_diagnostic_fg,
+      bg = normal_bg,
+      bold = true,
+      italic = true,
+      sp = warning_diagnostic_fg,
     },
     error = {
-      guifg = comment_fg,
-      guibg = background_color,
-      guisp = error_fg,
+      fg = comment_fg,
+      bg = background_color,
+      sp = error_fg,
     },
     error_visible = {
-      guifg = comment_fg,
-      guibg = visible_bg,
+      fg = comment_fg,
+      bg = visible_bg,
     },
     error_selected = {
-      guifg = error_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
-      guisp = error_fg,
+      fg = error_fg,
+      bg = normal_bg,
+      bold = true,
+      italic = true,
+      sp = error_fg,
     },
     error_diagnostic = {
-      guifg = comment_diagnostic_fg,
-      guibg = background_color,
-      guisp = error_diagnostic_fg,
+      fg = comment_diagnostic_fg,
+      bg = background_color,
+      sp = error_diagnostic_fg,
     },
     error_diagnostic_visible = {
-      guifg = comment_diagnostic_fg,
-      guibg = visible_bg,
+      fg = comment_diagnostic_fg,
+      bg = visible_bg,
     },
     error_diagnostic_selected = {
-      guifg = error_diagnostic_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
-      guisp = error_diagnostic_fg,
+      fg = error_diagnostic_fg,
+      bg = normal_bg,
+      bold = true,
+      italic = true,
+      sp = error_diagnostic_fg,
     },
     modified = {
-      guifg = string_fg,
-      guibg = background_color,
+      fg = string_fg,
+      bg = background_color,
     },
     modified_visible = {
-      guifg = string_fg,
-      guibg = visible_bg,
+      fg = string_fg,
+      bg = visible_bg,
     },
     modified_selected = {
-      guifg = string_fg,
-      guibg = normal_bg,
+      fg = string_fg,
+      bg = normal_bg,
     },
     duplicate_selected = {
-      guifg = duplicate_color,
-      gui = "italic",
-      guibg = normal_bg,
+      fg = duplicate_color,
+      italic = true,
+      bg = normal_bg,
     },
     duplicate_visible = {
-      guifg = duplicate_color,
-      gui = "italic",
-      guibg = visible_bg,
+      fg = duplicate_color,
+      italic = true,
+      bg = visible_bg,
     },
     duplicate = {
-      guifg = duplicate_color,
-      gui = "italic",
-      guibg = background_color,
+      fg = duplicate_color,
+      italic = true,
+      bg = background_color,
     },
     separator_selected = {
-      guifg = separator_background_color,
-      guibg = normal_bg,
+      fg = separator_background_color,
+      bg = normal_bg,
     },
     separator_visible = {
-      guifg = separator_background_color,
-      guibg = visible_bg,
+      fg = separator_background_color,
+      bg = visible_bg,
     },
     separator = {
-      guifg = separator_background_color,
-      guibg = background_color,
+      fg = separator_background_color,
+      bg = background_color,
     },
     indicator_selected = {
-      guifg = tabline_sel_bg,
-      guibg = normal_bg,
+      fg = tabline_sel_bg,
+      bg = normal_bg,
     },
     indicator_visible = {
-      guifg = visible_bg,
-      guibg = visible_bg,
+      fg = visible_bg,
+      bg = visible_bg,
     },
     pick_selected = {
-      guifg = error_fg,
-      guibg = normal_bg,
-      gui = "bold,italic",
+      fg = error_fg,
+      bg = normal_bg,
+      bold = true,
+      italic = true,
     },
     pick_visible = {
-      guifg = error_fg,
-      guibg = visible_bg,
-      gui = "bold,italic",
+      fg = error_fg,
+      bg = visible_bg,
+      bold = true,
+      italic = true,
     },
     pick = {
-      guifg = error_fg,
-      guibg = background_color,
-      gui = "bold,italic",
+      fg = error_fg,
+      bg = background_color,
+      bold = true,
+      italic = true,
     },
   }
 end
@@ -556,7 +621,7 @@ local function get_defaults()
     ---@type BufferlineOptions
     options = {
       mode = "buffers",
-      themable = true, -- whether or not bufferline highlights can be overriden externally
+      themable = true, -- whether or not bufferline highlights can be overridden externally
       numbers = "none",
       buffer_close_icon = "",
       modified_icon = "●",
@@ -604,73 +669,97 @@ local function get_defaults()
   }
 end
 
---- Resolve/change any incompatible options based on the values of other options
+--- Resolve (and update) any incompatible options based on the values of other options
 --- e.g. in tabline only certain values are valid/certain options no longer make sense.
 function Config:resolve(defaults)
-  if self.highlights and type(self.highlights) == "function" then
-    local resolved = self.highlights(defaults)
-    self.highlights, self.original.highlights = resolved, resolved
-  end
+  local user, hl = self.user.highlights, self.highlights
+  if type(user) == "function" then hl = user(defaults) end
+
+  self.highlights = utils.fold(function(accum, opts, hl_name)
+    accum[hl_name] = highlights.translate_legacy_options(opts)
+    return accum
+  end, hl_table_to_color(hl))
+
   if self:is_tabline() then
     local opts = defaults.options
     -- If the sort by mechanism is "tabs" but the user is in tabline mode
     -- then the id will be that of the tabs so sort by should be id i.e. "tabs" sort
     -- is redundant in tabs mode
     if opts.sort_by == "tabs" then opts.sort_by = "id" end
-
-    -- Don't show tab indicators in tabline mode
     if opts.show_tab_indicators then opts.show_tab_indicators = false end
-
     opts.close_command = utils.close_tab
     opts.right_mouse_command = "tabclose %d"
     opts.left_mouse_command = api.nvim_set_current_tabpage
   end
+  return hl
 end
 
 ---Generate highlight groups from user
 ---@param map table<string, table>
 --- TODO: can this become part of a metatable for each highlight group so it is done at the point
 ---of usage
-local function add_highlight_groups(map)
-  for name, tbl in pairs(map) do
-    highlights.add_group(name, tbl)
+local function set_highlight_groups(map)
+  for name, opts in pairs(map) do
+    opts.hl_group = highlights.generate_name(name)
   end
 end
 
-function Config:resolve_highlights(defaults) end
+---Add highlight groups for a group
+---@param hls BufferlineHighlights
+local function set_group_highlights(hls)
+  for _, group in pairs(groups.get_all()) do
+    local group_hl, name = group.highlight, group.name
+    if group_hl and type(group_hl) == "table" then
+      group_hl = highlights.translate_legacy_options(group_hl)
+      local sep_name = fmt("%s_separator", name)
+      local label_name = fmt("%s_label", name)
+      local selected_name = fmt("%s_selected", name)
+      local visible_name = fmt("%s_visible", name)
+      hls[sep_name] = {
+        fg = group_hl.fg or group_hl.sp or hls.group_separator.fg,
+        bg = hls.fill.bg,
+      }
+      hls[label_name] = {
+        fg = hls.fill.bg,
+        bg = group_hl.fg or group_hl.sp or hls.group_separator.fg,
+      }
+      hls[selected_name] = vim.tbl_extend("keep", group_hl, hls.buffer_selected)
+      hls[visible_name] = vim.tbl_extend("keep", group_hl, hls.buffer_visible)
+      hls[name] = vim.tbl_extend("keep", group_hl, hls.buffer)
+
+      hls[sep_name].hl_group = highlights.generate_name(sep_name)
+      hls[label_name].hl_group = highlights.generate_name(label_name)
+    end
+  end
+end
 
 --- Merge user config with defaults
+--- @param quiet boolean? whether or not to validate the configuration
 --- @return BufferlineConfig
-function M.apply()
+function M.apply(quiet)
   local defaults = get_defaults()
-  config:resolve(defaults)
-  config:validate(defaults)
+  local resolved = config:resolve(defaults)
+  if not quiet then config:validate(defaults, resolved) end
   config:merge(defaults)
-  -- TODO: Can setting up of group highlights be constrained to the config module
-  groups.setup(config)
-  add_highlight_groups(config.highlights)
+  set_highlight_groups(config.highlights)
+  set_group_highlights(config.highlights)
   return config
 end
 
 ---Keep track of a users config for use throughout the plugin as well as ensuring
 ---defaults are set. This is also so we can diff what the user set this is useful
 ---for setting the highlight groups etc. once this has been merged with the defaults
----@param conf BufferlineConfig
+---@param conf BufferlineConfig?
 function M.set(conf) config = Config:new(conf or {}) end
 
 ---Update highlight colours when the colour scheme changes
-function M.update_highlights()
-  config:merge({ highlights = derive_colors() })
-  groups.reset_highlights(config.highlights)
-  add_highlight_groups(config.highlights)
-  return config
-end
+function M.update_highlights() return M.apply(true) end
 
 ---Get the user's configuration or a key from it
 ---@param key string?
 ---@return BufferlineConfig?
----@overload fun(key: '"options"'): BufferlineOptions
----@overload fun(key: '"highlights"'): BufferlineHighlights
+---@overload fun(key: "options"): BufferlineOptions
+---@overload fun(key: "highlights"): BufferlineHighlights
 function M.get(key)
   if not config then return end
   return config[key] or config

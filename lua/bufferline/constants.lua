@@ -22,9 +22,9 @@ M.sep_chars = {
 M.positions_key = "BufferlinePositions"
 
 M.visibility = {
-  INACTIVE = 1,
-  SELECTED = 2,
-  NONE = 3,
+  SELECTED = 3,
+  INACTIVE = 2,
+  NONE = 1,
 }
 
 M.FOLDER_ICON = ""

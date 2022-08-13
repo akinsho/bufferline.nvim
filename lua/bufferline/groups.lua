@@ -27,7 +27,7 @@ local fn = vim.fn
 
 ---@alias GroupSeparator fun(group:Group, hls: BufferlineHLGroup, count_item: string?): Separators
 ---@alias GroupSeparators table<string, GroupSeparator>
----@alias grouper fun(b: Buffer): boolean
+---@alias grouper fun(b: NvimBuffer): boolean
 
 ---@class Group
 ---@field public id string used for identifying the group in the tabline
@@ -70,18 +70,20 @@ local function format_name(name) return name:gsub("[^%w]+", "_") end
 ----------------------------------------------------------------------------------------------------
 local separator = {}
 
-local function space_end(hl_groups) return { { highlight = hl_groups.fill.hl, text = padding } } end
+local function space_end(hl_groups)
+  return { { highlight = hl_groups.fill.hl_group, text = padding } }
+end
 
 ---@param group Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
 ---@return Separators
 function separator.pill(group, hls, count)
-  local bg_hl = hls.fill.hl
+  local bg_hl = hls.fill.hl_group
   local name, display_name = group.name, group.display_name
   local sep_grp, label_grp = hls[fmt("%s_separator", name)], hls[fmt("%s_label", name)]
-  local sep_hl = sep_grp and sep_grp.hl or hls.group_separator.hl
-  local label_hl = label_grp and label_grp.hl or hls.group_label.hl
+  local sep_hl = sep_grp and sep_grp.hl_group or hls.group_separator.hl_group
+  local label_hl = label_grp and label_grp.hl_group or hls.group_label.hl_group
   local left, right = "█", "█"
   local indicator = {
     { text = padding, highlight = bg_hl },
@@ -99,8 +101,8 @@ end
 ---@return Separators
 ---@type GroupSeparator
 function separator.tab(group, hls, count)
-  local hl = hls.fill.hl
-  local indicator_hl = hls.buffer.hl
+  local hl = hls.fill.hl_group
+  local indicator_hl = hls.buffer.hl_group
   local indicator = {
     { higlight = hl, text = padding },
     { highlight = indicator_hl, text = padding .. group.name .. count .. padding },
@@ -204,7 +206,7 @@ end
 
 ---Group buffers based on user criteria
 ---buffers only carry a copy of the group ID which is then used to retrieve the correct group
----@param buffer Buffer
+---@param buffer NvimBuffer
 ---@return string?
 function M.set_id(buffer)
   if vim.tbl_isempty(state.user_groups) then return end
@@ -237,7 +239,7 @@ function M.component(ctx)
   local group = state.user_groups[element.group]
   if not group then return end
   local group_hl = hls[group.name]
-  local hl = group_hl or hls.buffer.hl
+  local hl = group_hl or hls.buffer
   if not group.icon then return nil end
   local extends = { { id = ui.components.id.name } }
   if group_hl then extends[#extends + 1] = { id = ui.components.id.duplicates } end
@@ -246,33 +248,6 @@ function M.component(ctx)
     highlight = hl,
     attr = { extends = extends },
   }
-end
-
----Add highlight groups for a group
----@param group Group
----@param hls BufferlineHighlights
-local function set_group_highlights(group, hls)
-  local hl = group.highlight
-  local name = group.name
-  if not hl or type(hl) ~= "table" then return end
-  hls[fmt("%s_separator", name)] = {
-    guifg = hl.guifg or hl.guisp or hls.group_separator.guifg,
-    guibg = hls.fill.guibg,
-  }
-  hls[fmt("%s_label", name)] = {
-    guifg = hls.fill.guibg,
-    guibg = hl.guifg or hl.guisp or hls.group_separator.guifg,
-  }
-  hls[fmt("%s_selected", name)] = vim.tbl_extend("keep", hl, hls.buffer_selected)
-  hls[fmt("%s_visible", name)] = vim.tbl_extend("keep", hl, hls.buffer_visible)
-  hls[name] = vim.tbl_extend("keep", hl, hls.buffer)
-end
-
----@param highlights BufferlineHighlights
-function M.reset_highlights(highlights)
-  for _, group in pairs(state.user_groups) do
-    set_group_highlights(group, highlights)
-  end
 end
 
 --- Pull pinned buffers saved in a vim.g global variable and restore them
@@ -293,8 +268,8 @@ end
 ---@param config BufferlineConfig
 function M.setup(config)
   if not config then return end
-
-  local groups = config.options.groups.items or {}
+  ---@type Group[]
+  local groups = vim.tbl_get(config, "options", "groups", "items") or {}
 
   -- NOTE: if the user has already set the pinned builtin themselves
   -- then we want each group to have a priority based on it's position in the list
@@ -314,42 +289,19 @@ function M.setup(config)
       priority = vim.tbl_count(state.user_groups) + 1,
     })
   end
-  for _, group in pairs(state.user_groups) do
-    set_group_highlights(group, config.highlights)
-  end
-
   -- Restore pinned buffer from the previous session
   api.nvim_create_autocmd("SessionLoadPost", { once = true, callback = restore_pinned_buffers })
 end
 
---- Add the current highlight for a specific buffer
---- NOTE: this function mutates the current highlights.
----@param buffer TabElement
----@param highlights table<string, table<string, string>>
----@param current_hl table<string, string>
-function M.set_current_hl(buffer, highlights, current_hl)
-  local group = state.user_groups[buffer.group]
-  if not group or not group.name or not group.highlight then return end
-  local name = group.name
-  local hl_name = buffer:current() and fmt("%s_selected", name)
-    or buffer:visible() and fmt("%s_visible", name)
-    or name
-  if highlights[hl_name] then
-    current_hl[name] = highlights[hl_name].hl
-  else
-    utils.log.debug(fmt("%s group highlight not found", name))
-  end
-end
-
 ---Execute a command on each buffer of a group
 ---@param group_name string
----@param callback fun(b: Buffer)
+---@param callback fun(b: NvimBuffer)
 function M.command(group_name, callback)
   local group = utils.find(
-    state.components_by_group,
-    function(list) return list.name == group_name end
+    function(list) return list.name == group_name end,
+    state.components_by_group
   )
-  utils.for_each(group, callback)
+  utils.for_each(callback, group)
 end
 
 ---@generic T
@@ -497,6 +449,8 @@ local function sort_by_groups(components)
   end
   return sorted, clustered
 end
+
+function M.get_all() return state.user_groups end
 
 -- FIXME:
 -- 1. this function does a lot of looping that can maybe be consolidated

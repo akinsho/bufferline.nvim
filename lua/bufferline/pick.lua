@@ -3,6 +3,8 @@ local lazy = require("bufferline.lazy")
 local state = lazy.require("bufferline.state")
 ---@module "bufferline.ui"
 local ui = lazy.require("bufferline.ui")
+---@module "bufferline.config"
+local config = lazy.require("bufferline.config")
 
 local M = {}
 
@@ -33,7 +35,7 @@ function M.choose_then(func)
   ui.refresh()
 end
 
----@param element Tabpage|Buffer
+---@param element NvimTab|NvimBuffer
 ---@return string?
 function M.get(element)
   local first_letter = element.name:sub(1, 1)
@@ -56,13 +58,12 @@ end
 ---@return Segment?
 function M.component(ctx)
   local padding = require("bufferline.constants").padding
-  local options = require("bufferline.config").get("options")
 
   local element = ctx.tab
   local hl = ctx.current_highlights
   local letter = element.letter
 
-  if options.show_buffer_icons and element.icon then
+  if config.options.show_buffer_icons and element.icon then
     local right = string.rep(padding, math.ceil((strwidth(element.icon) - 1) / 2))
     local left = string.rep(padding, math.floor((strwidth(element.icon) - 1) / 2))
     letter = left .. element.letter .. right

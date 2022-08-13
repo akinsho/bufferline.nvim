@@ -8,20 +8,17 @@ local constants = lazy.require("bufferline.constants")
 local config = lazy.require("bufferline.config")
 --- @module "bufferline.groups"
 local groups = lazy.require("bufferline.groups")
+--- @module "bufferline.utils.log"
+local log = lazy.require("bufferline.utils.log")
 
 local api = vim.api
+local V = constants.visibility
 ---------------------------------------------------------------------------//
 -- Highlights
 ---------------------------------------------------------------------------//
 local M = {}
 
 local PREFIX = "BufferLine"
-
-local visibility_suffix = {
-  [constants.visibility.INACTIVE] = "Inactive",
-  [constants.visibility.SELECTED] = "Selected",
-  [constants.visibility.NONE] = "",
-}
 
 --- @class NameGenerationArgs
 --- @field visibility number
@@ -31,14 +28,26 @@ local visibility_suffix = {
 ---@param name string
 ---@param opts NameGenerationArgs
 ---@return string
-function M.generate_name(name, opts)
+function M.generate_name_for_state(name, opts)
   opts = opts or {}
-  return fmt("%s%s%s", PREFIX, name, visibility_suffix[opts.visibility])
+  local visibility_suffix = ({
+    [V.INACTIVE] = "Inactive",
+    [V.SELECTED] = "Selected",
+    [V.NONE] = "",
+  })[opts.visibility]
+  return fmt("%s%s%s", PREFIX, name, visibility_suffix)
+end
+
+--- Generate highlight groups names i.e
+--- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
+---@param name string
+function M.generate_name(name)
+  return PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
 end
 
 function M.hl(item)
   if not item then return "" end
-  return "%#" .. item .. "#"
+  return fmt("%%#%s#", item)
 end
 
 function M.hl_exists(name) return vim.fn.hlexists(name) > 0 end
@@ -55,11 +64,14 @@ end
 
 local keys = {
   guisp = "sp",
-  guibg = "background",
-  guifg = "foreground",
+  guibg = "bg",
+  guifg = "fg",
   default = "default",
-  foreground = "foreground",
-  background = "background",
+  foreground = "fg",
+  background = "fg",
+  fg = "fg",
+  bg = "bg",
+  sp = "special",
   italic = "italic",
   bold = "bold",
   underline = "underline",
@@ -77,15 +89,22 @@ end
 --- Transform legacy highlight keys to new nvim_set_hl api keys
 ---@param opts table<string, string>
 ---@return table<string, string|boolean>
-local function convert_hl_keys(opts)
+function M.translate_legacy_options(opts)
+  assert(opts, '"opts" must be passed for conversion')
   local hls = {}
   for key, value in pairs(opts) do
     if keys[key] then hls[keys[key]] = value end
   end
   if opts.gui then hls = vim.tbl_extend("force", hls, convert_gui(opts.gui)) end
-  hls.default = vim.F.if_nil(opts.default, config.options.themable)
-  ---@diagnostic disable-next-line: return-type-mismatch
+  hls.default = opts.default or (config.options and config.options.themable)
   return hls
+end
+
+local function filter_invalid_keys(hl)
+  return utils.fold(function(accum, item, key)
+    if keys[key] then accum[key] = item end
+    return accum
+  end, hl)
 end
 
 ---Apply a single highlight
@@ -93,105 +112,79 @@ end
 ---@param opts table<string, string>
 function M.set_one(name, opts)
   if opts and not vim.tbl_isempty(opts) then
-    local hls = convert_hl_keys(opts)
-    local ok, msg = pcall(api.nvim_set_hl, 0, name, hls)
+    local hl = filter_invalid_keys(opts)
+    local ok, msg = pcall(api.nvim_set_hl, 0, name, hl)
     if not ok then
       utils.notify(
-        fmt("Failed setting %s  highlight, something isn't configured correctly: %s", name, msg),
+        fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, msg),
         utils.E
       )
     end
   end
 end
 
----Generate highlight groups from user
----@param highlight table
-function M.add_group(name, highlight)
-  -- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
-  local formatted = PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
-  highlight.hl = formatted
-end
-
 --- Map through user colors and convert the keys to highlight names
 --- by changing the strings to pascal case and using those for highlight name
 --- @param conf BufferlineConfig
 function M.set_all(conf)
-  for name, tbl in pairs(conf.highlights) do
-    if not tbl or not tbl.hl then
-      utils.notify(
-        fmt("Error setting highlight group: no name for %s - %s", name, vim.inspect(tbl), utils.E)
-      )
+  local msgs = {}
+  for name, opts in pairs(conf.highlights) do
+    if not opts or not opts.hl_group then
+      msgs[#msgs + 1] = fmt("* %s - %s", name, vim.inspect(opts))
     else
-      M.set_one(tbl.hl, tbl)
+      M.set_one(opts.hl_group, opts)
     end
+  end
+  if next(msgs) then
+    utils.notify(fmt("Error setting highlight group(s) for: \n", table.concat(msgs, "\n")), utils.E)
   end
 end
 
----@param element Buffer | Tabpage
----@return table
+---@param vis Visibility
+---@param hls BufferlineHighlights
+---@param name string
+---@param base string?
+---@return string
+local function get_hl_group_for_state(vis, hls, name, base)
+  if not base then base = name end
+  local state = ({ [V.INACTIVE] = "visible", [V.SELECTED] = "selected" })[vis]
+  local hl_name = state and fmt("%s_%s", name, state) or base
+  if hls[hl_name].hl_group then return hls[hl_name].hl_group end
+  log.debug(fmt("%s highlight not found", name))
+  return ""
+end
+
+---@param element NvimBuffer | NvimTab
+---@return table<string, string>
 function M.for_element(element)
   local hl = {}
-  local h = config.get("highlights")
-  if not h then return hl end
-  --- TODO: find a tidier way to do this if possible
-  if element:current() then
-    hl.background = h.buffer_selected.hl
-    hl.modified = h.modified_selected.hl
-    hl.duplicate = h.duplicate_selected.hl
-    hl.pick = h.pick_selected.hl
-    hl.separator = h.separator_selected.hl
-    hl.buffer = h.buffer_selected
-    hl.diagnostic = h.diagnostic_selected.hl
-    hl.error = h.error_selected.hl
-    hl.error_diagnostic = h.error_diagnostic_selected.hl
-    hl.warning = h.warning_selected.hl
-    hl.warning_diagnostic = h.warning_diagnostic_selected.hl
-    hl.info = h.info_selected.hl
-    hl.info_diagnostic = h.info_diagnostic_selected.hl
-    hl.hint = h.hint_selected.hl
-    hl.hint_diagnostic = h.hint_diagnostic_selected.hl
-    hl.close_button = h.close_button_selected.hl
-    hl.numbers = h.numbers_selected.hl
-  elseif element:visible() then
-    hl.background = h.buffer_visible.hl
-    hl.modified = h.modified_visible.hl
-    hl.duplicate = h.duplicate_visible.hl
-    hl.pick = h.pick_visible.hl
-    hl.separator = h.separator_visible.hl
-    hl.buffer = h.buffer_visible
-    hl.diagnostic = h.diagnostic_visible.hl
-    hl.error = h.error_visible.hl
-    hl.error_diagnostic = h.error_diagnostic_visible.hl
-    hl.warning = h.warning_visible.hl
-    hl.warning_diagnostic = h.warning_diagnostic_visible.hl
-    hl.info = h.info_visible.hl
-    hl.info_diagnostic = h.info_diagnostic_visible.hl
-    hl.hint = h.hint_visible.hl
-    hl.hint_diagnostic = h.hint_diagnostic_visible.hl
-    hl.close_button = h.close_button_visible.hl
-    hl.numbers = h.numbers_visible.hl
-  else
-    hl.background = h.background.hl
-    hl.modified = h.modified.hl
-    hl.duplicate = h.duplicate.hl
-    hl.pick = h.pick.hl
-    hl.separator = h.separator.hl
-    hl.buffer = h.background
-    hl.diagnostic = h.diagnostic.hl
-    hl.error = h.error.hl
-    hl.error_diagnostic = h.error_diagnostic.hl
-    hl.warning = h.warning.hl
-    hl.warning_diagnostic = h.warning_diagnostic.hl
-    hl.info = h.info.hl
-    hl.info_diagnostic = h.info_diagnostic.hl
-    hl.hint = h.hint.hl
-    hl.hint_diagnostic = h.hint_diagnostic.hl
-    hl.close_button = h.close_button.hl
-    hl.numbers = h.numbers.hl
+
+  local function hl_group(name, fallback)
+    return get_hl_group_for_state(element:visibility(), config.highlights, name, fallback)
   end
 
-  if element.group then groups.set_current_hl(element, h, hl) end
+  hl.modified = hl_group("modified")
+  hl.duplicate = hl_group("duplicate")
+  hl.pick = hl_group("pick")
+  hl.separator = hl_group("separator")
+  hl.diagnostic = hl_group("diagnostic")
+  hl.error = hl_group("error")
+  hl.error_diagnostic = hl_group("error_diagnostic")
+  hl.warning = hl_group("warning")
+  hl.warning_diagnostic = hl_group("warning_diagnostic")
+  hl.info = hl_group("info")
+  hl.info_diagnostic = hl_group("info_diagnostic")
+  hl.hint = hl_group("hint")
+  hl.hint_diagnostic = hl_group("hint_diagnostic")
+  hl.close_button = hl_group("close_button")
+  hl.numbers = hl_group("numbers")
+  hl.buffer = hl_group("buffer", "background")
+  hl.background = hl.buffer
 
+  if element.group then
+    local group = groups.get_all()[element.group]
+    if group and group.name and group.highlight then hl[group.name] = hl_group(group.name) end
+  end
   return hl
 end
 

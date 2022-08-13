@@ -121,7 +121,7 @@ end
 ---@alias group_actions "close" | "toggle"
 ---Execute an action on a group of buffers
 ---@param name string
----@param action group_actions | fun(b: Buffer)
+---@param action group_actions | fun(b: NvimBuffer)
 function M.group_action(name, action)
   assert(name, "A name must be passed to execute a group action")
   if action == "close" then
@@ -153,12 +153,12 @@ local function handle_group_enter()
   if options.groups.options.toggle_hidden_on_enter then
     if current_group.hidden then groups.set_hidden(current_group.id, false) end
   end
-  utils.for_each(state.components, function(tab)
+  utils.for_each(function(tab)
     local group = groups.get_by_id(tab.group)
     if group and group.auto_close and group.id ~= current_group.id then
       groups.set_hidden(group.id, true)
     end
-  end)
+  end, state.components)
 end
 
 ---@param conf BufferlineConfig
@@ -208,49 +208,33 @@ local function complete_groups(arg_lead, cmd_line, cursor_pos) return groups.nam
 
 local function setup_commands()
   local cmd = api.nvim_create_user_command
-
   cmd("BufferLinePick", function() M.pick_buffer() end, {})
-
   cmd("BufferLinePickClose", function() M.close_buffer_with_pick() end, {})
-
   cmd("BufferLineCycleNext", function() M.cycle(1) end, {})
-
   cmd("BufferLineCyclePrev", function() M.cycle(-1) end, {})
-
   cmd("BufferLineCloseRight", function() M.close_in_direction("right") end, {})
-
   cmd("BufferLineCloseLeft", function() M.close_in_direction("left") end, {})
-
   cmd("BufferLineMoveNext", function() M.move(1) end, {})
-
   cmd("BufferLineMovePrev", function() M.move(-1) end, {})
-
   cmd("BufferLineSortByExtension", function() M.sort_buffers_by("extension") end, {})
-
   cmd("BufferLineSortByDirectory", function() M.sort_buffers_by("directory") end, {})
-
   cmd(
     "BufferLineSortByRelativeDirectory",
     function() M.sort_buffers_by("relative_directory") end,
     {}
   )
-
   cmd("BufferLineSortByTabs", function() M.sort_buffers_by("tabs") end, {})
-
   cmd("BufferLineGoToBuffer", function(opts) M.go_to_buffer(opts.args) end, { nargs = 1 })
-
   cmd(
     "BufferLineGroupClose",
     function(opts) M.group_action(opts.args, "close") end,
     { nargs = 1, complete = complete_groups }
   )
-
   cmd(
     "BufferLineGroupToggle",
     function(opts) M.group_action(opts.args, "toggle") end,
     { nargs = 1, complete = complete_groups }
   )
-
   cmd("BufferLineTogglePin", function() M.toggle_pin() end, { nargs = 0 })
 end
 
@@ -271,7 +255,9 @@ function M.setup(conf)
     )
     return
   end
-  config.set(conf or {})
+  conf = conf or {}
+  config.set(conf)
+  groups.setup(conf) -- Groups must be set up before the config is applied
   local preferences = config.apply()
   -- on loading (and reloading) the plugin's config reset all the highlights
   highlights.set_all(preferences)

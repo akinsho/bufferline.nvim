@@ -69,8 +69,8 @@ local function get_id(component) return component and component.attr and compone
 
 ---@class RenderContext
 ---@field preferences BufferlineConfig
----@field current_highlights table<string, table<string, string>>
----@field tab Tabpage | Buffer
+---@field current_highlights table<string, string>
+---@field tab NvimTab | NvimBuffer
 ---@field is_picking boolean
 ---@type RenderContext
 local Context = {}
@@ -170,7 +170,7 @@ local function get_tab_close_button(options, hls)
     return {
       {
         text = padding .. options.close_icon .. padding,
-        highlight = hls.tab_close.hl,
+        highlight = hls.tab_close.hl_group,
         attr = { prefix = "%999X" },
       },
     }
@@ -221,7 +221,7 @@ local function add_space(ctx, length)
     left_size = left_size + strwidth(icon)
   end
   return pad({
-    left = { size = left_size, hl = curr_hl.buffer.hl },
+    left = { size = left_size, hl = curr_hl.buffer },
     right = { size = right_size },
   })
 end
@@ -238,22 +238,22 @@ local function get_icon_with_highlight(buffer, color_icons, hl_defs)
   if not hl or hl == "" then return { text = icon } end
 
   local state = buffer:visibility()
-  local bg_hls = {
-    [visibility.INACTIVE] = hl_defs.buffer_visible.hl,
-    [visibility.SELECTED] = hl_defs.buffer_selected.hl,
-    [visibility.NONE] = hl_defs.background.hl,
-  }
+  local bg = ({
+    [visibility.INACTIVE] = hl_defs.buffer_visible.hl_group,
+    [visibility.SELECTED] = hl_defs.buffer_selected.hl_group,
+    [visibility.NONE] = hl_defs.background.hl_group,
+  })[state]
 
-  local new_hl = highlights.generate_name(hl, { visibility = state })
+  local new_hl = highlights.generate_name_for_state(hl, { visibility = state })
   local hl_colors = {
-    guifg = not color_icons and "fg" or colors.get_color({ name = hl, attribute = "fg" }),
-    guibg = colors.get_color({ name = bg_hls[state], attribute = "bg" }),
+    fg = not color_icons and "fg" or colors.get_color({ name = hl, attribute = "fg" }),
+    bg = colors.get_color({ name = bg, attribute = "bg" }),
     ctermfg = not color_icons and "fg" or colors.get_color({
       name = hl,
       attribute = "fg",
       cterm = true,
     }),
-    ctermbg = colors.get_color({ name = bg_hls[state], attribute = "bg", cterm = true }),
+    ctermbg = colors.get_color({ name = bg, attribute = "bg", cterm = true }),
   }
   highlights.set_one(new_hl, hl_colors)
   return { text = icon, highlight = new_hl, attr = { text = "%*" } }
@@ -305,9 +305,9 @@ local function add_indicator(context)
   local is_current = element:current()
 
   symbol = is_current and options.indicator_icon or symbol
-  highlight = is_current and hl.indicator_selected.hl
-    or element:visible() and hl.indicator_visible.hl
-    or curr_hl.buffer.hl
+  highlight = is_current and hl.indicator_selected.hl_group
+    or element:visible() and hl.indicator_visible.hl_group
+    or curr_hl.buffer
 
   -- since all non-current buffers do not have an indicator they need
   -- to be padded to make up the difference in size
@@ -355,7 +355,7 @@ local function add_separators(context)
   local style = options.separator_style
   local focused = context.tab:current() or context.tab:visible()
   local right_sep, left_sep = get_separator(focused, style)
-  local sep_hl = is_slant(style) and context.current_highlights.separator or hl.separator.hl
+  local sep_hl = is_slant(style) and context.current_highlights.separator or hl.separator.hl_group
 
   local left_separator = left_sep and { text = left_sep, highlight = sep_hl } or nil
   local right_separator = { text = right_sep, highlight = sep_hl }
@@ -388,7 +388,7 @@ local function get_name(ctx)
   local name = utils.truncate_name(ctx.tab.name, max_length)
   -- escape filenames that contain "%" as this breaks in statusline patterns
   name = name:gsub("%%", "%%%1")
-  return { text = name, highlight = ctx.current_highlights.buffer.hl }
+  return { text = name, highlight = ctx.current_highlights.buffer }
 end
 
 ---Create the render function that components need to position their
@@ -507,7 +507,7 @@ function M.element(state, element)
     spacing({ when = group_item }),
     set_id(duplicate_prefix, components.id.duplicates),
     set_id(name, components.id.name),
-    spacing({ when = name, highlight = curr_hl.buffer.hl }),
+    spacing({ when = name, highlight = curr_hl.buffer }),
     set_id(diagnostic, components.id.diagnostics),
     spacing({ when = diagnostic and #diagnostic.text > 0 }),
     right_space,
@@ -585,9 +585,10 @@ end
 ---@param after Section
 ---@param available_width number
 ---@param marker table
+---@param visible Component[]
 ---@return Segment[][]
 ---@return table
----@return Buffer[]
+---@return NvimBuffer[]
 local function truncate(before, current, after, available_width, marker, visible)
   visible = visible or {}
 
@@ -595,7 +596,6 @@ local function truncate(before, current, after, available_width, marker, visible
   local right_trunc_marker = get_marker_size(marker.right_count, marker.right_element_size)
 
   local markers_length = left_trunc_marker + right_trunc_marker
-
   local total_length = before.length + current.length + after.length + markers_length
 
   if available_width >= total_length then
@@ -646,7 +646,7 @@ end
 function M.tabline(items, tab_indicators)
   local options = config.options
   local hl = config.highlights
-  local right_align = { { highlight = hl.fill.hl, text = "%=" } }
+  local right_align = { { highlight = hl.fill.hl_group, text = "%=" } }
 
   local tab_close_button = get_tab_close_button(options, hl)
   local tab_close_button_length = get_component_size(tab_close_button)
@@ -677,7 +677,7 @@ function M.tabline(items, tab_indicators)
     right_element_size = right_element_size,
   })
 
-  local fill = hl.fill.hl
+  local fill = hl.fill.hl_group
   local left_marker = get_trunc_marker(left_trunc_icon, fill, fill, marker.left_count)
   local right_marker = get_trunc_marker(right_trunc_icon, fill, fill, marker.right_count)
 
