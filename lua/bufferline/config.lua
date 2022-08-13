@@ -237,10 +237,27 @@ local function validate_user_highlights(opts, defaults, hls)
   end
 end
 
+--- Check that the user has not placed setting in the wrong tables
+---@param conf BufferlineConfig
+local function validate_config_structure(conf)
+  local invalid = {}
+  for key, _ in pairs(conf) do
+    if key ~= "options" and key ~= "highlights" then table.insert(invalid, " - " .. key) end
+  end
+  if next(invalid) then
+    utils.notify({
+      "All configuration should be inside of the options or highlights table",
+      "the following keys are in the wrong place",
+      unpack(invalid),
+    }, "warn")
+  end
+end
+
 ---Ensure the user has only specified highlight groups that exist
 ---@param defaults BufferlineConfig
 ---@param resolved BufferlineHighlights
 function Config:validate(defaults, resolved)
+  validate_config_structure(self.user)
   validate_user_options(self.user.options)
   validate_user_highlights(self.user.options, defaults, resolved)
 end

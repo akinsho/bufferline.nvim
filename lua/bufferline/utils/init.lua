@@ -148,11 +148,12 @@ function M.get_tab_count() return #fn.gettabinfo() end
 function M.close_tab(tabhandle) vim.cmd("tabclose " .. api.nvim_tabpage_get_number(tabhandle)) end
 
 --- Wrapper around `vim.notify` that adds message metadata
----@param msg string
+---@param msg string | string[]
 ---@param level "error" | "warn" | "info" | "debug" | "trace"
 function M.notify(msg, level, opts)
   opts = opts or {}
   level = vim.log.levels[level:upper()]
+  if type(msg) == "table" then msg = table.concat(msg, "\n") end
   local nopts = { title = "Bufferline" }
   if opts.once then return vim.schedule(function() vim.notify_once(msg, level, nopts) end) end
   vim.schedule(function() vim.notify(msg, level, nopts) end)
