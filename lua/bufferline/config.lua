@@ -105,7 +105,7 @@ local function hl_table_to_color(map)
           })
         else
           updated[hl][attribute] = nil
-          utils.notify(fmt("removing %s as it is not formatted correctly", hl), utils.W)
+          utils.notify(fmt("removing %s as it is not formatted correctly", hl), "warn")
         end
       end
     end
@@ -162,7 +162,7 @@ local function validate_user_options(options)
     if deprecation then
       vim.schedule(function()
         local timeframe = deprecation.pending and "will be" or "has been"
-        utils.notify(fmt("'%s' %s deprecated: %s", key, timeframe, deprecation.message), utils.W)
+        utils.notify(fmt("'%s' %s deprecated: %s", key, timeframe, deprecation.message), "warn")
       end)
     end
   end
@@ -219,7 +219,7 @@ local function validate_user_highlights(opts, defaults, hls)
       is_plural and " groups. " or " group. ",
       "Please check :help bufferline-highlights for all valid highlights",
     })
-    utils.notify(msg, utils.E)
+    utils.notify(msg, "error")
   end
   if next(incorrect.invalid_attrs) then
     local msg = table.concat({
@@ -233,7 +233,7 @@ local function validate_user_highlights(opts, defaults, hls)
       "Please fix: ",
       unpack(incorrect.invalid_attrs),
     }, "\n")
-    utils.notify(msg, utils.E)
+    utils.notify(msg, "error")
   end
 end
 

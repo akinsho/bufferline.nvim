@@ -49,7 +49,7 @@ function M.get()
       if type(section_fn) ~= "function" then
         utils.notify(
           fmt("each side should be a function but you passed in %s", vim.inspect(side)),
-          utils.E
+          "error"
         )
         return 0, "", ""
       end

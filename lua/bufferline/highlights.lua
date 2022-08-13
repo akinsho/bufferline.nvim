@@ -117,7 +117,7 @@ function M.set_one(name, opts)
     if not ok then
       utils.notify(
         fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, msg),
-        utils.E
+        "error"
       )
     end
   end
@@ -136,7 +136,7 @@ function M.set_all(conf)
     end
   end
   if next(msgs) then
-    utils.notify(fmt("Error setting highlight group(s) for: \n", table.concat(msgs, "\n")), utils.E)
+    utils.notify(fmt("Error setting highlight group(s) for: \n", table.concat(msgs, "\n")), "error")
   end
 end
 

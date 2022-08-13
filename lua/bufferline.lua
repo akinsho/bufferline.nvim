@@ -250,7 +250,7 @@ function M.setup(conf)
   if not utils.is_current_stable_release() then
     utils.notify(
       "bufferline.nvim requires Neovim 0.7 or higher, please use tag 1.* or update your neovim",
-      utils.E,
+      "error",
       { once = true }
     )
     return
