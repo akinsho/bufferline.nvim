@@ -200,7 +200,7 @@ local function validate_user_highlights(opts, defaults, hls)
 
   for k, hl in pairs(all_hls) do
     for key, _ in pairs(hl) do
-      if key:match("gui") then table.insert(incorrect.invalid_attrs, k) end
+      if key:match("gui") then table.insert(incorrect.invalid_attrs, fmt("- %s", k)) end
     end
     if hls[k] then
       if not defaults.highlights[k] then table.insert(incorrect.invalid_hl, k) end
@@ -223,11 +223,16 @@ local function validate_user_highlights(opts, defaults, hls)
   end
   if next(incorrect.invalid_attrs) then
     local msg = table.concat({
-      "Using `gui`, `guifg`, `guibg`, `guisp` is deprecated please",
-      " see :help bufferline-highlights for how to update your highlights\n",
-      "Please fix: \n ",
-      table.concat(incorrect.invalid_attrs, "\n"),
-    })
+      "Using `gui`, `guifg`, `guibg`, `guisp` is deprecated please, convert these as follows: ",
+      "- guifg -> fg",
+      "- guibg -> bg",
+      "- guisp -> sp",
+      "- gui -> underline = true, undercurl = true, italic = true",
+      " see :help bufferline-highlights for more details on how to update your highlights",
+      "",
+      "Please fix: ",
+      unpack(incorrect.invalid_attrs),
+    }, "\n")
     utils.notify(msg, utils.E)
   end
 end
