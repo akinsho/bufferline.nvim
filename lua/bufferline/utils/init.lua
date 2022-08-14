@@ -206,7 +206,7 @@ local function truncate_by_cell(str, col_limit)
   if str and str:len() == api.nvim_strwidth(str) then return fn.strcharpart(str, 0, col_limit) end
   local short = fn.strcharpart(str, 0, col_limit)
   if api.nvim_strwidth(short) > col_limit then
-    while api.nvim_strwidth(short) > col_limit do
+    while api.nvim_strwidth(short) > 1 and api.nvim_strwidth(short) > col_limit do
       short = fn.strcharpart(short, 0, fn.strchars(short) - 1)
     end
   end
