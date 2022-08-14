@@ -2,6 +2,8 @@ local fn = vim.fn
 local api = vim.api
 local fmt = string.format
 
+local constants = require("bufferline.constants")
+
 local filetype = "test"
 
 local function open_test_panel(direction, ft, on_open)
@@ -99,7 +101,7 @@ describe("Offset tests:", function()
 
     assert.equal(20, size)
     assert.equal("", right)
-    assert.is_equal(" Test buffer buffer ", remove_highlight(left))
+    assert.is_equal(fmt(" Test buffer buffe%s ", constants.ELLIPSIS), remove_highlight(left))
   end)
 
   it("should allow left and right offsets", function()

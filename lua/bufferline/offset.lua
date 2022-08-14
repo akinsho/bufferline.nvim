@@ -1,4 +1,8 @@
+local lazy = require("bufferline.lazy")
+---@module "bufferline.config"
 local config = require("bufferline.config")
+---@module "bufferline.utils"
+local utils = lazy.require("bufferline.utils")
 
 local M = {}
 
@@ -23,34 +27,31 @@ local supported_win_types = {
 ---@return string
 local function get_section_text(size, highlight, offset)
   local text = offset.text
+
   if type(text) == "function" then text = text() end
+  text = text or string.rep(" ", size)
+
+  local text_size, left, right = api.nvim_strwidth(text), 0, 0
   local alignment = offset.text_align or "center"
-  if not text then
-    text = string.rep(" ", size)
+
+  if text_size + 2 >= size then
+    text, left, right = utils.truncate_name(text, size - 2), 1, 1
   else
-    local text_size = api.nvim_strwidth(text)
-    ---@type integer, integer
-    local left, right
-    if text_size + 2 >= size then
-      text = text:sub(1, size - 2)
-      left, right = 1, 1
-    else
-      local remainder = size - text_size
-      local is_even, side = remainder % 2 == 0, remainder / 2
-      if alignment == "center" then
-        left, right = side, side
-        if not is_even then
-          left, right = math.ceil(side), math.floor(side)
-        end
-      elseif alignment == "left" then
-        left, right = 1, remainder - 1
+    local remainder = size - text_size
+    local is_even, side = remainder % 2 == 0, remainder / 2
+    if alignment == "center" then
+      if not is_even then
+        left, right = math.ceil(side), math.floor(side)
       else
-        left, right = remainder - 1, 1
+        left, right = side, side
       end
+    elseif alignment == "left" then
+      left, right = 1, remainder - 1
+    else
+      left, right = remainder - 1, 1
     end
-    text = string.rep(" ", left) .. text .. string.rep(" ", right)
   end
-  return highlight .. text
+  return highlight .. string.rep(" ", left) .. text .. string.rep(" ", right)
 end
 
 ---A heuristic to attempt to derive a windows background color from a winhighlight
