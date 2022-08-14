@@ -29,15 +29,14 @@ local function get_section_text(size, highlight, offset)
   local text = offset.text
 
   if type(text) == "function" then text = text() end
-  if not text then text = string.rep(" ", size) end
+  text = text or string.rep(" ", size)
 
   local left, right
   local text_size = api.nvim_strwidth(text)
   local alignment = offset.text_align or "center"
 
   if text_size + 2 >= size then
-    text = utils.truncate_name(text, size - 2)
-    left, right = 1, 1
+    text, left, right = utils.truncate_name(text, size - 2), 1, 1
   else
     local remainder = size - text_size
     local is_even, side = remainder % 2 == 0, remainder / 2
@@ -53,8 +52,7 @@ local function get_section_text(size, highlight, offset)
       left, right = remainder - 1, 1
     end
   end
-  text = string.rep(" ", left) .. text .. string.rep(" ", right)
-  return highlight .. text
+  return highlight .. string.rep(" ", left) .. text .. string.rep(" ", right)
 end
 
 ---A heuristic to attempt to derive a windows background color from a winhighlight
