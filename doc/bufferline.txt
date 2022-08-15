@@ -711,6 +711,20 @@ NOTE: you can specify colors the same way you specify colors for `nvim_set_hl`. 
                 bold = true,
                 italic = true,
             },
+            numbers = {
+                fg = '<color-value-here>',
+                bg = '<color-value-here>',
+            },
+            numbers_visible = {
+                fg = '<color-value-here>',
+                bg = '<color-value-here>',
+            },
+            numbers_selected = {
+                fg = '<color-value-here>',
+                bg = '<color-value-here>',
+                bold = true,
+                italic = true,
+            },
             diagnostic = {
                 fg = '<color-value-here>',
                 bg = '<color-value-here>',
