@@ -29,7 +29,7 @@ local function get_section_text(size, highlight, offset)
   local text = offset.text
 
   if type(text) == "function" then text = text() end
-  text = text or string.rep(" ", size)
+  text = text or string.rep(" ", size - 2)
 
   local text_size, left, right = api.nvim_strwidth(text), 0, 0
   local alignment = offset.text_align or "center"
