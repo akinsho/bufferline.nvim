@@ -118,13 +118,11 @@ function M.set_one(name, opts)
   local hl = filter_invalid_keys(opts)
   hl.default = vim.F.if_nil(opts.default, config.options.themable)
   local ok, msg = pcall(api.nvim_set_hl, 0, name, hl)
-  if not ok then
-    utils.notify(
-      fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, msg),
-      "error"
-    )
-  end
-  return hl
+  if ok then return hl end
+  utils.notify(
+    fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, msg),
+    "error"
+  )
 end
 
 --- Map through user colors and convert the keys to highlight names
