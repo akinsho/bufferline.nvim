@@ -65,7 +65,7 @@ local function convert_gui(guistr)
   return gui
 end
 
-local keys = {
+local hl_keys = {
   guisp = "sp",
   guibg = "bg",
   guifg = "fg",
@@ -84,28 +84,28 @@ local keys = {
 
 ---These values will error if a theme does not set a normal ctermfg or ctermbg @see: #433
 if not vim.opt.termguicolors:get() then
-  keys.ctermfg = "ctermfg"
-  keys.ctermbg = "ctermbg"
-  keys.cterm = "cterm"
+  hl_keys.ctermfg = "ctermfg"
+  hl_keys.ctermbg = "ctermbg"
+  hl_keys.cterm = "cterm"
 end
 
---- Transform legacy highlight keys to new nvim_set_hl api keys
+--- Transform user highlight keys to the correct subset of nvim_set_hl API arguments
 ---@param opts table<string, string>
 ---@return table<string, string|boolean>
-function M.translate_legacy_options(opts)
+function M.translate_user_highlights(opts)
   assert(opts, '"opts" must be passed for conversion')
-  local hls = {}
-  for key, value in pairs(opts) do
-    if keys[key] then hls[keys[key]] = value end
+  local attributes = {}
+  for attr, value in pairs(opts) do
+    if hl_keys[attr] then attributes[hl_keys[attr]] = value end
   end
-  if opts.gui then hls = vim.tbl_extend("force", hls, convert_gui(opts.gui)) end
-  hls.default = opts.default or (config.options and config.options.themable)
-  return hls
+  if opts.gui then attributes = vim.tbl_extend("force", attributes, convert_gui(opts.gui)) end
+  attributes.default = vim.F.if_nil(opts.default, config.options.themable)
+  return attributes
 end
 
 local function filter_invalid_keys(hl)
   return utils.fold(function(accum, item, key)
-    if keys[key] then accum[key] = item end
+    if hl_keys[key] then accum[key] = item end
     return accum
   end, hl)
 end

@@ -693,7 +693,7 @@ function Config:resolve(defaults)
   if type(user) == "function" then hl = user(defaults) end
 
   self.highlights = utils.fold(function(accum, opts, hl_name)
-    accum[hl_name] = highlights.translate_legacy_options(opts)
+    accum[hl_name] = highlights.translate_user_highlights(opts)
     return accum
   end, hl_table_to_color(hl))
 
@@ -727,7 +727,7 @@ local function set_group_highlights(hls)
   for _, group in pairs(groups.get_all()) do
     local group_hl, name = group.highlight, group.name
     if group_hl and type(group_hl) == "table" then
-      group_hl = highlights.translate_legacy_options(group_hl)
+      group_hl = highlights.translate_user_highlights(group_hl)
       local sep_name = fmt("%s_separator", name)
       local label_name = fmt("%s_label", name)
       local selected_name = fmt("%s_selected", name)
