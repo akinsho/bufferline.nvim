@@ -740,12 +740,16 @@ local function set_group_highlights(hls)
         fg = hls.fill.bg,
         bg = group_hl.fg or group_hl.sp or hls.group_separator.fg,
       }
-      hls[selected_name] = vim.tbl_extend("keep", group_hl, hls.buffer_selected)
-      hls[visible_name] = vim.tbl_extend("keep", group_hl, hls.buffer_visible)
-      hls[name] = vim.tbl_extend("keep", group_hl, hls.buffer)
 
+      hls[name] = vim.tbl_extend("keep", group_hl, hls.buffer)
+      hls[visible_name] = vim.tbl_extend("keep", group_hl, hls.buffer_visible)
+      hls[selected_name] = vim.tbl_extend("keep", group_hl, hls.buffer_selected)
+
+      hls[name].hl_group = highlights.generate_name(name)
       hls[sep_name].hl_group = highlights.generate_name(sep_name)
       hls[label_name].hl_group = highlights.generate_name(label_name)
+      hls[visible_name].hl_group = highlights.generate_name(visible_name)
+      hls[selected_name].hl_group = highlights.generate_name(selected_name)
     end
   end
 end

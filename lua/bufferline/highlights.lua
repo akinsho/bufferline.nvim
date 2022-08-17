@@ -185,9 +185,11 @@ function M.for_element(element)
   hl.buffer = hl_group("buffer", "background")
   hl.background = hl.buffer
 
+  -- If the element is part of a group then the highlighting for the elements name will be changed
+  -- to match highlights for that group
   if element.group then
     local group = groups.get_all()[element.group]
-    if group and group.name and group.highlight then hl[group.name] = hl_group(group.name) end
+    if group and group.name and group.highlight then hl.buffer = hl_group(group.name) end
   end
   return hl
 end
