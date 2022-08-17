@@ -10,7 +10,7 @@ CONTENTS                                      *bufferline*
 
 Introduction...........................: |bufferline-introduction|
 Usage..................................: |bufferline-usage|
-Configuration......................... : |bufferline-configuration|
+Configuration..........................: |bufferline-configuration|
 Styling................................: |bufferline-styling|
 Tabpages...............................: |bufferline-tabpages|
 Numbers................................: |bufferline-numbers|
