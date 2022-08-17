@@ -53,7 +53,12 @@ local function get_section_text(size, highlight, offset)
       left, right = remainder - 1, 1
     end
   end
-  return highlight .. string.rep(" ", left) .. text .. string.rep(" ", right)
+  return highlight
+    .. string.rep(" ", left)
+    .. text
+    .. string.rep(" ", right)
+    .. highlights.hl("WinSeparator")
+    .. "│"
 end
 
 ---A heuristic to attempt to derive a windows background color from a winhighlight
