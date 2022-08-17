@@ -58,8 +58,8 @@ this option entirely at your discretion.
 ==============================================================================
 CONFIGURATION					     *bufferline-configuration*
 
-The available configuration are: >
-
+The available configuration are:
+>
     require('bufferline').setup {
         options = {
             mode = "buffers", -- set to "tabs" to only show tabpages instead
@@ -135,7 +135,6 @@ The available configuration are: >
             end
         }
     }
-
 <
 ==============================================================================
 STYLING                                                  *bufferline-styling*
@@ -155,11 +154,12 @@ You can change the appearance of the bufferline separators by setting the
 ==============================================================================
 TABPAGES                                                          *bufferline-tabs*
 
-This plugin can also be set to show only tabpages. This can be done by setting the `mode` option to `tabs`. This will change the bufferline to a tabline
-it has a lot of the same features/styling but not all.
-A few things to note are
+This plugin can also be set to show only tabpages. This can be done by setting
+the `mode` option to `tabs`. This will change the bufferline to a tabline it
+has a lot of the same features/styling but not all. A few things to note are
 
-* Diagnostics only show if the buffer with issues is the current window selected in that tab page
+* Diagnostics only show if the buffer with issues is the current window selected
+  in that tab page.
 * Sorting doesn't work yet as that needs to be thought through.
 * Grouping doesn't work yet as that also needs to be thought through.
 
@@ -598,9 +598,11 @@ If you'd rather map these yourself, use:
 
 `vim nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>`
 
-Alternatively, if you want to instead jump to the absolute position of the buffer in the 
-bufferline (as displayed by the ordinal buffer numbers), you can use the `lua` API to set it up
-using `require'bufferline'.go_to_buffer(number, absolute)`, where absolute is a boolean that determines whether to use the absolute buffer position or the visible/relative one. 
+Alternatively, if you want to instead jump to the absolute position of the
+buffer in the bufferline (as displayed by the ordinal buffer numbers), you can
+use the `lua` API to set it up using `require'bufferline'.go_to_buffer(number, absolute)`,
+where absolute is a boolean that determines whether to use the
+absolute buffer position or the visible/relative one.
 
 >
   nnoremap <silent><leader>1 <cmd>lua require("bufferline").go_to_buffer(1, true)<cr>
@@ -613,7 +615,7 @@ using `require'bufferline'.go_to_buffer(number, absolute)`, where absolute is a 
   nnoremap <silent><leader>8 <cmd>lua require("bufferline").go_to_buffer(8, true)<cr>
   nnoremap <silent><leader>9 <cmd>lua require("bufferline").go_to_buffer(9, true)<cr>
   nnoremap <silent><leader>$ <cmd>lua require("bufferline").go_to_buffer(-1, true)<cr>
-  
+<
 
 You can close buffers by clicking the close icon or by right clicking the tab anywhere
 
@@ -665,7 +667,8 @@ This will automatically pull the value of `Pmenu` fg color and use it
 Any improperly specified tables will be set to `nil` and overriden with the
 default value for that key.
 
-NOTE: you can specify colors the same way you specify colors for `nvim_set_hl`. See `:h vim.api.nvim_set_hl` .
+NOTE: you can specify colors the same way you specify colors for
+`nvim_set_hl`. See `:h vim.api.nvim_set_hl` .
 >
     lua require'bufferline'.setup{
         highlights = {
@@ -950,7 +953,7 @@ the rgb values through customizing the terminal emulator itself. This is
 possible for color numbers 0-15.
 
 ==============================================================================
-COLORSCHEME DEVELOPMENT                                           *bufferline-colorscheme-development*
+COLORSCHEME DEVELOPMENT                     *bufferline-colorscheme-development*
 
 Bufferline was initially developed to work without external highlight
 configuration by colorschemes. It takes default highlights from neovim and

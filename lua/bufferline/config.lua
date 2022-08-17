@@ -105,7 +105,7 @@ local function hl_table_to_color(map)
           })
         else
           updated[hl][attribute] = nil
-          utils.notify(fmt("removing %s as it is not formatted correctly", hl), utils.W)
+          utils.notify(fmt("removing %s as it is not formatted correctly", hl), "warn")
         end
       end
     end
@@ -162,7 +162,7 @@ local function validate_user_options(options)
     if deprecation then
       vim.schedule(function()
         local timeframe = deprecation.pending and "will be" or "has been"
-        utils.notify(fmt("'%s' %s deprecated: %s", key, timeframe, deprecation.message), utils.W)
+        utils.notify(fmt("'%s' %s deprecated: %s", key, timeframe, deprecation.message), "warn")
       end)
     end
   end
@@ -219,7 +219,7 @@ local function validate_user_highlights(opts, defaults, hls)
       is_plural and " groups. " or " group. ",
       "Please check :help bufferline-highlights for all valid highlights",
     })
-    utils.notify(msg, utils.E)
+    utils.notify(msg, "error")
   end
   if next(incorrect.invalid_attrs) then
     local msg = table.concat({
@@ -233,7 +233,23 @@ local function validate_user_highlights(opts, defaults, hls)
       "Please fix: ",
       unpack(incorrect.invalid_attrs),
     }, "\n")
-    utils.notify(msg, utils.E)
+    utils.notify(msg, "error")
+  end
+end
+
+--- Check that the user has not placed setting in the wrong tables
+---@param conf BufferlineConfig
+local function validate_config_structure(conf)
+  local invalid = {}
+  for key, _ in pairs(conf) do
+    if key ~= "options" and key ~= "highlights" then table.insert(invalid, " - " .. key) end
+  end
+  if next(invalid) then
+    utils.notify({
+      "All configuration should be inside of the options or highlights table",
+      "the following keys are in the wrong place",
+      unpack(invalid),
+    }, "warn")
   end
 end
 
@@ -241,6 +257,7 @@ end
 ---@param defaults BufferlineConfig
 ---@param resolved BufferlineHighlights
 function Config:validate(defaults, resolved)
+  validate_config_structure(self.user)
   validate_user_options(self.user.options)
   validate_user_highlights(self.user.options, defaults, resolved)
 end
@@ -676,7 +693,7 @@ function Config:resolve(defaults)
   if type(user) == "function" then hl = user(defaults) end
 
   self.highlights = utils.fold(function(accum, opts, hl_name)
-    accum[hl_name] = highlights.translate_legacy_options(opts)
+    accum[hl_name] = highlights.translate_user_highlights(opts)
     return accum
   end, hl_table_to_color(hl))
 
@@ -710,7 +727,7 @@ local function set_group_highlights(hls)
   for _, group in pairs(groups.get_all()) do
     local group_hl, name = group.highlight, group.name
     if group_hl and type(group_hl) == "table" then
-      group_hl = highlights.translate_legacy_options(group_hl)
+      group_hl = highlights.translate_user_highlights(group_hl)
       local sep_name = fmt("%s_separator", name)
       local label_name = fmt("%s_label", name)
       local selected_name = fmt("%s_selected", name)
@@ -723,12 +740,16 @@ local function set_group_highlights(hls)
         fg = hls.fill.bg,
         bg = group_hl.fg or group_hl.sp or hls.group_separator.fg,
       }
-      hls[selected_name] = vim.tbl_extend("keep", group_hl, hls.buffer_selected)
-      hls[visible_name] = vim.tbl_extend("keep", group_hl, hls.buffer_visible)
-      hls[name] = vim.tbl_extend("keep", group_hl, hls.buffer)
 
+      hls[name] = vim.tbl_extend("keep", group_hl, hls.buffer)
+      hls[visible_name] = vim.tbl_extend("keep", group_hl, hls.buffer_visible)
+      hls[selected_name] = vim.tbl_extend("keep", group_hl, hls.buffer_selected)
+
+      hls[name].hl_group = highlights.generate_name(name)
       hls[sep_name].hl_group = highlights.generate_name(sep_name)
       hls[label_name].hl_group = highlights.generate_name(label_name)
+      hls[visible_name].hl_group = highlights.generate_name(visible_name)
+      hls[selected_name].hl_group = highlights.generate_name(selected_name)
     end
   end
 end

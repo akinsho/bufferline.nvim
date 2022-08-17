@@ -29,4 +29,6 @@ M.visibility = {
 
 M.FOLDER_ICON = ""
 
+M.ELLIPSIS = "…"
+
 return M

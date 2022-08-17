@@ -147,16 +147,13 @@ function M.get_tab_count() return #fn.gettabinfo() end
 
 function M.close_tab(tabhandle) vim.cmd("tabclose " .. api.nvim_tabpage_get_number(tabhandle)) end
 
-M.W = vim.log.levels.WARN
-M.E = vim.log.levels.ERROR
-M.I = vim.log.levels.INFO
-M.D = vim.log.levels.DEBUG
-
 --- Wrapper around `vim.notify` that adds message metadata
----@param msg string
----@param level number?
+---@param msg string | string[]
+---@param level "error" | "warn" | "info" | "debug" | "trace"
 function M.notify(msg, level, opts)
   opts = opts or {}
+  level = vim.log.levels[level:upper()]
+  if type(msg) == "table" then msg = table.concat(msg, "\n") end
   local nopts = { title = "Bufferline" }
   if opts.once then return vim.schedule(function() vim.notify_once(msg, level, nopts) end) end
   vim.schedule(function() vim.notify(msg, level, nopts) end)
@@ -208,22 +205,28 @@ function M.is_current_stable_release() return vim.version().minor >= current_sta
 local function truncate_by_cell(str, col_limit)
   if str and str:len() == api.nvim_strwidth(str) then return fn.strcharpart(str, 0, col_limit) end
   local short = fn.strcharpart(str, 0, col_limit)
-  if api.nvim_strwidth(short) > col_limit then
-    while api.nvim_strwidth(short) > col_limit do
-      short = fn.strcharpart(short, 0, fn.strchars(short) - 1)
-    end
+  local width = api.nvim_strwidth(short)
+  while width > 1 and width > col_limit do
+    short = fn.strcharpart(short, 0, fn.strchars(short) - 1)
+    width = api.nvim_strwidth(short)
   end
   return short
 end
 
+--- Truncate a name being mindful of multibyte characters and append an ellipsis
+---@param name string
+---@param word_limit number
+---@return string
 function M.truncate_name(name, word_limit)
-  local trunc_symbol = "…"
   if api.nvim_strwidth(name) <= word_limit then return name end
   -- truncate nicely by seeing if we can drop the extension first
   -- to make things fit if not then truncate abruptly
-  local without_prefix = fn.fnamemodify(name, ":t:r")
-  if api.nvim_strwidth(without_prefix) < word_limit then return without_prefix .. trunc_symbol end
-  return truncate_by_cell(name, word_limit - 1) .. trunc_symbol
+  local ext = fn.fnamemodify(name, ":e")
+  if ext ~= "" then
+    local truncated = name:gsub("%." .. ext, "", 1)
+    if api.nvim_strwidth(truncated) < word_limit then return truncated .. constants.ELLIPSIS end
+  end
+  return truncate_by_cell(name, word_limit - 1) .. constants.ELLIPSIS
 end
 
 function M.is_truthy(value)

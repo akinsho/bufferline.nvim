@@ -45,6 +45,9 @@ function M.generate_name(name)
   return PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
 end
 
+--- Wrap a string in vim's tabline highlight syntax
+---@param item string
+---@return string
 function M.hl(item)
   if not item then return "" end
   return fmt("%%#%s#", item)
@@ -62,7 +65,7 @@ local function convert_gui(guistr)
   return gui
 end
 
-local keys = {
+local hl_keys = {
   guisp = "sp",
   guibg = "bg",
   guifg = "fg",
@@ -81,28 +84,27 @@ local keys = {
 
 ---These values will error if a theme does not set a normal ctermfg or ctermbg @see: #433
 if not vim.opt.termguicolors:get() then
-  keys.ctermfg = "ctermfg"
-  keys.ctermbg = "ctermbg"
-  keys.cterm = "cterm"
+  hl_keys.ctermfg = "ctermfg"
+  hl_keys.ctermbg = "ctermbg"
+  hl_keys.cterm = "cterm"
 end
 
---- Transform legacy highlight keys to new nvim_set_hl api keys
+--- Transform user highlight keys to the correct subset of nvim_set_hl API arguments
 ---@param opts table<string, string>
 ---@return table<string, string|boolean>
-function M.translate_legacy_options(opts)
+function M.translate_user_highlights(opts)
   assert(opts, '"opts" must be passed for conversion')
-  local hls = {}
-  for key, value in pairs(opts) do
-    if keys[key] then hls[keys[key]] = value end
+  local attributes = {}
+  for attr, value in pairs(opts) do
+    if hl_keys[attr] then attributes[hl_keys[attr]] = value end
   end
-  if opts.gui then hls = vim.tbl_extend("force", hls, convert_gui(opts.gui)) end
-  hls.default = opts.default or (config.options and config.options.themable)
-  return hls
+  if opts.gui then attributes = vim.tbl_extend("force", attributes, convert_gui(opts.gui)) end
+  return attributes
 end
 
 local function filter_invalid_keys(hl)
   return utils.fold(function(accum, item, key)
-    if keys[key] then accum[key] = item end
+    if hl_keys[key] then accum[key] = item end
     return accum
   end, hl)
 end
@@ -110,17 +112,17 @@ end
 ---Apply a single highlight
 ---@param name string
 ---@param opts table<string, string>
+---@return table<string, string>?
 function M.set_one(name, opts)
-  if opts and not vim.tbl_isempty(opts) then
-    local hl = filter_invalid_keys(opts)
-    local ok, msg = pcall(api.nvim_set_hl, 0, name, hl)
-    if not ok then
-      utils.notify(
-        fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, msg),
-        utils.E
-      )
-    end
-  end
+  if not opts or vim.tbl_isempty(opts) then return end
+  local hl = filter_invalid_keys(opts)
+  hl.default = vim.F.if_nil(opts.default, config.options.themable)
+  local ok, msg = pcall(api.nvim_set_hl, 0, name, hl)
+  if ok then return hl end
+  utils.notify(
+    fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, msg),
+    "error"
+  )
 end
 
 --- Map through user colors and convert the keys to highlight names
@@ -136,7 +138,7 @@ function M.set_all(conf)
     end
   end
   if next(msgs) then
-    utils.notify(fmt("Error setting highlight group(s) for: \n", table.concat(msgs, "\n")), utils.E)
+    utils.notify(fmt("Error setting highlight group(s) for: \n", table.concat(msgs, "\n")), "error")
   end
 end
 
@@ -181,9 +183,11 @@ function M.for_element(element)
   hl.buffer = hl_group("buffer", "background")
   hl.background = hl.buffer
 
+  -- If the element is part of a group then the highlighting for the elements name will be changed
+  -- to match highlights for that group
   if element.group then
     local group = groups.get_all()[element.group]
-    if group and group.name and group.highlight then hl[group.name] = hl_group(group.name) end
+    if group and group.name and group.highlight then hl.buffer = hl_group(group.name) end
   end
   return hl
 end

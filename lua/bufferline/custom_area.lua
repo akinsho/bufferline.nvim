@@ -18,7 +18,7 @@ local fmt = string.format
 ---@param bg string?
 local function create_hl(index, side, section, bg)
   local name = fmt("BufferLine%sCustomAreaText%d", side:gsub("^%l", string.upper), index)
-  local opts = highlights.translate_legacy_options(section)
+  local opts = highlights.translate_user_highlights(section)
   opts.bg = opts.bg or bg
   -- We need to be able to constantly override these highlights so they should always be default
   opts.default = true
@@ -49,7 +49,7 @@ function M.get()
       if type(section_fn) ~= "function" then
         utils.notify(
           fmt("each side should be a function but you passed in %s", vim.inspect(side)),
-          utils.E
+          "error"
         )
         return 0, "", ""
       end
