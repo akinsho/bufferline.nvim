@@ -3,6 +3,8 @@ local lazy = require("bufferline.lazy")
 local config = require("bufferline.config")
 ---@module "bufferline.utils"
 local utils = lazy.require("bufferline.utils")
+---@module "bufferline.highlights"
+local highlights = lazy.require("bufferline.highlights")
 
 local M = {}
 
@@ -137,8 +139,7 @@ function M.get()
             or guess_window_highlight(win_id)
             or config.highlights.fill.hl_group
 
-          local hl = require("bufferline.highlights").hl(hl_name)
-          local component = get_section_text(width, hl, offset)
+          local component = get_section_text(width, highlights.hl(hl_name), offset)
 
           total_size = total_size + width
 

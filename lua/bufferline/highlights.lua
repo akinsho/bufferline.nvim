@@ -45,6 +45,9 @@ function M.generate_name(name)
   return PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
 end
 
+--- Wrap a string in vim's tabline highlight syntax
+---@param item string
+---@return string
 function M.hl(item)
   if not item then return "" end
   return fmt("%%#%s#", item)
