@@ -57,7 +57,7 @@ local function get_section_text(size, highlight, offset)
     .. string.rep(" ", left)
     .. text
     .. string.rep(" ", right)
-    .. highlights.hl("WinSeparator")
+    .. highlights.hl(config.highlights.offset_separator.hl_group)
     .. "│"
 end
 
