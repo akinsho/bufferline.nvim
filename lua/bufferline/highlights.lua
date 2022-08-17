@@ -99,7 +99,6 @@ function M.translate_user_highlights(opts)
     if hl_keys[attr] then attributes[hl_keys[attr]] = value end
   end
   if opts.gui then attributes = vim.tbl_extend("force", attributes, convert_gui(opts.gui)) end
-  attributes.default = vim.F.if_nil(opts.default, config.options.themable)
   return attributes
 end
 
@@ -113,17 +112,19 @@ end
 ---Apply a single highlight
 ---@param name string
 ---@param opts table<string, string>
+---@return table<string, string>?
 function M.set_one(name, opts)
-  if opts and not vim.tbl_isempty(opts) then
-    local hl = filter_invalid_keys(opts)
-    local ok, msg = pcall(api.nvim_set_hl, 0, name, hl)
-    if not ok then
-      utils.notify(
-        fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, msg),
-        "error"
-      )
-    end
+  if not opts or vim.tbl_isempty(opts) then return end
+  local hl = filter_invalid_keys(opts)
+  hl.default = vim.F.if_nil(opts.default, config.options.themable)
+  local ok, msg = pcall(api.nvim_set_hl, 0, name, hl)
+  if not ok then
+    utils.notify(
+      fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, msg),
+      "error"
+    )
   end
+  return hl
 end
 
 --- Map through user colors and convert the keys to highlight names
