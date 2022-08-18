@@ -297,7 +297,6 @@ local function add_indicator(context)
   local options = config.options
   local style = options.separator_style
   local symbol, highlight = padding, nil
-  if options.indicator.style ~= "icon" then return { text = padding, highlight = highlight } end
 
   if is_slant(style) then return { text = symbol, highlight = highlight } end
 
@@ -307,6 +306,8 @@ local function add_indicator(context)
   highlight = is_current and hl.indicator_selected.hl_group
     or element:visible() and hl.indicator_visible.hl_group
     or curr_hl.buffer
+
+  if options.indicator.style ~= "icon" then return { text = padding, highlight = highlight } end
 
   -- since all non-current buffers do not have an indicator they need
   -- to be padded to make up the difference in size
