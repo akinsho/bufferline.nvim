@@ -353,9 +353,9 @@ local function derive_colors()
   local error_diagnostic_fg = shade(error_fg, diagnostic_shading)
 
   local indicator = vim.tbl_get(config, "user", "options", "indicator")
-  local underline_indicator = indicator.style == "underline"
+  local has_underline_indicator = indicator.style == "underline"
 
-  local underline_sp = underline_indicator and tabline_sel_bg or nil
+  local underline_sp = has_underline_indicator and tabline_sel_bg or nil
 
   return {
     fill = {
@@ -394,7 +394,7 @@ local function derive_colors()
       fg = normal_fg,
       bg = normal_bg,
       sp = underline_sp,
-      underline = underline_indicator,
+      underline = has_underline_indicator,
     },
     background = {
       fg = comment_fg,
@@ -414,7 +414,7 @@ local function derive_colors()
       bold = true,
       italic = true,
       sp = underline_sp,
-      underline = underline_indicator,
+      underline = has_underline_indicator,
     },
     numbers = {
       fg = comment_fg,
@@ -426,7 +426,7 @@ local function derive_colors()
       bold = true,
       italic = true,
       sp = underline_sp,
-      underline = underline_indicator,
+      underline = has_underline_indicator,
     },
     numbers_visible = {
       fg = comment_fg,
@@ -446,7 +446,7 @@ local function derive_colors()
       bold = true,
       italic = true,
       sp = underline_sp,
-      underline = underline_indicator,
+      underline = has_underline_indicator,
     },
     hint = {
       fg = comment_fg,
@@ -462,7 +462,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = hint_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or hint_fg,
     },
     hint_diagnostic = {
       fg = comment_diagnostic_fg,
@@ -478,7 +479,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = hint_diagnostic_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or hint_diagnostic_fg,
     },
     info = {
       fg = comment_fg,
@@ -494,7 +496,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = info_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or info_fg,
     },
     info_diagnostic = {
       fg = comment_diagnostic_fg,
@@ -510,7 +513,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = info_diagnostic_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or info_diagnostic_fg,
     },
     warning = {
       fg = comment_fg,
@@ -526,7 +530,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = warning_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or warning_fg,
     },
     warning_diagnostic = {
       fg = comment_diagnostic_fg,
@@ -542,7 +547,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = warning_diagnostic_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or warning_diagnostic_fg,
     },
     error = {
       fg = comment_fg,
@@ -558,7 +564,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = error_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or error_fg,
     },
     error_diagnostic = {
       fg = comment_diagnostic_fg,
@@ -574,7 +581,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = error_diagnostic_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or error_diagnostic_fg,
     },
     modified = {
       fg = string_fg,
@@ -588,14 +596,14 @@ local function derive_colors()
       fg = string_fg,
       bg = normal_bg,
       sp = underline_sp,
-      underline = underline_indicator,
+      underline = has_underline_indicator,
     },
     duplicate_selected = {
       fg = duplicate_color,
       italic = true,
       bg = normal_bg,
       sp = underline_sp,
-      underline = underline_indicator,
+      underline = has_underline_indicator,
     },
     duplicate_visible = {
       fg = duplicate_color,
@@ -611,7 +619,7 @@ local function derive_colors()
       fg = separator_background_color,
       bg = normal_bg,
       sp = underline_sp,
-      underline = underline_indicator,
+      underline = has_underline_indicator,
     },
     separator_visible = {
       fg = separator_background_color,
@@ -625,7 +633,7 @@ local function derive_colors()
       fg = tabline_sel_bg,
       bg = normal_bg,
       sp = underline_sp,
-      underline = underline_indicator,
+      underline = has_underline_indicator,
     },
     indicator_visible = {
       fg = visible_bg,
@@ -637,7 +645,7 @@ local function derive_colors()
       bold = true,
       italic = true,
       sp = underline_sp,
-      underline = underline_indicator,
+      underline = has_underline_indicator,
     },
     pick_visible = {
       fg = error_fg,
@@ -713,7 +721,7 @@ local function get_defaults()
   }
   return {
     options = opts,
-    highlights = derive_colors(opts),
+    highlights = derive_colors(),
   }
 end
 
