@@ -330,6 +330,15 @@ local function derive_colors()
     },
   })
 
+  local win_separator_fg = hex({
+    name = "WinSeparator",
+    attribute = "fg",
+    fallback = {
+      name = "VertSplit",
+      attribute = "fg",
+    },
+  })
+
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
   local is_bright_background = colors.color_is_bright(normal_bg)
@@ -668,6 +677,10 @@ local function derive_colors()
       bg = background_color,
       bold = true,
       italic = true,
+    },
+    offset_separator = {
+      fg = win_separator_fg,
+      bg = separator_background_color,
     },
   }
 end

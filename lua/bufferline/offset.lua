@@ -24,7 +24,7 @@ local supported_win_types = {
 
 ---Format the content of a neighbouring offset's text
 ---@param size integer
----@param highlight string
+---@param highlight table<string, string>
 ---@param offset table
 ---@return string
 local function get_section_text(size, highlight, offset)
@@ -53,7 +53,11 @@ local function get_section_text(size, highlight, offset)
       left, right = remainder - 1, 1
     end
   end
-  return highlight .. string.rep(" ", left) .. text .. string.rep(" ", right)
+  local str = highlight.text .. string.rep(" ", left) .. text .. string.rep(" ", right)
+  if not offset.separator then return str end
+
+  local sep_icon = type(offset.separator) == "string" and offset.separator or "│"
+  return str .. highlight.sep .. sep_icon
 end
 
 ---A heuristic to attempt to derive a windows background color from a winhighlight
@@ -121,10 +125,11 @@ end
 ---@return string
 ---@return string
 function M.get()
-  local offsets = config.options.offsets
+  local offsets, hls = config.options.offsets, config.highlights
   local left = ""
   local right = ""
   local total_size = 0
+  local sep_hl = highlights.hl(hls.offset_separator.hl_group)
 
   if offsets and #offsets > 0 then
     local layout = fn.winlayout()
@@ -138,8 +143,8 @@ function M.get()
           local hl_name = offset.highlight
             or guess_window_highlight(win_id)
             or config.highlights.fill.hl_group
-
-          local component = get_section_text(width, highlights.hl(hl_name), offset)
+          local hl = highlights.hl(hl_name)
+          local component = get_section_text(width, { text = hl, sep = sep_hl }, offset)
 
           total_size = total_size + width
 
