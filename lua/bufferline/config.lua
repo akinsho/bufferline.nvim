@@ -22,6 +22,10 @@ local colors = lazy.require("bufferline.colors")
 ---@field options GroupOptions
 ---@field items Group[]
 
+---@class BufferlineIndicator
+---@field style "underline" | "icon"
+---@field icon string?
+
 ---@alias BufferlineMode "'tabs'" | "'buffers'"
 
 ---@alias DiagnosticIndicator fun(count: number, level: number, errors: table<string, any>, ctx: table<string, any>): string
@@ -39,7 +43,7 @@ local colors = lazy.require("bufferline.colors")
 ---@field public left_mouse_command string | function
 ---@field public right_mouse_command string | function
 ---@field public middle_mouse_command (string | function)?
----@field public indicator_icon string
+---@field public indicator BufferlineIndicator
 ---@field public left_trunc_marker string
 ---@field public right_trunc_marker string
 ---@field public separator_style string
@@ -348,6 +352,11 @@ local function derive_colors()
   local warning_diagnostic_fg = shade(warning_fg, diagnostic_shading)
   local error_diagnostic_fg = shade(error_fg, diagnostic_shading)
 
+  local indicator = vim.tbl_get(config, "user", "options", "indicator")
+  local underline_indicator = indicator.style == "underline"
+
+  local underline_sp = underline_indicator and tabline_sel_bg or nil
+
   return {
     fill = {
       fg = comment_fg,
@@ -384,6 +393,8 @@ local function derive_colors()
     close_button_selected = {
       fg = normal_fg,
       bg = normal_bg,
+      sp = underline_sp,
+      underline = underline_indicator,
     },
     background = {
       fg = comment_fg,
@@ -402,6 +413,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
+      sp = underline_sp,
+      underline = underline_indicator,
     },
     numbers = {
       fg = comment_fg,
@@ -412,6 +425,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
+      sp = underline_sp,
+      underline = underline_indicator,
     },
     numbers_visible = {
       fg = comment_fg,
@@ -430,6 +445,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
+      sp = underline_sp,
+      underline = underline_indicator,
     },
     hint = {
       fg = comment_fg,
@@ -570,11 +587,15 @@ local function derive_colors()
     modified_selected = {
       fg = string_fg,
       bg = normal_bg,
+      sp = underline_sp,
+      underline = underline_indicator,
     },
     duplicate_selected = {
       fg = duplicate_color,
       italic = true,
       bg = normal_bg,
+      sp = underline_sp,
+      underline = underline_indicator,
     },
     duplicate_visible = {
       fg = duplicate_color,
@@ -589,6 +610,8 @@ local function derive_colors()
     separator_selected = {
       fg = separator_background_color,
       bg = normal_bg,
+      sp = underline_sp,
+      underline = underline_indicator,
     },
     separator_visible = {
       fg = separator_background_color,
@@ -601,6 +624,8 @@ local function derive_colors()
     indicator_selected = {
       fg = tabline_sel_bg,
       bg = normal_bg,
+      sp = underline_sp,
+      underline = underline_indicator,
     },
     indicator_visible = {
       fg = visible_bg,
@@ -611,6 +636,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
+      sp = underline_sp,
+      underline = underline_indicator,
     },
     pick_visible = {
       fg = error_fg,
@@ -634,55 +661,59 @@ end
 -- Icons from https://fontawesome.com/cheatsheet
 ---@return BufferlineConfig
 local function get_defaults()
-  return {
-    ---@type BufferlineOptions
-    options = {
-      mode = "buffers",
-      themable = true, -- whether or not bufferline highlights can be overridden externally
-      numbers = "none",
-      buffer_close_icon = "",
-      modified_icon = "●",
-      close_icon = "",
-      close_command = "bdelete! %d",
-      left_mouse_command = "buffer %d",
-      right_mouse_command = "bdelete! %d",
-      middle_mouse_command = nil,
-      -- U+2590 ▐ Right half block, this character is right aligned so the
-      -- background highlight doesn't appear in the middle
-      -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
-      indicator_icon = "▎",
-      left_trunc_marker = "",
-      right_trunc_marker = "",
-      separator_style = "thin",
-      name_formatter = nil,
-      tab_size = 18,
-      max_name_length = 18,
-      color_icons = true,
-      show_buffer_icons = true,
-      show_buffer_close_icons = true,
-      show_buffer_default_icon = true,
-      show_close_icon = true,
-      show_tab_indicators = true,
-      enforce_regular_tabs = false,
-      always_show_bufferline = true,
-      persist_buffer_sort = true,
-      max_prefix_length = 15,
-      sort_by = "id",
-      diagnostics = false,
-      diagnostics_indicator = nil,
-      diagnostics_update_in_insert = true,
-      offsets = {},
-      groups = {
-        items = {},
-        options = {
-          toggle_hidden_on_enter = true,
-        },
-      },
-      debug = {
-        logging = false,
+  ---@type BufferlineOptions
+  local opts = {
+    mode = "buffers",
+    themable = true, -- whether or not bufferline highlights can be overridden externally
+    numbers = "none",
+    buffer_close_icon = "",
+    modified_icon = "●",
+    close_icon = "",
+    close_command = "bdelete! %d",
+    left_mouse_command = "buffer %d",
+    right_mouse_command = "bdelete! %d",
+    middle_mouse_command = nil,
+    -- U+2590 ▐ Right half block, this character is right aligned so the
+    -- background highlight doesn't appear in the middle
+    -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
+    indicator = {
+      icon = "▎",
+      style = "icon",
+    },
+    left_trunc_marker = "",
+    right_trunc_marker = "",
+    separator_style = "thin",
+    name_formatter = nil,
+    tab_size = 18,
+    max_name_length = 18,
+    color_icons = true,
+    show_buffer_icons = true,
+    show_buffer_close_icons = true,
+    show_buffer_default_icon = true,
+    show_close_icon = true,
+    show_tab_indicators = true,
+    enforce_regular_tabs = false,
+    always_show_bufferline = true,
+    persist_buffer_sort = true,
+    max_prefix_length = 15,
+    sort_by = "id",
+    diagnostics = false,
+    diagnostics_indicator = nil,
+    diagnostics_update_in_insert = true,
+    offsets = {},
+    groups = {
+      items = {},
+      options = {
+        toggle_hidden_on_enter = true,
       },
     },
-    highlights = derive_colors(),
+    debug = {
+      logging = false,
+    },
+  }
+  return {
+    options = opts,
+    highlights = derive_colors(opts),
   }
 end
 
