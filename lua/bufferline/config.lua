@@ -11,6 +11,8 @@ local utils = lazy.require("bufferline.utils")
 local highlights = lazy.require("bufferline.highlights")
 --- @module "bufferline.colors"
 local colors = lazy.require("bufferline.colors")
+--- @module "bufferline.colors"
+local constants = lazy.require("bufferline.constants")
 
 ---@class DebugOpts
 ---@field logging boolean
@@ -148,12 +150,8 @@ function Config:merge(defaults)
 end
 
 local deprecations = {
-  mappings = {
-    message = "please refer to the BufferLineGoToBuffer section of the README",
-    pending = false,
-  },
-  number_style = {
-    message = "please specify 'numbers' as a function instead. See :h bufferline-numbers for details",
+  indicator_icon = {
+    message = "It should be changed to indicator and icon specified as indicator.icon, with indicator.style = 'icon'",
     pending = true,
   },
 }
@@ -633,7 +631,7 @@ local function derive_colors()
     },
     tab_separator = {
       fg = separator_background_color,
-      bg = normal_bg,
+      bg = background_color,
     },
     tab_separator_selected = {
       fg = separator_background_color,
@@ -697,7 +695,7 @@ local function get_defaults()
     -- background highlight doesn't appear in the middle
     -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
     indicator = {
-      icon = "▎",
+      icon = constants.indicator,
       style = "icon",
     },
     left_trunc_marker = "",
@@ -747,6 +745,9 @@ function Config:resolve(defaults)
     accum[hl_name] = highlights.translate_user_highlights(opts)
     return accum
   end, hl_table_to_color(hl))
+
+  local indicator_icon = vim.tbl_get(self, "options", "indicator_icon")
+  if indicator_icon then self.options.indicator = { icon = indicator_icon, style = "icon" } end
 
   if self:is_tabline() then
     local opts = defaults.options
