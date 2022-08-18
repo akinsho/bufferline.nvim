@@ -28,7 +28,8 @@ local function render(tabpage, is_active, style, highlights)
   local h = highlights
   local hl = is_active and h.tab_selected.hl_group or h.tab.hl_group
   local separator_hl = is_active and h.tab_separator_selected.hl_group or h.tab_separator.hl_group
-  local separator_component = style == "thick" and "▐" or "▕"
+  local chars = constants.sep_chars[style] or constants.sep_chars.thin
+  local separator_component = chars[2]
   local name = padding .. padding .. tabpage.tabnr .. padding
   return {
     { highlight = hl, text = name, attr = { prefix = tab_click_component(tabpage.tabnr) } },
