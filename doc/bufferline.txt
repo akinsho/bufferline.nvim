@@ -116,7 +116,14 @@ The available configuration are:
                     return true
                 end
             end,
-            offsets = {{filetype = "NvimTree", text = "File Explorer" | function , text_align = "left" | "center" | "right"}},
+            offsets = {
+                {
+                    filetype = "NvimTree",
+                    text = "File Explorer" | function ,
+                    text_align = "left" | "center" | "right"
+                    separator = true
+                }
+            },
             color_icons = true | false, -- whether or not to add the filetype icon highlights
             show_buffer_icons = true | false, -- disable filetype icons for buffers
             show_buffer_close_icons = true | false,
@@ -481,7 +488,14 @@ containing the details of the window to avoid. *NOTE:* this is only relevant
 for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or
 `Vista`
 >
-    offsets = {{filetype = "NvimTree", text = "File Explorer", highlight = "Directory"}}
+    offsets = {
+        {
+            filetype = "NvimTree",
+            text = "File Explorer",
+            highlight = "Directory"
+            separator = true -- use a "true" to enable the default, or set your own character
+        }
+    }
 <
 The `filetype` is used to check whether a particular window is a match, the
 `text` is *optional* and will show above the window if specified.
@@ -505,6 +519,12 @@ is shown above the window.
 
 You can also change the alignment of the text in the offset section using
 `text_align` which can be set to `left`, `right` or `center`.
+
+An offset can also have a separator which mimics the appearance of the
+win separator, and the intent is give a vertical split the appearance of
+a consistent separator. The highlight can be changed using the `offset_separator`
+highlight. The value can be set to a `boolean` (uses the default separator if
+true) or to a string which will be the character that will be used.
 
 Lastly you can specify a `padding` option as well which will increase the
 amount the bufferline is offset beyond just the window width, this isn't
@@ -930,7 +950,11 @@ NOTE: you can specify colors the same way you specify colors for
                 bg = '<color-value-here>',
                 bold = true,
                 italic = true,
-            }
+            },
+            offset_separator = {
+                fg = win_separator_fg,
+                bg = separator_background_color,
+            },
         };
     }
 <
