@@ -33,6 +33,8 @@ function MockBuffer:new(o)
   return o
 end
 
+function MockBuffer:current() return true end
+
 function MockBuffer:as_element() return self end
 
 ---@param name string

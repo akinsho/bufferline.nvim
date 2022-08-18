@@ -703,6 +703,7 @@ M.components = components
 if utils.is_test() then
   M.to_tabline_str = to_tabline_str
   M.set_id = set_id
+  M.add_indicator = add_indicator
 end
 
 return M
