@@ -4,6 +4,8 @@ local M = {}
 ---------------------------------------------------------------------------//
 M.padding = " "
 
+M.indicator = "▎"
+
 M.sep_names = {
   thin = "thin",
   thick = "thick",
