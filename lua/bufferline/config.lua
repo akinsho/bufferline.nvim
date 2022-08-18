@@ -352,8 +352,8 @@ local function derive_colors()
   local warning_diagnostic_fg = shade(warning_fg, diagnostic_shading)
   local error_diagnostic_fg = shade(error_fg, diagnostic_shading)
 
-  local indicator = vim.tbl_get(config, "user", "options", "indicator")
-  local has_underline_indicator = indicator.style == "underline"
+  local indicator_style = vim.tbl_get(config, "user", "options", "indicator", "style")
+  local has_underline_indicator = indicator_style == "underline"
 
   local underline_sp = has_underline_indicator and tabline_sel_bg or nil
 
