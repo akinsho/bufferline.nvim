@@ -75,6 +75,7 @@ local hl_keys = {
   fg = "fg",
   bg = "bg",
   sp = "special",
+  special = "special",
   italic = "italic",
   bold = "bold",
   underline = "underline",
