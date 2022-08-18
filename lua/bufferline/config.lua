@@ -377,6 +377,8 @@ local function derive_colors()
     tab_selected = {
       fg = tabline_sel_bg,
       bg = normal_bg,
+      sp = underline_sp,
+      underline = has_underline_indicator,
     },
     tab_close = {
       fg = comment_fg,
@@ -628,6 +630,16 @@ local function derive_colors()
     separator = {
       fg = separator_background_color,
       bg = background_color,
+    },
+    tab_separator = {
+      fg = separator_background_color,
+      bg = normal_bg,
+    },
+    tab_separator_selected = {
+      fg = separator_background_color,
+      bg = normal_bg,
+      sp = underline_sp,
+      underline = has_underline_indicator,
     },
     indicator_selected = {
       fg = tabline_sel_bg,
