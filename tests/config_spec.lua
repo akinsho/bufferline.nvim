@@ -52,5 +52,47 @@ describe("Config tests", function()
       conf = config.update_highlights()
       assert.is_equal(conf.highlights.buffer_selected.fg, "red")
     end)
+
+    it('should not underline anything if options.indicator.style = "icon"', function()
+      config.set({ options = { indicator = { style = "icon" } } })
+      local conf = config.apply()
+      for _, value in pairs(conf.highlights) do
+        assert.is_falsy(value.underline)
+      end
+    end)
+
+    it('should only underline valid fields if options.indicator.style = "underline"', function()
+      config.set({ options = { indicator = { style = "underline" } } })
+      local conf = config.apply()
+      local valid = {
+        "numbers_selected",
+        "buffer_selected",
+        "modified_selected",
+        "indicator_selected",
+        "tab_selected",
+        "close_button_selected",
+        "tab_separator_selected",
+        "duplicate_selected",
+        "separator_selected",
+        "pick_selected",
+        "close_button_selected",
+        "diagnostic_selected",
+        "error_selected",
+        "error_diagnostic_selected",
+        "info_selected",
+        "info_diagnostic_selected",
+        "warning_selected",
+        "warning_diagnostic_selected",
+        "hint_selected",
+        "hint_diagnostic_selected",
+      }
+      for hl, value in pairs(conf.highlights) do
+        if vim.tbl_contains(valid, hl) then
+          assert.is_true(value.underline)
+        else
+          assert.is_falsy(value.underline)
+        end
+      end
+    end)
   end)
 end)

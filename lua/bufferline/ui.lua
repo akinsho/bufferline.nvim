@@ -297,14 +297,17 @@ local function add_indicator(context)
   local options = config.options
   local style = options.separator_style
   local symbol, highlight = padding, nil
+
   if is_slant(style) then return { text = symbol, highlight = highlight } end
 
   local is_current = element:current()
 
-  symbol = is_current and options.indicator_icon or symbol
+  symbol = is_current and options.indicator.icon or symbol
   highlight = is_current and hl.indicator_selected.hl_group
     or element:visible() and hl.indicator_visible.hl_group
     or curr_hl.buffer
+
+  if options.indicator.style ~= "icon" then return { text = padding, highlight = highlight } end
 
   -- since all non-current buffers do not have an indicator they need
   -- to be padded to make up the difference in size
@@ -701,6 +704,7 @@ M.components = components
 if utils.is_test() then
   M.to_tabline_str = to_tabline_str
   M.set_id = set_id
+  M.add_indicator = add_indicator
 end
 
 return M

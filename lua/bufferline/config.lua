@@ -11,6 +11,8 @@ local utils = lazy.require("bufferline.utils")
 local highlights = lazy.require("bufferline.highlights")
 --- @module "bufferline.colors"
 local colors = lazy.require("bufferline.colors")
+--- @module "bufferline.colors"
+local constants = lazy.require("bufferline.constants")
 
 ---@class DebugOpts
 ---@field logging boolean
@@ -21,6 +23,10 @@ local colors = lazy.require("bufferline.colors")
 ---@class GroupOpts
 ---@field options GroupOptions
 ---@field items Group[]
+
+---@class BufferlineIndicator
+---@field style "underline" | "icon"
+---@field icon string?
 
 ---@alias BufferlineMode "'tabs'" | "'buffers'"
 
@@ -39,7 +45,7 @@ local colors = lazy.require("bufferline.colors")
 ---@field public left_mouse_command string | function
 ---@field public right_mouse_command string | function
 ---@field public middle_mouse_command (string | function)?
----@field public indicator_icon string
+---@field public indicator BufferlineIndicator
 ---@field public left_trunc_marker string
 ---@field public right_trunc_marker string
 ---@field public separator_style string
@@ -144,12 +150,8 @@ function Config:merge(defaults)
 end
 
 local deprecations = {
-  mappings = {
-    message = "please refer to the BufferLineGoToBuffer section of the README",
-    pending = false,
-  },
-  number_style = {
-    message = "please specify 'numbers' as a function instead. See :h bufferline-numbers for details",
+  indicator_icon = {
+    message = "It should be changed to indicator and icon specified as indicator.icon, with indicator.style = 'icon'",
     pending = true,
   },
 }
@@ -348,6 +350,11 @@ local function derive_colors()
   local warning_diagnostic_fg = shade(warning_fg, diagnostic_shading)
   local error_diagnostic_fg = shade(error_fg, diagnostic_shading)
 
+  local indicator_style = vim.tbl_get(config, "user", "options", "indicator", "style")
+  local has_underline_indicator = indicator_style == "underline"
+
+  local underline_sp = has_underline_indicator and tabline_sel_bg or nil
+
   return {
     fill = {
       fg = comment_fg,
@@ -368,6 +375,8 @@ local function derive_colors()
     tab_selected = {
       fg = tabline_sel_bg,
       bg = normal_bg,
+      sp = underline_sp,
+      underline = has_underline_indicator,
     },
     tab_close = {
       fg = comment_fg,
@@ -384,6 +393,8 @@ local function derive_colors()
     close_button_selected = {
       fg = normal_fg,
       bg = normal_bg,
+      sp = underline_sp,
+      underline = has_underline_indicator,
     },
     background = {
       fg = comment_fg,
@@ -402,6 +413,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
+      sp = underline_sp,
+      underline = has_underline_indicator,
     },
     numbers = {
       fg = comment_fg,
@@ -412,6 +425,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
+      sp = underline_sp,
+      underline = has_underline_indicator,
     },
     numbers_visible = {
       fg = comment_fg,
@@ -430,6 +445,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
+      sp = underline_sp,
+      underline = has_underline_indicator,
     },
     hint = {
       fg = comment_fg,
@@ -445,7 +462,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = hint_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or hint_fg,
     },
     hint_diagnostic = {
       fg = comment_diagnostic_fg,
@@ -461,7 +479,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = hint_diagnostic_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or hint_diagnostic_fg,
     },
     info = {
       fg = comment_fg,
@@ -477,7 +496,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = info_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or info_fg,
     },
     info_diagnostic = {
       fg = comment_diagnostic_fg,
@@ -493,7 +513,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = info_diagnostic_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or info_diagnostic_fg,
     },
     warning = {
       fg = comment_fg,
@@ -509,7 +530,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = warning_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or warning_fg,
     },
     warning_diagnostic = {
       fg = comment_diagnostic_fg,
@@ -525,7 +547,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = warning_diagnostic_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or warning_diagnostic_fg,
     },
     error = {
       fg = comment_fg,
@@ -541,7 +564,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = error_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or error_fg,
     },
     error_diagnostic = {
       fg = comment_diagnostic_fg,
@@ -557,7 +581,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
-      sp = error_diagnostic_fg,
+      underline = has_underline_indicator,
+      sp = underline_sp or error_diagnostic_fg,
     },
     modified = {
       fg = string_fg,
@@ -570,11 +595,15 @@ local function derive_colors()
     modified_selected = {
       fg = string_fg,
       bg = normal_bg,
+      sp = underline_sp,
+      underline = has_underline_indicator,
     },
     duplicate_selected = {
       fg = duplicate_color,
       italic = true,
       bg = normal_bg,
+      sp = underline_sp,
+      underline = has_underline_indicator,
     },
     duplicate_visible = {
       fg = duplicate_color,
@@ -589,6 +618,8 @@ local function derive_colors()
     separator_selected = {
       fg = separator_background_color,
       bg = normal_bg,
+      sp = underline_sp,
+      underline = has_underline_indicator,
     },
     separator_visible = {
       fg = separator_background_color,
@@ -598,9 +629,21 @@ local function derive_colors()
       fg = separator_background_color,
       bg = background_color,
     },
+    tab_separator = {
+      fg = separator_background_color,
+      bg = background_color,
+    },
+    tab_separator_selected = {
+      fg = separator_background_color,
+      bg = normal_bg,
+      sp = underline_sp,
+      underline = has_underline_indicator,
+    },
     indicator_selected = {
       fg = tabline_sel_bg,
       bg = normal_bg,
+      sp = underline_sp,
+      underline = has_underline_indicator,
     },
     indicator_visible = {
       fg = visible_bg,
@@ -611,6 +654,8 @@ local function derive_colors()
       bg = normal_bg,
       bold = true,
       italic = true,
+      sp = underline_sp,
+      underline = has_underline_indicator,
     },
     pick_visible = {
       fg = error_fg,
@@ -634,54 +679,58 @@ end
 -- Icons from https://fontawesome.com/cheatsheet
 ---@return BufferlineConfig
 local function get_defaults()
-  return {
-    ---@type BufferlineOptions
-    options = {
-      mode = "buffers",
-      themable = true, -- whether or not bufferline highlights can be overridden externally
-      numbers = "none",
-      buffer_close_icon = "",
-      modified_icon = "●",
-      close_icon = "",
-      close_command = "bdelete! %d",
-      left_mouse_command = "buffer %d",
-      right_mouse_command = "bdelete! %d",
-      middle_mouse_command = nil,
-      -- U+2590 ▐ Right half block, this character is right aligned so the
-      -- background highlight doesn't appear in the middle
-      -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
-      indicator_icon = "▎",
-      left_trunc_marker = "",
-      right_trunc_marker = "",
-      separator_style = "thin",
-      name_formatter = nil,
-      tab_size = 18,
-      max_name_length = 18,
-      color_icons = true,
-      show_buffer_icons = true,
-      show_buffer_close_icons = true,
-      show_buffer_default_icon = true,
-      show_close_icon = true,
-      show_tab_indicators = true,
-      enforce_regular_tabs = false,
-      always_show_bufferline = true,
-      persist_buffer_sort = true,
-      max_prefix_length = 15,
-      sort_by = "id",
-      diagnostics = false,
-      diagnostics_indicator = nil,
-      diagnostics_update_in_insert = true,
-      offsets = {},
-      groups = {
-        items = {},
-        options = {
-          toggle_hidden_on_enter = true,
-        },
-      },
-      debug = {
-        logging = false,
+  ---@type BufferlineOptions
+  local opts = {
+    mode = "buffers",
+    themable = true, -- whether or not bufferline highlights can be overridden externally
+    numbers = "none",
+    buffer_close_icon = "",
+    modified_icon = "●",
+    close_icon = "",
+    close_command = "bdelete! %d",
+    left_mouse_command = "buffer %d",
+    right_mouse_command = "bdelete! %d",
+    middle_mouse_command = nil,
+    -- U+2590 ▐ Right half block, this character is right aligned so the
+    -- background highlight doesn't appear in the middle
+    -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
+    indicator = {
+      icon = constants.indicator,
+      style = "icon",
+    },
+    left_trunc_marker = "",
+    right_trunc_marker = "",
+    separator_style = "thin",
+    name_formatter = nil,
+    tab_size = 18,
+    max_name_length = 18,
+    color_icons = true,
+    show_buffer_icons = true,
+    show_buffer_close_icons = true,
+    show_buffer_default_icon = true,
+    show_close_icon = true,
+    show_tab_indicators = true,
+    enforce_regular_tabs = false,
+    always_show_bufferline = true,
+    persist_buffer_sort = true,
+    max_prefix_length = 15,
+    sort_by = "id",
+    diagnostics = false,
+    diagnostics_indicator = nil,
+    diagnostics_update_in_insert = true,
+    offsets = {},
+    groups = {
+      items = {},
+      options = {
+        toggle_hidden_on_enter = true,
       },
     },
+    debug = {
+      logging = false,
+    },
+  }
+  return {
+    options = opts,
     highlights = derive_colors(),
   }
 end
@@ -696,6 +745,9 @@ function Config:resolve(defaults)
     accum[hl_name] = highlights.translate_user_highlights(opts)
     return accum
   end, hl_table_to_color(hl))
+
+  local indicator_icon = vim.tbl_get(self, "options", "indicator_icon")
+  if indicator_icon then self.options.indicator = { icon = indicator_icon, style = "icon" } end
 
   if self:is_tabline() then
     local opts = defaults.options
