@@ -244,13 +244,14 @@ local function get_icon_with_highlight(buffer, color_icons, hl_defs)
     [visibility.NONE] = hl_defs.background,
   })[state]
 
-  local new_hl = highlights.generate_name_for_state(parent.hl_group, { visibility = state })
+  local new_hl = highlights.generate_name_for_state(hl, { visibility = state })
   local color = not color_icons and "fg" or nil
   local hl_colors = vim.tbl_extend("force", parent, {
     fg = color or colors.get_color({ name = hl, attribute = "fg" }),
     ctermfg = color or colors.get_color({ name = hl, attribute = "fg", cterm = true }),
     italic = false,
     bold = false,
+    hl_group = new_hl,
   })
   highlights.set_one(new_hl, hl_colors)
   return { text = icon, highlight = new_hl, attr = { text = "%*" } }
