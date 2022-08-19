@@ -8,6 +8,8 @@ local constants = lazy.require("bufferline.constants")
 local config = lazy.require("bufferline.config")
 --- @module "bufferline.groups"
 local groups = lazy.require("bufferline.groups")
+---@module "bufferline.colors"
+local colors = require("bufferline.colors")
 --- @module "bufferline.utils.log"
 local log = lazy.require("bufferline.utils.log")
 
@@ -141,6 +143,41 @@ function M.set_all(conf)
   if next(msgs) then
     utils.notify(fmt("Error setting highlight group(s) for: \n", table.concat(msgs, "\n")), "error")
   end
+end
+
+local icon_hl_cache = {}
+
+function M.reset_icon_hl_cache() icon_hl_cache = {} end
+
+--- Generate and set a highlight for an element's icon
+--- this value is cached until the colorscheme changes to prevent
+--- redundant calls to set the same highlight constantly
+---@param state Visibility
+---@param hls BufferlineHighlights
+---@param base_hl string
+---@return string
+function M.set_icon_highlight(state, hls, base_hl)
+  local icon_hl = M.generate_name_for_state(base_hl, { visibility = state })
+  if icon_hl_cache[icon_hl] then return icon_hl end
+
+  local parent = ({
+    [V.INACTIVE] = hls.buffer_visible,
+    [V.SELECTED] = hls.buffer_selected,
+    [V.NONE] = hls.background,
+  })[state]
+
+  local color_icons = config.options.color_icons
+  local color = not color_icons and "fg" or nil
+  local hl_colors = vim.tbl_extend("force", parent, {
+    fg = color or colors.get_color({ name = base_hl, attribute = "fg" }),
+    ctermfg = color or colors.get_color({ name = base_hl, attribute = "fg", cterm = true }),
+    italic = false,
+    bold = false,
+    hl_group = icon_hl,
+  })
+  M.set_one(icon_hl, hl_colors)
+  icon_hl_cache[icon_hl] = true
+  return icon_hl
 end
 
 ---@param vis Visibility

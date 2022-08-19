@@ -10,8 +10,6 @@ local config = lazy.require("bufferline.config")
 local constants = lazy.require("bufferline.constants")
 ---@module "bufferline.highlights"
 local highlights = lazy.require("bufferline.highlights")
----@module "bufferline.colors"
-local colors = require("bufferline.colors")
 ---@module "bufferline.pick"
 local pick = lazy.require("bufferline.pick")
 ---@module "bufferline.groups"
@@ -227,34 +225,17 @@ local function add_space(ctx, length)
 end
 
 --- @param buffer TabElement
---- @param color_icons boolean whether or not to color the filetype icons
 --- @param hl_defs BufferlineHighlights
 --- @return Segment?
-local function get_icon_with_highlight(buffer, color_icons, hl_defs)
+local function get_icon(buffer, hl_defs)
   local icon = buffer.icon
-  local hl = buffer.icon_highlight
+  local original_hl = buffer.icon_highlight
 
   if not icon or icon == "" then return end
-  if not hl or hl == "" then return { text = icon } end
+  if not original_hl or original_hl == "" then return { text = icon } end
 
-  local state = buffer:visibility()
-  local parent = ({
-    [visibility.INACTIVE] = hl_defs.buffer_visible,
-    [visibility.SELECTED] = hl_defs.buffer_selected,
-    [visibility.NONE] = hl_defs.background,
-  })[state]
-
-  local new_hl = highlights.generate_name_for_state(hl, { visibility = state })
-  local color = not color_icons and "fg" or nil
-  local hl_colors = vim.tbl_extend("force", parent, {
-    fg = color or colors.get_color({ name = hl, attribute = "fg" }),
-    ctermfg = color or colors.get_color({ name = hl, attribute = "fg", cterm = true }),
-    italic = false,
-    bold = false,
-    hl_group = new_hl,
-  })
-  highlights.set_one(new_hl, hl_colors)
-  return { text = icon, highlight = new_hl, attr = { text = "%*" } }
+  local icon_hl = highlights.set_icon_highlight(buffer:visibility(), hl_defs, original_hl)
+  return { text = icon, highlight = icon_hl, attr = { text = "%*" } }
 end
 
 ---Determine if the separator style is one of the slant options
@@ -323,7 +304,7 @@ local function add_icon(context)
   if context.is_picking and element.letter then
     return pick.component(context)
   elseif options.show_buffer_icons and element.icon then
-    return get_icon_with_highlight(element, options.color_icons, config.highlights)
+    return get_icon(element, config.highlights)
   end
 end
 
