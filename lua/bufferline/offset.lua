@@ -60,9 +60,9 @@ local function get_section_text(size, highlight, offset, is_left)
   local str = highlight.text .. padding:rep(left) .. text .. padding:rep(right)
   if not offset.separator then return str end
 
-  local sep_icon = type(offset.separator) == "string" and offset.separator or  "│"
-  local sep =  highlight.sep ..  sep_icon
-  return (not is_left and sep or '') ..  str .. (is_left and sep or '')
+  local sep_icon = type(offset.separator) == "string" and offset.separator or "│"
+  local sep = highlight.sep .. sep_icon
+  return (not is_left and sep or "") .. str .. (is_left and sep or "")
 end
 
 ---A heuristic to attempt to derive a windows background color from a winhighlight
