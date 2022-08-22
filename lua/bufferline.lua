@@ -114,8 +114,8 @@ local function toggle_bufferline()
 end
 
 local function apply_colors()
-  local current_prefs = config.update_highlights()
-  highlights.set_all(current_prefs)
+  highlights.reset_icon_hl_cache()
+  highlights.set_all(config.update_highlights())
 end
 
 ---@alias group_actions "close" | "toggle"

@@ -10,8 +10,6 @@ local config = lazy.require("bufferline.config")
 local constants = lazy.require("bufferline.constants")
 ---@module "bufferline.highlights"
 local highlights = lazy.require("bufferline.highlights")
----@module "bufferline.colors"
-local colors = require("bufferline.colors")
 ---@module "bufferline.pick"
 local pick = lazy.require("bufferline.pick")
 ---@module "bufferline.groups"
@@ -227,36 +225,17 @@ local function add_space(ctx, length)
 end
 
 --- @param buffer TabElement
---- @param color_icons boolean whether or not to color the filetype icons
 --- @param hl_defs BufferlineHighlights
 --- @return Segment?
-local function get_icon_with_highlight(buffer, color_icons, hl_defs)
+local function get_icon(buffer, hl_defs)
   local icon = buffer.icon
-  local hl = buffer.icon_highlight
+  local original_hl = buffer.icon_highlight
 
   if not icon or icon == "" then return end
-  if not hl or hl == "" then return { text = icon } end
+  if not original_hl or original_hl == "" then return { text = icon } end
 
-  local state = buffer:visibility()
-  local bg = ({
-    [visibility.INACTIVE] = hl_defs.buffer_visible.hl_group,
-    [visibility.SELECTED] = hl_defs.buffer_selected.hl_group,
-    [visibility.NONE] = hl_defs.background.hl_group,
-  })[state]
-
-  local new_hl = highlights.generate_name_for_state(hl, { visibility = state })
-  local hl_colors = {
-    fg = not color_icons and "fg" or colors.get_color({ name = hl, attribute = "fg" }),
-    bg = colors.get_color({ name = bg, attribute = "bg" }),
-    ctermfg = not color_icons and "fg" or colors.get_color({
-      name = hl,
-      attribute = "fg",
-      cterm = true,
-    }),
-    ctermbg = colors.get_color({ name = bg, attribute = "bg", cterm = true }),
-  }
-  highlights.set_one(new_hl, hl_colors)
-  return { text = icon, highlight = new_hl, attr = { text = "%*" } }
+  local icon_hl = highlights.set_icon_highlight(buffer:visibility(), hl_defs, original_hl)
+  return { text = icon, highlight = icon_hl, attr = { text = "%*" } }
 end
 
 ---Determine if the separator style is one of the slant options
@@ -300,14 +279,17 @@ local function add_indicator(context)
   local options = config.options
   local style = options.separator_style
   local symbol, highlight = padding, nil
+
   if is_slant(style) then return { text = symbol, highlight = highlight } end
 
   local is_current = element:current()
 
-  symbol = is_current and options.indicator_icon or symbol
+  symbol = is_current and options.indicator.icon or symbol
   highlight = is_current and hl.indicator_selected.hl_group
     or element:visible() and hl.indicator_visible.hl_group
     or curr_hl.buffer
+
+  if options.indicator.style ~= "icon" then return { text = padding, highlight = highlight } end
 
   -- since all non-current buffers do not have an indicator they need
   -- to be padded to make up the difference in size
@@ -322,7 +304,7 @@ local function add_icon(context)
   if context.is_picking and element.letter then
     return pick.component(context)
   elseif options.show_buffer_icons and element.icon then
-    return get_icon_with_highlight(element, options.color_icons, config.highlights)
+    return get_icon(element, config.highlights)
   end
 end
 
@@ -704,6 +686,7 @@ M.components = components
 if utils.is_test() then
   M.to_tabline_str = to_tabline_str
   M.set_id = set_id
+  M.add_indicator = add_indicator
 end
 
 return M

@@ -40,7 +40,7 @@ describe("Bufferline tests:", function()
       local icon = "R"
       bufferline.setup({
         options = {
-          indicator_icon = icon,
+          indicator = { icon = { icon } },
         },
       })
       vim.cmd("edit test.txt")
