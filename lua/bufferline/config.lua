@@ -25,7 +25,7 @@ local constants = lazy.require("bufferline.constants")
 ---@field items Group[]
 
 ---@class BufferlineIndicator
----@field style "underline" | "icon"
+---@field style "underline" | "icon" | "none"
 ---@field icon string?
 
 ---@alias BufferlineMode "'tabs'" | "'buffers'"
