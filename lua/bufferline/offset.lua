@@ -5,11 +5,14 @@ local config = require("bufferline.config")
 local utils = lazy.require("bufferline.utils")
 ---@module "bufferline.highlights"
 local highlights = lazy.require("bufferline.highlights")
+---@module "bufferline.constants"
+local constants = lazy.require("bufferline.constants")
 
 local M = {}
 
 local api = vim.api
 local fn = vim.fn
+local padding = constants.padding
 
 local t = {
   LEAF = "leaf",
@@ -26,12 +29,13 @@ local supported_win_types = {
 ---@param size integer
 ---@param highlight table<string, string>
 ---@param offset table
+---@param is_left boolean
 ---@return string
-local function get_section_text(size, highlight, offset)
+local function get_section_text(size, highlight, offset, is_left)
   local text = offset.text
 
   if type(text) == "function" then text = text() end
-  text = text or string.rep(" ", size - 2)
+  text = text or padding:rep(size - 2)
 
   local text_size, left, right = api.nvim_strwidth(text), 0, 0
   local alignment = offset.text_align or "center"
@@ -53,11 +57,12 @@ local function get_section_text(size, highlight, offset)
       left, right = remainder - 1, 1
     end
   end
-  local str = highlight.text .. string.rep(" ", left) .. text .. string.rep(" ", right)
+  local str = highlight.text .. padding:rep(left) .. text .. padding:rep(right)
   if not offset.separator then return str end
 
-  local sep_icon = type(offset.separator) == "string" and offset.separator or "│"
-  return str .. highlight.sep .. sep_icon
+  local sep_icon = type(offset.separator) == "string" and offset.separator or  "│"
+  local sep =  highlight.sep ..  sep_icon
+  return (not is_left and sep or '') ..  str .. (is_left and sep or '')
 end
 
 ---A heuristic to attempt to derive a windows background color from a winhighlight
@@ -143,8 +148,9 @@ function M.get()
           local hl_name = offset.highlight
             or guess_window_highlight(win_id)
             or config.highlights.fill.hl_group
+
           local hl = highlights.hl(hl_name)
-          local component = get_section_text(width, { text = hl, sep = sep_hl }, offset)
+          local component = get_section_text(width, { text = hl, sep = sep_hl }, offset, is_left)
 
           total_size = total_size + width
 
