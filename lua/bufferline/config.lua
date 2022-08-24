@@ -780,7 +780,7 @@ end
 ---@param map table<string, table>
 --- TODO: can this become part of a metatable for each highlight group so it is done at the point
 ---of usage
-local function set_highlight_groups(map)
+local function set_highlight_names(map)
   for name, opts in pairs(map) do
     opts.hl_group = highlights.generate_name(name)
   end
@@ -827,7 +827,7 @@ function M.apply(quiet)
   local resolved = config:resolve(defaults)
   if not quiet then config:validate(defaults, resolved) end
   config:merge(defaults)
-  set_highlight_groups(config.highlights)
+  set_highlight_names(config.highlights)
   set_group_highlights(config.highlights)
   return config
 end
