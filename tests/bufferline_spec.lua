@@ -227,12 +227,24 @@ describe("Bufferline tests:", function()
   describe("Theme - ", function()
     it("should update the colors if the colorscheme changes", function()
       vim.cmd("colorscheme blue")
+
+      local colors = require("bufferline.colors")
+      local blue_bg = colors.get_color({ name = "Normal", attribute = "bg" })
+      local blue_fg = colors.get_color({ name = "Normal", attribute = "fg" })
+
       bufferline.setup()
-      assert.equal(config.highlights.buffer_selected.bg, "#000087")
-      assert.equal(config.highlights.buffer_selected.fg, "#ffd700")
+
+      assert.equal(config.highlights.buffer_selected.bg, blue_bg)
+      assert.equal(config.highlights.buffer_selected.fg, blue_fg)
+
       vim.cmd("colorscheme desert")
-      assert.equal(config.highlights.buffer_selected.bg, "#333333")
-      assert.equal(config.highlights.buffer_selected.fg, "#ffffff")
+      local desert_bg = colors.get_color({ name = "Normal", attribute = "bg" })
+      local desert_fg = colors.get_color({ name = "Normal", attribute = "fg" })
+
+      assert.equal(config.highlights.buffer_selected.bg, desert_bg)
+      assert.equal(config.highlights.buffer_selected.fg, desert_fg)
+
+      assert.not_equal(blue_bg, desert_bg)
     end)
   end)
 end)
