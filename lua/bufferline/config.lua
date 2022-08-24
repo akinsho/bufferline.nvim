@@ -144,7 +144,7 @@ end
 ---@return BufferlineConfig
 function Config:merge(defaults)
   assert(defaults and type(defaults) == "table", "A valid config table must be passed to merge")
-  self.options = vim.tbl_deep_extend("keep", self.options or {}, defaults.options or {})
+  self.options = vim.tbl_deep_extend("force", defaults.options, self.options or {})
   self.highlights = vim.tbl_deep_extend("force", defaults.highlights, self.highlights or {})
   return self
 end
@@ -780,7 +780,7 @@ end
 ---@param map table<string, table>
 --- TODO: can this become part of a metatable for each highlight group so it is done at the point
 ---of usage
-local function set_highlight_groups(map)
+local function set_highlight_names(map)
   for name, opts in pairs(map) do
     opts.hl_group = highlights.generate_name(name)
   end
@@ -827,7 +827,7 @@ function M.apply(quiet)
   local resolved = config:resolve(defaults)
   if not quiet then config:validate(defaults, resolved) end
   config:merge(defaults)
-  set_highlight_groups(config.highlights)
+  set_highlight_names(config.highlights)
   set_group_highlights(config.highlights)
   return config
 end
@@ -838,8 +838,13 @@ end
 ---@param conf BufferlineConfig?
 function M.set(conf) config = Config:new(conf or {}) end
 
----Update highlight colours when the colour scheme changes
-function M.update_highlights() return M.apply(true) end
+---Update highlight colours when the colour scheme changes by resetting the user config
+---to what was initially passed in and reload the highlighting
+function M.update_highlights()
+  M.set(config.user)
+  M.apply(true)
+  return config
+end
 
 ---Get the user's configuration or a key from it
 ---@param key string?
