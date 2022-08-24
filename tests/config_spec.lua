@@ -40,19 +40,6 @@ describe("Config tests", function()
       assert.equal(whitesmoke:lower(), under_test.highlights.info.fg)
     end)
 
-    it("should update highlights on colorscheme change", function()
-      config.set({
-        highlights = {
-          buffer_selected = {
-            guifg = "red",
-          },
-        },
-      })
-      local conf = config.apply()
-      conf = config.update_highlights()
-      assert.is_equal(conf.highlights.buffer_selected.fg, "red")
-    end)
-
     it('should not underline anything if options.indicator.style = "icon"', function()
       config.set({ options = { indicator = { style = "icon" } } })
       local conf = config.apply()
@@ -93,6 +80,19 @@ describe("Config tests", function()
           assert.is_falsy(value.underline)
         end
       end
+    end)
+  end)
+  describe("Resetting config -", function()
+    it("should use updated colors when the colorscheme changes", function()
+      vim.cmd("colorscheme blue")
+      config.set()
+      config.apply()
+      assert.equal(config.highlights.buffer_selected.bg, "#000087")
+      assert.equal(config.highlights.buffer_selected.fg, "#ffd700")
+      vim.cmd("colorscheme desert")
+      config.update_highlights()
+      assert.equal(config.highlights.buffer_selected.bg, "#333333")
+      assert.equal(config.highlights.buffer_selected.fg, "#ffffff")
     end)
   end)
 end)
