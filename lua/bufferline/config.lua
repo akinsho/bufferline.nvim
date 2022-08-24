@@ -144,7 +144,7 @@ end
 ---@return BufferlineConfig
 function Config:merge(defaults)
   assert(defaults and type(defaults) == "table", "A valid config table must be passed to merge")
-  self.options = vim.tbl_deep_extend("keep", self.options or {}, defaults.options or {})
+  self.options = vim.tbl_deep_extend("force", defaults.options, self.options or {})
   self.highlights = vim.tbl_deep_extend("force", defaults.highlights, self.highlights or {})
   return self
 end
