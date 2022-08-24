@@ -4,6 +4,8 @@ describe("Config tests", function()
   local whitesmoke = "#F5F5F5"
   local config = require("bufferline.config")
 
+  before_each(function() vim.opt.termguicolors = true end)
+
   after_each(function() config.__reset() end)
 
   describe("Setting config", function()
