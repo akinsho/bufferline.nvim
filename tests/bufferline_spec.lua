@@ -3,13 +3,15 @@ local utils = require("tests.utils")
 describe("Bufferline tests:", function()
   vim.opt.swapfile = false
   vim.opt.hidden = true
+  vim.opt.termguicolors = true
 
   local bufferline
   ---@module "bufferline.state"
   local state
   ---@module "nvim-web-devicons"
   local icons
-  ---@module "bufferline.ui"
+  ---@module "bufferline.config"
+  local config
 
   before_each(function()
     package.loaded["bufferline"] = nil
@@ -17,9 +19,11 @@ describe("Bufferline tests:", function()
     package.loaded["nvim-web-devicons"] = nil
     -- dependent modules need to also be reset as
     -- they keep track of state themselves now
+    package.loaded["bufferline.config"] = nil
     package.loaded["bufferline.commands"] = nil
     bufferline = require("bufferline")
     state = require("bufferline.state")
+    config = require("bufferline.config")
     icons = require("nvim-web-devicons")
     icons.setup({ default = true })
   end)
@@ -218,6 +222,29 @@ describe("Bufferline tests:", function()
       bufferline.close_in_direction("left")
       bufs = vim.api.nvim_list_bufs()
       assert.is_equal(1, #bufs)
+    end)
+  end)
+  describe("Theme - ", function()
+    it("should update the colors if the colorscheme changes", function()
+      vim.cmd("colorscheme blue")
+
+      local colors = require("bufferline.colors")
+      local blue_bg = colors.get_color({ name = "Normal", attribute = "bg" })
+      local blue_fg = colors.get_color({ name = "Normal", attribute = "fg" })
+
+      bufferline.setup()
+
+      assert.equal(config.highlights.buffer_selected.bg, blue_bg)
+      assert.equal(config.highlights.buffer_selected.fg, blue_fg)
+
+      vim.cmd("colorscheme desert")
+      local desert_bg = colors.get_color({ name = "Normal", attribute = "bg" })
+      local desert_fg = colors.get_color({ name = "Normal", attribute = "fg" })
+
+      assert.equal(config.highlights.buffer_selected.bg, desert_bg)
+      assert.equal(config.highlights.buffer_selected.fg, desert_fg)
+
+      assert.not_equal(blue_bg, desert_bg)
     end)
   end)
 end)

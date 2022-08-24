@@ -4,6 +4,8 @@ describe("Config tests", function()
   local whitesmoke = "#F5F5F5"
   local config = require("bufferline.config")
 
+  before_each(function() vim.opt.termguicolors = true end)
+
   after_each(function() config.__reset() end)
 
   describe("Setting config", function()
@@ -38,19 +40,6 @@ describe("Config tests", function()
       config.set({})
       local under_test = config.apply()
       assert.equal(whitesmoke:lower(), under_test.highlights.info.fg)
-    end)
-
-    it("should update highlights on colorscheme change", function()
-      config.set({
-        highlights = {
-          buffer_selected = {
-            guifg = "red",
-          },
-        },
-      })
-      local conf = config.apply()
-      conf = config.update_highlights()
-      assert.is_equal(conf.highlights.buffer_selected.fg, "red")
     end)
 
     it('should not underline anything if options.indicator.style = "icon"', function()
@@ -93,6 +82,26 @@ describe("Config tests", function()
           assert.is_falsy(value.underline)
         end
       end
+    end)
+  end)
+  describe("Resetting config -", function()
+    it("should use updated colors when the colorscheme changes", function()
+      vim.cmd("colorscheme blue")
+      local colors = require("bufferline.colors")
+      local blue_bg = colors.get_color({ name = "Normal", attribute = "bg" })
+      local blue_fg = colors.get_color({ name = "Normal", attribute = "fg" })
+      config.set()
+      config.apply()
+      assert.equal(config.highlights.buffer_selected.bg, blue_bg)
+      assert.equal(config.highlights.buffer_selected.fg, blue_fg)
+      vim.cmd("colorscheme desert")
+      local desert_bg = colors.get_color({ name = "Normal", attribute = "bg" })
+      local desert_fg = colors.get_color({ name = "Normal", attribute = "fg" })
+      config.update_highlights()
+      assert.equal(config.highlights.buffer_selected.bg, desert_bg)
+      assert.equal(config.highlights.buffer_selected.fg, desert_fg)
+
+      assert.not_equal(blue_bg, desert_bg)
     end)
   end)
 end)
