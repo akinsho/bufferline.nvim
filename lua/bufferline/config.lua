@@ -838,8 +838,13 @@ end
 ---@param conf BufferlineConfig?
 function M.set(conf) config = Config:new(conf or {}) end
 
----Update highlight colours when the colour scheme changes
-function M.update_highlights() return M.apply(true) end
+---Update highlight colours when the colour scheme changes by resetting the user config
+---to what was initially passed in and reload the highlighting
+function M.update_highlights()
+  M.set(config.user)
+  M.apply(true)
+  return config
+end
 
 ---Get the user's configuration or a key from it
 ---@param key string?
