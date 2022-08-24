@@ -9,7 +9,8 @@ describe("Bufferline tests:", function()
   local state
   ---@module "nvim-web-devicons"
   local icons
-  ---@module "bufferline.ui"
+  ---@module "bufferline.config"
+  local config
 
   before_each(function()
     package.loaded["bufferline"] = nil
@@ -17,9 +18,11 @@ describe("Bufferline tests:", function()
     package.loaded["nvim-web-devicons"] = nil
     -- dependent modules need to also be reset as
     -- they keep track of state themselves now
+    package.loaded["bufferline.config"] = nil
     package.loaded["bufferline.commands"] = nil
     bufferline = require("bufferline")
     state = require("bufferline.state")
+    config = require("bufferline.config")
     icons = require("nvim-web-devicons")
     icons.setup({ default = true })
   end)
@@ -218,6 +221,17 @@ describe("Bufferline tests:", function()
       bufferline.close_in_direction("left")
       bufs = vim.api.nvim_list_bufs()
       assert.is_equal(1, #bufs)
+    end)
+  end)
+  describe("Theme - ", function()
+    it("should update the colors if the colorscheme changes", function()
+      vim.cmd("colorscheme blue")
+      bufferline.setup()
+      assert.equal(config.highlights.buffer_selected.bg, "#000087")
+      assert.equal(config.highlights.buffer_selected.fg, "#ffd700")
+      vim.cmd("colorscheme desert")
+      assert.equal(config.highlights.buffer_selected.bg, "#333333")
+      assert.equal(config.highlights.buffer_selected.fg, "#ffffff")
     end)
   end)
 end)
