@@ -18,7 +18,7 @@
   - [Alternate styling](#alternate-styling)
   - [Underline indicator](#underline-indicator)
   - [Tabpages](#tabpages)
-  - [LSP error indicators](#lsp-error-indicators)
+  - [LSP indicators](#lsp-indicators)
   - [Groups](#groups)
   - [Sidebar offsets](#sidebar-offsets)
   - [Numbers](#numbers)
@@ -27,7 +27,6 @@
   - [Unique names](#unique-names)
   - [Close icons](#close-icons)
   - [Re-ordering](#re-ordering)
-  - [LSP indicators](#lsp-indicators)
   - [Conditional LSP indicators](#conditional-lsp-indicators)
   - [Custom areas](#custom-areas)
 - [How do I see only buffers per tab?](#how-do-i-see-only-buffers-per-tab)
@@ -137,9 +136,76 @@ A few things to note are
 
 ---
 
-#### LSP error indicators
+#### LSP indicators
 
-![LSP error](https://user-images.githubusercontent.com/22454918/111993085-1d299700-8b0e-11eb-96eb-c1c289e36b08.png)
+![LSP Indicator](https://user-images.githubusercontent.com/22454918/113215394-b1180300-9272-11eb-9632-8a9f9aae99fa.png)
+
+By setting `diagnostics = "nvim_lsp" | "coc"` you will get an indicator in the bufferline for a given tab if it has any errors
+This will allow you to tell at a glance if a particular buffer has errors.
+
+In order to customise the appearance of the diagnostic count you can pass a custom function in your setup.
+
+<details>
+  <summary><b>snippet</b></summary>
+
+```lua
+-- rest of config ...
+
+--- count is an integer representing total count of errors
+--- level is a string "error" | "warning"
+--- diagnostics_dict is a dictionary from error level ("error", "warning" or "info")to number of errors for each level.
+--- this should return a string
+--- Don't get too fancy as this function will be executed a lot
+diagnostics_indicator = function(count, level, diagnostics_dict, context)
+  local icon = level:match("error") and " " or " "
+  return " " .. icon .. count
+end
+
+```
+
+</details>
+
+![diagnostics_indicator](https://user-images.githubusercontent.com/4028913/112573484-9ee92100-8da9-11eb-9ffd-da9cb9cae3a6.png)
+
+<details>
+  <summary><b>snippet</b></summary>
+
+```lua
+
+diagnostics_indicator = function(count, level, diagnostics_dict, context)
+  local s = " "
+  for e, n in pairs(diagnostics_dict) do
+    local sym = e == "error" and " "
+      or (e == "warning" and " " or "" )
+    s = s .. n .. sym
+  end
+  return s
+end
+```
+
+</details>
+
+The highlighting for the file name if there is an error can be changed by replacing the highlights for see:
+
+`:h bufferline-highlights`
+
+LSP indicators can additionally be reported conditionally, based on buffer context. For instance, you could disable reporting LSP indicators for the current buffer and only have them appear for other buffers.
+
+```lua
+diagnostics_indicator = function(count, level, diagnostics_dict, context)
+  if context.buffer:current() then
+    return ''
+  end
+
+  return ''
+end
+```
+
+![current](https://user-images.githubusercontent.com/58056722/119390133-e5d19500-bccc-11eb-915d-f5d11f8e652c.jpeg)
+![visible](https://user-images.githubusercontent.com/58056722/119390136-e66a2b80-bccc-11eb-9a87-e622e3e20563.jpeg)
+
+The first bufferline shows `diagnostic.lua` as the currently opened `current` buffer. It has LSP reported errors, but they don't show up in the bufferline.
+The second bufferline shows `500-nvim-bufferline.lua` as the currently opened `current` buffer. Because the 'faulty' `diagnostic.lua` buffer has now transitioned from `current` to `visible`, the LSP indicator does show up.
 
 ---
 
@@ -203,83 +269,6 @@ This order can be persisted between sessions (enabled by default).
 #### Pinning
 
 <img width="899" alt="Screen Shot 2022-03-31 at 18 13 50" src="https://user-images.githubusercontent.com/22454918/161112867-ba48fdf6-42ee-4cd3-9e1a-7118c4a2738b.png">
-
----
-
-#### LSP indicators
-
-By setting `diagnostics = "nvim_lsp" | "coc"` you will get an indicator in the bufferline for a given tab if it has any errors
-This will allow you to tell at a glance if a particular buffer has errors.
-
-In order to customise the appearance of the diagnostic count you can pass a custom function in your setup.
-
-![custom indicator](https://user-images.githubusercontent.com/22454918/113215394-b1180300-9272-11eb-9632-8a9f9aae99fa.png)
-
-<details>
-  <summary><b>snippet</b></summary>
-
-```lua
--- rest of config ...
-
---- count is an integer representing total count of errors
---- level is a string "error" | "warning"
---- diagnostics_dict is a dictionary from error level ("error", "warning" or "info")to number of errors for each level.
---- this should return a string
---- Don't get too fancy as this function will be executed a lot
-diagnostics_indicator = function(count, level, diagnostics_dict, context)
-  local icon = level:match("error") and " " or " "
-  return " " .. icon .. count
-end
-
-```
-
-</details>
-
-![diagnostics_indicator](https://user-images.githubusercontent.com/4028913/112573484-9ee92100-8da9-11eb-9ffd-da9cb9cae3a6.png)
-
-<details>
-  <summary><b>snippet</b></summary>
-
-```lua
-
-diagnostics_indicator = function(count, level, diagnostics_dict, context)
-  local s = " "
-  for e, n in pairs(diagnostics_dict) do
-    local sym = e == "error" and " "
-      or (e == "warning" and " " or "" )
-    s = s .. n .. sym
-  end
-  return s
-end
-```
-
-</details>
-
-The highlighting for the file name if there is an error can be changed by replacing the highlights for see:
-
-`:h bufferline-highlights`
-
----
-
-#### Conditional LSP indicators
-
-LSP indicators can additionally be reported conditionally, based on buffer context. For instance, you could disable reporting LSP indicators for the current buffer and only have them appear for other buffers.
-
-```lua
-diagnostics_indicator = function(count, level, diagnostics_dict, context)
-  if context.buffer:current() then
-    return ''
-  end
-
-  return ''
-end
-```
-
-![current](https://user-images.githubusercontent.com/58056722/119390133-e5d19500-bccc-11eb-915d-f5d11f8e652c.jpeg)
-![visible](https://user-images.githubusercontent.com/58056722/119390136-e66a2b80-bccc-11eb-9a87-e622e3e20563.jpeg)
-
-The first bufferline shows `diagnostic.lua` as the currently opened `current` buffer. It has LSP reported errors, but they don't show up in the bufferline.
-The second bufferline shows `500-nvim-bufferline.lua` as the currently opened `current` buffer. Because the 'faulty' `diagnostic.lua` buffer has now transitioned from `current` to `visible`, the LSP indicator does show up.
 
 ---
 

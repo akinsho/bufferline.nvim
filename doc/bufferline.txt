@@ -240,6 +240,19 @@ replacing the highlights for `error`, `error_visible`, `error_selected`,
 The diagnostics indicator can be set to `false` to remove the indicators
 completely whilst still keeping the highlight of the buffer name.
 
+LSP indicators can additionally be reported conditionally, based on buffer
+context. For instance, you could disable reporting LSP indicators for the
+current buffer and only have them appear for other buffers.
+>
+    diagnostics_indicator = function(count, level, diagnostics_dict, context)
+        if context.buffer:current() then
+            return ''
+        end
+
+        return ''
+    end
+<
+
 ==============================================================================
 GROUPS                                                      *bufferline-groups*
 
