@@ -62,6 +62,13 @@ though that results may vary depending on your terminal emulator of choice and t
 
 see: `:h bufferline-styling`
 
+#### Underline indicator
+
+<img width="1355" alt="Screen Shot 2022-08-22 at 09 14 24" src="https://user-images.githubusercontent.com/22454918/185873089-2ae20db0-f292-4d96-afe4-ef0683a60709.png">
+
+**NOTE**: as with the above your mileage will vary based on your terminal emulator. The screenshot above was achieved using kitty nightly (as of August 2022), with increased
+underline thickness and an increased underline position so it sits further from the text
+
 #### Tabpages mode
 
 <img width="800" alt="Screen Shot 2022-03-08 at 17 39 57" src="https://user-images.githubusercontent.com/22454918/157337891-1848da24-69d6-4970-96ee-cf65b2a25c46.png">
@@ -143,7 +150,7 @@ is please read `:help tabpage`.
 
 ## How do I see only buffers per tab?
 
-This behaviour is *not native in neovim* there is no internal concept of localised buffers to tabs as
+This behaviour is _not native in neovim_ there is no internal concept of localised buffers to tabs as
 that is not how tabs were designed to work. They were designed to show an arbitrary layout of windows per tab.
 
 You can get this behaviour using [scope.nvim](https://github.com/tiagovla/scope.nvim) with this plugin. Although I believe a better
