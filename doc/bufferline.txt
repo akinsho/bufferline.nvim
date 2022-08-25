@@ -24,6 +24,7 @@ Pick...................................: |bufferline-pick|
 Mappings...............................: |bufferline-mapping|
 Highlights.............................: |bufferline-highlights|
 Mouse actions..........................: |bufferline-mouse-actions|
+Custom areas...........................: |bufferline-custom-areas|
 Issues.................................: |bufferline-issues|
 
 
@@ -42,14 +43,14 @@ all of it's functionality though.
 USAGE						        *bufferline-usage*
 
 You are *strongly* advised to use `termguicolors` for this plugin,
-especially if you are using a colorscheme that uses gui color values. However
-this plugin also works with cterm terminal colors. When `termguicolors` is
-enabled, it reads the hex `gui` color values of various highlight groups.
-Otherwise it expects the user to explicitly specify color numbers (most modern
-terminals allow 256 color values). Please be aware that if you choose to use
+especially if you are using a colorscheme that uses gui colour values. However
+this plugin also works with cterm terminal colours. When `termguicolors` is
+enabled, it reads the hex `gui` colour values of various highlight groups.
+Otherwise it expects the user to explicitly specify colour numbers (most modern
+terminals allow 256 colour values). Please be aware that if you choose to use
 this option it will be *your* responsibility to make the colours work to your
 liking. Please do not open an issue if you are unable to do so, as you use
-this option entirely at your discretion.
+this option entirely at your discretion. >
 
     set termguicolors
     " In your init.vim or init.lua
@@ -656,7 +657,11 @@ A few of this plugins commands can be mapped for ease of use. >
     nnoremap <silent>be :BufferLineSortByExtension<CR>
     nnoremap <silent>bd :BufferLineSortByDirectory<CR>
     nnoremap <silent><mymap> :lua require'bufferline'.sort_buffers_by(function (buf_a, buf_b) return buf_a.id < buf_b.id end)<CR>
-<
+
+If you manually arrange your buffers using `:BufferLineMove{Prev|Next}` during an nvim session this can be persisted for the session.
+This is enabled by default but you need to ensure that your `sessionoptions+=globals` otherwise the session file will
+not track global variables which is the mechanism used to store your sort order.
+
 ==============================================================================
 HIGHLIGHTS                                           *bufferline-highlights*
 
@@ -683,7 +688,7 @@ for example: >
         }
     }
 <
-This will automatically pull the value of `Pmenu` fg color and use it
+This will automatically pull the value of `Pmenu` fg colour and use it
 Any improperly specified tables will be set to `nil` and overriden with the
 default value for that key.
 
@@ -693,261 +698,261 @@ NOTE: you can specify colors the same way you specify colors for
     lua require'bufferline'.setup{
         highlights = {
             fill = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
             },
             background = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             tab = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             tab_selected = {
                 fg = tabline_sel_bg,
-                bg = '<color-value-here>'
+                bg = '<colour-value-here>'
             },
             tab_close = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             close_button = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             close_button_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             close_button_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             buffer_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             buffer_selected = {
                 fg = normal_fg,
-                bg = '<color-value-here>',
+                bg = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
             numbers = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
             },
             numbers_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
             },
             numbers_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
             diagnostic = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
             },
             diagnostic_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
             },
             diagnostic_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
             hint = {
-                fg = '<color-value-here>',
-                sp = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                sp = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             hint_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             hint_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
-                sp = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
+                sp = '<colour-value-here>'
                 bold = true,
                 italic = true,
             },
             hint_diagnostic = {
-                fg = '<color-value-here>',
-                sp = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                sp = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             hint_diagnostic_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             hint_diagnostic_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
-                sp = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
+                sp = '<colour-value-here>'
                 bold = true,
                 italic = true,
             },
             info = {
-                fg = '<color-value-here>',
-                sp = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                sp = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             info_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             info_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
-                sp = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
+                sp = '<colour-value-here>'
                 bold = true,
                 italic = true,
             },
             info_diagnostic = {
-                fg = '<color-value-here>',
-                sp = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                sp = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             info_diagnostic_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             info_diagnostic_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
-                sp = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
+                sp = '<colour-value-here>'
                 bold = true,
                 italic = true,
             },
             warning = {
-                fg = '<color-value-here>',
-                sp = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                sp = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             warning_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             warning_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
-                sp = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
+                sp = '<colour-value-here>'
                 bold = true,
                 italic = true,
             },
             warning_diagnostic = {
-                fg = '<color-value-here>',
-                sp = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                sp = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             warning_diagnostic_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             warning_diagnostic_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
                 sp = warning_diagnostic_fg
                 bold = true,
                 italic = true,
             },
             error = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
-                sp = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
+                sp = '<colour-value-here>'
             },
             error_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             error_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
-                sp = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
+                sp = '<colour-value-here>'
                 bold = true,
                 italic = true,
             },
             error_diagnostic = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
-                sp = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
+                sp = '<colour-value-here>'
             },
             error_diagnostic_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             error_diagnostic_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
-                sp = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
+                sp = '<colour-value-here>'
                 bold = true,
                 italic = true,
             },
             modified = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             modified_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             modified_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             duplicate_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
                 italic = true,
             },
             duplicate_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
                 italic = true
             },
             duplicate = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
                 italic = true
             },
             separator_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             separator_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             separator = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             indicator_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>'
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
             },
             pick_selected = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
             pick_visible = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
             pick = {
-                fg = '<color-value-here>',
-                bg = '<color-value-here>',
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
@@ -958,9 +963,9 @@ NOTE: you can specify colors the same way you specify colors for
         };
     }
 <
-When `termguicolors` is not enabled, a user is expected to specify color values
+When `termguicolors` is not enabled, a user is expected to specify colour values
 similar to the format above (use `ctermbg` and `ctermfg` instead). A user can
-also directly specify [color
+also directly specify [colour
 numbers](https://www.ditig.com/256-colors-cheat-sheet).
 
 for example: >
@@ -972,9 +977,50 @@ for example: >
     }
 
 This will set the background of the highlight group to gray and foreground to
-black. Here the colors are system determined, and the user may have changed
+black. Here the colours are system determined, and the user may have changed
 the rgb values through customizing the terminal emulator itself. This is
-possible for color numbers 0-15.
+possible for colour numbers 0-15.
+
+==============================================================================
+CUSTOM AREAS                                           *bufferline-custom-areas*
+
+
+You can also add custom content at the start or end of the bufferline using `custom_areas`
+this option allows a user to specify a function which should return the text and highlight for that text
+to be shown in a list of tables. For example:
+
+>
+    custom_areas = {
+    right = function()
+        local result = {}
+        local seve = vim.diagnostic.severity
+        local error = #vim.diagnostic.get(0, {severity = seve.ERROR})
+        local warning = #vim.diagnostic.get(0, {severity = seve.WARN})
+        local info = #vim.diagnostic.get(0, {severity = seve.INFO})
+        local hint = #vim.diagnostic.get(0, {severity = seve.HINT})
+
+        if error ~= 0 then
+            table.insert(result, {text = "  " .. error, fg = "#EC5241"})
+        end
+
+        if warning ~= 0 then
+            table.insert(result, {text = "  " .. warning, fg = "#EFB839"})
+        end
+
+        if hint ~= 0 then
+            table.insert(result, {text = "  " .. hint, fg = "#A3BA5E"})
+        end
+
+        if info ~= 0 then
+            table.insert(result, {text = "  " .. info, fg = "#7EA9A7"})
+        end
+        return result
+    end,
+    }
+<
+
+Please note that this function will be called a lot and should be as inexpensive as possible so it does
+not block rendering the tabline.
 
 ==============================================================================
 COLORSCHEME DEVELOPMENT                     *bufferline-colorscheme-development*
