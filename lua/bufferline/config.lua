@@ -63,7 +63,7 @@ local constants = lazy.require("bufferline.constants")
 ---@field public persist_buffer_sort boolean
 ---@field public max_prefix_length number
 ---@field public sort_by string
----@field public diagnostics boolean
+---@field public diagnostics boolean | 'nvim_lsp' | 'coc'
 ---@field public diagnostics_indicator DiagnosticIndicator
 ---@field public diagnostics_update_in_insert boolean
 ---@field public offsets table[]
