@@ -26,7 +26,7 @@ local custom_area = lazy.require("bufferline.custom_area")
 local offset = lazy.require("bufferline.offset")
 
 local M = {}
-local visibility = constants.visibility
+
 local sep_names = constants.sep_names
 local sep_chars = constants.sep_chars
 -- string.len counts number of bytes and so the unicode icons are counted
@@ -357,6 +357,10 @@ local function get_max_length(context)
   local padding_size = strwidth(padding) * 2
   local max_length = options.max_name_length
 
+  local autosize = not options.truncate_names and not options.enforce_regular_tabs
+  local name_size = strwidth(context.tab.name)
+  if autosize and name_size >= max_length then return name_size end
+
   if not options.enforce_regular_tabs then return max_length end
   -- estimate the maximum allowed size of a filename given that it will be
   -- padded and prefixed with a file icon
@@ -366,8 +370,7 @@ end
 ---@param ctx RenderContext
 ---@return Segment
 local function get_name(ctx)
-  local max_length = get_max_length(ctx)
-  local name = utils.truncate_name(ctx.tab.name, max_length)
+  local name = utils.truncate_name(ctx.tab.name, get_max_length(ctx))
   -- escape filenames that contain "%" as this breaks in statusline patterns
   name = name:gsub("%%", "%%%1")
   return { text = name, highlight = ctx.current_highlights.buffer }
@@ -687,6 +690,7 @@ if utils.is_test() then
   M.to_tabline_str = to_tabline_str
   M.set_id = set_id
   M.add_indicator = add_indicator
+  M.get_name = get_name
 end
 
 return M

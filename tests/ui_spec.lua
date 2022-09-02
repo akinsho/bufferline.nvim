@@ -38,5 +38,25 @@ describe("UI Tests", function()
       assert.is_truthy(result)
       assert.is_equal(result.text, constants.indicator)
     end)
+
+    it("should not truncate the tab name if disabled", function()
+      config.set({ options = { truncate_names = false } })
+      config.apply()
+      local segment = ui.get_name({
+        tab = { name = "a_very_very_very_very_long_name_that_i_use.js", icon = "x" },
+        current_highlights = {},
+      })
+      assert.is_equal(segment.text, "a_very_very_very_very_long_name_that_i_use.js")
+    end)
+
+    it("should truncate the tab name if enabled", function()
+      config.set({ options = { truncate_names = true } })
+      config.apply()
+      local segment = ui.get_name({
+        tab = { name = "a_very_very_very_very_long_name_that_i_use.js", icon = "x" },
+        current_highlights = {},
+      })
+      assert.is_equal(segment.text, "a_very_very_very_…")
+    end)
   end)
 end)
