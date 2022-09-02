@@ -218,6 +218,7 @@ local function setup_commands()
   cmd("BufferLineMovePrev", function() M.move(-1) end, {})
   cmd("BufferLineSortByExtension", function() M.sort_buffers_by("extension") end, {})
   cmd("BufferLineSortByDirectory", function() M.sort_buffers_by("directory") end, {})
+  cmd("BufferLineSortByMru", function() M.sort_buffers_by("mru") end, {})
   cmd(
     "BufferLineSortByRelativeDirectory",
     function() M.sort_buffers_by("relative_directory") end,

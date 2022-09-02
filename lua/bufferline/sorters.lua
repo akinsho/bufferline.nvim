@@ -43,6 +43,10 @@ local function sort_by_id(buf_a, buf_b)
   return buf_a.id < buf_b.id
 end
 
+local function sort_by_mru(buf_a, buf_b)
+  return vim.fn.getbufinfo(buf_a.id)[1].lastused > vim.fn.getbufinfo(buf_b.id)[1].lastused
+end
+
 --- @param buf NvimBuffer
 local function init_buffer_tabnr(buf)
   local maxinteger = 1000000000
@@ -140,6 +144,8 @@ function M.sort(elements, sort_by, state)
     table.sort(elements, sort_by_id)
   elseif sort_by == "tabs" then
     table.sort(elements, config:is_tabline() and sort_by_id or sort_by_tabs)
+  elseif sort_by == "mru" then
+    table.sort(elements, sort_by_mru)
   elseif type(sort_by) == "function" then
     table.sort(elements, sort_by)
   end
