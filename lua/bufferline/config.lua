@@ -51,6 +51,7 @@ local constants = lazy.require("bufferline.constants")
 ---@field public separator_style string
 ---@field public name_formatter (fun(path: string):string)?
 ---@field public tab_size number
+---@field public autosize boolean
 ---@field public max_name_length number
 ---@field public color_icons boolean
 ---@field public show_buffer_icons boolean
