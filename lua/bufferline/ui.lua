@@ -357,9 +357,9 @@ local function get_max_length(context)
   local padding_size = strwidth(padding) * 2
   local max_length = options.max_name_length
 
-  local auto_size = options.autosize and not options.enforce_regular_tabs
+  local should_truncate = not options.truncate_names and not options.enforce_regular_tabs
   local name_size = strwidth(context.tab.name)
-  if auto_size and name_size >= max_length then return name_size end
+  if should_truncate and name_size >= max_length then return name_size end
 
   if not options.enforce_regular_tabs then return max_length end
   -- estimate the maximum allowed size of a filename given that it will be
