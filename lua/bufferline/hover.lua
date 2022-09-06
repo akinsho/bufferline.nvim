@@ -1,5 +1,6 @@
 ---@diagnostic disable: param-type-mismatch
 local fn, api, map = vim.fn, vim.api, vim.keymap.set
+local AUGROUP = api.nvim_create_augroup("BufferLineHover", { clear = true })
 
 local delay = 500
 local timer = nil
@@ -36,6 +37,16 @@ function M.setup(conf)
     end, delay)
     return "<MouseMove>"
   end, { expr = true })
+
+  api.nvim_create_autocmd("VimLeavePre", {
+    group = AUGROUP,
+    callback = function()
+      if timer then
+        timer:close()
+        timer = nil
+      end
+    end,
+  })
 end
 
 return M
