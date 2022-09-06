@@ -17,6 +17,7 @@ local state = {
   __components = {},
   components = {},
   visible_components = {},
+  hovered = nil
 }
 
 ---@param value BufferlineState

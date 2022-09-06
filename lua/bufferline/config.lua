@@ -32,6 +32,9 @@ local constants = lazy.require("bufferline.constants")
 
 ---@alias DiagnosticIndicator fun(count: number, level: number, errors: table<string, any>, ctx: table<string, any>): string
 
+---@class HoverOptions
+---@field reveal string[]
+
 ---@class BufferlineOptions
 ---@field public mode BufferlineMode
 ---@field public view string
@@ -70,6 +73,7 @@ local constants = lazy.require("bufferline.constants")
 ---@field public offsets table[]
 ---@field public groups GroupOpts
 ---@field public themable boolean
+---@field public hover HoverOptions
 
 ---@class BufferlineHLGroup
 ---@field fg string
@@ -740,6 +744,7 @@ local function get_defaults()
         toggle_hidden_on_enter = true,
       },
     },
+    hover = { reveal = {} },
     debug = {
       logging = false,
     },

@@ -24,6 +24,8 @@ local numbers = lazy.require("bufferline.numbers")
 local custom_area = lazy.require("bufferline.custom_area")
 ---@module "bufferline.offset"
 local offset = lazy.require("bufferline.offset")
+---@module "bufferline.state"
+local state = lazy.require("bufferline.state")
 
 local M = {}
 
@@ -47,6 +49,28 @@ local components = {
     pick = "pick",
   },
 }
+
+----------------------------------------------------------------------------------------------------
+-- Hover events
+----------------------------------------------------------------------------------------------------
+
+---@class HoverOpts
+---@field cursor_pos integer
+
+---@param _ integer
+---@param opts HoverOpts
+function M.on_hover(_, opts)
+  local pos, current_pos = opts.cursor_pos, 0
+  for _, item in pairs(state.visible_components) do
+    local next_pos = current_pos + item.length
+    if pos >= current_pos and pos <= next_pos then
+      state.set({ hovered = item })
+      vim.schedule(function() M.refresh() end)
+      return
+    end
+    current_pos = next_pos
+  end
+end
 
 ---@param component Segment?
 ---@param id string
@@ -261,6 +285,9 @@ end
 --- @return Segment?
 local function get_close_icon(buf_id, context)
   local options = config.options
+  if vim.tbl_contains(options.hover.reveal, "close") then
+    if not state.hovered or state.hovered.id ~= context.tab.id then return end
+  end
   local buffer_close_icon = options.buffer_close_icon
   local close_button_hl = context.current_highlights.close_button
   if not options.show_buffer_close_icons then return end
@@ -455,15 +482,15 @@ local function get_tab_indicator(tab_indicators, options)
   return items, length
 end
 
---- @param state BufferlineState
+--- @param current_state BufferlineState
 --- @param element TabElement
 --- @return TabElement
-function M.element(state, element)
+function M.element(current_state, element)
   local curr_hl = highlights.for_element(element)
   local ctx = Context:new({
     tab = element,
     current_highlights = curr_hl,
-    is_picking = state.is_picking,
+    is_picking = current_state.is_picking,
   })
 
   local duplicate_prefix = duplicates.component(ctx)
