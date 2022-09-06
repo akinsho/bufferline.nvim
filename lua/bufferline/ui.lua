@@ -54,23 +54,27 @@ local components = {
 -- Hover events
 ----------------------------------------------------------------------------------------------------
 
+---@param item Component?
+local function set_hover_state(item)
+  state.set({ hovered = item })
+  vim.schedule(function() M.refresh() end)
+end
+
 ---@class HoverOpts
 ---@field cursor_pos integer
 
 ---@param _ integer
 ---@param opts HoverOpts
-function M.on_hover(_, opts)
+function M.on_hover_over(_, opts)
   local pos, current_pos = opts.cursor_pos, 0
   for _, item in pairs(state.visible_components) do
     local next_pos = current_pos + item.length
-    if pos >= current_pos and pos <= next_pos then
-      state.set({ hovered = item })
-      vim.schedule(function() M.refresh() end)
-      return
-    end
+    if pos >= current_pos and pos <= next_pos then return set_hover_state(item) end
     current_pos = next_pos
   end
 end
+
+function M.on_hover_out() set_hover_state(nil) end
 
 ---@param component Segment?
 ---@param id string

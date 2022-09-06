@@ -7,15 +7,17 @@ local previous_pos = nil
 
 local M = {}
 
-local function on_hover(current, previous)
-  if current.screenrow == 1 and vim.o.laststatus > 0 then
+local function on_hover(current)
+  if vim.o.laststatus == 0 then return end
+  if current.screenrow == 1 then
     api.nvim_exec_autocmds("User", {
       pattern = "BufferLineHoverOver",
       data = { cursor_pos = current.screencol },
     })
-  elseif previous and previous.screenrow == 1 and current.screenrow ~= 1 then
+  elseif previous_pos and previous_pos.screenrow == 1 and current.screenrow ~= 1 then
     api.nvim_exec_autocmds("User", { pattern = "BufferLineHoverOut", data = {} })
   end
+  previous_pos = current
 end
 
 function M.setup()
@@ -25,7 +27,7 @@ function M.setup()
     if hover_timer then hover_timer:close() end
     hover_timer = vim.defer_fn(function()
       hover_timer = nil
-      on_hover(fn.getmousepos(), previous_pos)
+      on_hover(fn.getmousepos())
     end, hover_time)
     return "<MouseMove>"
   end, { expr = true })

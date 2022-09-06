@@ -202,7 +202,11 @@ local function setup_autocommands(conf)
 
   api.nvim_create_autocmd("User", {
     pattern = "BufferLineHoverOver",
-    callback = function(args) ui.on_hover(args.buf, args.data) end,
+    callback = function(args) ui.on_hover_over(args.buf, args.data) end,
+  })
+  api.nvim_create_autocmd("User", {
+    pattern = "BufferLineHoverOut",
+    callback = ui.on_hover_out,
   })
 end
 
