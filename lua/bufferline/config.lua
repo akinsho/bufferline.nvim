@@ -28,7 +28,7 @@ local constants = lazy.require("bufferline.constants")
 ---@field style "underline" | "icon" | "none"
 ---@field icon string?
 
----@alias BufferlineMode "'tabs'" | "'buffers'"
+---@alias BufferlineMode 'tabs' | 'buffers'
 
 ---@alias DiagnosticIndicator fun(count: number, level: number, errors: table<string, any>, ctx: table<string, any>): string
 

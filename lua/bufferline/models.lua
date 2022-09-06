@@ -224,8 +224,7 @@ function Buffer:new(buf)
       name = buf.name_formatter({ name = name, path = buf.path, bufnr = buf.id }) or name
     end
   end
-  buf.name = name
-  buf.filename = name -- TODO: remove this field
+  buf.name, buf.filename = name, name -- TODO: remove this 'filename' field
   setmetatable(buf, self)
   self.__index = self
   return buf
