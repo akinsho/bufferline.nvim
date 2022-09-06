@@ -272,7 +272,7 @@ function M.setup(conf)
   local preferences = config.apply()
   -- on loading (and reloading) the plugin's config reset all the highlights
   highlights.set_all(preferences)
-  hover.setup()
+  hover.setup(conf)
   setup_commands()
   setup_autocommands(preferences)
   vim.o.tabline = "%!v:lua.nvim_bufferline()"

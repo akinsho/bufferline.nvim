@@ -57,7 +57,7 @@ local components = {
 ---@param item Component?
 local function set_hover_state(item)
   state.set({ hovered = item })
-  vim.schedule(function() M.refresh() end)
+  vim.schedule(M.refresh)
 end
 
 ---@class HoverOpts
