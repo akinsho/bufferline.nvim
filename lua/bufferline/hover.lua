@@ -1,6 +1,7 @@
 ---@diagnostic disable: param-type-mismatch
 local fn, api, map = vim.fn, vim.api, vim.keymap.set
 local AUGROUP = api.nvim_create_augroup("BufferLineHover", { clear = true })
+local version = vim.version()
 
 local delay = 500
 local timer = nil
@@ -26,8 +27,10 @@ end
 
 ---@param conf BufferlineConfig
 function M.setup(conf)
-  if vim.version().minor < 8 or not vim.o.mousemoveevent then return end
-  delay = vim.tbl_get(conf, "options", "hover", "delay") or delay
+  local opts = conf.options.hover
+
+  if not opts.enabled or version.minor < 8 or not vim.o.mousemoveevent then return end
+  delay = opts.delay or delay
 
   map({ "", "i" }, "<MouseMove>", function()
     if timer then timer:close() end

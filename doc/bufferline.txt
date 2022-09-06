@@ -152,10 +152,11 @@ HOVER EVENTS                                           *bufferline-hover-events*
 You can configure bufferline to respond to hover events if you are using
 a version 0.8 of neovim or higher. In order to enable this feature.
 You must first enable `'mousemoveevent'` and then add the item that you would
-like to hide/reveal on hover to your config i.e.
+like to hide/reveal on hover to your config and set `enable = true` i.e.
 >
     options = {
         hover = {
+            enabled = true,
             delay = 200,
             reveal = {'close'}
         }

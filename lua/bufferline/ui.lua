@@ -289,7 +289,7 @@ end
 --- @return Segment?
 local function get_close_icon(buf_id, context)
   local options = config.options
-  if vim.tbl_contains(options.hover.reveal, "close") then
+  if options.hover.enabled and vim.tbl_contains(options.hover.reveal, "close") then
     if not state.hovered or state.hovered.id ~= context.tab.id then return end
   end
   local buffer_close_icon = options.buffer_close_icon

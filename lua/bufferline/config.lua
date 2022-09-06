@@ -35,6 +35,7 @@ local constants = lazy.require("bufferline.constants")
 ---@class HoverOptions
 ---@field reveal string[]
 ---@field delay integer
+---@field enabled boolean
 
 ---@class BufferlineOptions
 ---@field public mode BufferlineMode
@@ -746,8 +747,9 @@ local function get_defaults()
       },
     },
     hover = {
-      delay = 200,
+      enabled = false,
       reveal = {},
+      delay = 200,
     },
     debug = {
       logging = false,
