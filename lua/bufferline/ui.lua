@@ -56,11 +56,7 @@ local components = {
 
 ---@param item Component?
 local function set_hover_state(item)
-  if not item then
-    state.remove("hovered")
-  else
-    state.set({ hovered = item })
-  end
+  state.set({ hovered = item })
   vim.schedule(M.refresh)
 end
 
@@ -78,7 +74,7 @@ function M.on_hover_over(_, opts)
   end
 end
 
-function M.on_hover_out() set_hover_state(nil) end
+function M.on_hover_out() set_hover_state(vim.NIL) end
 
 ---@param component Segment?
 ---@param id string
