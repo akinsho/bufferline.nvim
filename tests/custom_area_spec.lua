@@ -12,7 +12,7 @@ describe("Custom areas -", function()
     bufferline.setup({
       options = {
         custom_areas = {
-          left = function() return { { text = "test", guifg = "red", guibg = "black" } } end,
+          left = function() return { { text = "test", fg = "red", bg = "black" } } end,
         },
       },
     })
@@ -26,13 +26,13 @@ describe("Custom areas -", function()
     bufferline.setup({
       highlights = {
         fill = {
-          guifg = "#000000",
+          fg = "#000000",
         },
       },
       options = {
         custom_areas = {
-          left = function() return { { text = "test", guifg = "red", guibg = "black" } } end,
-          right = function() return { { text = "test1", gui = "italic" } } end,
+          left = function() return { { text = "test", fg = "red", bg = "black" } } end,
+          right = function() return { { text = "test1", italic = true } } end,
         },
       },
     })
@@ -50,7 +50,7 @@ describe("Custom areas -", function()
     bufferline.setup({
       options = {
         custom_areas = {
-          left = function() return { { text = { "test" }, guifg = "red", guibg = "black" } } end,
+          left = function() return { { text = { "test" }, fg = "red", bg = "black" } } end,
           right = function() error("This failed mysteriously") end,
         },
       },
