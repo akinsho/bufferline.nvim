@@ -17,11 +17,13 @@ local state = {
   __components = {},
   components = {},
   visible_components = {},
-  hovered = nil
+  hovered = nil,
 }
 
 ---@param value BufferlineState
 function M.set(value) state = vim.tbl_extend("force", state, value) end
+
+function M.remove(key) state[key] = nil end
 
 return setmetatable(M, {
   __index = function(_, k) return state[k] end,

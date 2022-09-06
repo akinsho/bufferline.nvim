@@ -56,7 +56,11 @@ local components = {
 
 ---@param item Component?
 local function set_hover_state(item)
-  state.set({ hovered = item })
+  if not item then
+    state.remove("hovered")
+  else
+    state.set({ hovered = item })
+  end
   vim.schedule(M.refresh)
 end
 
