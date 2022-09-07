@@ -4,8 +4,11 @@ local constants = require("bufferline.constants")
 local MockBuffer = utils.MockBuffer
 
 describe("UI Tests", function()
+  ---@module 'bufferline.ui'
   local ui
+  ---@module 'bufferline.config'
   local config
+  ---@module 'bufferline.state'
   local state
 
   before_each(function()
@@ -118,6 +121,15 @@ describe("UI Tests", function()
       })
       ui.on_hover_out()
       assert.is_falsy(state.hovered)
+    end)
+
+    it("should not render a close icon if hovered", function()
+      config.set({ options = { hover = { enabled = true, reveal = { "close" } } } })
+      config.apply()
+      local buf = MockBuffer:new({ id = 1, name = "file.txt" })
+      local el = ui.element({}, buf)
+      local segment = ui.to_tabline_str(el:component(1))
+      assert.is_falsy(segment:match(config.options.buffer_close_icon))
     end)
   end)
 end)
