@@ -14,6 +14,11 @@ function M.tabline_from_components(components)
   return str
 end
 
+function M.reload(module)
+  package.loaded[module] = nil
+  return require(module)
+end
+
 ---helper to find text in a Segment[]
 ---@param component Segment[]
 ---@param text string
