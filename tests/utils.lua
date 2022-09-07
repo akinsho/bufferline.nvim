@@ -32,15 +32,20 @@ function M.find_text(component, text)
 end
 
 function MockBuffer:new(o)
+  self.icon = o.icon or ""
   self.__index = self
   setmetatable(o, self)
   o.type = "buffer"
   return o
 end
 
+function MockBuffer:is_end() return vim.F.if_nil(self.is_end, false) end
+
 function MockBuffer:current() return true end
 
 function MockBuffer:as_element() return self end
+
+function MockBuffer:visibility() return self.visiblity or 0 end
 
 ---@param name string
 ---@param state BufferlineState
