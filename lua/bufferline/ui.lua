@@ -29,6 +29,8 @@ local state = lazy.require("bufferline.state")
 
 local M = {}
 
+local api = vim.api
+
 local sep_names = constants.sep_names
 local sep_chars = constants.sep_chars
 -- string.len counts number of bytes and so the unicode icons are counted
@@ -655,10 +657,25 @@ local function join(list)
   return str
 end
 
+--- Get the width of statusline/tabline format string
+---@vararg string
+---@return integer
+local function statusline_str_width(...)
+  local str = table.concat({ ... }, "")
+  return api.nvim_eval_statusline(str, { use_tabline = true }).width
+end
+
+---@class BufferlineTablineData
+---@field str string
+---@field left_offset_size integer
+---@field right_offset_size integer
+---@field segments Segment[][]
+---@field visible_components TabElement[]
+
 --- TODO: All components should return Segment[] that are then combined in one go into a tabline
 --- @param items Component[]
 --- @param tab_indicators Segment[]
---- @return string, TabElement[], Segment[][]
+--- @return BufferlineTablineData
 function M.tabline(items, tab_indicators)
   local options = config.options
   local hl = config.highlights
@@ -676,12 +693,12 @@ function M.tabline(items, tab_indicators)
   local left_element_size = utils.measure(max_padding, left_trunc_icon, max_padding)
   local right_element_size = utils.measure(max_padding, right_trunc_icon, max_padding)
 
-  local offset_size, left_offset, right_offset = offset.get()
+  local offsets = offset.get()
   local custom_area_size, left_area, right_area = custom_area.get()
 
   local available_width = vim.o.columns
     - custom_area_size
-    - offset_size
+    - offsets.total_size
     - tab_indicator_length
     - tab_close_button_length
 
@@ -710,8 +727,20 @@ function M.tabline(items, tab_indicators)
   --- NOTE: the custom areas are essentially mini tablines a user can define so they can't
   -- be set safely converted to segments so they are concatenated to string and join with
   -- the rest of the tabline
-  local tabline = utils.join(left_offset, left_area, core, right_area, right_offset)
-  return tabline, visible_components, segments
+  local tabline = utils.join(offsets.left, left_area, core, right_area, offsets.right)
+
+  local left_offset_size = offsets.left_size + statusline_str_width(left_area)
+  local left_marker_size = left_marker and get_component_size(left_marker) or 0
+  local right_offset_size = offsets.right_size + statusline_str_width(right_area)
+  local right_marker_size = right_marker and get_component_size(right_marker) or 0
+
+  return {
+    str = tabline,
+    segments = segments,
+    visible_components = visible_components,
+    right_offset_size = right_offset_size + right_marker_size,
+    left_offset_size = left_offset_size + left_marker_size,
+  }
 end
 
 M.get_component_size = get_component_size

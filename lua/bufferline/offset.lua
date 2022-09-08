@@ -29,7 +29,7 @@ local supported_win_types = {
 ---@param size integer
 ---@param highlight table<string, string>
 ---@param offset table
----@param is_left boolean
+---@param is_left boolean?
 ---@return string
 local function get_section_text(size, highlight, offset, is_left)
   local text = offset.text
@@ -125,14 +125,21 @@ local function is_offset_section(windows, offset)
   return false, nil, nil
 end
 
+---@class OffsetData
+---@field total_size number
+---@field left string
+---@field right string
+---@field left_size integer
+---@field right_size integer
+
 ---Calculate the size of padding required to offset the bufferline
----@return number
----@return string
----@return string
+---@return OffsetData
 function M.get()
   local offsets, hls = config.options.offsets, config.highlights
   local left = ""
   local right = ""
+  local left_size = 0
+  local right_size = 0
   local total_size = 0
   local sep_hl = highlights.hl(hls.offset_separator.hl_group)
 
@@ -155,15 +162,21 @@ function M.get()
           total_size = total_size + width
 
           if is_left then
-            left = component
+            left, left_size = component, left_size + width
           else
-            right = component
+            right, right_size = component, right_size + width
           end
         end
       end
     end
   end
-  return total_size, left, right
+  return {
+    left = left,
+    right = right,
+    left_size = left_size,
+    right_size = right_size,
+    total_size = total_size,
+  }
 end
 
 return M

@@ -10,14 +10,18 @@ local M = {}
 ---@field visible_components Component[]
 ---@field __components Component[]
 ---@field custom_sort number[]
+---@field left_offset_size number
+---@field right_offset_size number
 local state = {
   is_picking = false,
-  current_element_index = nil,
-  custom_sort = nil,
-  __components = {},
-  components = {},
-  visible_components = {},
   hovered = nil,
+  custom_sort = nil,
+  current_element_index = nil,
+  components = {},
+  __components = {},
+  visible_components = {},
+  left_offset_size = 0,
+  right_offset_size = 0,
 }
 
 ---@param new_state BufferlineState
