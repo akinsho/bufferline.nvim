@@ -9,8 +9,8 @@ local config = lazy.require("bufferline.config")
 
 local M = {}
 
-local fn = vim.fn
-local api = vim.api
+local fn, api = vim.fn, vim.api
+local strwidth = api.nvim_strwidth
 
 function M.is_test()
   ---@diagnostic disable-next-line: undefined-global
@@ -218,7 +218,7 @@ end
 ---@param word_limit number
 ---@return string
 function M.truncate_name(name, word_limit)
-  if api.nvim_strwidth(name) <= word_limit then return name end
+  if strwidth(name) <= word_limit then return name end
   -- truncate nicely by seeing if we can drop the extension first
   -- to make things fit if not then truncate abruptly
   local ext = fn.fnamemodify(name, ":e")

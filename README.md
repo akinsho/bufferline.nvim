@@ -16,6 +16,7 @@
 - [Configuration](#configuration)
 - [Features](#features)
   - [Alternate styling](#alternate-styling)
+  - [Hover events](#hover-events)
   - [Underline indicator](#underline-indicator)
   - [Tabpages](#tabpages)
   - [LSP indicators](#lsp-indicators)
@@ -27,7 +28,7 @@
   - [Unique names](#unique-names)
   - [Close icons](#close-icons)
   - [Re-ordering](#re-ordering)
-  - [Conditional LSP indicators](#conditional-lsp-indicators)
+  - [LSP indicators](#lsp-indicators)
   - [Custom areas](#custom-areas)
 - [How do I see only buffers per tab?](#how-do-i-see-only-buffers-per-tab)
 - [Caveats](#caveats)
@@ -109,6 +110,16 @@ for more details on how to configure this plugin in details please see `:h buffe
 though that results may vary depending on your terminal emulator of choice and this style might will not work for all terminals
 
 see: `:h bufferline-styling`
+
+---
+
+#### Hover events
+
+**NOTE**: this is only available for _neovim 0.8+ (nightly) ONLY_ and is still **experimental**
+
+https://user-images.githubusercontent.com/22454918/188915672-fa665d4d-de7b-4129-aace-abdac6393c66.mov
+
+see `:help bufferline-hover-events` for more information on configuration
 
 ---
 

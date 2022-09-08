@@ -17,10 +17,16 @@ local state = {
   __components = {},
   components = {},
   visible_components = {},
+  hovered = nil,
 }
 
----@param value BufferlineState
-function M.set(value) state = vim.tbl_extend("force", state, value) end
+---@param new_state BufferlineState
+function M.set(new_state)
+  for key, value in pairs(new_state) do
+    if value == vim.NIL then value = nil end
+    state[key] = value
+  end
+end
 
 return setmetatable(M, {
   __index = function(_, k) return state[k] end,

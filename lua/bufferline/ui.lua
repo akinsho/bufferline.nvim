@@ -24,9 +24,11 @@ local numbers = lazy.require("bufferline.numbers")
 local custom_area = lazy.require("bufferline.custom_area")
 ---@module "bufferline.offset"
 local offset = lazy.require("bufferline.offset")
+---@module "bufferline.state"
+local state = lazy.require("bufferline.state")
 
 local M = {}
-local visibility = constants.visibility
+
 local sep_names = constants.sep_names
 local sep_chars = constants.sep_chars
 -- string.len counts number of bytes and so the unicode icons are counted
@@ -47,6 +49,32 @@ local components = {
     pick = "pick",
   },
 }
+
+----------------------------------------------------------------------------------------------------
+-- Hover events
+----------------------------------------------------------------------------------------------------
+
+---@param item Component?
+local function set_hover_state(item)
+  state.set({ hovered = item })
+  vim.schedule(M.refresh)
+end
+
+---@class HoverOpts
+---@field cursor_pos integer
+
+---@param _ integer
+---@param opts HoverOpts
+function M.on_hover_over(_, opts)
+  local pos, current_pos = opts.cursor_pos, 0
+  for _, item in pairs(state.visible_components) do
+    local next_pos = current_pos + item.length
+    if pos >= current_pos and pos <= next_pos then return set_hover_state(item) end
+    current_pos = next_pos
+  end
+end
+
+function M.on_hover_out() set_hover_state(vim.NIL) end
 
 ---@param component Segment?
 ---@param id string
@@ -261,6 +289,9 @@ end
 --- @return Segment?
 local function get_close_icon(buf_id, context)
   local options = config.options
+  if options.hover.enabled and vim.tbl_contains(options.hover.reveal, "close") then
+    if not state.hovered or state.hovered.id ~= context.tab.id then return end
+  end
   local buffer_close_icon = options.buffer_close_icon
   local close_button_hl = context.current_highlights.close_button
   if not options.show_buffer_close_icons then return end
@@ -357,6 +388,10 @@ local function get_max_length(context)
   local padding_size = strwidth(padding) * 2
   local max_length = options.max_name_length
 
+  local autosize = not options.truncate_names and not options.enforce_regular_tabs
+  local name_size = strwidth(context.tab.name)
+  if autosize and name_size >= max_length then return name_size end
+
   if not options.enforce_regular_tabs then return max_length end
   -- estimate the maximum allowed size of a filename given that it will be
   -- padded and prefixed with a file icon
@@ -366,8 +401,7 @@ end
 ---@param ctx RenderContext
 ---@return Segment
 local function get_name(ctx)
-  local max_length = get_max_length(ctx)
-  local name = utils.truncate_name(ctx.tab.name, max_length)
+  local name = utils.truncate_name(ctx.tab.name, get_max_length(ctx))
   -- escape filenames that contain "%" as this breaks in statusline patterns
   name = name:gsub("%%", "%%%1")
   return { text = name, highlight = ctx.current_highlights.buffer }
@@ -452,15 +486,15 @@ local function get_tab_indicator(tab_indicators, options)
   return items, length
 end
 
---- @param state BufferlineState
+--- @param current_state BufferlineState
 --- @param element TabElement
 --- @return TabElement
-function M.element(state, element)
+function M.element(current_state, element)
   local curr_hl = highlights.for_element(element)
   local ctx = Context:new({
     tab = element,
     current_highlights = curr_hl,
-    is_picking = state.is_picking,
+    is_picking = current_state.is_picking,
   })
 
   local duplicate_prefix = duplicates.component(ctx)
@@ -687,6 +721,7 @@ if utils.is_test() then
   M.to_tabline_str = to_tabline_str
   M.set_id = set_id
   M.add_indicator = add_indicator
+  M.get_name = get_name
 end
 
 return M

@@ -39,7 +39,7 @@ i.e.
 ---@field id integer
 ---@field path string?
 ---@field length integer
----@field component fun(BufferlineState): string
+---@field component fun(BufferlineState): Segment[]
 ---@field hidden boolean
 ---@field focusable boolean
 ---@field type 'group_end' | 'group_start' | 'buffer' | 'tabpage'
@@ -166,7 +166,7 @@ function Tabpage:ancestor(depth, formatter)
   return self:__ancestor(depth, formatter)
 end
 
----@alias BufferComponent fun(index: integer, buf_count: integer): string
+---@alias BufferComponent fun(index: integer, buf_count: integer): Segment[]
 
 -- A single buffer class
 -- this extends the [Component] class
@@ -224,8 +224,7 @@ function Buffer:new(buf)
       name = buf.name_formatter({ name = name, path = buf.path, bufnr = buf.id }) or name
     end
   end
-  buf.name = name
-  buf.filename = name -- TODO: remove this field
+  buf.name, buf.filename = name, name -- TODO: remove this 'filename' field
   setmetatable(buf, self)
   self.__index = self
   return buf

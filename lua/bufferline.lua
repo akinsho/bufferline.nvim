@@ -21,6 +21,8 @@ local tabpages = lazy.require("bufferline.tabpages")
 local constants = lazy.require("bufferline.constants")
 --- @module "bufferline.highlights"
 local highlights = lazy.require("bufferline.highlights")
+--- @module "bufferline.hover"
+local hover = lazy.require("bufferline.hover")
 
 local api = vim.api
 
@@ -197,6 +199,16 @@ local function setup_autocommands(conf)
     pattern = "*",
     callback = function() handle_group_enter() end,
   })
+
+  api.nvim_create_autocmd("User", {
+    pattern = "BufferLineHoverOver",
+    callback = function(args) ui.on_hover_over(args.buf, args.data) end,
+  })
+
+  api.nvim_create_autocmd("User", {
+    pattern = "BufferLineHoverOut",
+    callback = ui.on_hover_out,
+  })
 end
 
 ---@param arg_lead string
@@ -261,6 +273,7 @@ function M.setup(conf)
   local preferences = config.apply()
   -- on loading (and reloading) the plugin's config reset all the highlights
   highlights.set_all(preferences)
+  hover.setup(preferences)
   setup_commands()
   setup_autocommands(preferences)
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
