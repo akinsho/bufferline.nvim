@@ -68,11 +68,12 @@ end
 ---@param _ integer
 ---@param opts HoverOpts
 function M.on_hover_over(_, opts)
-  local pos, current_pos = opts.cursor_pos, 0
+  local mouse_pos, pos = opts.cursor_pos, state.left_offset_size
   for _, item in pairs(state.visible_components) do
-    local next_pos = current_pos + item.length
-    if pos >= current_pos and pos <= next_pos then return set_hover_state(item) end
-    current_pos = next_pos
+    -- This value can be incorrect as truncation markers might push things off center
+    local next_pos = pos + item.length
+    if mouse_pos >= pos and mouse_pos <= next_pos then return set_hover_state(item) end
+    pos = next_pos
   end
 end
 
