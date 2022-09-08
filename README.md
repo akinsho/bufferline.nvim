@@ -117,7 +117,8 @@ see: `:h bufferline-styling`
 
 **NOTE**: this is only available for _neovim 0.8+ (nightly) ONLY_ and is still **experimental**
 
-https://user-images.githubusercontent.com/22454918/188915672-fa665d4d-de7b-4129-aace-abdac6393c66.mov
+https://user-images.githubusercontent.com/22454918/189065339-ea14a3ea-2cdb-43e6-8548-65b01698a427.mov
+
 
 see `:help bufferline-hover-events` for more information on configuration
 
