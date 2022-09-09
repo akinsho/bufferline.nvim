@@ -55,12 +55,12 @@ function M.get()
       end
       -- if the user doesn't specify a background use the default
       local hls = config.highlights or {}
-      local guibg = hls.fill and hls.fill.guibg or nil
+      local bg = hls.fill and hls.fill.bg or nil
       local ok, section = pcall(section_fn)
       if ok and section and not vim.tbl_isempty(section) then
         for i, item in ipairs(section) do
           if item.text and type(item.text) == "string" then
-            local hl = create_hl(i, side, item, guibg)
+            local hl = create_hl(i, side, item, bg)
             size = size + get_size(item.text)
             if side == "left" then
               left = left .. hl .. item.text

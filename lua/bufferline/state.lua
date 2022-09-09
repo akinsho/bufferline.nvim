@@ -10,17 +10,27 @@ local M = {}
 ---@field visible_components Component[]
 ---@field __components Component[]
 ---@field custom_sort number[]
+---@field left_offset_size number
+---@field right_offset_size number
 local state = {
   is_picking = false,
-  current_element_index = nil,
+  hovered = nil,
   custom_sort = nil,
-  __components = {},
+  current_element_index = nil,
   components = {},
+  __components = {},
   visible_components = {},
+  left_offset_size = 0,
+  right_offset_size = 0,
 }
 
----@param value BufferlineState
-function M.set(value) state = vim.tbl_extend("force", state, value) end
+---@param new_state BufferlineState
+function M.set(new_state)
+  for key, value in pairs(new_state) do
+    if value == vim.NIL then value = nil end
+    state[key] = value
+  end
+end
 
 return setmetatable(M, {
   __index = function(_, k) return state[k] end,

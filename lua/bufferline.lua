@@ -21,6 +21,8 @@ local tabpages = lazy.require("bufferline.tabpages")
 local constants = lazy.require("bufferline.constants")
 --- @module "bufferline.highlights"
 local highlights = lazy.require("bufferline.highlights")
+--- @module "bufferline.hover"
+local hover = lazy.require("bufferline.hover")
 
 local api = vim.api
 
@@ -94,16 +96,19 @@ local function bufferline()
   --- state is not actually set till after sorting and component creation is done
   state.set({ current_element_index = get_current_index(state) })
   components = not is_tabline and groups.render(components, sorter) or sorter(components)
-  local tabline, visible_components, segments = ui.tabline(components, tabpages.get())
+  local tabline = ui.tabline(components, tabpages.get())
 
   state.set({
     --- store the full unfiltered lists
     __components = components,
     --- Store copies without focusable/hidden elements
     components = filter_invisible(components),
-    visible_components = filter_invisible(visible_components),
+    visible_components = filter_invisible(tabline.visible_components),
+    --- size data stored for use elsewhere e.g. hover positioning
+    left_offset_size = tabline.left_offset_size,
+    right_offset_size = tabline.right_offset_size,
   })
-  return tabline, segments
+  return tabline.str, tabline.segments
 end
 
 --- If the item count has changed and the next tabline status is different then update it
@@ -197,6 +202,16 @@ local function setup_autocommands(conf)
     pattern = "*",
     callback = function() handle_group_enter() end,
   })
+
+  api.nvim_create_autocmd("User", {
+    pattern = "BufferLineHoverOver",
+    callback = function(args) ui.on_hover_over(args.buf, args.data) end,
+  })
+
+  api.nvim_create_autocmd("User", {
+    pattern = "BufferLineHoverOut",
+    callback = ui.on_hover_out,
+  })
 end
 
 ---@param arg_lead string
@@ -262,6 +277,7 @@ function M.setup(conf)
   local preferences = config.apply()
   -- on loading (and reloading) the plugin's config reset all the highlights
   highlights.set_all(preferences)
+  hover.setup(preferences)
   setup_commands()
   setup_autocommands(preferences)
   vim.o.tabline = "%!v:lua.nvim_bufferline()"

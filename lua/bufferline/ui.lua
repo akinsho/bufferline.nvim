@@ -24,9 +24,13 @@ local numbers = lazy.require("bufferline.numbers")
 local custom_area = lazy.require("bufferline.custom_area")
 ---@module "bufferline.offset"
 local offset = lazy.require("bufferline.offset")
+---@module "bufferline.state"
+local state = lazy.require("bufferline.state")
 
 local M = {}
-local visibility = constants.visibility
+
+local api = vim.api
+
 local sep_names = constants.sep_names
 local sep_chars = constants.sep_chars
 -- string.len counts number of bytes and so the unicode icons are counted
@@ -47,6 +51,33 @@ local components = {
     pick = "pick",
   },
 }
+
+----------------------------------------------------------------------------------------------------
+-- Hover events
+----------------------------------------------------------------------------------------------------
+
+---@param item Component?
+local function set_hover_state(item)
+  state.set({ hovered = item })
+  vim.schedule(M.refresh)
+end
+
+---@class HoverOpts
+---@field cursor_pos integer
+
+---@param _ integer
+---@param opts HoverOpts
+function M.on_hover_over(_, opts)
+  local mouse_pos, pos = opts.cursor_pos, state.left_offset_size
+  for _, item in pairs(state.visible_components) do
+    -- This value can be incorrect as truncation markers might push things off center
+    local next_pos = pos + item.length
+    if mouse_pos >= pos and mouse_pos <= next_pos then return set_hover_state(item) end
+    pos = next_pos
+  end
+end
+
+function M.on_hover_out() set_hover_state(vim.NIL) end
 
 ---@param component Segment?
 ---@param id string
@@ -261,6 +292,9 @@ end
 --- @return Segment?
 local function get_close_icon(buf_id, context)
   local options = config.options
+  if options.hover.enabled and vim.tbl_contains(options.hover.reveal, "close") then
+    if not state.hovered or state.hovered.id ~= context.tab.id then return end
+  end
   local buffer_close_icon = options.buffer_close_icon
   local close_button_hl = context.current_highlights.close_button
   if not options.show_buffer_close_icons then return end
@@ -357,6 +391,10 @@ local function get_max_length(context)
   local padding_size = strwidth(padding) * 2
   local max_length = options.max_name_length
 
+  local autosize = not options.truncate_names and not options.enforce_regular_tabs
+  local name_size = strwidth(context.tab.name)
+  if autosize and name_size >= max_length then return name_size end
+
   if not options.enforce_regular_tabs then return max_length end
   -- estimate the maximum allowed size of a filename given that it will be
   -- padded and prefixed with a file icon
@@ -366,8 +404,7 @@ end
 ---@param ctx RenderContext
 ---@return Segment
 local function get_name(ctx)
-  local max_length = get_max_length(ctx)
-  local name = utils.truncate_name(ctx.tab.name, max_length)
+  local name = utils.truncate_name(ctx.tab.name, get_max_length(ctx))
   -- escape filenames that contain "%" as this breaks in statusline patterns
   name = name:gsub("%%", "%%%1")
   return { text = name, highlight = ctx.current_highlights.buffer }
@@ -452,15 +489,15 @@ local function get_tab_indicator(tab_indicators, options)
   return items, length
 end
 
---- @param state BufferlineState
+--- @param current_state BufferlineState
 --- @param element TabElement
 --- @return TabElement
-function M.element(state, element)
+function M.element(current_state, element)
   local curr_hl = highlights.for_element(element)
   local ctx = Context:new({
     tab = element,
     current_highlights = curr_hl,
-    is_picking = state.is_picking,
+    is_picking = current_state.is_picking,
   })
 
   local duplicate_prefix = duplicates.component(ctx)
@@ -621,10 +658,25 @@ local function join(list)
   return str
 end
 
+--- Get the width of statusline/tabline format string
+---@vararg string
+---@return integer
+local function statusline_str_width(...)
+  local str = table.concat({ ... }, "")
+  return api.nvim_eval_statusline(str, { use_tabline = true }).width
+end
+
+---@class BufferlineTablineData
+---@field str string
+---@field left_offset_size integer
+---@field right_offset_size integer
+---@field segments Segment[][]
+---@field visible_components TabElement[]
+
 --- TODO: All components should return Segment[] that are then combined in one go into a tabline
 --- @param items Component[]
 --- @param tab_indicators Segment[]
---- @return string, TabElement[], Segment[][]
+--- @return BufferlineTablineData
 function M.tabline(items, tab_indicators)
   local options = config.options
   local hl = config.highlights
@@ -642,12 +694,12 @@ function M.tabline(items, tab_indicators)
   local left_element_size = utils.measure(max_padding, left_trunc_icon, max_padding)
   local right_element_size = utils.measure(max_padding, right_trunc_icon, max_padding)
 
-  local offset_size, left_offset, right_offset = offset.get()
+  local offsets = offset.get()
   local custom_area_size, left_area, right_area = custom_area.get()
 
   local available_width = vim.o.columns
     - custom_area_size
-    - offset_size
+    - offsets.total_size
     - tab_indicator_length
     - tab_close_button_length
 
@@ -676,8 +728,20 @@ function M.tabline(items, tab_indicators)
   --- NOTE: the custom areas are essentially mini tablines a user can define so they can't
   -- be set safely converted to segments so they are concatenated to string and join with
   -- the rest of the tabline
-  local tabline = utils.join(left_offset, left_area, core, right_area, right_offset)
-  return tabline, visible_components, segments
+  local tabline = utils.join(offsets.left, left_area, core, right_area, offsets.right)
+
+  local left_offset_size = offsets.left_size + statusline_str_width(left_area)
+  local left_marker_size = left_marker and get_component_size(left_marker) or 0
+  local right_offset_size = offsets.right_size + statusline_str_width(right_area)
+  local right_marker_size = right_marker and get_component_size(right_marker) or 0
+
+  return {
+    str = tabline,
+    segments = segments,
+    visible_components = visible_components,
+    right_offset_size = right_offset_size + right_marker_size,
+    left_offset_size = left_offset_size + left_marker_size,
+  }
 end
 
 M.get_component_size = get_component_size
@@ -687,6 +751,7 @@ if utils.is_test() then
   M.to_tabline_str = to_tabline_str
   M.set_id = set_id
   M.add_indicator = add_indicator
+  M.get_name = get_name
 end
 
 return M

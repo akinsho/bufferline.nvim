@@ -28,9 +28,14 @@ local constants = lazy.require("bufferline.constants")
 ---@field style "underline" | "icon" | "none"
 ---@field icon string?
 
----@alias BufferlineMode "'tabs'" | "'buffers'"
+---@alias BufferlineMode 'tabs' | 'buffers'
 
 ---@alias DiagnosticIndicator fun(count: number, level: number, errors: table<string, any>, ctx: table<string, any>): string
+
+---@class HoverOptions
+---@field reveal string[]
+---@field delay integer
+---@field enabled boolean
 
 ---@class BufferlineOptions
 ---@field public mode BufferlineMode
@@ -51,6 +56,7 @@ local constants = lazy.require("bufferline.constants")
 ---@field public separator_style string
 ---@field public name_formatter (fun(path: string):string)?
 ---@field public tab_size number
+---@field public truncate_names boolean
 ---@field public max_name_length number
 ---@field public color_icons boolean
 ---@field public show_buffer_icons boolean
@@ -69,6 +75,7 @@ local constants = lazy.require("bufferline.constants")
 ---@field public offsets table[]
 ---@field public groups GroupOpts
 ---@field public themable boolean
+---@field public hover HoverOptions
 
 ---@class BufferlineHLGroup
 ---@field fg string
@@ -715,6 +722,7 @@ local function get_defaults()
     right_trunc_marker = "",
     separator_style = "thin",
     name_formatter = nil,
+    truncate_names = true,
     tab_size = 18,
     max_name_length = 18,
     color_icons = true,
@@ -737,6 +745,11 @@ local function get_defaults()
       options = {
         toggle_hidden_on_enter = true,
       },
+    },
+    hover = {
+      enabled = false,
+      reveal = {},
+      delay = 200,
     },
     debug = {
       logging = false,
