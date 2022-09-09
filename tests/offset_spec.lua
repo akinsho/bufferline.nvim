@@ -43,10 +43,10 @@ describe("Offset tests:", function()
 
   it("should not trigger if no offsets are specified", function()
     bufferline.setup({ options = {}, highlights = {} })
-    local size, left, right = offsets.get()
-    assert.equal(0, size)
-    assert.equal(left, "")
-    assert.equal(right, "")
+    local data = offsets.get()
+    assert.equal(0, data.total_size)
+    assert.equal(data.left, "")
+    assert.equal(data.right, "")
   end)
 
   it("should create an offset if a compatible panel if open", function()
@@ -56,10 +56,10 @@ describe("Offset tests:", function()
       options = { offsets = { { filetype = ft } } },
     }
     bufferline.setup(opts)
-    local size, left, right = offsets.get()
-    assert.equal(20, size)
-    assert.equal(right, "")
-    assert.is_truthy(left:match(" "))
+    local data = offsets.get()
+    assert.equal(20, data.total_size)
+    assert.equal(data.right, "")
+    assert.is_truthy(data.left:match(" "))
   end)
 
   it("should include padded text if text is specified", function()
@@ -68,10 +68,10 @@ describe("Offset tests:", function()
       highlights = {},
       options = { offsets = { { filetype = ft, text = "Test buffer" } } },
     })
-    local size, left, right = offsets.get()
-    assert.equal(20, size)
-    assert.equal(right, "")
-    assert.is_truthy(left:match("    Test buffer    "))
+    local data = offsets.get()
+    assert.equal(20, data.total_size)
+    assert.equal(data.right, "")
+    assert.is_truthy(data.left:match("    Test buffer    "))
   end)
 
   it("should add the offset to the correct side", function()
@@ -82,11 +82,11 @@ describe("Offset tests:", function()
         offsets = { { filetype = ft, text = "Test buffer" } },
       },
     })
-    local size, left, right = offsets.get()
+    local data = offsets.get()
 
-    assert.equal(20, size)
-    assert.is_truthy(right:match("Test buffer"))
-    assert.equal("", left)
+    assert.equal(20, data.total_size)
+    assert.is_truthy(data.right:match("Test buffer"))
+    assert.equal("", data.left)
   end)
 
   it("should correctly truncate offset text", function()
@@ -97,11 +97,11 @@ describe("Offset tests:", function()
         offsets = { { filetype = ft, text = "Test buffer buffer buffer buffer" } },
       },
     })
-    local size, left, right = offsets.get()
+    local data = offsets.get()
 
-    assert.equal(20, size)
-    assert.equal("", right)
-    assert.is_equal(fmt(" Test buffer buffe%s ", constants.ELLIPSIS), remove_highlight(left))
+    assert.equal(20, data.total_size)
+    assert.equal("", data.right)
+    assert.is_equal(fmt(" Test buffer buffe%s ", constants.ELLIPSIS), remove_highlight(data.left))
   end)
 
   it("should allow left and right offsets", function()
@@ -113,11 +113,11 @@ describe("Offset tests:", function()
         offsets = { { filetype = ft1, text = "Left" }, { filetype = ft2, text = "Right" } },
       },
     })
-    local size, left, right = offsets.get()
+    local data = offsets.get()
 
-    assert.is_truthy(left:match("Left"))
-    assert.is_truthy(right:match("Right"))
-    assert.equal(40, size)
+    assert.is_truthy(data.left:match("Left"))
+    assert.is_truthy(data.right:match("Right"))
+    assert.equal(40, data.total_size)
   end)
 
   it("should allow setting some extra padding", function()
@@ -128,10 +128,10 @@ describe("Offset tests:", function()
         offsets = { { filetype = ft1, text = "Left", padding = 5 } },
       },
     })
-    local size, left, _ = offsets.get()
+    local data = offsets.get()
 
-    assert.is_truthy(left:match("Left"))
-    assert.equal(25, size)
+    assert.is_truthy(data.left:match("Left"))
+    assert.equal(25, data.total_size)
   end)
 
   it("should align the text to the right if specified", function()
@@ -143,10 +143,10 @@ describe("Offset tests:", function()
         offsets = { { filetype = ft1, text = text, text_align = "right" } },
       },
     })
-    local size, left, _ = offsets.get()
+    local data = offsets.get()
 
-    assert.equal(20, size)
-    assert.equal(remove_highlight(left), string.rep(" ", size - (#text + 1)) .. text .. " ")
+    assert.equal(20, data.total_size)
+    assert.equal(remove_highlight(data.left), string.rep(" ", data.total_size - (#text + 1)) .. text .. " ")
   end)
 
   it("should align the text to the left if specified", function()
@@ -158,10 +158,10 @@ describe("Offset tests:", function()
         offsets = { { filetype = ft1, text = text, text_align = "left" } },
       },
     })
-    local size, left, _ = offsets.get()
+    local data = offsets.get()
 
-    assert.equal(20, size)
-    assert.equal(remove_highlight(left), " " .. text .. string.rep(" ", size - (#text + 1)))
+    assert.equal(20, data.total_size)
+    assert.equal(remove_highlight(data.left), " " .. text .. string.rep(" ", data.total_size - (#text + 1)))
   end)
 
   it("should handle a vertical panel with horizontal splits inside it", function()
@@ -174,9 +174,9 @@ describe("Offset tests:", function()
       highlights = {},
       options = { offsets = { { filetype = ft } } },
     })
-    local size, left, right = offsets.get()
-    assert.equal(20, size)
-    assert.equal(right, "")
-    assert.is_truthy(left:match(" "))
+    local data = offsets.get()
+    assert.equal(20, data.total_size)
+    assert.equal(data.right, "")
+    assert.is_truthy(data.left:match(" "))
   end)
 end)
