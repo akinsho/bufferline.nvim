@@ -139,7 +139,7 @@ function Tabpage:new(tab)
     type = tab.buftype,
   })
   if tab.name_formatter and type(tab.name_formatter) == "function" then
-    tab.name = tab.name_formatter({ name = tab.name, path = tab.path, tabnr = tab.id }) or tab.name
+    tab.name = tab.name_formatter({ name = tab.name, path = tab.path, tabnr = tab.id, buffers = tab.buffers }) or tab.name
   end
   setmetatable(tab, self)
   self.__index = self
