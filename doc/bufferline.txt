@@ -84,21 +84,11 @@ The available configuration are:
             --- bufferline so use this at your discretion knowing that it has
             --- some limitations that will *NOT* be fixed.
             name_formatter = function(buf)  -- buf contains:
-                  -- name           | str  | the basename of the active file
-                  -- path           | str  | the full path of the active file
-                  -- bufnr          | int  | the number of the active buffer
-                  -- extension      | str  | the file extension of the active file
-                  -- icon           | str  | the icon of the active file
-                  -- icon_highlight | str  | the highlight group of the active file
-                  -- ordinal        | int  | the ordinal number of the buffer/tab
-                  -- modified       | bool | whether the active file has unwritten changes
-                  -- modifiable     | bool | whether the active file is modifiable
-
-                  -- for tabs the following fiels are also included:
-                  -- tabnr          | int        | the number of the tab
-                  -- focusable      | bool       | whether the tab is focusable
-                  -- buffers        | table(int) | the numbers of the buffers in the tab
-                  -- hidden         | bool       | whether the tab is hidden
+                  -- name                | str        | the basename of the active file
+                  -- path                | str        | the full path of the active file
+                  -- bufnr (buffer only) | int        | the number of the active buffer
+                  -- buffers (tabs only) | table(int) | the numbers of the buffers in the tab
+                  -- tabnr (tabs only)   | int        | the "handle" of the tab, can be converted to its ordinal number using: `vim.api.nvim_tabpage_get_number(buf.tabnr)`
             end,
             max_name_length = 18,
             max_prefix_length = 15, -- prefix used when a buffer is de-duplicated

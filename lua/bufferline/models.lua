@@ -139,22 +139,7 @@ function Tabpage:new(tab)
     type = tab.buftype,
   })
   if tab.name_formatter and type(tab.name_formatter) == "function" then
-    tab.name = tab.name_formatter({
-      name           = tab.name,
-      path           = tab.path,
-      bufnr          = tab.buf,
-      extension      = tab.extension,
-      icon           = tab.icon,
-      icon_highlight = tab.icon_highlight,
-      ordinal        = tab.ordinal,
-      modified       = tab.modified,
-      modifiable     = tab.modifiable,
-
-      tabnr          = tab.id,
-      focusable      = tab.focusable,
-      buffers        = tab.buffers,
-      hidden         = tab.hidden,
-      }) or tab.name
+    tab.name = tab.name_formatter({ name = tab.name, path = tab.path, tabnr = tab.id, buffers = tab.buffers }) or tab.name
   end
   setmetatable(tab, self)
   self.__index = self
@@ -236,17 +221,7 @@ function Buffer:new(buf)
     name = fn.fnamemodify(buf.path, ":t")
     name = is_directory and name .. "/" or name
     if buf.name_formatter and type(buf.name_formatter) == "function" then
-      name = buf.name_formatter({
-        name = name,
-        path = buf.path,
-        bufnr = buf.id,
-        extension = buf.extension,
-        icon = buf.icon,
-        icon_highlight = buf.icon_highlight,
-        ordinal = buf.ordinal,
-        modified = buf.modified,
-        modifiable  = buf.modifiable
-      }) or name
+      name = buf.name_formatter({ name = name, path = buf.path, bufnr = buf.id }) or name
     end
   end
   buf.name, buf.filename = name, name -- TODO: remove this 'filename' field
