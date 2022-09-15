@@ -36,7 +36,9 @@ function M.setup(conf)
     if timer then timer:close() end
     timer = vim.defer_fn(function()
       timer = nil
-      on_hover(fn.getmousepos())
+      local ok, pos = pcall(fn.getmousepos)
+      if not ok then return end
+      on_hover(pos)
     end, delay)
     return "<MouseMove>"
   end, { expr = true })
