@@ -133,6 +133,7 @@ function Tabpage:new(tab)
   tab.buftype = vim.bo[tab.buf].buftype
   tab.extension = fn.fnamemodify(tab.path, ":e")
   tab.icon, tab.icon_highlight = utils.get_icon({
+    filetype = vim.bo[tab.buf].filetype,
     directory = fn.isdirectory(tab.path) > 0,
     path = tab.path,
     extension = tab.extension,
@@ -211,6 +212,7 @@ function Buffer:new(buf)
   buf.extension = fn.fnamemodify(buf.path, ":e")
   local is_directory = fn.isdirectory(buf.path) > 0
   buf.icon, buf.icon_highlight = utils.get_icon({
+    filetype = vim.bo[buf.id].filetype,
     directory = is_directory,
     path = buf.path,
     extension = buf.extension,
