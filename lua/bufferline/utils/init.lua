@@ -163,6 +163,7 @@ end
 ---@field directory boolean
 ---@field path string
 ---@field extension string
+---@field filetype string?
 
 ---Get an icon for a filetype using either nvim-web-devicons or vim-devicons
 ---if using the lua plugin this also returns the icon's highlights
@@ -174,6 +175,7 @@ function M.get_icon(opts)
     local hl = loaded and "DevIconDefault" or nil
     return constants.FOLDER_ICON, hl
   end
+
   if not loaded then
     if fn.exists("*WebDevIconsGetFileTypeSymbol") > 0 then
       return fn.WebDevIconsGetFileTypeSymbol(opts.path), ""
@@ -181,10 +183,20 @@ function M.get_icon(opts)
     return "", ""
   end
   if type == "terminal" then return webdev_icons.get_icon(type) end
-  local name = fn.fnamemodify(opts.path, ":t")
-  local icon, hl = webdev_icons.get_icon(name, opts.extension, {
-    default = config.options.show_buffer_default_icon,
-  })
+
+  local use_default = config.options.show_buffer_default_icon
+
+  local icon, hl
+  if opts.filetype then
+    -- Don't use a default here so that we fall through to the next case if no icon is found
+    icon, hl = webdev_icons.get_icon_by_filetype(opts.filetype, { default = false })
+  end
+  if not icon then
+    icon, hl = webdev_icons.get_icon(fn.fnamemodify(opts.path, ":t"), opts.extension, {
+      default = use_default,
+    })
+  end
+
   if not icon then return "", "" end
   return icon, hl
 end
