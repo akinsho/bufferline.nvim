@@ -129,7 +129,10 @@ function Tabpage:new(tab)
   tab.name = fn.fnamemodify(tab.path, ":t")
   assert(tab.buf, fmt("A tab must a have a buffer: %s", vim.inspect(tab)))
   tab.modifiable = vim.bo[tab.buf].modifiable
-  tab.modified = vim.bo[tab.buf].modified
+  tab.modified = false
+  for _, buf in pairs(tab.buffers) do
+    tab.modified = tab.modified or vim.bo[buf].modified
+  end
   tab.buftype = vim.bo[tab.buf].buftype
   tab.extension = fn.fnamemodify(tab.path, ":e")
   tab.icon, tab.icon_highlight = utils.get_icon({
