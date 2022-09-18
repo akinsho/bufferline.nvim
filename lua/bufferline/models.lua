@@ -125,11 +125,20 @@ function GroupView:current() return false end
 ---@field __ancestor fun(self: Component, depth: integer, formatter: (fun(string, integer): string)?): string
 local Tabpage = Component:new({ type = "tab" })
 
+local function get_modified_state(buffers)
+  for _, buf in pairs(buffers) do
+    if vim.bo[buf].modified then
+      return true
+    end
+  end
+  return false
+end
+
 function Tabpage:new(tab)
   tab.name = fn.fnamemodify(tab.path, ":t")
   assert(tab.buf, fmt("A tab must a have a buffer: %s", vim.inspect(tab)))
   tab.modifiable = vim.bo[tab.buf].modifiable
-  tab.modified = vim.bo[tab.buf].modified
+  tab.modified = get_modified_state(tab.buffers)
   tab.buftype = vim.bo[tab.buf].buftype
   tab.extension = fn.fnamemodify(tab.path, ":e")
   tab.icon, tab.icon_highlight = utils.get_icon({
