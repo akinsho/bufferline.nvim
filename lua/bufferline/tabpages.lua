@@ -98,22 +98,13 @@ local function get_tab_buffers(tab_num)
   return vim.tbl_map(api.nvim_win_get_buf, api.nvim_tabpage_list_wins(tab_num))
 end
 
-local function contains_value(table, element)
-  for _, value in pairs(table) do
-    if value == element then
-      return true
-    end
-  end
-  return false
-end
-
 local function get_diagnostics(buffers, options)
   local all_diagnostics = diagnostics.get(options)
   local buffer_diagnostics = {}
   local included_paths = {}
   for buffer, item in pairs(all_diagnostics) do
     local path = get_buffer_name(buffer)
-    if contains_value(buffers, buffer) and not contains_value(included_paths, path) then
+    if vim.tbl_contains(buffers, buffer) and not vim.tbl_contains(included_paths, path) then
       table.insert(included_paths, path)
       table.insert(buffer_diagnostics, item)
     end
