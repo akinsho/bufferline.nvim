@@ -64,6 +64,7 @@ local constants = lazy.require("bufferline.constants")
 ---@field public show_buffer_default_icon boolean
 ---@field public show_close_icon boolean
 ---@field public show_tab_indicators boolean
+---@field public show_duplicate_prefix boolean
 ---@field public enforce_regular_tabs boolean
 ---@field public always_show_bufferline boolean
 ---@field public persist_buffer_sort boolean
@@ -731,6 +732,7 @@ local function get_defaults()
     show_buffer_default_icon = true,
     show_close_icon = true,
     show_tab_indicators = true,
+    show_duplicate_prefix = true,
     enforce_regular_tabs = false,
     always_show_bufferline = true,
     persist_buffer_sort = true,

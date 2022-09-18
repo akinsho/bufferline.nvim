@@ -75,7 +75,7 @@ function M.component(context)
   -- there is no way to enforce a regular tab size as specified by the
   -- user if we are going to potentially increase the tab length by
   -- prefixing it with the parent dir(s)
-  if element.duplicated and not options.enforce_regular_tabs then
+  if element.duplicated and options.show_duplicate_prefix and not options.enforce_regular_tabs then
     local dir = element:ancestor(
       element.prefix_count,
       function(dir, depth) return truncate(dir, depth, options.max_prefix_length) end
