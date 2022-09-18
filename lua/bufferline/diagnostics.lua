@@ -19,6 +19,15 @@ local severity_name = {
   [5] = "other",
 }
 
+local function get_severity_code(sev_name)
+  for code, name in pairs(severity_name) do
+    if name == sev_name then
+      return code
+    end
+  end
+  return 5
+end
+
 setmetatable(severity_name, {
   __index = function() return "other" end,
 })
@@ -113,6 +122,27 @@ local get_diagnostics = {
     return function() return diagnostics end
   end)(),
 }
+
+function M.combine(diagnosticss)
+  if #diagnosticss < 1 then return {} end
+  local result = {
+    sev_code = get_severity_code(diagnosticss[1].level),
+    errors = {},
+    count = 0
+  }
+  for _, diagnostics in pairs(diagnosticss) do
+    result.sev_code = math.min(result.sev_code, get_severity_code(diagnostics.level))
+    for severity, count in pairs(diagnostics.errors) do
+      result.errors[severity] = count + (result.errors[severity] or 0)
+      result.count = count + result.count
+    end
+  end
+  return {
+      level = severity_name[result.sev_code],
+      errors = result.errors,
+      count = result.count
+    }
+end
 
 ---@param opts table
 function M.get(opts)
