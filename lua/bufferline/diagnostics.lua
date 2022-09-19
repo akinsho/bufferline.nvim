@@ -121,9 +121,9 @@ function M.combine(diagnostics)
     errors = {},
     count = 0
   }
-  for _, diagnostics_instance in pairs(diagnostics) do
-    result.sev_code = math.min(result.sev_code, severity_name[diagnostics_instance.level])
-    for severity, count in pairs(diagnostics_instance.errors) do
+  for _, diag in pairs(diagnostics) do
+    result.sev_code = math.min(result.sev_code, severity_name[diag.level])
+    for severity, count in pairs(diag.errors) do
       result.errors[severity] = count + (result.errors[severity] or 0)
       result.count = count + result.count
     end
