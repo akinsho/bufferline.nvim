@@ -11,13 +11,13 @@ local M = {}
 local fn = vim.fn
 local fmt = string.format
 
-local severity_name = {
+local severity_name = vim.tbl_add_reverse_lookup({
   [1] = "error",
   [2] = "warning",
   [3] = "info",
   [4] = "hint",
   [5] = "other",
-}
+})
 
 setmetatable(severity_name, {
   __index = function() return "other" end,
@@ -113,6 +113,27 @@ local get_diagnostics = {
     return function() return diagnostics end
   end)(),
 }
+
+function M.combine(diagnostics)
+  if #diagnostics < 1 then return {} end
+  local result = {
+    sev_code = severity_name[diagnostics[1].level],
+    errors = {},
+    count = 0
+  }
+  for _, diag in pairs(diagnostics) do
+    result.sev_code = math.min(result.sev_code, severity_name[diag.level])
+    for severity, count in pairs(diag.errors) do
+      result.errors[severity] = count + (result.errors[severity] or 0)
+      result.count = count + result.count
+    end
+  end
+  return {
+      level = severity_name[result.sev_code],
+      errors = result.errors,
+      count = result.count
+    }
+end
 
 ---@param opts table
 function M.get(opts)

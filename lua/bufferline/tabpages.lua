@@ -98,6 +98,20 @@ local function get_tab_buffers(tab_num)
   return vim.tbl_map(api.nvim_win_get_buf, api.nvim_tabpage_list_wins(tab_num))
 end
 
+local function get_diagnostics(buffers, options)
+  local all_diagnostics = diagnostics.get(options)
+  local buffer_diagnostics = {}
+  local included_paths = {}
+  for buffer, item in pairs(all_diagnostics) do
+    local path = get_buffer_name(buffer)
+    if vim.tbl_contains(buffers, buffer) and not vim.tbl_contains(included_paths, path) then
+      table.insert(included_paths, path)
+      table.insert(buffer_diagnostics, item)
+    end
+  end
+  return diagnostics.combine(buffer_diagnostics)
+end
+
 ---@param state BufferlineState
 ---@return NvimTab[]
 function M.get_components(state)
@@ -123,19 +137,13 @@ function M.get_components(state)
       buffer = active_buf
     end
     local path = get_buffer_name(buffer)
-    local all_diagnostics = diagnostics.get(options)
-    -- TODO: decide how diagnostics should render if the focused
-    -- window doesn't have any errors but a neighbouring window does
-    -- local match = utils.find(buffers, function(item)
-    --   return all_diagnostics[item].count > 0
-    -- end)
     local tab = Tabpage:new({
       path = path,
       buf = buffer,
       buffers = buffers,
       id = tab_num,
       ordinal = i,
-      diagnostics = all_diagnostics[buffer],
+      diagnostics = get_diagnostics(buffers, options),
       name_formatter = options.name_formatter,
       hidden = false,
       focusable = true,
