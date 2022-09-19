@@ -119,7 +119,7 @@ function M.combine(diagnostics)
   local result = {
     sev_code = severity_name[diagnostics[1].level],
     errors = {},
-    count = 0
+    count = 0,
   }
   for _, diag in pairs(diagnostics) do
     result.sev_code = math.min(result.sev_code, severity_name[diag.level])
@@ -129,10 +129,10 @@ function M.combine(diagnostics)
     end
   end
   return {
-      level = severity_name[result.sev_code],
-      errors = result.errors,
-      count = result.count
-    }
+    level = severity_name[result.sev_code],
+    errors = result.errors,
+    count = result.count,
+  }
 end
 
 ---@param opts table
