@@ -114,16 +114,16 @@ local get_diagnostics = {
   end)(),
 }
 
-function M.combine(diagnosticss)
-  if #diagnosticss < 1 then return {} end
+function M.combine(diagnostics)
+  if #diagnostics < 1 then return {} end
   local result = {
-    sev_code = severity_name[diagnosticss[1].level],
+    sev_code = severity_name[diagnostics[1].level],
     errors = {},
     count = 0
   }
-  for _, diagnostics in pairs(diagnosticss) do
-    result.sev_code = math.min(result.sev_code, severity_name[diagnostics.level])
-    for severity, count in pairs(diagnostics.errors) do
+  for _, diagnostics_instance in pairs(diagnostics) do
+    result.sev_code = math.min(result.sev_code, severity_name[diagnostics_instance.level])
+    for severity, count in pairs(diagnostics_instance.errors) do
       result.errors[severity] = count + (result.errors[severity] or 0)
       result.count = count + result.count
     end
