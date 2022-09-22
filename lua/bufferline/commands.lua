@@ -46,10 +46,14 @@ local function open_element(id)
 end
 
 ---@param id number
-local function delete_element(id)
+local function delete_element(id, force)
   if config:is_tabline() then
     vim.cmd("tabclose " .. id)
   else
+    local is_modified = api.nvim_buf_get_option(id, 'modified')
+    if is_modified and not force then
+      return utils.notify(fmt("No write since last change for buffer %d (add ! to close without writing)", id), "warn")
+    end
     api.nvim_buf_delete(id, { force = true })
   end
 end
@@ -188,7 +192,7 @@ end
 ---@alias Direction "'left'" | "'right'"
 ---Close all elements to the left or right of the current buffer
 ---@param direction Direction
-function M.close_in_direction(direction)
+function M.close_in_direction(direction, force)
   local index = M.get_current_element_index(state)
   if not index then return end
   local length = #state.components
@@ -198,7 +202,7 @@ function M.close_in_direction(direction)
     local start = direction == "left" and 1 or index + 1
     local _end = direction == "left" and index - 1 or length
     for _, item in ipairs(vim.list_slice(state.components, start, _end)) do
-      delete_element(item.id)
+      delete_element(item.id, force)
     end
   end
 end
