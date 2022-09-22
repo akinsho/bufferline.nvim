@@ -47,14 +47,11 @@ end
 
 ---@param id number
 local function delete_element(id, force)
+  force = vim.F.if_nil(force, false)
   if config:is_tabline() then
     vim.cmd("tabclose " .. id)
   else
-		local is_modified = api.nvim_buf_get_option(id, 'modified')
-		if is_modified and not force then
-			return utils.notify(fmt("No write since last change for buffer %d (add ! to close without writing)", id), "warn")
-		end
-    api.nvim_buf_delete(id, { force = true })
+    api.nvim_buf_delete(id, { force = force })
   end
 end
 
