@@ -192,7 +192,13 @@ describe("Bufferline tests:", function()
   -- FIXME: nvim_bufferline() needs to be manually called
   describe("commands - ", function()
     it("should close buffers to the right of the current buffer", function()
-      bufferline.setup()
+      bufferline.setup({
+        options = {
+          close_command = function(bufid)
+            vim.api.nvim_buf_delete(bufid, { force = true })
+          end,
+        },
+      })
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
@@ -207,7 +213,13 @@ describe("Bufferline tests:", function()
     end)
 
     it("should close buffers to the left of the current buffer", function()
-      bufferline.setup()
+      bufferline.setup({
+        options = {
+          close_command = function(bufid)
+            vim.api.nvim_buf_delete(bufid, { force = true })
+          end,
+        },
+      })
       vim.cmd("edit! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
@@ -222,23 +234,6 @@ describe("Bufferline tests:", function()
       bufferline.close_in_direction("left")
       bufs = vim.api.nvim_list_bufs()
       assert.is_equal(1, #bufs)
-    end)
-
-    it("should close buffers in direction, but skip unwritten ones", function()
-      bufferline.setup()
-      vim.cmd("edit a.txt")
-      vim.cmd("edit b.txt")
-      vim.cmd("edit c.txt")
-      vim.cmd("edit d.txt")
-      vim.cmd("edit e.txt")
-      vim.api.nvim_put({ "some text" }, "", true, true)
-      local unwritten_buf = vim.api.nvim_get_current_buf()
-      nvim_bufferline()
-
-      vim.cmd("edit c.txt")
-      local ok, err = pcall(bufferline.close_in_direction, "right", false)
-      assert.is_false(ok)
-      assert.is_truthy(err:match("Failed to unload buffer"))
     end)
   end)
 

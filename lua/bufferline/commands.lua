@@ -35,6 +35,18 @@ local function get_ids(elements)
   return vim.tbl_map(function(item) return item.id end, elements)
 end
 
+---Handle a user "command" which can be a string or a function
+---@param command string|function
+---@param id number
+local function handle_user_command(command, id)
+  if not command then return end
+  if type(command) == "function" then
+    command(id)
+  elseif type(command) == "string" then
+    vim.cmd(fmt(command, id))
+  end
+end
+
 --- open the current element
 ---@param id number
 local function open_element(id)
@@ -46,12 +58,11 @@ local function open_element(id)
 end
 
 ---@param id number
-local function delete_element(id, force)
-  force = vim.F.if_nil(force, false)
+local function delete_element(id)
   if config:is_tabline() then
     vim.cmd("tabclose " .. id)
   else
-    api.nvim_buf_delete(id, { force = force })
+    handle_user_command(config.options.close_command, id)
   end
 end
 
@@ -60,18 +71,6 @@ end
 local function get_current_element()
   if config:is_tabline() then return api.nvim_get_current_tabpage() end
   return api.nvim_get_current_buf()
-end
-
----Handle a user "command" which can be a string or a function
----@param command string|function
----@param id number
-local function handle_user_command(command, id)
-  if not command then return end
-  if type(command) == "function" then
-    command(id)
-  elseif type(command) == "string" then
-    vim.cmd(fmt(command, id))
-  end
 end
 
 ---@param position number
@@ -189,7 +188,7 @@ end
 ---@alias Direction "'left'" | "'right'"
 ---Close all elements to the left or right of the current buffer
 ---@param direction Direction
-function M.close_in_direction(direction, force)
+function M.close_in_direction(direction)
   local index = M.get_current_element_index(state)
   if not index then return end
   local length = #state.components
@@ -199,7 +198,7 @@ function M.close_in_direction(direction, force)
     local start = direction == "left" and 1 or index + 1
     local _end = direction == "left" and index - 1 or length
     for _, item in ipairs(vim.list_slice(state.components, start, _end)) do
-      delete_element(item.id, force)
+      delete_element(item.id)
     end
   end
 end
