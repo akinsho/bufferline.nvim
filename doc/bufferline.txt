@@ -499,7 +499,8 @@ are:
 * `BufferLineCloseLeft` - close all visible buffers to the left of the current
   buffer
 
-NOTE: these commands will skip unwritten buffers, you can add `!` to close without writing.
+NOTE: These commands actually delete files one by one by command “bwipeout[!]”
+until an error occurs.
 
 ==============================================================================
 CUSTOM-FUNCTIONS                                     *bufferline-functions*
