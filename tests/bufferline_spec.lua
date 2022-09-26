@@ -70,9 +70,9 @@ describe("Bufferline tests:", function()
 
   describe("Snapshots - ", function()
     local snapshots = {
-      "       a.txt       ▕       b.txt       ▕▎      c.txt       ",
-      "        a.txt       ▕        b.txt       ▕▎       c.txt       ",
-      "       a.txt              b.txt              c.txt       ",
+      "       a.txt       ▕       b.txt       ▕▎      c.txt       ",
+      "        a.txt       ▕        b.txt       ▕▎       c.txt       ",
+      "       a.txt              b.txt              c.txt       ",
     }
     it("should add correct padding if close icons are present", function()
       bufferline.setup()
@@ -124,7 +124,7 @@ describe("Bufferline tests:", function()
       local _, components = nvim_bufferline()
       local snapshot = utils.tabline_from_components(components)
       local icon = icons.get_icon("")
-      assert.is_false(snapshot:match(icon) == nil)
+      assert.is_falsy(snapshot:match(icon))
     end)
 
     it("should show a default icon if specified", function()
