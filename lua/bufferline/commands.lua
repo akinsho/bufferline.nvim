@@ -40,6 +40,20 @@ local function get_ids(elements)
   end, elements)
 end
 
+---Handle a user "command" which can be a string or a function
+---@param command string|function
+---@param id number
+local function handle_user_command(command, id)
+  if not command then
+    return
+  end
+  if type(command) == "function" then
+    command(id)
+  elseif type(command) == "string" then
+    vim.cmd(fmt(command, id))
+  end
+end
+
 --- open the current element
 ---@param id number
 local function open_element(id)
@@ -55,7 +69,7 @@ local function delete_element(id)
   if config:is_tabline() then
     vim.cmd("tabclose " .. id)
   else
-    api.nvim_buf_delete(id, { force = true })
+    handle_user_command(config.options.close_command, id)
   end
 end
 
@@ -66,20 +80,6 @@ local function get_current_element()
     return api.nvim_get_current_tabpage()
   end
   return api.nvim_get_current_buf()
-end
-
----Handle a user "command" which can be a string or a function
----@param command string|function
----@param id string
-local function handle_user_command(command, id)
-  if not command then
-    return
-  end
-  if type(command) == "function" then
-    command(id)
-  elseif type(command) == "string" then
-    vim.cmd(fmt(command, id))
-  end
 end
 
 ---@param position number

@@ -196,7 +196,13 @@ describe("Bufferline tests:", function()
   -- FIXME: nvim_bufferline() needs to be manually called
   describe("commands - ", function()
     it("should close buffers to the right of the current buffer", function()
-      bufferline.setup()
+      bufferline.setup({
+        options = {
+          close_command = function(bufid)
+            vim.api.nvim_buf_delete(bufid, { force = true })
+          end
+        }
+      })
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
@@ -211,7 +217,13 @@ describe("Bufferline tests:", function()
     end)
 
     it("should close buffers to the left of the current buffer", function()
-      bufferline.setup()
+      bufferline.setup({
+        options = {
+          close_command = function(bufid)
+            vim.api.nvim_buf_delete(bufid, { force = true })
+          end
+        }
+      })
       vim.cmd("edit! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")

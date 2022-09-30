@@ -422,6 +422,8 @@ are:
 * `BufferLineCloseLeft` - close all visible buffers to the left of the current
   buffer
 
+NOTE: These commands actually apply `close_command` to each of the corresponding buffers.
+
 ==============================================================================
 CUSTOM-FUNCTIONS                                     *bufferline-functions*
 
