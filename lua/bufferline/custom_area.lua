@@ -21,7 +21,7 @@ local function create_hl(index, side, section, bg)
   local opts = highlights.translate_user_highlights(section)
   opts.bg = opts.bg or bg
   -- We need to be able to constantly override these highlights so they should always be default
-  opts.default = true
+  opts.default = false
   highlights.set_one(name, opts)
   return highlights.hl(name)
 end
