@@ -119,7 +119,7 @@ end
 function M.set_one(name, opts)
   if not opts or vim.tbl_isempty(opts) then return end
   local hl = filter_invalid_keys(opts)
-  hl.default = vim.F.if_nil(opts.default, config.options.themable)
+  hl.default = vim.F.if_nil(opts.default, not config.options.themable)
   local ok, msg = pcall(api.nvim_set_hl, 0, name, hl)
   if ok then return hl end
   utils.notify(
