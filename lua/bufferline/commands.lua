@@ -70,7 +70,11 @@ local function handle_user_command(command, id)
   if type(command) == "function" then
     command(id)
   elseif type(command) == "string" then
-    vim.cmd(fmt(command, id))
+    -- Fix #574 without the scheduling the command the tabline does not refresh correctly
+    vim.schedule(function()
+      vim.cmd(fmt(command, id))
+      ui.refresh()
+    end)
   end
 end
 

@@ -150,6 +150,7 @@ describe("Bufferline tests:", function()
         },
       })
       bufferline.handle_click(bufnum, "l")
+      vim.wait(10)
       assert.is_equal(#vim.api.nvim_list_wins(), 2)
     end)
 
@@ -172,6 +173,7 @@ describe("Bufferline tests:", function()
         },
       })
       bufferline.handle_click(bufnum, "r")
+      vim.wait(10)
       assert.is_equal(vim.bo.filetype, "egg")
     end)
 
