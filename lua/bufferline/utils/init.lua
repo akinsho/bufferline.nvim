@@ -187,7 +187,7 @@ function M.get_icon(opts)
   local use_default = config.options.show_buffer_default_icon
 
   local icon, hl
-  if opts.filetype then
+  if M.is_truthy(opts.filetype) then
     -- Don't use a default here so that we fall through to the next case if no icon is found
     icon, hl = webdev_icons.get_icon_by_filetype(opts.filetype, { default = false })
   end

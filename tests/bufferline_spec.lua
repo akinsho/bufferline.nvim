@@ -70,9 +70,9 @@ describe("Bufferline tests:", function()
 
   describe("Snapshots - ", function()
     local snapshots = {
-      "       a.txt       ▕       b.txt       ▕▎      c.txt       ",
-      "        a.txt       ▕        b.txt       ▕▎       c.txt       ",
-      "       a.txt              b.txt              c.txt       ",
+      "       a.txt       ▕       b.txt       ▕▎      c.txt       ",
+      "        a.txt       ▕        b.txt       ▕▎       c.txt       ",
+      "       a.txt              b.txt              c.txt       ",
     }
     it("should add correct padding if close icons are present", function()
       bufferline.setup()
@@ -124,7 +124,7 @@ describe("Bufferline tests:", function()
       local _, components = nvim_bufferline()
       local snapshot = utils.tabline_from_components(components)
       local icon = icons.get_icon("")
-      assert.is_false(snapshot:match(icon) == nil)
+      assert.is_falsy(snapshot:match(icon))
     end)
 
     it("should show a default icon if specified", function()
@@ -150,6 +150,7 @@ describe("Bufferline tests:", function()
         },
       })
       bufferline.handle_click(bufnum, "l")
+      vim.wait(10)
       assert.is_equal(#vim.api.nvim_list_wins(), 2)
     end)
 
@@ -172,6 +173,7 @@ describe("Bufferline tests:", function()
         },
       })
       bufferline.handle_click(bufnum, "r")
+      vim.wait(10)
       assert.is_equal(vim.bo.filetype, "egg")
     end)
 
@@ -223,7 +225,25 @@ describe("Bufferline tests:", function()
       bufs = vim.api.nvim_list_bufs()
       assert.is_equal(1, #bufs)
     end)
+
+    it("should close buffers in direction, but skip unwritten ones", function()
+      bufferline.setup()
+      vim.cmd("edit a.txt")
+      vim.cmd("edit b.txt")
+      vim.cmd("edit c.txt")
+      vim.cmd("edit d.txt")
+      vim.cmd("edit e.txt")
+      vim.api.nvim_put({ "some text" }, "", true, true)
+      local unwritten_buf = vim.api.nvim_get_current_buf()
+      nvim_bufferline()
+
+      vim.cmd("edit c.txt")
+      local ok, err = pcall(bufferline.close_in_direction, "right", false)
+      assert.is_false(ok)
+      assert.is_truthy(err:match("Failed to unload buffer"))
+    end)
   end)
+
   describe("Theme - ", function()
     it("should update the colors if the colorscheme changes", function()
       vim.cmd("colorscheme blue")

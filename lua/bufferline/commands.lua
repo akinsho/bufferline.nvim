@@ -46,11 +46,12 @@ local function open_element(id)
 end
 
 ---@param id number
-local function delete_element(id)
+local function delete_element(id, force)
+  force = vim.F.if_nil(force, false)
   if config:is_tabline() then
     vim.cmd("tabclose " .. id)
   else
-    api.nvim_buf_delete(id, { force = true })
+    api.nvim_buf_delete(id, { force = force })
   end
 end
 
@@ -69,7 +70,11 @@ local function handle_user_command(command, id)
   if type(command) == "function" then
     command(id)
   elseif type(command) == "string" then
-    vim.cmd(fmt(command, id))
+    -- Fix #574 without the scheduling the command the tabline does not refresh correctly
+    vim.schedule(function()
+      vim.cmd(fmt(command, id))
+      ui.refresh()
+    end)
   end
 end
 
@@ -188,7 +193,7 @@ end
 ---@alias Direction "'left'" | "'right'"
 ---Close all elements to the left or right of the current buffer
 ---@param direction Direction
-function M.close_in_direction(direction)
+function M.close_in_direction(direction, force)
   local index = M.get_current_element_index(state)
   if not index then return end
   local length = #state.components
@@ -198,7 +203,7 @@ function M.close_in_direction(direction)
     local start = direction == "left" and 1 or index + 1
     local _end = direction == "left" and index - 1 or length
     for _, item in ipairs(vim.list_slice(state.components, start, _end)) do
-      delete_element(item.id)
+      delete_element(item.id, force)
     end
   end
 end

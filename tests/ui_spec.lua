@@ -126,7 +126,7 @@ describe("UI Tests", function()
     it("should not render a close icon if not hovered", function()
       config.set({ options = { hover = { enabled = true, reveal = { "close" } } } })
       config.apply()
-      local buf = MockBuffer:new({ id = 1, name = "file.txt" })
+      local buf = MockBuffer:new({ id = 1, name = "file.txt", _is_current = false })
       local el = ui.element({}, buf)
       local segment = ui.to_tabline_str(el:component(1))
       assert.is_falsy(segment:match(config.options.buffer_close_icon))
@@ -135,8 +135,14 @@ describe("UI Tests", function()
     it("should render a close icon if hovered", function()
       config.set({ options = { hover = { enabled = true, reveal = { "close" } } } })
       config.apply()
-      local buf1 = MockBuffer:new({ id = 1, name = "file.txt", length = 10 })
-      local buf2 = MockBuffer:new({ id = 2, name = "next.txt", length = 10 })
+      local buf1 = MockBuffer:new({ id = 1, name = "file.txt", length = 10, _is_current = true })
+      local buf2 = MockBuffer:new({
+        id = 2,
+        name = "next.txt",
+        length = 10,
+        _is_current = false,
+        _is_visible = true,
+      })
       state.set({ visible_components = { buf1, buf2 } })
       ui.on_hover_over(_, { cursor_pos = 5 })
       assert.equal(state.hovered, buf1)
