@@ -22,7 +22,7 @@ Filtering..............................: |bufferline-filtering|
 Commands...............................: |bufferline-commands|
 Custom functions.......................: |bufferline-exec|
 Pick...................................: |bufferline-pick|
-Mappings...............................: |bufferline-mapping|
+Mappings...............................: |bufferline-mappings|
 Highlights.............................: |bufferline-highlights|
 Mouse actions..........................: |bufferline-mouse-actions|
 Custom areas...........................: |bufferline-custom-areas|
