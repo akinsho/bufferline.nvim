@@ -227,8 +227,16 @@ local function setup_commands()
   cmd("BufferLinePickClose", function() M.close_buffer_with_pick() end, {})
   cmd("BufferLineCycleNext", function() M.cycle(1) end, {})
   cmd("BufferLineCyclePrev", function() M.cycle(-1) end, {})
-  cmd("BufferLineCloseRight", function(opts) M.close_in_direction("right", opts.bang) end, { bang = true })
-  cmd("BufferLineCloseLeft", function(opts) M.close_in_direction("left", opts.bang) end, { bang = true })
+  cmd(
+    "BufferLineCloseRight",
+    function(opts) M.close_in_direction("right", opts.bang) end,
+    { bang = true }
+  )
+  cmd(
+    "BufferLineCloseLeft",
+    function(opts) M.close_in_direction("left", opts.bang) end,
+    { bang = true }
+  )
   cmd("BufferLineMoveNext", function() M.move(1) end, {})
   cmd("BufferLineMovePrev", function() M.move(-1) end, {})
   cmd("BufferLineSortByExtension", function() M.sort_buffers_by("extension") end, {})
