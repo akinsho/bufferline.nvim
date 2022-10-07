@@ -498,6 +498,9 @@ are:
   current buffer
 * `BufferLineCloseLeft` - close all visible buffers to the left of the current
   buffer
+* BufferLineCloseAll - close all visible buffers
+* BufferLineCloseAllButCurrent - close all visible buffers except the current
+  one
 
 NOTE: these commands will skip unwritten buffers, you can add `!` to close without writing.
 
