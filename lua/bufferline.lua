@@ -41,6 +41,8 @@ local M = {
   sort_by = commands.sort_by,
   pick_buffer = commands.pick,
   close_with_pick = commands.close_with_pick,
+  close_all = commands.close_all,
+  close_all_but_current = commands.close_all_but_current,
   close_in_direction = commands.close_in_direction,
   -- @deprecate
   go_to_buffer = commands.go_to,
@@ -228,6 +230,12 @@ local function setup_commands()
   cmd("BufferLinePickClose", function() M.close_buffer_with_pick() end, {})
   cmd("BufferLineCycleNext", function() M.cycle(1) end, {})
   cmd("BufferLineCyclePrev", function() M.cycle(-1) end, {})
+  cmd("BufferLineCloseAll", function(opts) M.close_all(opts.bang) end, { bang = true })
+  cmd(
+    "BufferLineCloseAllButCurrent",
+    function(opts) M.close_all_but_current(opts.bang) end,
+    { bang = true }
+  )
   cmd(
     "BufferLineCloseRight",
     function(opts) M.close_in_direction("right", opts.bang) end,

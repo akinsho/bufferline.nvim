@@ -192,6 +192,29 @@ function M.cycle(direction)
   open_element(item.id)
 end
 
+---Close all elements in bufferline
+---@param force boolean Force close the buffers
+function M.close_all(force)
+    for _, item in ipairs(state.components) do
+        delete_element(item.id, force)
+    end
+end
+
+---Close all elements but the current buffer
+---@param force boolean Force close the buffers
+function M.close_all_but_current(force)
+    -- could just do this but feels inefficient
+    --M.close_in_direction("left", force)
+    --M.close_in_direction("right", force)
+    local index = M.get_current_element_index(state)
+    if not index then return end
+    for i, item in ipairs(state.components) do
+        if i ~= index then
+            delete_element(item.id, force)
+        end
+    end
+end
+
 ---@alias Direction "'left'" | "'right'"
 ---Close all elements to the left or right of the current buffer
 ---@param direction Direction

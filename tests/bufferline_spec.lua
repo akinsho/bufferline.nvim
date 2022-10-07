@@ -243,6 +243,96 @@ describe("Bufferline tests:", function()
       assert.is_false(ok)
       assert.is_truthy(err:match("Failed to unload buffer"))
     end)
+    it("should close all buffers, but skip unwritten ones without force being true", function()
+      bufferline.setup()
+      vim.cmd("edit a.txt")
+      vim.cmd("edit b.txt")
+      vim.cmd("edit c.txt")
+      vim.cmd("edit d.txt")
+      vim.cmd("edit e.txt")
+      vim.api.nvim_put({ "some text" }, "", true, true)
+      nvim_bufferline()
+
+      assert.is.equal(5, #state.components)
+
+      vim.cmd("edit c.txt")
+
+      local bufs = vim.api.nvim_list_bufs()
+      assert.is_equal(5, #bufs)
+      local ok, err = pcall(bufferline.close_all, false)
+      assert.is_false(ok)
+      assert.is_truthy(err:match("Failed to unload buffer"))
+      bufs = vim.api.nvim_list_bufs()
+      assert.is_equal(1, #bufs)
+    end)
+    it("should close all buffers, including unwritten ones with force being true", function()
+      bufferline.setup()
+      vim.cmd("edit a.txt")
+      vim.cmd("edit b.txt")
+      vim.cmd("edit c.txt")
+      vim.cmd("edit d.txt")
+      vim.cmd("edit e.txt")
+      vim.api.nvim_put({ "some text" }, "", true, true)
+      nvim_bufferline()
+
+      assert.is.equal(5, #state.components)
+
+      vim.cmd("edit c.txt")
+
+      local bufs = vim.api.nvim_list_bufs()
+      assert.is_equal(5, #bufs)
+      bufferline.close_all(true)
+      bufs = vim.api.nvim_list_bufs()
+      assert.is_equal(0, #bufs)
+    end)
+    it(
+      "should close all buffers except current, but skip unwritten ones without force being true",
+      function()
+        bufferline.setup()
+        vim.cmd("edit a.txt")
+        vim.cmd("edit b.txt")
+        vim.cmd("edit c.txt")
+        vim.cmd("edit d.txt")
+        vim.cmd("edit e.txt")
+        vim.api.nvim_put({ "some text" }, "", true, true)
+        nvim_bufferline()
+
+        assert.is.equal(5, #state.components)
+
+        vim.cmd("edit c.txt")
+
+        local bufs = vim.api.nvim_list_bufs()
+        assert.is_equal(5, #bufs)
+        local ok, err = pcall(bufferline.close_all_but_current, false)
+        assert.is_false(ok)
+        assert.is_truthy(err:match("Failed to unload buffer"))
+        bufs = vim.api.nvim_list_bufs()
+        assert.is_equal(2, #bufs)
+      end
+    )
+    it(
+      "should close all buffers except current, including unwritten ones with force being true",
+      function()
+        bufferline.setup()
+        vim.cmd("edit a.txt")
+        vim.cmd("edit b.txt")
+        vim.cmd("edit c.txt")
+        vim.cmd("edit d.txt")
+        vim.cmd("edit e.txt")
+        vim.api.nvim_put({ "some text" }, "", true, true)
+        nvim_bufferline()
+
+        assert.is.equal(5, #state.components)
+
+        vim.cmd("edit c.txt")
+
+        local bufs = vim.api.nvim_list_bufs()
+        assert.is_equal(5, #bufs)
+        bufferline.close_all(true)
+        bufs = vim.api.nvim_list_bufs()
+        assert.is_equal(1, #bufs)
+      end
+    )
   end)
 
   describe("Theme - ", function()
