@@ -499,7 +499,7 @@ are:
 * `BufferLineCloseLeft` - close all visible buffers to the left of the current
   buffer
 
-NOTE: these commands will skip unwritten buffers, you can add `!` to close without writing.
+These commands apply the configured `close_command` to each of the corresponding buffers.
 
 ==============================================================================
 CUSTOM-FUNCTIONS                                     *bufferline-functions*
