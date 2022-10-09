@@ -30,6 +30,7 @@
   - [Re-ordering](#re-ordering)
   - [LSP indicators](#lsp-indicators)
   - [Custom areas](#custom-areas)
+  - [Working with Elements](#working-with-elements)
 - [How do I see only buffers per tab?](#how-do-i-see-only-buffers-per-tab)
 - [Caveats](#caveats)
 - [FAQ](#faq)
@@ -290,6 +291,37 @@ This order can be persisted between sessions (enabled by default).
 ![custom area](https://user-images.githubusercontent.com/22454918/118527523-4d219f00-b739-11eb-889f-60fb06fd71bc.png)
 
 see `:help bufferline-custom-areas`
+
+#### Working with Elements
+
+Bufferline exposes some information about the buffers it shows will allow you
+to implement your own custom functionality. Note that this will not include any
+buffers that are filtered out of bufferline, making it handy for writing 
+functions that need to ignore special buffers.
+
+The output has the following structure:
+
+```lua
+{
+    mode = "tabs" -- depends on your config setting for mode
+    elements = {
+        {id = 1, name = "hi.txt", path = "/tmp/folder/hi.txt"},
+        -- and so on for all open buffers
+    }
+}
+```
+
+Here's an example that will let you close all open buffers.
+
+```lua
+function close_all_buffers ()
+    for _, e in ipairs(bufferline.get_elements().elements) do
+        vim.schedule(function()
+            vim.cmd("bd ".. e.id)
+        end)
+    end
+end
+```
 
 ## How do I see only buffers per tab?
 
