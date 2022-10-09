@@ -191,6 +191,18 @@ function M.cycle(direction)
   open_element(item.id)
 end
 
+function M.get_elements()
+    -- there must be a better way of doing this but I don't know Lua well
+    local elems = {}
+    for _, e in ipairs(state.components) do
+        table.insert(elems, {id = e.id, name = e.name, path = e.path})
+    end
+    return {
+        mode = config.options.mode,
+        elements = elems
+    }
+end
+
 ---@alias Direction "'left'" | "'right'"
 ---Close all elements to the left or right of the current buffer
 ---@param direction Direction
