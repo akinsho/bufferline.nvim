@@ -40,6 +40,7 @@ local M = {
   cycle = commands.cycle,
   sort_by = commands.sort_by,
   pick_buffer = commands.pick,
+  get_elements = commands.get_elements,
   close_with_pick = commands.close_with_pick,
   close_in_direction = commands.close_in_direction,
   -- @deprecate

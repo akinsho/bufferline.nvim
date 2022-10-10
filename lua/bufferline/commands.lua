@@ -191,6 +191,15 @@ function M.cycle(direction)
   open_element(item.id)
 end
 
+function M.get_elements()
+    return {
+        mode = config.options.mode,
+        elements = vim.tbl_map(function(elem)
+            return {id = elem.id, name = elem.name, path = elem.path}
+        end, state.components)
+    }
+end
+
 ---@alias Direction "'left'" | "'right'"
 ---Close all elements to the left or right of the current buffer
 ---@param direction Direction
