@@ -192,14 +192,11 @@ function M.cycle(direction)
 end
 
 function M.get_elements()
-    -- there must be a better way of doing this but I don't know Lua well
-    local elems = {}
-    for _, e in ipairs(state.components) do
-        table.insert(elems, {id = e.id, name = e.name, path = e.path})
-    end
     return {
         mode = config.options.mode,
-        elements = elems
+        elements = vim.tbl_map(function(elem)
+            return {id = elem.id, name = elem.name, path = elem.path}
+        end, state.components)
     }
 end
 
