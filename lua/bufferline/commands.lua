@@ -206,6 +206,7 @@ function M.close_in_direction(direction, force)
       delete_element(item.id, force)
     end
   end
+  ui.refresh()
 end
 
 --- sorts all elements
