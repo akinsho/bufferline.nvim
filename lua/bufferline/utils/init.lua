@@ -147,26 +147,28 @@ function M.get_tab_count() return #fn.gettabinfo() end
 
 function M.close_tab(tabhandle) vim.cmd("tabclose " .. api.nvim_tabpage_get_number(tabhandle)) end
 
----Sorts the given numbers in place, but doesn't add/remove any values.
+---Sorts the given list of numbers.
+---Does NOT sort the list in-place, instead returns a new sorted list.
+---Does not add/remove any values.
 ---Useful i.e. when sorting a list of buffer numbers or tab numbers.
 ---@param to_sort number[]
 ---@param sorted number[]
 ---@return number[]
 function M.apply_sort(to_sort, sorted)
   if not sorted then return to_sort end
-  local nums = { unpack(to_sort) }
+  local ret = { unpack(to_sort) }
   local reverse_lookup_sorted = M.tbl_reverse_lookup(sorted)
 
   --- a comparator that sorts buffers by their position in sorted
-  local sort_by_sorted = function(buf_id_1, buf_id_2)
-    local buf_1_rank = reverse_lookup_sorted[buf_id_1]
-    local buf_2_rank = reverse_lookup_sorted[buf_id_2]
-    if not buf_1_rank then return false end
-    if not buf_2_rank then return true end
-    return buf_1_rank < buf_2_rank
+  local sort_by_sorted = function(item1, item2)
+    local item1_rank = reverse_lookup_sorted[item1]
+    local item2_rank = reverse_lookup_sorted[item2]
+    if not item1_rank then return false end
+    if not item2_rank then return true end
+    return item1_rank < item2_rank
   end
-  table.sort(nums, sort_by_sorted)
-  return nums
+  table.sort(ret, sort_by_sorted)
+  return ret
 end
 
 --- Wrapper around `vim.notify` that adds message metadata
