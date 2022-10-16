@@ -75,27 +75,6 @@ local function get_valid_tabs()
   )
 end
 
---- sorts tab_nums in place, but doesn't add/remove any values
---- @param tab_nums number[]
---- @param sorted number[]
---- @return number[]
-local function get_updated_tabs(tab_nums, sorted)
-  if not sorted then return tab_nums end
-  local nums = { unpack(tab_nums) }
-  local reverse_lookup_sorted = utils.tbl_reverse_lookup(sorted)
-
-  --- a comparator that sorts buffers by their position in sorted
-  local sort_by_sorted = function(buf_id_1, buf_id_2)
-    local buf_1_rank = reverse_lookup_sorted[buf_id_1]
-    local buf_2_rank = reverse_lookup_sorted[buf_id_2]
-    if not buf_1_rank then return false end
-    if not buf_2_rank then return true end
-    return buf_1_rank < buf_2_rank
-  end
-  table.sort(nums, sort_by_sorted)
-  return nums
-end
-
 ---Filter the buffers to show based on the user callback passed in
 ---@param buf_nums integer[]
 ---@param callback fun(buf: integer, bufs: integer[]): boolean
@@ -138,7 +117,7 @@ end
 function M.get_components(state)
   local options = config.options
   local tab_nums = get_valid_tabs()
-  tab_nums = get_updated_tabs(tab_nums, state.custom_sort)
+  tab_nums = utils.apply_sort(tab_nums, state.custom_sort)
 
   local Tabpage = models.Tabpage
   ---@type NvimTab[]
