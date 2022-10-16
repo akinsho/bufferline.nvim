@@ -159,7 +159,7 @@ function M.apply_sort(to_sort, sorted)
   local ret = { unpack(to_sort) }
   local reverse_lookup_sorted = M.tbl_reverse_lookup(sorted)
 
-  --- a comparator that sorts buffers by their position in sorted
+  --- a comparator that sorts numbers by their position in sorted
   local sort_by_sorted = function(item1, item2)
     local item1_rank = reverse_lookup_sorted[item1]
     local item2_rank = reverse_lookup_sorted[item2]
