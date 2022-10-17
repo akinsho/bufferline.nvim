@@ -40,7 +40,7 @@ It was inspired by a screenshot of DOOM Emacs using [centaur tabs](https://githu
 
 ## Requirements
 
-- Neovim 0.7+
+- Neovim 0.8+
 - A patched font (see [nerd fonts](https://github.com/ryanoasis/nerd-fonts))
 - A colorscheme (either your custom highlight or a maintained one somewhere)
 
@@ -53,7 +53,7 @@ If you'd like to use an older version of the plugin compatible with nvim-0.6.1 a
 
 ```lua
 -- using packer.nvim
-use {'akinsho/bufferline.nvim', tag = "v2.*", requires = 'kyazdani42/nvim-web-devicons'}
+use {'akinsho/bufferline.nvim', tag = "v3.*", requires = 'kyazdani42/nvim-web-devicons'}
 ```
 
 **Vimscript**
@@ -61,7 +61,7 @@ use {'akinsho/bufferline.nvim', tag = "v2.*", requires = 'kyazdani42/nvim-web-de
 ```vim
 Plug 'kyazdani42/nvim-web-devicons' " Recommended (for coloured icons)
 " Plug 'ryanoasis/vim-devicons' Icons without colours
-Plug 'akinsho/bufferline.nvim', { 'tag': 'v2.*' }
+Plug 'akinsho/bufferline.nvim', { 'tag': 'v3.*' }
 ```
 
 ## Usage
@@ -117,9 +117,7 @@ see: `:h bufferline-styling`
 
 **NOTE**: this is only available for _neovim 0.8+ (nightly) ONLY_ and is still **experimental**
 
-
 ![hover-event-preview](https://user-images.githubusercontent.com/22454918/189106657-163b0550-897c-42c8-a571-d899bdd69998.gif)
-
 
 see `:help bufferline-hover-events` for more information on configuration
 
