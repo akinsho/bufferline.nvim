@@ -24,6 +24,10 @@ local highlights = lazy.require("bufferline.highlights")
 --- @module "bufferline.hover"
 local hover = lazy.require("bufferline.hover")
 
+-- @v:lua@ in the tabline only supports global functions, so this is
+-- the only way to add click handlers without autoloaded vimscript functions
+_G.___bufferline_private = _G.___bufferline_private or {} -- to guard against reloads
+
 local api = vim.api
 
 local positions_key = constants.positions_key
@@ -36,11 +40,9 @@ local M = {
   cycle = commands.cycle,
   sort_by = commands.sort_by,
   pick_buffer = commands.pick,
-  handle_close = commands.handle_close,
-  handle_click = commands.handle_click,
+  get_elements = commands.get_elements,
   close_with_pick = commands.close_with_pick,
   close_in_direction = commands.close_in_direction,
-  handle_group_click = commands.handle_group_click,
   -- @deprecate
   go_to_buffer = commands.go_to,
   sort_buffers_by = commands.sort_by,
@@ -227,16 +229,8 @@ local function setup_commands()
   cmd("BufferLinePickClose", function() M.close_buffer_with_pick() end, {})
   cmd("BufferLineCycleNext", function() M.cycle(1) end, {})
   cmd("BufferLineCyclePrev", function() M.cycle(-1) end, {})
-  cmd(
-    "BufferLineCloseRight",
-    function(opts) M.close_in_direction("right", opts.bang) end,
-    { bang = true }
-  )
-  cmd(
-    "BufferLineCloseLeft",
-    function(opts) M.close_in_direction("left", opts.bang) end,
-    { bang = true }
-  )
+  cmd("BufferLineCloseRight", function() M.close_in_direction("right") end, {})
+  cmd("BufferLineCloseLeft", function() M.close_in_direction("left") end, {})
   cmd("BufferLineMoveNext", function() M.move(1) end, {})
   cmd("BufferLineMovePrev", function() M.move(-1) end, {})
   cmd("BufferLineSortByExtension", function() M.sort_buffers_by("extension") end, {})

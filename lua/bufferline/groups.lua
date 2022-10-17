@@ -104,7 +104,7 @@ function separator.tab(group, hls, count)
   local hl = hls.fill.hl_group
   local indicator_hl = hls.buffer.hl_group
   local indicator = {
-    { higlight = hl, text = padding },
+    { highlight = hl, text = padding },
     { highlight = indicator_hl, text = padding .. group.name .. count .. padding },
     { highlight = hl, text = padding },
   }
