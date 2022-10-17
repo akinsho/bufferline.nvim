@@ -120,9 +120,7 @@ end
 function M.pick() pick.choose_then(open_element) end
 
 function M.close_with_pick()
-  pick.choose_then(function(id)
-    handle_close(id)
-  end)
+  pick.choose_then(function(id) handle_close(id) end)
 end
 
 --- Open a element based on it's visible position in the list
@@ -192,12 +190,13 @@ function M.cycle(direction)
 end
 
 function M.get_elements()
-    return {
-        mode = config.options.mode,
-        elements = vim.tbl_map(function(elem)
-            return {id = elem.id, name = elem.name, path = elem.path}
-        end, state.components)
-    }
+  return {
+    mode = config.options.mode,
+    elements = vim.tbl_map(
+      function(elem) return { id = elem.id, name = elem.name, path = elem.path } end,
+      state.components
+    ),
+  }
 end
 
 ---@alias Direction "'left'" | "'right'"

@@ -299,9 +299,7 @@ local function get_close_icon(buf_id, context)
   end
   local buffer_close_icon = options.buffer_close_icon
   local close_button_hl = context.current_highlights.close_button
-  if not options.show_buffer_close_icons then
-    return
-  end
+  if not options.show_buffer_close_icons then return end
   return M.make_clickable("handle_close", buf_id, {
     text = buffer_close_icon,
     highlight = close_button_hl,
