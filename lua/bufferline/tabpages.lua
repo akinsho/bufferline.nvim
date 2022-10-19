@@ -116,8 +116,7 @@ end
 ---@return NvimTab[]
 function M.get_components(state)
   local options = config.options
-  local tab_nums = get_valid_tabs()
-  tab_nums = utils.apply_sort(tab_nums, state.custom_sort)
+  local tabs = get_valid_tabs()
 
   local Tabpage = models.Tabpage
   ---@type NvimTab[]
@@ -127,7 +126,7 @@ function M.get_components(state)
 
   local filter = options.custom_filter
 
-  for i, tab_num in ipairs(tab_nums) do
+  for i, tab_num in ipairs(tabs) do
     local active_buf = get_active_buf_for_tab(tab_num)
     local buffers = get_tab_buffers(tab_num)
     local buffer
