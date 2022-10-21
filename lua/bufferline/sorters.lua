@@ -139,7 +139,7 @@ function M.sort(elements, sort_by, state)
   elseif sort_by == "id" then
     table.sort(elements, sort_by_id)
   elseif sort_by == "tabs" then
-    table.sort(elements, config:is_tabline() and sort_by_id or sort_by_tabs)
+    table.sort(elements, sort_by_tabs)
   elseif type(sort_by) == "function" then
     table.sort(elements, sort_by)
   end
