@@ -57,6 +57,12 @@ end
 
 --- @param buf_a NvimBuffer
 --- @param buf_b NvimBuffer
+local function sort_by_tabpage_number(buf_a, buf_b)
+  local a = vim.api.nvim_tabpage_get_number(buf_a.id)
+  local b = vim.api.nvim_tabpage_get_number(buf_b.id)
+  return a < b
+end
+
 local function sort_by_tabs(buf_a, buf_b)
   local buf_a_tabnr = init_buffer_tabnr(buf_a)
   local buf_b_tabnr = init_buffer_tabnr(buf_b)
@@ -139,7 +145,7 @@ function M.sort(elements, sort_by, state)
   elseif sort_by == "id" then
     table.sort(elements, sort_by_id)
   elseif sort_by == "tabs" then
-    table.sort(elements, sort_by_tabs)
+    table.sort(elements, config:is_tabline() and sort_by_tabpage_number or sort_by_tabs)
   elseif type(sort_by) == "function" then
     table.sort(elements, sort_by)
   end
