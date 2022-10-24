@@ -779,10 +779,7 @@ function Config:resolve(defaults)
 
   if self:is_tabline() then
     local opts = defaults.options
-    -- If the sort by mechanism is "tabs" but the user is in tabline mode
-    -- then the id will be that of the tabs so sort by should be id i.e. "tabs" sort
-    -- is redundant in tabs mode
-    if opts.sort_by == "tabs" then opts.sort_by = "id" end
+    opts.sort_by = "tabs"
     if opts.show_tab_indicators then opts.show_tab_indicators = false end
     opts.close_command = utils.close_tab
     opts.right_mouse_command = "tabclose %d"
