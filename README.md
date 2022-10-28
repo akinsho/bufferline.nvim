@@ -141,7 +141,6 @@ it has a lot of the same features/styling but not all.
 
 A few things to note are
 
-- Diagnostics only show if the buffer with issues is the current window selected in that tab page
 - Sorting doesn't work yet as that needs to be thought through.
 - Grouping doesn't work yet as that also needs to be thought through.
 

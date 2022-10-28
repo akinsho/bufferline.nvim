@@ -197,8 +197,6 @@ This plugin can also be set to show only tabpages. This can be done by setting
 the `mode` option to `tabs`. This will change the bufferline to a tabline it
 has a lot of the same features/styling but not all. A few things to note are
 
-* Diagnostics only show if the buffer with issues is the current window selected
-  in that tab page.
 * Sorting doesn't work yet as that needs to be thought through.
 * Grouping doesn't work yet as that also needs to be thought through.
 
@@ -1073,7 +1071,7 @@ WORKING WITH ELEMENTS                        *bufferline-working-with-elements*
 
 Bufferline exposes some information about the buffers it shows will allow you
 to implement your own custom functionality. Note that this will not include any
-buffers that are filtered out of bufferline, making it handy for writing 
+buffers that are filtered out of bufferline, making it handy for writing
 functions that need to ignore special buffers.
 
 The output has the following structure:
