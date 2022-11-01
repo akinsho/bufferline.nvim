@@ -114,6 +114,16 @@ end
 ---@type GroupSeparator
 function separator.none() return { sep_start = {}, sep_end = {} } end
 
+---@param group Group,
+---@param hls  table<string, table<string, string>>
+---@param count string
+---@return Separators
+---@type GroupSeparator
+function separator.hidden_only(group, hls, count)
+  if group.hidden then return separator.pill(group, hls, count) end
+  return separator.none()
+end
+
 ----------------------------------------------------------------------------------------------------
 -- BUILTIN GROUPS
 ----------------------------------------------------------------------------------------------------
@@ -150,7 +160,7 @@ builtin.ungrouped = Group:new({
   id = UNGROUPED_ID,
   name = UNGROUPED_NAME,
   separator = {
-    style = separator.none,
+    style = separator.hidden_only,
   },
 })
 
@@ -160,7 +170,7 @@ builtin.pinned = Group:new({
   icon = "📌",
   priority = 1,
   separator = {
-    style = separator.none,
+    style = separator.hidden_only,
   },
 })
 
