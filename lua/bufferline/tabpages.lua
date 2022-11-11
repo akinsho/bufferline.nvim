@@ -64,7 +64,10 @@ end
 ---@param buf integer
 ---@return string
 local function get_buffer_name(buf)
-  local name = (buf and api.nvim_buf_is_valid(buf)) and api.nvim_buf_get_name(buf) or "[No name]"
+  local name = (buf and api.nvim_buf_is_valid(buf)) and api.nvim_buf_get_name(buf)
+  if not name or name == "" then
+    name = "[No Name]"
+  end
   return name
 end
 
