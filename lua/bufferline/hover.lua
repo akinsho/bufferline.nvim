@@ -10,7 +10,7 @@ local previous_pos = nil
 local M = {}
 
 local function on_hover(current)
-  if vim.o.laststatus == 0 then return end
+  if vim.o.showtabline == 0 then return end
   if current.screenrow == 1 then
     api.nvim_exec_autocmds("User", {
       pattern = "BufferLineHoverOver",
