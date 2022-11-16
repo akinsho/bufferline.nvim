@@ -18,7 +18,7 @@ M.sep_chars = {
   [M.sep_names.thin] = { "▏", "▕" },
   [M.sep_names.thick] = { "▌", "▐" },
   [M.sep_names.slant] = { "", "" },
-  [M.sep_names.padded_slant] = { "" .. M.padding, "" .. M.padding },
+  [M.sep_names.padded_slant] = { M.padding .. "", "" .. M.padding },
 }
 
 M.positions_key = "BufferlinePositions"
