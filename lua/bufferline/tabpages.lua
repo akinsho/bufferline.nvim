@@ -41,9 +41,10 @@ function M.rename_tab(tabnr, name)
   if tabnr == 0 then
     tabnr = vim.fn.tabpagenr()
   end
-
+  if name == "" then
+    name = ""..tabnr..""
+  end
   vim.api.nvim_tabpage_set_var(tabnr, "name", name)
-
   M.get()
 end
 
