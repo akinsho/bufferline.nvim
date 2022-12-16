@@ -128,9 +128,9 @@ end
 function M.rename_tab(args)
     if #args == 0 then return end
     local tabnr = tonumber(args[1])
-    local name = args[2]
+    local name = table.concat(args, " ",2)
     if tabnr == nil then
-        name = args[1]
+        name = table.concat(args, " ")
         tabnr = 0
     end
     tabpage.rename_tab(tabnr, name)
