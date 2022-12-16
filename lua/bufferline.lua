@@ -43,6 +43,7 @@ local M = {
   get_elements = commands.get_elements,
   close_with_pick = commands.close_with_pick,
   close_in_direction = commands.close_in_direction,
+  rename_tab = commands.rename_tab,
   -- @deprecate
   go_to_buffer = commands.go_to,
   sort_buffers_by = commands.sort_by,
@@ -253,6 +254,9 @@ local function setup_commands()
     { nargs = 1, complete = complete_groups }
   )
   cmd("BufferLineTogglePin", function() M.toggle_pin() end, { nargs = 0 })
+  cmd("BufferLineRenameTab", function(opts)
+        M.rename_tab(opts.fargs)
+    end, { nargs = '*' })
 end
 
 ---@private

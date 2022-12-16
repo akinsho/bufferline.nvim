@@ -18,6 +18,8 @@ local sorters = lazy.require("bufferline.sorters")
 local constants = lazy.require("bufferline.constants")
 ---@module "bufferline.pick"
 local pick = lazy.require("bufferline.pick")
+---@module "bufferline.tabpages"
+local tabpage = lazy.require("bufferline.tabpages")
 
 local M = {}
 
@@ -121,6 +123,17 @@ function M.pick() pick.choose_then(open_element) end
 
 function M.close_with_pick()
   pick.choose_then(function(id) handle_close(id) end)
+end
+
+function M.rename_tab(args)
+    if #args == 0 then return end
+    local tabnr = tonumber(args[1])
+    local name = args[2]
+    if tabnr == nil then
+        name = args[1]
+        tabnr = 0
+    end
+    tabpage.rename_tab(tabnr, name)
 end
 
 --- Open a element based on it's visible position in the list
