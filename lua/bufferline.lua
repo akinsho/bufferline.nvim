@@ -38,6 +38,7 @@ local M = {
   exec = commands.exec,
   go_to = commands.go_to,
   cycle = commands.cycle,
+  cycle_hidden = commands.cycle_hidden,
   sort_by = commands.sort_by,
   pick_buffer = commands.pick,
   get_elements = commands.get_elements,
@@ -229,6 +230,8 @@ local function setup_commands()
   cmd("BufferLinePickClose", function() M.close_buffer_with_pick() end, {})
   cmd("BufferLineCycleNext", function() M.cycle(1) end, {})
   cmd("BufferLineCyclePrev", function() M.cycle(-1) end, {})
+  cmd("BufferLineCycleNextHidden", function() M.cycle_hidden(1) end, {})
+  cmd("BufferLineCyclePrevHidden", function() M.cycle_hidden(-1) end, {})
   cmd("BufferLineCloseRight", function() M.close_in_direction("right") end, {})
   cmd("BufferLineCloseLeft", function() M.close_in_direction("left") end, {})
   cmd("BufferLineMoveNext", function() M.move(1) end, {})

@@ -166,6 +166,52 @@ function M.move(direction)
   end
 end
 
+function M.next_visible_buffer(direction)
+  if vim.opt.showtabline == 0 then
+    if direction > 0 then vim.cmd("bnext") end
+    if direction < 0 then vim.cmd("bprev") end
+  end
+
+  local index = M.get_current_element_index(state)
+
+  if not index then return end
+
+  local length = #state.components
+
+  local original_index = index
+
+  repeat
+    local next_index = index + direction
+
+    if next_index <= length and next_index >= 1 then
+      next_index = index + direction
+    elseif index + direction <= 0 then
+      next_index = length
+    else
+      next_index = 1
+    end
+
+    local item = state.components[next_index]
+
+    -- only permit switching to buffers which are not currently open in a window
+    if rawequal(next(vim.fn.win_findbuf(item.id)), nil) then return item end
+
+    index = next_index
+  until original_index == index
+
+  return nil
+end
+
+function M.cycle_hidden(direction)
+  local item = M.next_visible_buffer(direction)
+
+  if item == nil then return end
+
+  if not item then return utils.notify(fmt("This %s does not exist", item.type), "error") end
+
+  open_element(item.id)
+end
+
 function M.cycle(direction)
   if vim.opt.showtabline == 0 then
     if direction > 0 then vim.cmd("bnext") end
