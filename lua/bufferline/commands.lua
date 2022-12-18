@@ -205,8 +205,6 @@ end
 function M.cycle_hidden(direction)
   local item = M.next_visible_buffer(direction)
 
-  if item == nil then return end
-
   if not item then return utils.notify(fmt("This %s does not exist", item.type), "error") end
 
   open_element(item.id)
