@@ -693,6 +693,11 @@ A few of this plugins commands can be mapped for ease of use. >
     nnoremap <silent>[b :BufferLineCycleNext<CR>
     nnoremap <silent>b] :BufferLineCyclePrev<CR>
 
+    " These commands are the same as :BufferLineCycleNext and :BufferLineCycleNext
+    " except they will skip over buffers which are currently open in a window"
+    nnoremap <silent>[b :BufferLineCycleNextHidden<CR>
+    nnoremap <silent>b] :BufferLineCyclePrevHidden<CR>
+
     " These commands will move the current buffer backwards or forwards in the bufferline
     nnoremap <silent><mymap> :BufferLineMoveNext<CR>
     nnoremap <silent><mymap> :BufferLineMovePrev<CR>
