@@ -537,7 +537,7 @@ for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or
         {
             filetype = "NvimTree",
             text = "File Explorer",
-            highlight = "Directory"
+            highlight = "Directory",
             separator = true -- use a "true" to enable the default, or set your own character
         }
     }
