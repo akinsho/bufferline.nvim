@@ -193,7 +193,7 @@ end
 ---@param hls BufferlineHighlights
 ---@return Segment[]
 local function get_tab_close_button(options, hls)
-  if options.show_close_icon then
+  if options.show_close_icon and (#vim.api.nvim_list_tabpages() > 1) then
     return {
       {
         text = padding .. options.close_icon .. padding,
@@ -717,23 +717,15 @@ function M.tabline(items, tab_indicators)
   local left_marker = get_trunc_marker(left_trunc_icon, fill, fill, marker.left_count)
   local right_marker = get_trunc_marker(right_trunc_icon, fill, fill, marker.right_count)
 
-  local merged = utils.merge_lists(
-    { left_marker },
-    segments,
-    { right_marker, right_align }
-  )
-  if (vim.api.nvim_eval('tabpagenr("$")') > 1 or options.always_show_tab_close_icon)
-  then
-    merged = utils.merge_lists(
-        { left_marker },
-        segments,
-        { right_marker, right_align },
-        tab_indicator_segments,
-        { tab_close_button }
+  local core = join(
+    utils.merge_lists(
+      { left_marker },
+      segments,
+      { right_marker, right_align },
+      tab_indicator_segments,
+      { tab_close_button }
     )
-  end
-
-  local core = join(merged)
+  )
 
   --- NOTE: the custom areas are essentially mini tablines a user can define so they can't
   -- be set safely converted to segments so they are concatenated to string and join with
