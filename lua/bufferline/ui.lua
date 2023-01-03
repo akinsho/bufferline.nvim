@@ -193,7 +193,7 @@ end
 ---@param hls BufferlineHighlights
 ---@return Segment[]
 local function get_tab_close_button(options, hls)
-  if options.show_close_icon then
+  if options.show_close_icon and (#vim.api.nvim_list_tabpages() > 1) then
     return {
       {
         text = padding .. options.close_icon .. padding,

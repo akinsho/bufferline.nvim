@@ -308,8 +308,8 @@ In order to group buffers specify a list of groups in your config e.g.
         end,
       }
       {
-        name = "Docs"
-        highlight = {undercurl = true, sp = green},
+        name = "Docs",
+        highlight = {undercurl = true, sp = "green"},
         auto_close = false,  -- whether or not close this group if it doesn't contain the current buffer
         matcher = function(buf)
           return buf.filename:match('%.md') or buf.filename:match('%.txt')
@@ -537,7 +537,7 @@ for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or
         {
             filetype = "NvimTree",
             text = "File Explorer",
-            highlight = "Directory"
+            highlight = "Directory",
             separator = true -- use a "true" to enable the default, or set your own character
         }
     }
