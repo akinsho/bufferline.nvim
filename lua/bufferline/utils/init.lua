@@ -185,17 +185,9 @@ function M.get_icon(opts)
   if type == "terminal" then return webdev_icons.get_icon(type) end
 
   local use_default = config.options.show_buffer_default_icon
-
-  local icon, hl
-  if M.is_truthy(opts.filetype) then
-    -- Don't use a default here so that we fall through to the next case if no icon is found
-    icon, hl = webdev_icons.get_icon_by_filetype(opts.filetype, { default = false })
-  end
-  if not icon then
-    icon, hl = webdev_icons.get_icon(fn.fnamemodify(opts.path, ":t"), opts.extension, {
-      default = use_default,
-    })
-  end
+  local icon, hl = webdev_icons.get_icon(fn.fnamemodify(opts.path, ":t"), opts.extension, {
+    default = use_default,
+  })
 
   if not icon then return "", "" end
   return icon, hl
