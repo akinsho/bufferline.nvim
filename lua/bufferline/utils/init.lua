@@ -186,8 +186,12 @@ function M.get_icon(opts)
 
   local use_default = config.options.show_buffer_default_icon
   local icon, hl = webdev_icons.get_icon(fn.fnamemodify(opts.path, ":t"), opts.extension, {
-    default = use_default,
+    -- Don't use a default here so that we fall through to the next case if no icon is found
+    default = false,
   })
+  if icon == nil then
+    icon, hl = webdev_icons.get_icon_by_filetype(opts.filetype, { default = use_default })
+  end
 
   if not icon then return "", "" end
   return icon, hl
