@@ -184,6 +184,9 @@ function M.get_icon(opts)
   end
   if type == "terminal" then return webdev_icons.get_icon(type) end
 
+  -- NOTE(#549): hack filetype might use the same extension as php, so prioritize filetype based icon look up in that case
+  if opts.filetype == "hack" then return webdev_icons.get_icon_by_filetype(opts.filetype) end
+
   local use_default = config.options.show_buffer_default_icon
   local icon, hl = webdev_icons.get_icon(fn.fnamemodify(opts.path, ":t"), opts.extension, {
     -- Don't use a default here so that we fall through to the next case if no icon is found
