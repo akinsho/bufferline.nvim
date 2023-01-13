@@ -125,6 +125,19 @@ local function is_offset_section(windows, offset)
   return false, nil, nil
 end
 
+--- Iterate over COLUMN layout by always picking the first element.
+--- Assuming this is the topmost window, it's the one that should
+--- dictate the tabline offset.
+---@param layout List
+---@return List
+local function iterate_col_layout(layout)
+    if layout[1] == t.COLUMN then
+        return iterate_col_layout(layout[2][1])
+    else
+        return layout
+    end
+end
+
 ---@class OffsetData
 ---@field total_size number
 ---@field left string
@@ -144,7 +157,8 @@ function M.get()
   local sep_hl = highlights.hl(hls.offset_separator.hl_group)
 
   if offsets and #offsets > 0 then
-    local layout = fn.winlayout()
+    local layout = iterate_col_layout(fn.winlayout())
+
     for _, offset in ipairs(offsets) do
       -- don't bother proceeding if there are no vertical splits
       if layout[1] == t.ROW then
