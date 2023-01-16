@@ -139,7 +139,7 @@ The available configuration are:
             persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
             -- can also be a table containing 2 custom separators
             -- [focused and unfocused]. eg: { '|', '|' }
-            separator_style = "slant" | "thick" | "thin" | { 'any', 'any' },
+            separator_style = "slant" | "slope" | "thick" | "thin" | { 'any', 'any' },
             enforce_regular_tabs = false | true,
             always_show_bufferline = true | false,
             hover = {
@@ -183,6 +183,9 @@ You can change the appearance of the bufferline separators by setting the
 * `slant` - Use slanted/triangular separators
 * `padded_slant` - Same as `slant` but with extra padding which some terminals require.
   If `slant` does not render correctly for you try padded this instead.
+* `slope` - Use slanted/triangular separators but slopped to the right
+* `padded_slope` - Same as `slope` but with extra padding which some terminals require.
+  If `slope` does not render correctly for you try padded this instead.
 * `thick` - Increase the thickness of the separator characters
 * `thin` - (default) Use thin separator characters
 * finally you can pass in a custom list containing 2 characters which will be
