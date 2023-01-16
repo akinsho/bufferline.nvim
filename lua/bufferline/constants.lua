@@ -10,6 +10,7 @@ M.sep_names = {
   thin = "thin",
   thick = "thick",
   slant = "slant",
+  slope = "slope",
   padded_slant = "padded_slant",
   padded_slope = "padded_slope",
 }
