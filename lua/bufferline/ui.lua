@@ -271,7 +271,7 @@ end
 ---@param style string
 ---@return boolean
 local function is_slant(style)
-  return vim.tbl_contains({ sep_names.slant, sep_names.padded_slant,  sep_names.padded_slope}, style)
+  return vim.tbl_contains({ sep_names.slant, sep_names.padded_slant, sep_names.slope, sep_names.padded_slope}, style)
 end
 
 --- "▍" "░"
