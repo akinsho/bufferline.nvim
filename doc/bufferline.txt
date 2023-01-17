@@ -306,7 +306,7 @@ In order to group buffers specify a list of groups in your config e.g.
         matcher = function(buf) -- Mandatory
           return buf.filename:match('%_test') or buf.filename:match('%_spec')
         end,
-      }
+      },
       {
         name = "Docs",
         highlight = {undercurl = true, sp = "green"},
