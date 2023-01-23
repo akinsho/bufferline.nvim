@@ -191,7 +191,7 @@ You can change the appearance of the bufferline separators by setting the
 
 
 ==============================================================================
-TABPAGES                                                          *bufferline-tabs*
+TABPAGES                                                          *bufferline-tabpages*
 
 This plugin can also be set to show only tabpages. This can be done by setting
 the `mode` option to `tabs`. This will change the bufferline to a tabline it
