@@ -727,6 +727,7 @@ local function get_defaults()
     tab_size = 18,
     max_name_length = 18,
     color_icons = true,
+    load_icons_from_filetype = true,
     show_buffer_icons = true,
     show_buffer_close_icons = true,
     show_buffer_default_icon = true,
