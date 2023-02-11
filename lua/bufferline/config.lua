@@ -41,7 +41,7 @@ local constants = lazy.require("bufferline.constants")
 ---@field public mode BufferlineMode
 ---@field public view string
 ---@field public debug DebugOpts
----@field public numbers string
+---@field public numbers string | fun(ordinal: number, id: number, lower: number_helper, raise: number_helper): string
 ---@field public buffer_close_icon string
 ---@field public modified_icon string
 ---@field public close_icon string
@@ -53,7 +53,7 @@ local constants = lazy.require("bufferline.constants")
 ---@field public indicator BufferlineIndicator
 ---@field public left_trunc_marker string
 ---@field public right_trunc_marker string
----@field public separator_style string
+---@field public separator_style string | {[1]: string, [2]: string}
 ---@field public name_formatter (fun(path: string):string)?
 ---@field public tab_size number
 ---@field public truncate_names boolean
