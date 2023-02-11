@@ -66,7 +66,7 @@ local function get_section_text(size, highlight, offset, is_left)
 end
 
 ---A heuristic to attempt to derive a windows background color from a winhighlight
----@param win_id number
+---@param win_id any[]
 ---@param attribute string?
 ---@param match string?
 ---@return string|nil
@@ -93,9 +93,9 @@ end
 --- e.g. the vertical tool bar is split in two such as for undo tree
 --- `{'row', ['col', ['leaf', id], ['leaf', id]], ['leaf', id]}`
 ---
----@param windows table[]
+---@param windows any[]
 ---@return boolean
----@return number
+---@return number[]
 local function is_valid_layout(windows)
   local win_type, win_id = windows[1], windows[2]
   if vim.tbl_islist(win_id) and win_type == t.COLUMN then win_id = win_id[1][2] end
@@ -105,10 +105,10 @@ end
 --- Test if the windows within a layout row contain the correct panel buffer
 --- NOTE: this only tests the first and last windows as those are the only
 --- ones that it makes sense to add a panel for
----@param windows table[]
+---@param windows any[]
 ---@param offset table
 ---@return boolean
----@return number?
+---@return number[]?
 ---@return boolean?
 local function is_offset_section(windows, offset)
   local wins = { windows[1] }
@@ -128,14 +128,14 @@ end
 --- Iterate over COLUMN layout by always picking the first element.
 --- Assuming this is the topmost window, it's the one that should
 --- dictate the tabline offset.
----@param layout List
----@return List
+---@param layout any[]
+---@return any[]
 local function iterate_col_layout(layout)
-    if layout[1] == t.COLUMN then
-        return iterate_col_layout(layout[2][1])
-    else
-        return layout
-    end
+  if layout[1] == t.COLUMN then
+    return iterate_col_layout(layout[2][1])
+  else
+    return layout
+  end
 end
 
 ---@class OffsetData

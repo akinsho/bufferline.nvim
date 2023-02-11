@@ -205,7 +205,7 @@ local function get_tab_close_button(options, hls)
   return {}
 end
 
----@param items Component?[]
+---@param items Component[]
 ---@return Section
 ---@return Section
 ---@return Section

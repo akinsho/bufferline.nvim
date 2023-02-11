@@ -95,11 +95,11 @@ local constants = lazy.require("bufferline.constants")
 ---@class BufferlineConfig
 ---@field public options BufferlineOptions
 ---@field public highlights BufferlineHighlights
----@field private user BufferlineConfig original copy of user preferences
----@field private merge fun(self: BufferlineConfig, defaults: BufferlineConfig): BufferlineConfig
----@field private validate fun(self: BufferlineConfig, defaults: BufferlineConfig, resolved: BufferlineHighlights): nil
----@field private resolve fun(self: BufferlineConfig, defaults: BufferlineConfig)
----@field private is_tabline fun():boolean
+---@field user BufferlineConfig original copy of user preferences
+---@field merge fun(self: BufferlineConfig, defaults: BufferlineConfig): BufferlineConfig
+---@field validate fun(self: BufferlineConfig, defaults: BufferlineConfig, resolved: BufferlineHighlights): nil
+---@field resolve fun(self: BufferlineConfig, defaults: BufferlineConfig): BufferlineConfig
+---@field is_tabline fun(self: BufferlineConfig):boolean
 
 --- Convert highlights specified as tables to the correct existing colours
 ---@param map BufferlineHighlights
