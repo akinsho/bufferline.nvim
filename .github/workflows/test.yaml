@@ -15,13 +15,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Get neovim v0.7.0
-        uses: actions/cache@v2
-        with:
-          path: build/neovim/v0.7.0
-          key: ${{ runner.os }}-appimage-0.7.0
+      - uses: actions/checkout@v3
+      - name: Install Neovim
+        shell: bash
+        run: |
+          wget -q https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.deb -O /tmp/nvim.deb
+          sudo dpkg -i /tmp/nvim.deb
 
       - name: Fetch dependencies
         run: |
