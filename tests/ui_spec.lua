@@ -92,7 +92,7 @@ describe("UI Tests", function()
           },
         },
       })
-      ui.on_hover_over(_, { cursor_pos = 12 })
+      ui.on_hover_over(0, { cursor_pos = 12 })
       assert.is_truthy(state.hovered)
       assert.equal(state.hovered.id, 2)
     end)
@@ -144,7 +144,7 @@ describe("UI Tests", function()
         _is_visible = true,
       })
       state.set({ visible_components = { buf1, buf2 } })
-      ui.on_hover_over(_, { cursor_pos = 5 })
+      ui.on_hover_over(0, { cursor_pos = 5 })
       assert.equal(state.hovered, buf1)
       local b1 = ui.element({}, buf1)
       local b2 = ui.element({}, buf2)
