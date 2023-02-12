@@ -39,7 +39,7 @@ local fn = vim.fn
 ---@field public highlight table<string, string>
 ---@field public icon string
 ---@field public hidden boolean
----@field public with fun(Group, Group)
+---@field public with fun(Group, Group): Group
 ---@field auto_close boolean when leaving the group automatically close it
 
 ----------------------------------------------------------------------------------------------------

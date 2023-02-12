@@ -203,12 +203,12 @@ end
 ---@field public group string?
 ---@field public group_fn string
 ---@field public length integer the length of the buffer component
----@field public visibility fun(): integer
----@field public current fun(): boolean
----@field public visible fun(): boolean
----@field private ancestor fun(self: NvimBuffer, formatter: fun(string): string, depth: integer): string
+---@field public visibility fun(self: Component): integer
+---@field public current fun(self: Component): boolean
+---@field public visible fun(self: Component): boolean
+---@field public ancestor fun(self: NvimBuffer, depth: integer, formatter: fun(string): string, depth: integer): string
 ---@field private __ancestor fun(self: Component, depth: integer, formatter: (fun(string, integer): string)?): string
----@field public find_index fun(Buffer, BufferlineState): integer
+---@field public find_index fun(Buffer, BufferlineState): integer?
 ---@field public is_new fun(Buffer, BufferlineState): boolean
 ---@field public is_existing fun(Buffer, BufferlineState): boolean
 local Buffer = Component:new({ type = "buffer" })
@@ -307,7 +307,7 @@ function Section:drop(index)
   end
 end
 
----@param item TabElement
+---@param item Component
 function Section:add(item)
   table.insert(self.items, item)
   self.length = self.length + item.length

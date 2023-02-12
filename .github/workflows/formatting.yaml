@@ -1,4 +1,4 @@
-name: stylua
+name: Formatting
 on:
   push:
     branches: ["main"]

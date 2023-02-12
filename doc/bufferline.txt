@@ -93,7 +93,7 @@ The available configuration are:
             end,
             max_name_length = 18,
             max_prefix_length = 15, -- prefix used when a buffer is de-duplicated
-            truncate_names = true -- whether or not tab names should be truncated
+            truncate_names = true, -- whether or not tab names should be truncated
             tab_size = 18,
             diagnostics = false | "nvim_lsp" | "coc",
             diagnostics_update_in_insert = false,
@@ -192,7 +192,7 @@ You can change the appearance of the bufferline separators by setting the
 
 
 ==============================================================================
-TABPAGES                                                          *bufferline-tabs*
+TABPAGES                                                          *bufferline-tabpages*
 
 This plugin can also be set to show only tabpages. This can be done by setting
 the `mode` option to `tabs`. This will change the bufferline to a tabline it
@@ -307,7 +307,7 @@ In order to group buffers specify a list of groups in your config e.g.
         matcher = function(buf) -- Mandatory
           return buf.filename:match('%_test') or buf.filename:match('%_spec')
         end,
-      }
+      },
       {
         name = "Docs",
         highlight = {undercurl = true, sp = "green"},
