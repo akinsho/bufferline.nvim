@@ -35,6 +35,7 @@ local BUFFERLINE_GROUP = "BufferlineCmds"
 
 local M = {
   move = commands.move,
+  move_to = commands.move_to,
   exec = commands.exec,
   go_to = commands.go_to,
   cycle = commands.cycle,
@@ -233,6 +234,8 @@ local function setup_commands()
   cmd("BufferLineCloseLeft", function() M.close_in_direction("left") end, {})
   cmd("BufferLineMoveNext", function() M.move(1) end, {})
   cmd("BufferLineMovePrev", function() M.move(-1) end, {})
+  cmd("BufferLineMoveToFirst", function() M.move_to(1) end, {})
+  cmd("BufferLineMoveToLast", function() M.move_to(-1) end, {})
   cmd("BufferLineSortByExtension", function() M.sort_buffers_by("extension") end, {})
   cmd("BufferLineSortByDirectory", function() M.sort_buffers_by("directory") end, {})
   cmd(

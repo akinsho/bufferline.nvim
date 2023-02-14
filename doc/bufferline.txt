@@ -697,12 +697,16 @@ A few of this plugins commands can be mapped for ease of use. >
     nnoremap <silent><mymap> :BufferLineMoveNext<CR>
     nnoremap <silent><mymap> :BufferLineMovePrev<CR>
 
+    " These commands will move the current buffer to the first or the last position in the bufferline
+    nnoremap <silent><mymap> :BufferLineMoveToFirst<CR>
+    nnoremap <silent><mymap> :BufferLineMoveToLast<CR>
+
     " These commands will sort buffers by directory, language, or a custom criteria
     nnoremap <silent>be :BufferLineSortByExtension<CR>
     nnoremap <silent>bd :BufferLineSortByDirectory<CR>
     nnoremap <silent><mymap> :lua require'bufferline'.sort_buffers_by(function (buf_a, buf_b) return buf_a.id < buf_b.id end)<CR>
 
-If you manually arrange your buffers using `:BufferLineMove{Prev|Next}` during an nvim session this can be persisted for the session.
+If you manually arrange your buffers using `:BufferLineMove{Prev|Next|ToFirst|ToLast}` during an nvim session this can be persisted for the session.
 This is enabled by default but you need to ensure that your `sessionoptions+=globals` otherwise the session file will
 not track global variables which is the mechanism used to store your sort order.
 
