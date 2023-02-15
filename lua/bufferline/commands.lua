@@ -149,23 +149,6 @@ function M.get_current_element_index(current_state, opts)
   end
 end
 
---- @param direction number
-function M.move(direction)
-  local index = M.get_current_element_index(state)
-  if not index then return utils.notify("Unable to find buffer to move, sorry", "warn") end
-  local next_index = index + direction
-  if next_index >= 1 and next_index <= #state.components then
-    local item = state.components[index]
-    local destination_buf = state.components[next_index]
-    state.components[next_index] = item
-    state.components[index] = destination_buf
-    state.custom_sort = get_ids(state.components)
-    local opts = config.options
-    if opts.persist_buffer_sort then save_positions(state.custom_sort) end
-    ui.refresh()
-  end
-end
-
 --- @param buffer_index number
 function M.move_to(buffer_index)
   local index = M.get_current_element_index(state)
@@ -181,6 +164,12 @@ function M.move_to(buffer_index)
     if opts.persist_buffer_sort then save_positions(state.custom_sort) end
     ui.refresh()
   end
+end
+
+--- @param direction number
+function M.move(direction)
+  local index = M.get_current_element_index(state)
+  M.move_to(index + direction)
 end
 
 function M.cycle(direction)
