@@ -301,6 +301,11 @@ function M.command(group_name, callback)
     function(list) return list.name == group_name end,
     state.components_by_group
   )
+
+  if not group then
+    return
+  end
+
   utils.for_each(callback, group)
 end
 
