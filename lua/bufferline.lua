@@ -242,6 +242,7 @@ local function setup_commands()
   )
   cmd("BufferLineSortByTabs", function() M.sort_buffers_by("tabs") end, {})
   cmd("BufferLineGoToBuffer", function(opts) M.go_to_buffer(opts.args) end, { nargs = 1 })
+  cmd("BufferLineGoToBufferAbs", function(opts) M.go_to_buffer(opts.args, true) end, { nargs = 1 })
   cmd(
     "BufferLineGroupClose",
     function(opts) M.group_action(opts.args, "close") end,
