@@ -35,6 +35,7 @@ local BUFFERLINE_GROUP = "BufferlineCmds"
 
 local M = {
   move = commands.move,
+  move_to = commands.move_to,
   exec = commands.exec,
   go_to = commands.go_to,
   cycle = commands.cycle,

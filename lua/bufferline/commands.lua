@@ -149,11 +149,14 @@ function M.get_current_element_index(current_state, opts)
   end
 end
 
---- @param direction number
-function M.move(direction)
-  local index = M.get_current_element_index(state)
+--- Move the buffer at index `from_index` (or current index if not specified) to position `to_index`
+--- @param to_index number negative indices are accepted (counting from the right instead of the left, e.g. -1 for the last position, -2 for the second-last, etc.)
+--- @param from_index number?
+function M.move_to(to_index, from_index)
+  local index = from_index or M.get_current_element_index(state)
   if not index then return utils.notify("Unable to find buffer to move, sorry", "warn") end
-  local next_index = index + direction
+  -- Calculate next index depending on the sign of `to_index`
+  local next_index = to_index > 0 and to_index or #state.components + 1 + to_index
   if next_index >= 1 and next_index <= #state.components then
     local item = state.components[index]
     local destination_buf = state.components[next_index]
@@ -164,6 +167,12 @@ function M.move(direction)
     if opts.persist_buffer_sort then save_positions(state.custom_sort) end
     ui.refresh()
   end
+end
+
+--- @param direction number
+function M.move(direction)
+  local index = M.get_current_element_index(state)
+  M.move_to(index + direction, index)
 end
 
 function M.cycle(direction)

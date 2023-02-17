@@ -697,6 +697,10 @@ A few of this plugins commands can be mapped for ease of use. >
     nnoremap <silent><mymap> :BufferLineMoveNext<CR>
     nnoremap <silent><mymap> :BufferLineMovePrev<CR>
 
+    " These commands will move the current buffer to the first or the last position in the bufferline
+    nnoremap <silent><mymap> :lua require'bufferline'.move_to(1)<CR>
+    nnoremap <silent><mymap> :lua require'bufferline'.move_to(-1)<CR>
+
     " These commands will sort buffers by directory, language, or a custom criteria
     nnoremap <silent>be :BufferLineSortByExtension<CR>
     nnoremap <silent>bd :BufferLineSortByDirectory<CR>
