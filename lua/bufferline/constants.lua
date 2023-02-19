@@ -11,6 +11,7 @@ M.sep_names = {
   thick = "thick",
   slant = "slant",
   slope = "slope",
+  padded_slant = "padded_slant",
 }
 
 ---@type table<string, string[]>
@@ -19,6 +20,7 @@ M.sep_chars = {
   [M.sep_names.thick] = { "▌", "▐" },
   [M.sep_names.slant] = { "", "" },
   [M.sep_names.slope] = { "", "" },
+  [M.sep_names.padded_slant] = { "" .. M.padding, "" .. M.padding },
 }
 
 M.positions_key = "BufferlinePositions"
