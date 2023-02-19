@@ -159,17 +159,17 @@ function M.notify(msg, level, opts)
   vim.schedule(function() vim.notify(msg, level, nopts) end)
 end
 
----@class GetIconOpts
----@field directory boolean
----@field path string
----@field extension string
----@field filetype string?
-
 ---Get an icon for a filetype using either nvim-web-devicons or vim-devicons
 ---if using the lua plugin this also returns the icon's highlights
----@param opts GetIconOpts
+---@param opts IconFetcherOpts
 ---@return string, string?
 function M.get_icon(opts)
+  local user_func = config.options.get_element_icon
+  if user_func and vim.is_callable(user_func) then
+    local icon, hl = user_func(opts)
+    if icon then return icon, hl end
+  end
+
   local loaded, webdev_icons = pcall(require, "nvim-web-devicons")
   if opts.directory then
     local hl = loaded and "DevIconDefault" or nil
@@ -184,18 +184,12 @@ function M.get_icon(opts)
   end
   if type == "terminal" then return webdev_icons.get_icon(type) end
 
+  --- TODO: Deprecate this option
   local use_default = config.options.show_buffer_default_icon
 
-  local icon, hl
-  if M.is_truthy(opts.filetype) and M.is_truthy(config.options.load_icons_from_filetype) then
-    -- Don't use a default here so that we fall through to the next case if no icon is found
-    icon, hl = webdev_icons.get_icon_by_filetype(opts.filetype, { default = false })
-  end
-  if not icon then
-    icon, hl = webdev_icons.get_icon(fn.fnamemodify(opts.path, ":t"), opts.extension, {
-      default = use_default,
-    })
-  end
+  local icon, hl = webdev_icons.get_icon(fn.fnamemodify(opts.path, ":t"), opts.extension, {
+    default = use_default,
+  })
 
   if not icon then return "", "" end
   return icon, hl
