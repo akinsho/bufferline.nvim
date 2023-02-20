@@ -32,10 +32,8 @@ local constants = lazy.require("bufferline.constants")
 
 ---@alias DiagnosticIndicator fun(count: number, level: number, errors: table<string, any>, ctx: table<string, any>): string
 
----@class HoverOptions
----@field reveal string[]
----@field delay integer
----@field enabled boolean
+---@alias HoverOptions {reveal: string[], delay: integer, enabled: boolean}
+---@alias IconFetcherOpts {directory: boolean, path: string, extension: string, filetype: string?}
 
 ---@class BufferlineOptions
 ---@field public mode BufferlineMode
@@ -62,6 +60,7 @@ local constants = lazy.require("bufferline.constants")
 ---@field public show_buffer_icons boolean
 ---@field public show_buffer_close_icons boolean
 ---@field public show_buffer_default_icon boolean
+---@field public get_element_icon fun(opts: IconFetcherOpts): string?, string?
 ---@field public show_close_icon boolean
 ---@field public show_tab_indicators boolean
 ---@field public show_duplicate_prefix boolean
@@ -729,6 +728,8 @@ local function get_defaults()
     color_icons = true,
     show_buffer_icons = true,
     show_buffer_close_icons = true,
+    get_element_icon = nil,
+    ---@deprecated
     show_buffer_default_icon = true,
     show_close_icon = true,
     show_tab_indicators = true,
