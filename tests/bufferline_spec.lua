@@ -53,6 +53,19 @@ describe("Bufferline tests:", function()
       assert.is_truthy(tabline:match(icon))
     end)
 
+    it("should allow specifying how icons are fetched", function()
+      local icon = "Q"
+      bufferline.setup({
+        options = {
+          get_element_icon = function() return icon end,
+        },
+      })
+      vim.cmd("edit test.txt")
+      local tabline = nvim_bufferline()
+      assert.truthy(tabline)
+      assert.is_truthy(tabline:match(icon))
+    end)
+
     it("should allow formatting names", function()
       bufferline.setup({
         options = {
