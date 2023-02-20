@@ -35,6 +35,7 @@ local BUFFERLINE_GROUP = "BufferlineCmds"
 
 local M = {
   move = commands.move,
+  move_to = commands.move_to,
   exec = commands.exec,
   go_to = commands.go_to,
   cycle = commands.cycle,
@@ -133,6 +134,7 @@ function M.group_action(name, action)
   assert(name, "A name must be passed to execute a group action")
   if action == "close" then
     groups.command(name, function(b) api.nvim_buf_delete(b.id, { force = true }) end)
+    ui.refresh()
   elseif action == "toggle" then
     groups.toggle_hidden(nil, name)
     ui.refresh()

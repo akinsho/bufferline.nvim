@@ -130,6 +130,17 @@ The available configuration are:
                 }
             },
             color_icons = true | false, -- whether or not to add the filetype icon highlights
+            get_element_icon = function(element)
+              -- element consists of {filetype: string, path: string, extension: string, directory: string}
+              -- This can be used to change how bufferline fetches the icon
+              -- for an element e.g. a buffer or a tab.
+              -- e.g.
+              local icon, hl = require('nvim-web-devicons').get_icon_by_filetype(opts.filetype, { default = false })
+              return icon, hl
+              -- or
+              local custom_map = {my_thing_ft: {icon = "my_thing_icon", hl}}
+              return custom_map[element.filetype]
+            end,
             show_buffer_icons = true | false, -- disable filetype icons for buffers
             show_buffer_close_icons = true | false,
             show_buffer_default_icon = true | false, -- whether or not an unrecognised filetype should show a default icon
@@ -139,7 +150,7 @@ The available configuration are:
             persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
             -- can also be a table containing 2 custom separators
             -- [focused and unfocused]. eg: { '|', '|' }
-            separator_style = "slant" | "thick" | "thin" | { 'any', 'any' },
+            separator_style = "slant" | "slope" | "thick" | "thin" | { 'any', 'any' },
             enforce_regular_tabs = false | true,
             always_show_bufferline = true | false,
             hover = {
@@ -183,6 +194,7 @@ You can change the appearance of the bufferline separators by setting the
 * `slant` - Use slanted/triangular separators
 * `padded_slant` - Same as `slant` but with extra padding which some terminals require.
   If `slant` does not render correctly for you try padded this instead.
+* `slope` - Use slanted/triangular separators but slopped to the right
 * `thick` - Increase the thickness of the separator characters
 * `thin` - (default) Use thin separator characters
 * finally you can pass in a custom list containing 2 characters which will be
@@ -696,6 +708,10 @@ A few of this plugins commands can be mapped for ease of use. >
     " These commands will move the current buffer backwards or forwards in the bufferline
     nnoremap <silent><mymap> :BufferLineMoveNext<CR>
     nnoremap <silent><mymap> :BufferLineMovePrev<CR>
+
+    " These commands will move the current buffer to the first or the last position in the bufferline
+    nnoremap <silent><mymap> :lua require'bufferline'.move_to(1)<CR>
+    nnoremap <silent><mymap> :lua require'bufferline'.move_to(-1)<CR>
 
     " These commands will sort buffers by directory, language, or a custom criteria
     nnoremap <silent>be :BufferLineSortByExtension<CR>

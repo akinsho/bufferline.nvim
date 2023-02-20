@@ -53,6 +53,19 @@ describe("Bufferline tests:", function()
       assert.is_truthy(tabline:match(icon))
     end)
 
+    it("should allow specifying how icons are fetched", function()
+      local icon = "Q"
+      bufferline.setup({
+        options = {
+          get_element_icon = function() return icon end,
+        },
+      })
+      vim.cmd("edit test.txt")
+      local tabline = nvim_bufferline()
+      assert.truthy(tabline)
+      assert.is_truthy(tabline:match(icon))
+    end)
+
     it("should allow formatting names", function()
       bufferline.setup({
         options = {
@@ -196,10 +209,8 @@ describe("Bufferline tests:", function()
     it("should close buffers to the right of the current buffer", function()
       bufferline.setup({
         options = {
-          close_command = function(bufid)
-            vim.api.nvim_buf_delete(bufid, { force = true })
-          end
-        }
+          close_command = function(bufid) vim.api.nvim_buf_delete(bufid, { force = true }) end,
+        },
       })
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
@@ -217,10 +228,8 @@ describe("Bufferline tests:", function()
     it("should close buffers to the left of the current buffer", function()
       bufferline.setup({
         options = {
-          close_command = function(bufid)
-            vim.api.nvim_buf_delete(bufid, { force = true })
-          end
-        }
+          close_command = function(bufid) vim.api.nvim_buf_delete(bufid, { force = true }) end,
+        },
       })
       vim.cmd("edit! a.txt")
       vim.cmd("edit b.txt")
