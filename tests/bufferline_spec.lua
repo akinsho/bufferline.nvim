@@ -196,10 +196,8 @@ describe("Bufferline tests:", function()
     it("should close buffers to the right of the current buffer", function()
       bufferline.setup({
         options = {
-          close_command = function(bufid)
-            vim.api.nvim_buf_delete(bufid, { force = true })
-          end
-        }
+          close_command = function(bufid) vim.api.nvim_buf_delete(bufid, { force = true }) end,
+        },
       })
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
@@ -217,10 +215,8 @@ describe("Bufferline tests:", function()
     it("should close buffers to the left of the current buffer", function()
       bufferline.setup({
         options = {
-          close_command = function(bufid)
-            vim.api.nvim_buf_delete(bufid, { force = true })
-          end
-        }
+          close_command = function(bufid) vim.api.nvim_buf_delete(bufid, { force = true }) end,
+        },
       })
       vim.cmd("edit! a.txt")
       vim.cmd("edit b.txt")
