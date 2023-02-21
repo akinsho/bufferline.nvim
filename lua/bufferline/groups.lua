@@ -301,7 +301,7 @@ function M.command(group_name, callback)
     function(list) return list.name == group_name end,
     state.components_by_group
   )
-  utils.for_each(callback, group)
+  utils.for_each(callback, group or {})
 end
 
 ---@generic T
