@@ -187,8 +187,12 @@ local function persist_pinned_buffers()
   for buf, group in pairs(state.manual_groupings) do
     if group == PINNED_ID then table.insert(pinned, api.nvim_buf_get_name(buf)) end
   end
-  if #pinned == 0 then return end
-  vim.g[PINNED_KEY] = table.concat(pinned, ",")
+
+  if #pinned == 0 then
+    vim.g[PINNED_KEY] = ""
+  else
+    vim.g[PINNED_KEY] = table.concat(pinned, ",")
+  end
 end
 
 ---@param element TabElement
@@ -329,7 +333,10 @@ function M.is_pinned(element) return get_manual_group(element) == PINNED_ID end
 ---@param element TabElement?
 function M.add_to_group(group_name, element)
   local group = group_by_name(group_name)
-  if group and element then set_manual_group(element.id, group.id) end
+  if group and element then
+    set_manual_group(element.id, group.id)
+    persist_pinned_buffers()
+  end
 end
 
 ---@param group_name string
@@ -452,6 +459,13 @@ local function sort_by_groups(components)
     end
   end
   return sorted, clustered
+end
+
+--- Resets manual mappings.
+function M.reset_manual_groupings()
+  vim.g[PINNED_KEY] = {}
+
+  state.manual_groupings = {}
 end
 
 function M.get_all() return state.user_groups end
