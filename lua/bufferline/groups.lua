@@ -199,10 +199,7 @@ local function get_manual_group(element) return state.manual_groupings[element.i
 -- can vary i.e. buffer id or path and this should be changed in a centralised way.
 ---@param id number
 ---@param group_id string?
-local function set_manual_group(id, group_id)
-  state.manual_groupings[id] = group_id
-  if group_id == PINNED_ID then persist_pinned_buffers() end
-end
+local function set_manual_group(id, group_id) state.manual_groupings[id] = group_id end
 
 ---Group buffers based on user criteria
 ---buffers only carry a copy of the group ID which is then used to retrieve the correct group
@@ -258,7 +255,10 @@ local function restore_pinned_buffers()
   local manual_groupings = vim.split(pinned, ",") or {}
   for _, path in ipairs(manual_groupings) do
     local buf_id = fn.bufnr(path)
-    if buf_id ~= -1 then set_manual_group(buf_id, PINNED_ID) end
+    if buf_id ~= -1 then
+      set_manual_group(buf_id, PINNED_ID)
+      persist_pinned_buffers()
+    end
   end
   ui.refresh()
 end
@@ -339,6 +339,7 @@ function M.remove_from_group(group_name, element)
   if group then
     local id = get_manual_group(element)
     set_manual_group(element.id, id ~= group.id and id or nil)
+    if group_name == PINNED_ID then persist_pinned_buffers() end
   end
 end
 
