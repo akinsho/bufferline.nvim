@@ -466,7 +466,12 @@ end
 function M.reset_manual_groupings(name)
   if name == PINNED_NAME then
     vim.g[PINNED_KEY] = {}
-    state.manual_groupings = {}
+  end
+
+  for _, group_id in pairs(state.manual_groupings) do
+    if group_id == name then
+      state.manual_groupings[group_id] = nil
+    end
   end
 end
 
