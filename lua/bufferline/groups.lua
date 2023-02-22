@@ -462,9 +462,12 @@ local function sort_by_groups(components)
 end
 
 --- Resets manual mappings.
-function M.reset_manual_groupings()
-  vim.g[PINNED_KEY] = {}
-  state.manual_groupings = {}
+---@param name string Group name
+function M.reset_manual_groupings(name)
+  if name == PINNED_NAME then
+    vim.g[PINNED_KEY] = {}
+    state.manual_groupings = {}
+  end
 end
 
 function M.get_all() return state.user_groups end
@@ -516,7 +519,5 @@ if utils.is_test() then
   M.get_manual_group = get_manual_group
   M.set_manual_group = set_manual_group
 end
-
-M.pinned_name = PINNED_NAME
 
 return M

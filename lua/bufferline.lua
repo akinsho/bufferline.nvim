@@ -136,9 +136,7 @@ function M.group_action(name, action)
     groups.command(name, function(b) api.nvim_buf_delete(b.id, { force = true }) end)
     ui.refresh()
 
-    if name == groups.pinned_name then
-      groups.reset_manual_groupings()
-    end
+    groups.reset_manual_groupings(name)
   elseif action == "toggle" then
     groups.toggle_hidden(nil, name)
     ui.refresh()
