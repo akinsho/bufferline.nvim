@@ -517,4 +517,6 @@ if utils.is_test() then
   M.set_manual_group = set_manual_group
 end
 
+M.pinned_name = PINNED_NAME
+
 return M
