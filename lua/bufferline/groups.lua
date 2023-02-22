@@ -464,7 +464,6 @@ end
 --- Resets manual mappings.
 function M.reset_manual_groupings()
   vim.g[PINNED_KEY] = {}
-
   state.manual_groupings = {}
 end
 

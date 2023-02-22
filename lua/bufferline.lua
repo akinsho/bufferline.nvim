@@ -134,9 +134,7 @@ function M.group_action(name, action)
   assert(name, "A name must be passed to execute a group action")
   if action == "close" then
     groups.command(name, function(b) api.nvim_buf_delete(b.id, { force = true }) end)
-
     ui.refresh()
-
     groups.reset_manual_groupings()
   elseif action == "toggle" then
     groups.toggle_hidden(nil, name)
