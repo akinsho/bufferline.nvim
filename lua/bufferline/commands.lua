@@ -123,6 +123,14 @@ function M.close_with_pick()
   pick.choose_then(function(id) handle_close(id) end)
 end
 
+function M.unpin_and_close(id)
+  local win_id = id or vim.api.nvim_get_current_buf()
+
+  handle_close(win_id)
+
+  groups.remove_id_from_manual_groupings(win_id)
+end
+
 --- Open a element based on it's visible position in the list
 --- unless absolute is specified in which case this will open it based on it place in the full list
 --- this is significantly less helpful if you have a lot of elements open

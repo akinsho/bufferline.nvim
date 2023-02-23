@@ -48,6 +48,7 @@ local M = {
   go_to_buffer = commands.go_to,
   sort_buffers_by = commands.sort_by,
   close_buffer_with_pick = commands.close_with_pick,
+  unpin_and_close = commands.unpin_and_close,
 }
 -----------------------------------------------------------------------------//
 -- Helpers
