@@ -464,14 +464,10 @@ end
 --- Resets manual mappings.
 ---@param name string Group name
 function M.reset_manual_groupings(name)
-  if name == PINNED_NAME then
-    vim.g[PINNED_KEY] = {}
-  end
+  if name == PINNED_NAME then vim.g[PINNED_KEY] = {} end
 
   for buf, group_id in pairs(state.manual_groupings) do
-    if group_id == name then
-      state.manual_groupings[buf] = nil
-    end
+    if group_id == name then state.manual_groupings[buf] = nil end
   end
 end
 
