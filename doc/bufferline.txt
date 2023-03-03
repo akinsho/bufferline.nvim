@@ -52,7 +52,7 @@ Otherwise it expects the user to explicitly specify colour numbers (most modern
 terminals allow 256 colour values). Please be aware that if you choose to use
 this option it will be *your* responsibility to make the colours work to your
 liking. Please do not open an issue if you are unable to do so, as you use
-this option entirely at your discretion. >
+this option entirely at your discretion. >vim
 
     set termguicolors
     " In your init.vim or init.lua
@@ -62,7 +62,7 @@ this option entirely at your discretion. >
 CONFIGURATION					     *bufferline-configuration*
 
 The available configuration are:
->
+>lua
     require('bufferline').setup {
         options = {
             mode = "buffers", -- set to "tabs" to only show tabpages instead
@@ -173,7 +173,7 @@ version 0.8 of neovim or higher. In order to enable this feature. You must
 first enable the |'mousemoveevent'| vim option and then add the item that you
 would like to hide/reveal on hover to your config and set `enable = true` i.e.
 NOTE: currently only hiding/revealing the buffer close icon is possible.
->
+>lua
     options = {
         hover = {
             enabled = true,
@@ -261,7 +261,7 @@ feature is _WIP_ so beware and report any issues if you find any.
 In order to customise the appearance of the diagnostic count you can pass
 a custom function in your setup.
 
->
+>lua
     -- rest of config ...
 
     --- count is an integer representing total count of errors
@@ -284,7 +284,7 @@ completely whilst still keeping the highlight of the buffer name.
 LSP indicators can additionally be reported conditionally, based on buffer
 context. For instance, you could disable reporting LSP indicators for the
 current buffer and only have them appear for other buffers.
->
+>lua
     diagnostics_indicator = function(count, level, diagnostics_dict, context)
         if context.buffer:current() then
             return ''
@@ -304,7 +304,7 @@ grouped buffers can be hidden. They are partially inspired by google chrome's,
 tabs as well as centaur tab's groups.
 
 In order to group buffers specify a list of groups in your config e.g.
->
+>lua
   groups = {
     options = {
       toggle_hidden_on_enter = true -- when you re-enter a hidden group this options re-opens that group so the buffer is visible
@@ -346,7 +346,7 @@ around the un-grouped buffers e.g.
 In this case built-in groups are provided (for now just the `ungrouped`)
 built-in so you can achieve the order above using
 
->
+>lua
   local groups = require('bufferline.groups')
   groups = {
     items = {
@@ -368,7 +368,7 @@ Other group related functionality can be implemented using the
 `require('bufferline').group_action` API.
 
 e.g.
->
+>lua
     function _G.__group_open()
         require('bufferline').group_action(<GROUP_NAME>, function(buf)
             vim.cmd('vsplit '..buf.path)
@@ -387,7 +387,7 @@ Pinned buffers are essentially a builtin group that positions the assigned
 elements. The icons and highlights for pinned buffers can be changed similarly
 to other groups e.g.
 
->
+>lua
  config = {
     options = {
         groups = {
@@ -416,7 +416,7 @@ deduplicate buffers.
 ==============================================================================
 SORTING					               *bufferline-sorting*
 
-Bufferline allows you to sort the visible buffers by `extension` or `directory`: >
+Bufferline allows you to sort the visible buffers by `extension` or `directory`: >vim
 
     " Using vim commands
     :BufferLineSortByExtension
@@ -434,7 +434,7 @@ this means that new buffers are placed at the end of the bufferline.
 
 For more advanced usage you can provide a custom compare function which
 will receive two buffers to compare. You can see what fields
-are available to use using >
+are available to use using >lua
 
     sort_by = function(buffer_a, buffer_b)
         print(vim.inspect(buffer_a))
@@ -456,7 +456,7 @@ Bufferline can be configured to take a custom filtering function via the
 each buffer number that is going to be used for the bufferline, as well as all the others.
 A user can then check whatever they would like and return `true` if they would like it to
 appear and `false` if not.
-For example: >
+For example: >lua
     custom_filter = function(buf, buf_nums)
         -- dont show help buffers in the bufferline
         return not vim.bo[buf].filetype == "help" then
@@ -518,7 +518,7 @@ CUSTOM-FUNCTIONS                                     *bufferline-functions*
 A user can also execute arbitrary functions against a buffer using the
 `buf_exec` function. For example
 
->
+>lua
     require('bufferline').buf_exec(
         4, -- the forth visible buffer from the left
         user_function -- an arbitrary user function which gets passed the buffer
@@ -544,7 +544,7 @@ To do this you must set the `offsets` configuration option to a list of tables
 containing the details of the window to avoid. *NOTE:* this is only relevant
 for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or
 `Vista`
->
+>lua
     offsets = {
         {
             filetype = "NvimTree",
@@ -558,7 +558,7 @@ The `filetype` is used to check whether a particular window is a match, the
 `text` is *optional* and will show above the window if specified.
 `text` can be either a string or a function which should also return a string.
 See the example below.
->
+>lua
   offsets = {
     {
       filetype = "NvimTree",
@@ -592,7 +592,7 @@ BUFFERLINE PICK                                            *bufferline-pick*
 
 Using the `BufferLinePick` command will allow for easy selection of a buffer
 in view. Trigger the command, using `:BufferLinePick` or better still map this
-to a key, e.g. >
+to a key, e.g. >vim
 
     nnoremap <silent> gb :BufferLinePick<CR>
 <
@@ -604,7 +604,7 @@ This functionality can also be used to close a buffer using
 appear but on selecting a buffer it will be closed.
 
 this can also be mapped to something like
->
+>vim
   nnoremap <silent> gD :BufferLinePickClose<CR>
 >
 
@@ -626,7 +626,7 @@ e.g. `buffer %d`
 
 You can do things like open a vertical split on right clicking the buffer name
 for example using.
->
+>lua
     right_mouse_command = "vertical sbuffer %d"
 <
 
@@ -634,7 +634,7 @@ Or you can set the value to a function and handle the click action however you
 please for example you can use another plugin such as `bufdelete.nvim`
 (https://github.com/famiu/bufdelete.nvim) to handle closing the buffer using
 the `close_command`.
->
+>lua
     left_mouse_command = function(bufnum)
         require('bufdelete').bufdelete(bufnum, true)
     end
@@ -658,7 +658,7 @@ Using `BufferLineGoToBuffer 4` will open `buf34` as it is the 4th visible buffer
 
 This can then be mapped using
 
->
+>vim
   nnoremap <silent><leader>1 <Cmd>BufferLineGoToBuffer 1<CR>
   nnoremap <silent><leader>2 <Cmd>BufferLineGoToBuffer 2<CR>
   nnoremap <silent><leader>3 <Cmd>BufferLineGoToBuffer 3<CR>
@@ -673,7 +673,8 @@ This can then be mapped using
 
 If you'd rather map these yourself, use:
 
-`vim nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>`
+>vim
+    nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>
 
 Alternatively, if you want to instead jump to the absolute position of the
 buffer in the bufferline (as displayed by the ordinal buffer numbers), you can
@@ -681,7 +682,7 @@ use the `lua` API to set it up using `require'bufferline'.go_to_buffer(number, a
 where absolute is a boolean that determines whether to use the
 absolute buffer position or the visible/relative one.
 
->
+>vim
   nnoremap <silent><leader>1 <cmd>lua require("bufferline").go_to_buffer(1, true)<cr>
   nnoremap <silent><leader>2 <cmd>lua require("bufferline").go_to_buffer(2, true)<cr>
   nnoremap <silent><leader>3 <cmd>lua require("bufferline").go_to_buffer(3, true)<cr>
@@ -697,7 +698,7 @@ absolute buffer position or the visible/relative one.
 You can close buffers by clicking the close icon or by right clicking the tab anywhere
 
 
-A few of this plugins commands can be mapped for ease of use. >
+A few of this plugins commands can be mapped for ease of use. >vim
 
     " These commands will navigate through buffers in order
     " regardless of which mode you are using  e.g. if you change
@@ -738,7 +739,7 @@ name e.g. `Normal` and the attribute which is one of `fg`, `bg`. See the
 `{what}` argument of `:h synIDAttr` for details, but only these 2 have been
 tested
 
-for example: >
+for example: >lua
     highlights = {
         fill = {
             bg = {
@@ -754,7 +755,7 @@ default value for that key.
 
 NOTE: you can specify colors the same way you specify colors for
 `nvim_set_hl`. See `:h vim.api.nvim_set_hl` .
->
+>lua
     lua require'bufferline'.setup{
         highlights = {
             fill = {
@@ -1028,7 +1029,7 @@ similar to the format above (use `ctermbg` and `ctermfg` instead). A user can
 also directly specify [colour
 numbers](https://www.ditig.com/256-colors-cheat-sheet).
 
-for example: >
+for example: >lua
     highlights = {
         fill = {
             ctermbg = 7
@@ -1049,7 +1050,7 @@ You can also add custom content at the start or end of the bufferline using `cus
 this option allows a user to specify a function which should return the text and highlight for that text
 to be shown in a list of tables. For example:
 
->
+>lua
     custom_areas = {
     right = function()
         local result = {}
@@ -1092,7 +1093,7 @@ functions that need to ignore special buffers.
 
 The output has the following structure:
 
->
+>lua
     {
         mode = "tabs" -- depends on your config setting for mode
         elements = {
@@ -1104,7 +1105,7 @@ The output has the following structure:
 
 Here's an example that will let you close all open buffers.
 
->
+>lua
     function close_all_buffers ()
         for _, e in ipairs(bufferline.get_elements().elements) do
             vim.schedule(function()
