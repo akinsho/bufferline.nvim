@@ -237,7 +237,7 @@ It is passed a table with the following keys:
     return string.format('%s.%s', opts.lower(opts.id), opts.lower(opts.ordinal))
   end,
 
-  -- For 2.)8.) - change he order of arguments to change the order in the string
+  -- For 2.)8.) - change the order of arguments to change the order in the string
   numbers = function(opts)
     return string.format('%s.)%s.)', opts.ordinal, opts.id)
   end,
