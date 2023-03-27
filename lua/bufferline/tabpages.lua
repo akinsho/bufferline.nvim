@@ -30,11 +30,18 @@ local function render(tabpage, is_active, style, highlights)
   local separator_hl = is_active and h.tab_separator_selected.hl_group or h.tab_separator.hl_group
   local chars = constants.sep_chars[style] or constants.sep_chars.thin
   local name = padding .. tabpage.tabnr .. padding
+  local swapped_chars = require("bufferline.config").options.separator_style == "thick"
+    or require("bufferline.config").options.separator_style == "thin"
   return {
-    { highlight = separator_hl, text = chars[2] },
-    { highlight = hl, text = name, attr = { prefix = tab_click_component(tabpage.tabnr) } },
-    { highlight = separator_hl, text = chars[1] },
+    { highlight = separator_hl, text = chars[swapped_chars and 1 or 2] },
+    {
+      highlight = hl,
+      text = name,
+      attr = { prefix = tab_click_component(tabpage.tabnr) },
+    },
+    { highlight = separator_hl, text = chars[swapped_chars and 2 or 1] },
   }
+
 end
 
 function M.get()
