@@ -1,7 +1,7 @@
 local M = {}
 
-local bit = require("bit")
 local fmt = string.format
+local api = vim.api
 
 ---Convert a hex color to rgb
 ---@param color string
@@ -44,6 +44,20 @@ function M.color_is_bright(hex)
   return luminance > 0.5 -- if > 0.5 Bright colors, black font, otherwise Dark colors, white font
 end
 
+-- TODO: remove when 0.9 is stable
+local new_hl_api = api.nvim_get_hl ~= nil
+local get_hl = function(name, use_cterm)
+  if new_hl_api then
+    local hl = api.nvim_get_hl(0, { name = name })
+    if use_cterm then
+      hl.fg, hl.bg = hl.ctermfg, hl.ctermbg
+    end
+    return hl
+  end
+  ---@diagnostic disable-next-line: undefined-field
+  return api.nvim_get_hl_by_name(name, not use_cterm)
+end
+
 -- parses the gui hex color code (or cterm color number) from the given hl_name
 --   color number (0-255) is returned if cterm is set to true in opts
 --   if unable to parse, uses the fallback value
@@ -57,27 +71,26 @@ function M.get_color(opts)
     attribute == "fg" or attribute == "bg",
     fmt('attribute for %s should be one of "fg" or "bg", "%s" was passed in ', name, attribute)
   )
-  attribute = attribute == "fg" and "foreground" or "background"
+  -- TODO: remove when 0.9 is stable
+  if not new_hl_api then attribute = attribute == "fg" and "foreground" or "background" end
 
   -- try and get hl from name
-  local success, hl = pcall(vim.api.nvim_get_hl_by_name, name, not cterm)
+  local success, hl = pcall(get_hl, name, cterm)
   if success and hl and hl[attribute] then
     if cterm then return hl[attribute] end
     -- convert from decimal color value to hex (e.g. 14257292 => "#D98C8C")
-    local hex = "#" .. bit.tohex(hl[attribute], 6)
+    local hex = ("#%06x"):format(hl[attribute])
     if not not_match or not_match ~= hex then return hex end
   end
-  -- note: in case of cterm, nvim_get_hl_by_name may return incorrect color
-  --   numbers (but still < 256) for some highlight groups like TabLine,
-  --   but return correct numbers for groups like DevIconPl. this problem
-  --   does not happen for gui colors.
+  --- NOTE: in case of cterm, nvim_get_hl_by_name may return incorrect color
+  ---  numbers (but still < 256) for some highlight groups like TabLine,
+  ---  but return correct numbers for groups like DevIconPl. this problem
+  ---  does not happen for gui colors.
 
   -- no fallback for cterm colors
-  if cterm then return nil end
-
+  if cterm then return end
   -- basic fallback
   if fallback and type(fallback) == "string" then return fallback end
-
   -- bit of recursive fallback logic
   if fallback and type(fallback) == "table" then
     assert(
