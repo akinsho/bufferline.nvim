@@ -1,12 +1,8 @@
 local lazy = require("bufferline.lazy")
---- @module "bufferline.utils"
-local utils = lazy.require("bufferline.utils")
---- @module "bufferline.constants"
-local padding = lazy.require("bufferline.constants").padding
---- @module "bufferline.models"
-local models = lazy.require("bufferline.models")
---- @module "bufferline.ui"
-local ui = lazy.require("bufferline.ui")
+local ui = lazy.require("bufferline.ui") ---@module "bufferline.ui"
+local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
+local models = lazy.require("bufferline.models") ---@module "bufferline.models"
+local C = lazy.require("bufferline.constants") ---@module "bufferline.constants"
 
 local fn = vim.fn
 
@@ -71,7 +67,7 @@ local function format_name(name) return name:gsub("[^%w]+", "_") end
 local separator = {}
 
 local function space_end(hl_groups)
-  return { { highlight = hl_groups.fill.hl_group, text = padding } }
+  return { { highlight = hl_groups.fill.hl_group, text = C.padding } }
 end
 
 ---@param group Group,
@@ -86,11 +82,11 @@ function separator.pill(group, hls, count)
   local label_hl = label_grp and label_grp.hl_group or hls.group_label.hl_group
   local left, right = "█", "█"
   local indicator = {
-    { text = padding, highlight = bg_hl },
+    { text = C.padding, highlight = bg_hl },
     { text = left, highlight = sep_hl },
     { text = display_name .. count, highlight = label_hl },
     { text = right, highlight = sep_hl },
-    { text = padding, highlight = bg_hl },
+    { text = C.padding, highlight = bg_hl },
   }
   return { sep_start = indicator, sep_end = space_end(hls) }
 end
@@ -104,9 +100,9 @@ function separator.tab(group, hls, count)
   local hl = hls.fill.hl_group
   local indicator_hl = hls.buffer.hl_group
   local indicator = {
-    { highlight = hl, text = padding },
-    { highlight = indicator_hl, text = padding .. group.name .. count .. padding },
-    { highlight = hl, text = padding },
+    { highlight = hl, text = C.padding },
+    { highlight = indicator_hl, text = C.padding .. group.name .. count .. C.padding },
+    { highlight = hl, text = C.padding },
   }
   return { sep_start = indicator, sep_end = space_end(hls) }
 end

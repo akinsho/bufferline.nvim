@@ -2,10 +2,8 @@
 -- HELPERS
 ---------------------------------------------------------------------------//
 local lazy = require("bufferline.lazy")
---- @module "bufferline.constants"
-local constants = lazy.require("bufferline.constants")
---- @module "bufferline.config"
-local config = lazy.require("bufferline.config")
+local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
 
 local M = {}
 

@@ -1,10 +1,7 @@
 local lazy = require("bufferline.lazy")
----@module "bufferline.state"
-local state = lazy.require("bufferline.state")
----@module "bufferline.ui"
-local ui = lazy.require("bufferline.ui")
----@module "bufferline.config"
-local config = lazy.require("bufferline.config")
+local state = lazy.require("bufferline.state") ---@module "bufferline.state"
+local ui = lazy.require("bufferline.ui") ---@module "bufferline.ui"
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
 
 local M = {}
 

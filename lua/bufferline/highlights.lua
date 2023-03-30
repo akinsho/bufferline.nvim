@@ -1,17 +1,11 @@
 local fmt = string.format
 local lazy = require("bufferline.lazy")
---- @module "bufferline.utils"
-local utils = lazy.require("bufferline.utils")
---- @module "bufferline.constants"
-local constants = lazy.require("bufferline.constants")
---- @module "bufferline.config"
-local config = lazy.require("bufferline.config")
---- @module "bufferline.groups"
-local groups = lazy.require("bufferline.groups")
----@module "bufferline.colors"
-local colors = require("bufferline.colors")
---- @module "bufferline.utils.log"
-local log = lazy.require("bufferline.utils.log")
+local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
+local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
+local groups = lazy.require("bufferline.groups") ---@module "bufferline.groups"
+local colors = require("bufferline.colors") ---@module "bufferline.colors"
+local log = lazy.require("bufferline.utils.log") ---@module "bufferline.utils.log"
 
 local api = vim.api
 local V = constants.visibility

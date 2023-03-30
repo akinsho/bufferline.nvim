@@ -1,28 +1,16 @@
 local lazy = require("bufferline.lazy")
---- @module "bufferline.ui"
-local ui = lazy.require("bufferline.ui")
---- @module "bufferline.utils"
-local utils = lazy.require("bufferline.utils")
---- @module "bufferline.state"
-local state = lazy.require("bufferline.state")
---- @module "bufferline.groups"
-local groups = lazy.require("bufferline.groups")
---- @module "bufferline.config"
-local config = lazy.require("bufferline.config")
---- @module "bufferline.sorters"
-local sorters = lazy.require("bufferline.sorters")
---- @module "bufferline.buffers"
-local buffers = lazy.require("bufferline.buffers")
---- @module "bufferline.commands"
-local commands = lazy.require("bufferline.commands")
---- @module "bufferline.tabpages"
-local tabpages = lazy.require("bufferline.tabpages")
---- @module "bufferline.constants"
-local constants = lazy.require("bufferline.constants")
---- @module "bufferline.highlights"
-local highlights = lazy.require("bufferline.highlights")
---- @module "bufferline.hover"
-local hover = lazy.require("bufferline.hover")
+local ui = lazy.require("bufferline.ui") ---@module "bufferline.ui"
+local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
+local state = lazy.require("bufferline.state") ---@module "bufferline.state"
+local groups = lazy.require("bufferline.groups") ---@module "bufferline.groups"
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
+local sorters = lazy.require("bufferline.sorters") ---@module "bufferline.sorters"
+local buffers = lazy.require("bufferline.buffers") ---@module "bufferline.buffers"
+local commands = lazy.require("bufferline.commands") ---@module "bufferline.commands"
+local tabpages = lazy.require("bufferline.tabpages") ---@module "bufferline.tabpages"
+local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
+local highlights = lazy.require("bufferline.highlights") ---@module "bufferline.highlights"
+local hover = lazy.require("bufferline.hover") ---@module "bufferline.hover"
 
 -- @v:lua@ in the tabline only supports global functions, so this is
 -- the only way to add click handlers without autoloaded vimscript functions

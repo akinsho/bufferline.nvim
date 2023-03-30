@@ -2,22 +2,14 @@
 -- User commands
 ---------------------------------------------------------------------------//
 local lazy = require("bufferline.lazy")
----@module "bufferline.ui"
-local ui = lazy.require("bufferline.ui")
----@module "bufferline.state"
-local state = lazy.require("bufferline.state")
----@module "bufferline.utils"
-local utils = lazy.require("bufferline.utils")
----@module "bufferline.config"
-local config = lazy.require("bufferline.config")
----@module "bufferline.groups"
-local groups = lazy.require("bufferline.groups")
----@module "bufferline.sorters"
-local sorters = lazy.require("bufferline.sorters")
----@module "bufferline.constants"
-local constants = lazy.require("bufferline.constants")
----@module "bufferline.pick"
-local pick = lazy.require("bufferline.pick")
+local ui = lazy.require("bufferline.ui") ---@module "bufferline.ui"
+local state = lazy.require("bufferline.state") ---@module "bufferline.state"
+local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
+local groups = lazy.require("bufferline.groups") ---@module "bufferline.groups"
+local sorters = lazy.require("bufferline.sorters") ---@module "bufferline.sorters"
+local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
+local pick = lazy.require("bufferline.pick") ---@module "bufferline.pick"
 
 local M = {}
 

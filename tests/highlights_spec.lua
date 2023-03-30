@@ -1,8 +1,7 @@
+---@diagnostic disable: need-check-nil
 describe("Highlights -", function()
-  ---@module "bufferline.highlights"
-  local highlights
-  ---@module "bufferline.config"
-  local config
+  local highlights ---@module "bufferline.highlights"
+  local config ---@module "bufferline.config"
 
   before_each(function()
     package.loaded["bufferline.highlights"] = nil
