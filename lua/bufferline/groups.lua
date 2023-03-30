@@ -351,9 +351,7 @@ function M.remove_from_group(group_name, element)
 end
 
 ---@param id number
-function M.remove_id_from_manual_groupings(id)
-  state.manual_groupings[id] = nil
-end
+function M.remove_id_from_manual_groupings(id) state.manual_groupings[id] = nil end
 
 ---@param id string
 ---@param value boolean

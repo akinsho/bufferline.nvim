@@ -125,9 +125,7 @@ end
 
 function M.unpin_and_close(id)
   local win_id = id or vim.api.nvim_get_current_buf()
-
   handle_close(win_id)
-
   groups.remove_id_from_manual_groupings(win_id)
 end
 
