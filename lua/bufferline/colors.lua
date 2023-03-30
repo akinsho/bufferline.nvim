@@ -27,7 +27,7 @@ function M.shade_color(color, percent)
   if not r or not g or not b then return "NONE" end
   r, g, b = alter(r, percent), alter(g, percent), alter(b, percent)
   r, g, b = math.min(r, 255), math.min(g, 255), math.min(b, 255)
-  return string.format("#%02x%02x%02x", r, g, b)
+  return ("#%02x%02x%02x"):format(r, g, b)
 end
 
 --- Determine whether to use black or white text
