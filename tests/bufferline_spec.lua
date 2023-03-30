@@ -6,12 +6,9 @@ describe("Bufferline tests:", function()
   vim.opt.termguicolors = true
 
   local bufferline
-  ---@module "bufferline.state"
-  local state
-  ---@module "nvim-web-devicons"
-  local icons
-  ---@module "bufferline.config"
-  local config
+  local state ---@module "bufferline.state"
+  local icons ---@module "nvim-web-devicons"
+  local config ---@module "bufferline.config"
 
   before_each(function()
     package.loaded["bufferline"] = nil

@@ -2,30 +2,18 @@
 -- UI
 -----------------------------------------------------------------------------//
 local lazy = require("bufferline.lazy")
----@module "bufferline.utils"
-local utils = lazy.require("bufferline.utils")
----@module "bufferline.config"
-local config = lazy.require("bufferline.config")
----@module "bufferline.constants"
-local constants = lazy.require("bufferline.constants")
----@module "bufferline.highlights"
-local highlights = lazy.require("bufferline.highlights")
----@module "bufferline.pick"
-local pick = lazy.require("bufferline.pick")
----@module "bufferline.groups"
-local groups = lazy.require("bufferline.groups")
----@module "bufferline.diagnostics"
-local diagnostics = lazy.require("bufferline.diagnostics")
----@module "bufferline.duplicates"
-local duplicates = lazy.require("bufferline.duplicates")
----@module "bufferline.numbers"
-local numbers = lazy.require("bufferline.numbers")
----@module "bufferline.custom_area"
-local custom_area = lazy.require("bufferline.custom_area")
----@module "bufferline.offset"
-local offset = lazy.require("bufferline.offset")
----@module "bufferline.state"
-local state = lazy.require("bufferline.state")
+local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
+local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
+local highlights = lazy.require("bufferline.highlights") ---@module "bufferline.highlights"
+local pick = lazy.require("bufferline.pick") ---@module "bufferline.pick"
+local groups = lazy.require("bufferline.groups") ---@module "bufferline.groups"
+local diagnostics = lazy.require("bufferline.diagnostics") ---@module "bufferline.diagnostics"
+local duplicates = lazy.require("bufferline.duplicates") ---@module "bufferline.duplicates"
+local numbers = lazy.require("bufferline.numbers") ---@module "bufferline.numbers"
+local custom_area = lazy.require("bufferline.custom_area") ---@module "bufferline.custom_area"
+local offset = lazy.require("bufferline.offset") ---@module "bufferline.offset"
+local state = lazy.require("bufferline.state") ---@module "bufferline.state"
 
 local M = {}
 

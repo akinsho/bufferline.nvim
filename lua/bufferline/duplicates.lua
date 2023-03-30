@@ -1,10 +1,8 @@
 local M = {}
 
 local lazy = require("bufferline.lazy")
--- @module "bufferline.config"
-local config = lazy.require("bufferline.config")
--- @module "bufferline.utils"
-local utils = require("bufferline.utils")
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
+local utils = require("bufferline.utils") ---@module "bufferline.utils"
 
 local duplicates = {}
 

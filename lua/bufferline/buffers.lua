@@ -1,20 +1,12 @@
 local lazy = require("bufferline.lazy")
---- @module "bufferline.ui"
-local ui = lazy.require("bufferline.ui")
---- @module "bufferline.groups"
-local groups = lazy.require("bufferline.groups")
---- @module "bufferline.config"
-local config = lazy.require("bufferline.config")
---- @module "bufferline.utils"
-local utils = lazy.require("bufferline.utils")
---- @module "bufferline.pick"
-local pick = require("bufferline.pick")
---- @module "bufferline.duplicates"
-local duplicates = require("bufferline.duplicates")
---- @module "bufferline.diagnostics"
-local diagnostics = require("bufferline.diagnostics")
---- @module "bufferline.models"
-local models = require("bufferline.models")
+local ui = lazy.require("bufferline.ui") ---@module "bufferline.ui"
+local groups = lazy.require("bufferline.groups") ---@module "bufferline.groups"
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
+local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
+local pick = require("bufferline.pick") ---@module "bufferline.pick"
+local duplicates = require("bufferline.duplicates") ---@module "bufferline.duplicates"
+local diagnostics = require("bufferline.diagnostics") ---@module "bufferline.diagnostics"
+local models = require("bufferline.models") ---@module "bufferline.models"
 
 local M = {}
 

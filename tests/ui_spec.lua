@@ -4,12 +4,9 @@ local constants = require("bufferline.constants")
 local MockBuffer = utils.MockBuffer
 
 describe("UI Tests", function()
-  ---@module 'bufferline.ui'
-  local ui
-  ---@module 'bufferline.config'
-  local config
-  ---@module 'bufferline.state'
-  local state
+  local ui ---@module 'bufferline.ui'
+  local config ---@module 'bufferline.config'
+  local state ---@module 'bufferline.state'
 
   before_each(function()
     ui = utils.reload("bufferline.ui")

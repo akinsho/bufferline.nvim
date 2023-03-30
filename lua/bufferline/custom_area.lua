@@ -1,10 +1,7 @@
 local lazy = require("bufferline.lazy")
----@module "bufferline.config"
-local config = lazy.require("bufferline.config")
----@module "bufferline.utils"
-local utils = lazy.require("bufferline.utils")
----@module "bufferline.highlights"
-local highlights = lazy.require("bufferline.highlights")
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
+local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
+local highlights = lazy.require("bufferline.highlights") ---@module "bufferline.highlights"
 
 local M = {}
 

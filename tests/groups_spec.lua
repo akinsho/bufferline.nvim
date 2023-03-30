@@ -5,14 +5,10 @@ local Buffer = utils.MockBuffer
 --- NOTE: The pinned group is group 1 and so all groups must appear after this
 --- all group are moved down by one because of this
 describe("Group tests - ", function()
-  --- @module "bufferline.groups"
-  local groups
-  --- @module "bufferline.state"
-  local state
-  --- @module "bufferline.config"
-  local config
-  --- @module "bufferline"
-  local bufferline
+  local groups ---@module "bufferline.groups"
+  local state ---@module "bufferline.state"
+  local config ---@module "bufferline.config"
+  local bufferline ---@module "bufferline"
 
   before_each(function()
     package.loaded["bufferline"] = nil

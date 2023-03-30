@@ -1,20 +1,12 @@
 local lazy = require("bufferline.lazy")
----@module "bufferline.ui"
-local ui = lazy.require("bufferline.ui")
----@module "bufferline.pick"
-local pick = lazy.require("bufferline.pick")
----@module "bufferline.config"
-local config = lazy.require("bufferline.config")
----@module "bufferline.constants"
-local constants = lazy.require("bufferline.constants")
---- @module "bufferline.duplicates"
-local duplicates = lazy.require("bufferline.duplicates")
----@module "bufferline.diagnostics"
-local diagnostics = lazy.require("bufferline.diagnostics")
----@module "bufferline.utils"
-local utils = lazy.require("bufferline.utils")
----@module "bufferline.models"
-local models = lazy.require("bufferline.models")
+local ui = lazy.require("bufferline.ui") ---@module "bufferline.ui"
+local pick = lazy.require("bufferline.pick") ---@module "bufferline.pick"
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
+local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
+local duplicates = lazy.require("bufferline.duplicates") ---@module "bufferline.duplicates"
+local diagnostics = lazy.require("bufferline.diagnostics") ---@module "bufferline.diagnostics"
+local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
+local models = lazy.require("bufferline.models") ---@module "bufferline.models"
 
 local api = vim.api
 

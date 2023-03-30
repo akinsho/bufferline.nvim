@@ -3,16 +3,11 @@ local M = {}
 local api = vim.api
 local fmt = string.format
 local lazy = require("bufferline.lazy")
---- @module "bufferline.groups"
-local groups = lazy.require("bufferline.groups")
---- @module "bufferline.utils"
-local utils = lazy.require("bufferline.utils")
---- @module "bufferline.highlights"
-local highlights = lazy.require("bufferline.highlights")
---- @module "bufferline.colors"
-local colors = lazy.require("bufferline.colors")
---- @module "bufferline.colors"
-local constants = lazy.require("bufferline.constants")
+local groups = lazy.require("bufferline.groups") ---@module "bufferline.groups"
+local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
+local highlights = lazy.require("bufferline.highlights") ---@module "bufferline.highlights"
+local colors = lazy.require("bufferline.colors") ---@module "bufferline.colors"
+local constants = lazy.require("bufferline.constants") ---@module "bufferline.colors"
 
 ---@class DebugOpts
 ---@field logging boolean
