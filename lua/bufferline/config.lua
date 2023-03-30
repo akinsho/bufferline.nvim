@@ -704,7 +704,7 @@ local function get_defaults()
     mode = "buffers",
     themable = true, -- whether or not bufferline highlights can be overridden externally
     numbers = "none",
-    buffer_close_icon = "",
+    buffer_close_icon = "",
     modified_icon = "●",
     close_icon = "",
     close_command = "bdelete! %d",

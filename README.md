@@ -54,6 +54,9 @@ If you'd like to use an older version of the plugin compatible with nvim-0.6.1 a
 ```lua
 -- using packer.nvim
 use {'akinsho/bufferline.nvim', tag = "v3.*", requires = 'nvim-tree/nvim-web-devicons'}
+
+-- using lazy.nvim
+{'akinsho/bufferline.nvim', version = "v3.*", dependencies = 'nvim-tree/nvim-web-devicons'}
 ```
 
 **Vimscript**
