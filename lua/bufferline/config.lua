@@ -173,7 +173,7 @@ local function validate_user_options(options)
 end
 
 ---@param options BufferlineOptions
----@return table[]
+---@return {[string]: table}[]
 local function get_offset_highlights(options)
   if not options or not options.offsets then return {} end
   return utils.fold(function(accum, offset, i)

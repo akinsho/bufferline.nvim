@@ -53,10 +53,10 @@ end
 ---@param list Component[]
 ---@return Component[]
 local function filter_invisible(list)
-  return utils.fold({}, function(accum, item)
+  return utils.fold(function(accum, item)
     if item.focusable ~= false and not item.hidden then table.insert(accum, item) end
     return accum
-  end, list)
+  end, list, {})
 end
 
 ---sort a list of components using a sort function

@@ -17,19 +17,18 @@ end
 
 ---Takes a list of items and runs the callback
 ---on each updating the initial value
----@generic T
----@param accum T
----@param callback fun(accum:T, item: T, key: number|string): T
+---@generic T, S
+---@param callback fun(accum:S, item: T, key: number|string): S
 ---@param list table<number|string, T>
----@return T
----@overload fun(callback: fun(accum: any, item: any, key: (number|string)), list: any[]): any
-function M.fold(accum, callback, list)
-  assert(accum and callback, "An initial value and callback must be passed to fold")
+---@param accum S
+---@return S
+---@overload fun(callback: fun(accum: any, item: any, key: (number|string)): any, list: any[]): any
+function M.fold(callback, list, accum)
+  assert(callback, "a callback must be passed to fold")
   if type(accum) == "function" and type(callback) == "table" then
-    list = callback
-    callback = accum
-    accum = {}
+    list, callback, accum = callback, accum, {}
   end
+  accum = accum or {}
   for i, v in pairs(list) do
     accum = callback(accum, v, i)
   end
@@ -41,9 +40,9 @@ end
 ---@return number
 function M.measure(...)
   return M.fold(
-    0,
     function(accum, item) return accum + api.nvim_strwidth(tostring(item)) end,
-    { ... }
+    { ... },
+    0
   )
 end
 
@@ -51,7 +50,7 @@ end
 ---@vararg string
 ---@return string
 function M.join(...)
-  return M.fold("", function(accum, item) return accum .. item end, { ... })
+  return M.fold(function(accum, item) return accum .. item end, { ... }, "")
 end
 
 ---@generic T
@@ -102,8 +101,8 @@ end
 ---Execute a callback for each item or only those that match if a matcher is passed
 ---@generic T
 ---@param list T[]
----@param callback fun(item: `T`)
----@param matcher (fun(item: `T`):boolean)?
+---@param callback fun(item: T)
+---@param matcher (fun(item: T):boolean)?
 function M.for_each(callback, list, matcher)
   for _, item in ipairs(list) do
     if not matcher or matcher(item) then callback(item) end
