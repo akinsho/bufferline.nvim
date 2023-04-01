@@ -1,9 +1,9 @@
 name: CI
 on:
   push:
-    paths-ignore:
-      - ".github/**"
-      - "*.md"
+  #   paths-ignore:
+  #     - ".github/**"
+  #     - "*.md"
 
 jobs:
   format:
