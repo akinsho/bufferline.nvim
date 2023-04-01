@@ -28,7 +28,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
 
-  test:
+  tests:
     name: Tests
     runs-on: ubuntu-latest
 
