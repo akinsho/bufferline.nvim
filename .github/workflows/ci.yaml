@@ -1,0 +1,73 @@
+name: CI
+on:
+  push:
+    paths-ignore:
+      - ".github/**"
+      - "*.md"
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: JohnnyMorganz/stylua-action@1.0.0
+        with:
+          version: v0.14.3
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --config-path=stylua.toml lua/
+      - name: Commit files
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          if ! [[ -z $(git status -s) ]]; then
+            git commit -m "chore: formatting" lua/*
+          fi
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Neovim
+        shell: bash
+        run: |
+          mkdir -p /tmp/nvim
+          wget -q https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage -O /tmp/nvim/nvim.appimage
+          cd /tmp/nvim
+          chmod a+x ./nvim.appimage
+          ./nvim.appimage --appimage-extract
+          echo "/tmp/nvim/squashfs-root/usr/bin/" >> $GITHUB_PATH
+
+      - name: Run tests
+        run: |
+          nvim --version
+          [ ! -d tests ] && exit 0
+          nvim --headless -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests/ {minimal_init = 'tests/minimal_init.lua', sequential = true}"
+
+  release:
+    name: release
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs:
+      - docs
+      - tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v3
+        id: release
+        with:
+          release-type: simple
+          package-name: bufferline.nvim
+      - uses: actions/checkout@v3
+      - name: tag stable versions
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git remote add gh-token "https://${{ secrets.GITHUB_TOKEN }}@github.com/google-github-actions/release-please-action.git"
+
