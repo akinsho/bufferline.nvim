@@ -54,7 +54,6 @@ jobs:
     name: release
     if: ${{ github.ref == 'refs/heads/main' }}
     needs:
-      - docs
       - tests
     runs-on: ubuntu-latest
     steps:
