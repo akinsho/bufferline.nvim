@@ -1,4 +1,4 @@
-[![Run tests](https://github.com/akinsho/bufferline.nvim/actions/workflows/test.yaml/badge.svg)](https://github.com/akinsho/bufferline.nvim/actions/workflows/test.yaml)
+[![CI](https://github.com/akinsho/bufferline.nvim/actions/workflows/ci.yaml/badge.svg)](https://github.com/akinsho/bufferline.nvim/actions/workflows/ci.yaml)
 
 <h1 align="center">
   bufferline.nvim
