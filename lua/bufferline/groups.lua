@@ -2,6 +2,7 @@ local lazy = require("bufferline.lazy")
 local ui = lazy.require("bufferline.ui") ---@module "bufferline.ui"
 local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
 local models = lazy.require("bufferline.models") ---@module "bufferline.models"
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
 local C = lazy.require("bufferline.constants") ---@module "bufferline.constants"
 
 local fn = vim.fn
@@ -23,13 +24,12 @@ local fn = vim.fn
 
 ---@alias GroupSeparator fun(group:Group, hls: BufferlineHLGroup, count_item: string?): Separators
 ---@alias GroupSeparators table<string, GroupSeparator>
----@alias grouper fun(b: NvimBuffer): boolean
 
 ---@class Group
 ---@field public id string used for identifying the group in the tabline
 ---@field public name string 'formatted name of the group'
 ---@field public display_name string original name including special characters
----@field public matcher grouper
+---@field public matcher fun(b: NvimBuffer): boolean?
 ---@field public separator GroupSeparators
 ---@field public priority number
 ---@field public highlight table<string, string>
@@ -254,7 +254,7 @@ local function restore_pinned_buffers()
   if not pinned then return end
   local manual_groupings = vim.split(pinned, ",") or {}
   for _, path in ipairs(manual_groupings) do
-    local buf_id = fn.bufnr(path)
+    local buf_id = fn.bufnr(path --[[@as integer]])
     if buf_id ~= -1 then
       set_manual_group(buf_id, PINNED_ID)
       persist_pinned_buffers()
@@ -265,11 +265,12 @@ end
 
 --- NOTE: this function mutates the user's configuration.
 --- Add group highlights to the user highlights table
----@param config BufferlineConfig
-function M.setup(config)
-  if not config then return end
+---
+---@param conf BufferlineConfig
+function M.setup(conf)
+  if not conf then return end
   ---@type Group[]
-  local groups = vim.tbl_get(config, "options", "groups", "items") or {}
+  local groups = vim.tbl_get(conf, "options", "groups", "items") or {}
 
   -- NOTE: if the user has already set the pinned builtin themselves
   -- then we want each group to have a priority based on it's position in the list
@@ -403,7 +404,7 @@ local function get_group_marker(group_id, components)
   local group = state.user_groups[group_id]
   if not group then return end
   local GroupView = models.GroupView
-  local hl_groups = require("bufferline.config").get("highlights")
+  local hl_groups = config.highlights
 
   group.separator = group.separator or {}
   --- NOTE: the default buffer group style is the pill

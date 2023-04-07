@@ -1,5 +1,4 @@
 local lazy = require("bufferline.lazy")
-local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
 local config = lazy.require("bufferline.config") ---@module "bufferline.config"
 local ui = lazy.require("bufferline.ui") ---@module "bufferline.ui"
 
@@ -47,7 +46,7 @@ local mt = {
   __index = function(_, _) return { count = 0, level = nil } end,
 }
 
-local is_valid_version = utils.is_truthy(fn.has("nvim-0.5"))
+local is_valid_version = fn.has("nvim-0.5") > 0
 
 local function is_disabled(diagnostics)
   if
@@ -155,7 +154,7 @@ end
 ---@param context RenderContext
 ---@return Segment?
 function M.component(context)
-  local opts = config.get("options")
+  local opts = config.options
   if is_disabled(opts.diagnostics) then return end
 
   local user_indicator = opts.diagnostics_indicator

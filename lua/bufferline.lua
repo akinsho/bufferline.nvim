@@ -84,7 +84,7 @@ local function bufferline()
   local is_tabline = conf:is_tabline()
   local components = is_tabline and tabpages.get_components(state) or buffers.get_components(state)
 
-  --- NOTE: this cannot be added to state as a metamethod since
+  --- NOTE: this cannot be added to state as a meta method since
   --- state is not actually set till after sorting and component creation is done
   state.set({ current_element_index = get_current_index(state) })
   components = not is_tabline and groups.render(components, sorter) or sorter(components)

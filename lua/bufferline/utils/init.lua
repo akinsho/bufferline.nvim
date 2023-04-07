@@ -18,11 +18,11 @@ end
 ---Takes a list of items and runs the callback
 ---on each updating the initial value
 ---@generic T, S
----@param callback fun(accum:S, item: T, key: number|string): S
----@param list table<number|string, T>
+---@param callback fun(accum:S, item: T, key: integer|string): S
+---@param list table<integer|string, T>
 ---@param accum S
 ---@return S
----@overload fun(callback: fun(accum: any, item: any, key: (number|string)): any, list: any[]): any
+---@overload fun(callback: fun(accum: any, item: any, key: (integer|string)): any, list: any[]): any
 function M.fold(callback, list, accum)
   assert(callback, "a callback must be passed to fold")
   if type(accum) == "function" and type(callback) == "table" then
@@ -37,7 +37,7 @@ end
 
 ---Variant of some that sums up the display size of characters
 ---@vararg string
----@return number
+---@return integer
 function M.measure(...)
   return M.fold(
     function(accum, item) return accum + api.nvim_strwidth(tostring(item)) end,
@@ -54,7 +54,7 @@ function M.join(...)
 end
 
 ---@generic T
----@param callback fun(item: T, index: number): T
+---@param callback fun(item: T, index: integer): T
 ---@param list T[]
 ---@return T[]
 function M.map(callback, list)
@@ -126,20 +126,20 @@ end
 M.path_sep = vim.startswith(vim.loop.os_uname().sysname, "Windows") and "\\" or "/"
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
+--- @param buf_num integer
 function M.is_valid(buf_num)
   if not buf_num or buf_num < 1 then return false end
   local exists = vim.api.nvim_buf_is_valid(buf_num)
   return vim.bo[buf_num].buflisted and exists
 end
 
----@return number
+---@return integer
 function M.get_buf_count() return #fn.getbufinfo({ buflisted = 1 }) end
 
----@return number[]
----@diagnostic disable-next-line: return-type-mismatch
+---@return integer[]
 function M.get_valid_buffers() return vim.tbl_filter(M.is_valid, vim.api.nvim_list_bufs()) end
 
----@return number
+---@return integer
 function M.get_tab_count() return #fn.gettabinfo() end
 
 function M.close_tab(tabhandle) vim.cmd("tabclose " .. api.nvim_tabpage_get_number(tabhandle)) end
@@ -194,7 +194,7 @@ end
 
 local current_stable = {
   major = 0,
-  minor = 7,
+  minor = 7, -- TODO: bump this 0.9 by 30/04/2023
   patch = 0,
 }
 
@@ -203,7 +203,7 @@ function M.is_current_stable_release() return vim.version().minor >= current_sta
 -- truncate a string based on number of display columns/cells it occupies
 -- so that multibyte characters are not broken up mid character
 ---@param str string
----@param col_limit number
+---@param col_limit integer
 ---@return string
 local function truncate_by_cell(str, col_limit)
   if str and str:len() == api.nvim_strwidth(str) then return fn.strcharpart(str, 0, col_limit) end
@@ -218,7 +218,7 @@ end
 
 --- Truncate a name being mindful of multibyte characters and append an ellipsis
 ---@param name string
----@param word_limit number
+---@param word_limit integer
 ---@return string
 function M.truncate_name(name, word_limit)
   if strwidth(name) <= word_limit then return name end
@@ -230,16 +230,6 @@ function M.truncate_name(name, word_limit)
     if api.nvim_strwidth(truncated) < word_limit then return truncated .. constants.ELLIPSIS end
   end
   return truncate_by_cell(name, word_limit - 1) .. constants.ELLIPSIS
-end
-
-function M.is_truthy(value)
-  return value ~= nil
-    and value ~= false
-    and value ~= 0
-    and value ~= ""
-    and value ~= "0"
-    and value ~= "false"
-    and value ~= "nil"
 end
 
 -- TODO: deprecate this in nvim-0.11 or use strict lists

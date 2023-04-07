@@ -88,7 +88,7 @@ local constants = lazy.require("bufferline.constants") ---@module "bufferline.co
 
 ---@class BufferlineConfig
 ---@field public options BufferlineOptions
----@field public highlights BufferlineHighlights
+---@field public highlights BufferlineHighlights | fun(BufferlineHighlights): BufferlineHighlights
 ---@field user BufferlineConfig original copy of user preferences
 ---@field merge fun(self: BufferlineConfig, defaults: BufferlineConfig): BufferlineConfig
 ---@field validate fun(self: BufferlineConfig, defaults: BufferlineConfig, resolved: BufferlineHighlights): nil
@@ -855,13 +855,9 @@ function M.update_highlights()
 end
 
 ---Get the user's configuration or a key from it
----@param key string?
 ---@return BufferlineConfig?
----@overload fun(key: "options"): BufferlineOptions
----@overload fun(key: "highlights"): BufferlineHighlights
-function M.get(key)
-  if not config then return end
-  return config[key] or config
+function M.get()
+  if config then return config end
 end
 
 --- This function is only intended for use in tests

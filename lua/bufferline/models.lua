@@ -186,6 +186,7 @@ end
 ---@field public name_formatter function? dictates how the name should be shown
 ---@field public id integer the buffer number
 ---@field public name string the visible name for the file
+---@field public filename string
 ---@field public icon string the icon
 ---@field public icon_highlight string?
 ---@field public diagnostics table
