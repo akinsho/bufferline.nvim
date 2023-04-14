@@ -129,7 +129,7 @@ end
 ---@param segments Segment[]
 ---@return integer
 local function get_component_size(segments)
-  assert(vim.tbl_islist(segments), "Segments must be a list")
+  assert(utils.is_list(segments), "Segments must be a list")
   local sum = 0
   for _, s in pairs(segments) do
     if has_text(s) then sum = sum + strwidth(tostring(s.text)) end

@@ -1,5 +1,6 @@
 describe("Sorters - ", function()
   local sorters = require("bufferline.sorters")
+  local utils = require("bufferline.utils")
   local bufferline ---@module "bufferline"
   local state ---@type BufferlineState
 
@@ -17,14 +18,14 @@ describe("Sorters - ", function()
     bufferline.setup({ options = { sort_by = "none" } })
     local bufs = { { id = 12 }, { id = 2 }, { id = 3 }, { id = 8 } }
     local list = sorters.sort(bufs)
-    assert.is_true(vim.tbl_islist(list))
+    assert.is_true(utils.is_list(list))
   end)
 
   it("should return an unsorted list sort is none", function()
     bufferline.setup({ options = { sort_by = "none" } })
     local bufs = { { id = 12 }, { id = 2 }, { id = 3 }, { id = 8 } }
     local list = sorters.sort(bufs)
-    assert.is_true(vim.tbl_islist(list))
+    assert.is_true(utils.is_list(list))
     local ids = vim.tbl_map(function(buf) return buf.id end, list)
     assert.same(ids, { 12, 2, 3, 8 })
   end)
