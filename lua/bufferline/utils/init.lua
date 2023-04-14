@@ -242,9 +242,12 @@ function M.is_truthy(value)
     and value ~= "nil"
 end
 
+local mk_is_list = function() return vim.tbl_isarray or vim.tbl_islist end
+local _is_list = mk_is_list()
+
 -- TODO: deprecate this in nvim-0.11 or use strict lists
 --- Determine which list-check function to use
----@return function
-function M.is_list() return vim.tbl_isarray or vim.tbl_islist end
+---@return boolean
+function M.is_list(l) return _is_list(l) end
 
 return M
