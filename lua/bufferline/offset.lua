@@ -94,7 +94,7 @@ end
 ---@return number[]
 local function is_valid_layout(windows)
   local win_type, win_id = windows[1], windows[2]
-  if vim.tbl_islist(win_id) and win_type == t.COLUMN then win_id = win_id[1][2] end
+  if vim.tbl_isarray(win_id) and win_type == t.COLUMN then win_id = win_id[1][2] end
   return supported_win_types[win_type] and type(win_id) == "number", win_id
 end
 
