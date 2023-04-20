@@ -48,9 +48,10 @@ function Config:merge(defaults)
 end
 
 local deprecations = {
-  indicator_icon = {
-    message = "It should be changed to indicator and icon specified as indicator.icon, with indicator.style = 'icon'",
-    pending = true,
+  show_buffer_default_icon = {
+    name = "show_buffer_default_icon",
+    alternative = "get_element_icon = function(buf) return require('nvim-web-devicons').get_icon(..., {default = false})",
+    version = "4.0.0",
   },
 }
 
@@ -58,12 +59,11 @@ local deprecations = {
 local function validate_user_options(options)
   if not options then return end
   for key, _ in pairs(options) do
-    local deprecation = deprecations[key]
-    if deprecation then
-      vim.schedule(function()
-        local timeframe = deprecation.pending and "will be" or "has been"
-        utils.notify(fmt("'%s' %s deprecated: %s", key, timeframe, deprecation.message), "warn")
-      end)
+    local item = deprecations[key]
+    if item then
+      vim.schedule(
+        function() vim.deprecate(item.name, item.alternative, item.version, "bufferline") end
+      )
     end
   end
 end
@@ -631,8 +631,6 @@ local function get_defaults()
     show_buffer_icons = true,
     show_buffer_close_icons = true,
     get_element_icon = nil,
-    ---@deprecated
-    show_buffer_default_icon = true,
     show_close_icon = true,
     show_tab_indicators = true,
     show_duplicate_prefix = true,
@@ -762,8 +760,8 @@ end
 ---Keep track of a users config for use throughout the plugin as well as ensuring
 ---defaults are set. This is also so we can diff what the user set this is useful
 ---for setting the highlight groups etc. once this has been merged with the defaults
----@param conf bufferline.UserConfig?
-function M.setup(conf) config = Config:new(conf or {}) end
+---@param c bufferline.UserConfig?
+function M.setup(c) config = Config:new(c or {}) end
 
 ---Update highlight colours when the colour scheme changes by resetting the user config
 ---to what was initially passed in and reload the highlighting
@@ -779,9 +777,9 @@ function M.get()
   if config then return config end
 end
 
---- This function is only intended for use in tests
----@private
-function M.__reset() config = nil end
+if _G.__TEST then
+  function M.__reset() config = nil end
+end
 
 M.STYLE_PRESETS = PRESETS
 

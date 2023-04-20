@@ -181,11 +181,8 @@ function M.get_icon(opts)
   end
   if type == "terminal" then return webdev_icons.get_icon(type) end
 
-  --- TODO: Deprecate this option
-  local use_default = config.options.show_buffer_default_icon
-
   local icon, hl = webdev_icons.get_icon(fn.fnamemodify(opts.path, ":t"), opts.extension, {
-    default = use_default,
+    default = true,
   })
 
   if not icon then return "", "" end
