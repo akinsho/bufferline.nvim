@@ -174,6 +174,7 @@ function M.get_icon(opts)
   end
 
   if not loaded then
+    -- TODO: deprecate this in favour of nvim-web-devicons
     if fn.exists("*WebDevIconsGetFileTypeSymbol") > 0 then
       return fn.WebDevIconsGetFileTypeSymbol(opts.path), ""
     end

@@ -173,6 +173,7 @@ function M.move(direction)
   M.move_to(index + direction, index)
 end
 
+--- @param direction number
 function M.cycle(direction)
   if vim.opt.showtabline == 0 then
     if direction > 0 then vim.cmd("bnext") end

@@ -82,8 +82,7 @@ end
 
 ---@private
 function _G.nvim_bufferline()
-  -- Always populate state regardless of if tabline status is less than 2 #352
-  toggle_bufferline()
+  toggle_bufferline() -- Always populate state regardless of if tabline status is less than 2 #352
   return bufferline()
 end
 
