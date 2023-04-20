@@ -47,40 +47,15 @@ local M = {
 
   groups = groups,
 }
------------------------------------------------------------------------------//
--- Helpers
------------------------------------------------------------------------------//
--- TODO: move helpers into the relevant module for each
--- the core module should contain as little feature code as possible
-
----@param list bufferline.Component[]
----@return bufferline.Component[]
-local function filter_invisible(list)
-  return utils.fold(function(accum, item)
-    if item.focusable ~= false and not item.hidden then table.insert(accum, item) end
-    return accum
-  end, list, {})
-end
-
----Get the index of the current element
----@param current_state bufferline.State
----@return number?
-local function get_current_index(current_state)
-  for index, component in ipairs(current_state.components) do
-    if component:current() then return index end
-  end
-end
 
 --- @return string, bufferline.Segment[][]
 local function bufferline()
-  local conf = config.get()
-  if not conf then return "", {} end
-  local is_tabline = conf:is_tabline()
+  local is_tabline = config:is_tabline()
   local components = is_tabline and tabpages.get_components(state) or buffers.get_components(state)
 
   --- NOTE: this cannot be added to state as a meta method since
   --- state is not actually set till after sorting and component creation is done
-  state.set({ current_element_index = get_current_index(state) })
+  state.set({ current_element_index = state.get_current_index() })
   components = not is_tabline and groups.render(components, sorters.sort)
     or sorters.sort(components)
   local tabline = ui.tabline(components, tabpages.get())
@@ -89,8 +64,8 @@ local function bufferline()
     --- store the full unfiltered lists
     __components = components,
     --- Store copies without focusable/hidden elements
-    components = filter_invisible(components),
-    visible_components = filter_invisible(tabline.visible_components),
+    components = components,
+    visible_components = tabline.visible_components,
     --- size data stored for use elsewhere e.g. hover positioning
     left_offset_size = tabline.left_offset_size,
     right_offset_size = tabline.right_offset_size,
@@ -105,11 +80,6 @@ local function toggle_bufferline()
   if vim.o.showtabline ~= status then vim.o.showtabline = status end
 end
 
-local function apply_colors()
-  highlights.reset_icon_hl_cache()
-  highlights.set_all(config.update_highlights())
-end
-
 ---@alias group_actions "close" | "toggle"
 ---Execute an action on a group of buffers
 ---@param name string
@@ -119,7 +89,6 @@ function M.group_action(name, action)
   if action == "close" then
     groups.command(name, function(b) api.nvim_buf_delete(b.id, { force = true }) end)
     ui.refresh()
-
     groups.reset_manual_groupings(name)
   elseif action == "toggle" then
     groups.toggle_hidden(nil, name)
@@ -164,7 +133,10 @@ local function setup_autocommands(conf)
   api.nvim_create_autocmd("ColorScheme", {
     pattern = "*",
     group = BUFFERLINE_GROUP,
-    callback = function() apply_colors() end,
+    callback = function()
+      highlights.reset_icon_hl_cache()
+      highlights.set_all(config.update_highlights())
+    end,
   })
   if not options or vim.tbl_isempty(options) then return end
   if options.persist_buffer_sort then
@@ -212,9 +184,9 @@ end
 ---@diagnostic disable-next-line: unused-local
 local function complete_groups(arg_lead, cmd_line, cursor_pos) return groups.names() end
 
-local function setup_commands()
-  local function command(name, cmd, opts) api.nvim_create_user_command(name, cmd, opts or {}) end
+local function command(name, cmd, opts) api.nvim_create_user_command(name, cmd, opts or {}) end
 
+local function setup_commands()
   command("BufferLinePick", function() M.pick() end)
   command("BufferLinePickClose", function() M.close_with_pick() end)
   command("BufferLineCycleNext", function() M.cycle(1) end)

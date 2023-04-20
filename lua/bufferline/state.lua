@@ -2,6 +2,7 @@ local M = {}
 
 local lazy = require("bufferline.lazy")
 local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
+local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
 
 -----------------------------------------------------------------------------//
 -- State
@@ -29,10 +30,32 @@ function M.restore_positions()
   if ids and #ids > 0 then state.custom_sort = vim.tbl_map(tonumber, ids) end
 end
 
+---Get the index of the current element
+---@return number?
+function M.get_current_index()
+  for index, component in ipairs(state.components) do
+    if component:current() then return index end
+  end
+end
+
+---@param list bufferline.Component[]
+---@return bufferline.Component[]
+local function filter_invisible(list)
+  return utils.fold(function(accum, item)
+    if item.focusable ~= false and not item.hidden then table.insert(accum, item) end
+    return accum
+  end, list, {})
+end
+
+local component_keys = { "components", "visible_components" }
+
 ---@param new_state bufferline.State
 function M.set(new_state)
   for key, value in pairs(new_state) do
     if value == vim.NIL then value = nil end
+    if vim.tbl_contains(component_keys, key) then
+      value = filter_invisible(value --[=[@as bufferline.Component[]]=])
+    end
     state[key] = value
   end
 end

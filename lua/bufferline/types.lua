@@ -212,6 +212,7 @@
 ---@class bufferline.State
 ---@field components bufferline.Component[]
 ---@field current_element_index number?
+---@field is_picking boolean
 ---@field visible_components bufferline.Component[]
 ---@field __components bufferline.Component[]
 ---@field custom_sort number[]
