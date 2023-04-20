@@ -85,7 +85,7 @@ local function prefix(buffer, numbers)
 end
 
 --- @param context RenderContext
---- @return Segment?
+--- @return bufferline.Segment?
 function M.component(context)
   local element = context.tab
   local options = config.options

@@ -111,13 +111,13 @@ local function get_diagnostics(buffers, options)
 end
 
 ---@param state BufferlineState
----@return NvimTab[]
+---@return bufferline.Tab[]
 function M.get_components(state)
   local options = config.options
   local tabs = get_valid_tabs()
 
   local Tabpage = models.Tabpage
-  ---@type NvimTab[]
+  ---@type bufferline.Tab[]
   local components = {}
   pick.reset()
   duplicates.reset()

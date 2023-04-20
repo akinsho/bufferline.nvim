@@ -32,7 +32,7 @@ function M.choose_then(func)
   ui.refresh()
 end
 
----@param element NvimTab|NvimBuffer
+---@param element bufferline.Tab|bufferline.Buffer
 ---@return string?
 function M.get(element)
   local first_letter = element.name:sub(1, 1)
@@ -52,7 +52,7 @@ function M.get(element)
 end
 
 ---@param ctx RenderContext
----@return Segment?
+---@return bufferline.Segment?
 function M.component(ctx)
   local padding = require("bufferline.constants").padding
 

@@ -26,21 +26,9 @@ i.e.
 * this list is not exhaustive
 --]]
 
---- @alias Visibility 1 | 2 | 3
---- @alias Duplicate "path" | "element" | nil
-
 --- The base class that represents a visual tab in the tabline
 --- i.e. not necessarily representative of a vim tab or buffer
----@class Component
----@field name string?
----@field id integer
----@field path string?
----@field length integer
----@field component fun(BufferlineState): Segment[]
----@field hidden boolean
----@field focusable boolean
----@field type 'group_end' | 'group_start' | 'buffer' | 'tabpage'
----@field __ancestor fun(self: Component, depth: integer, formatter: (fun(string, integer): string)?): string
+---@class bufferline.Component
 local Component = {}
 
 ---@param field string
@@ -105,21 +93,9 @@ end
 
 function GroupView:current() return false end
 
----@alias TabElement NvimTab|NvimBuffer
+---@alias TabElement bufferline.Tab|bufferline.Buffer
 
----@class NvimTab
----@field public id integer
----@field public buf integer
----@field public icon string
----@field public name string
----@field public group string
----@field public letter string
----@field public modified boolean
----@field public modifiable boolean
----@field public duplicated Duplicate
----@field public extension string the file extension
----@field public path string the full path to the file
----@field __ancestor fun(self: Component, depth: integer, formatter: (fun(string, integer): string)?): string
+---@type bufferline.Tab
 local Tabpage = Component:new({ type = "tab" })
 
 local function get_modified_state(buffers)
@@ -156,7 +132,7 @@ function Tabpage:new(tab)
   return tab
 end
 
---- @return Visibility
+--- @return bufferline.Visibility
 function Tabpage:visibility()
   if self:current() then return visibility.SELECTED end
   if self:visible() then return visibility.INACTIVE end
@@ -176,44 +152,14 @@ function Tabpage:ancestor(depth, formatter)
   return self:__ancestor(depth, formatter)
 end
 
----@alias BufferComponent fun(index: integer, buf_count: integer): Segment[]
+---@alias BufferComponent fun(index: integer, buf_count: integer): bufferline.Segment[]
 
--- A single buffer class
--- this extends the [Component] class
----@class NvimBuffer
----@field public extension string the file extension
----@field public path string the full path to the file
----@field public name_formatter function? dictates how the name should be shown
----@field public id integer the buffer number
----@field public name string the visible name for the file
----@field public filename string
----@field public icon string the icon
----@field public icon_highlight string?
----@field public diagnostics table
----@field public modified boolean
----@field public modifiable boolean
----@field public buftype string
----@field public letter string?
----@field public ordinal integer
----@field public duplicated Duplicate
----@field public prefix_count integer
----@field public component BufferComponent
----@field public group string?
----@field public group_fn string
----@field public length integer the length of the buffer component
----@field public visibility fun(self: Component): integer
----@field public current fun(self: Component): boolean
----@field public visible fun(self: Component): boolean
----@field public ancestor fun(self: NvimBuffer, depth: integer, formatter: fun(string): string, depth: integer): string
----@field private __ancestor fun(self: Component, depth: integer, formatter: (fun(string, integer): string)?): string
----@field public find_index fun(Buffer, BufferlineState): integer?
----@field public is_new fun(Buffer, BufferlineState): boolean
----@field public is_existing fun(Buffer, BufferlineState): boolean
+---@type bufferline.Buffer
 local Buffer = Component:new({ type = "buffer" })
 
 ---create a new buffer class
----@param buf NvimBuffer
----@return NvimBuffer
+---@param buf bufferline.Buffer
+---@return bufferline.Buffer
 function Buffer:new(buf)
   assert(buf, "A buffer must be passed to create a buffer class")
   buf.modifiable = vim.bo[buf.id].modifiable
@@ -242,7 +188,7 @@ function Buffer:new(buf)
   return buf
 end
 
----@return Visibility
+---@return bufferline.Visibility
 function Buffer:visibility()
   if self:current() then return visibility.SELECTED end
   if self:visible() then return visibility.INACTIVE end
@@ -278,7 +224,7 @@ function Buffer:visible() return fn.bufwinnr(self.id) > 0 end
 function Buffer:ancestor(depth, formatter) return self:__ancestor(depth, formatter) end
 
 ---@class Section
----@field items Component[]
+---@field items bufferline.Component[]
 ---@field length integer
 local Section = {}
 
@@ -305,7 +251,7 @@ function Section:drop(index)
   end
 end
 
----@param item Component
+---@param item bufferline.Component
 function Section:add(item)
   table.insert(self.items, item)
   self.length = self.length + item.length

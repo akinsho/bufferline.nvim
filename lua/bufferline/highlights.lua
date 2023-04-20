@@ -124,7 +124,7 @@ end
 
 --- Map through user colors and convert the keys to highlight names
 --- by changing the strings to pascal case and using those for highlight name
---- @param conf BufferlineConfig
+--- @param conf bufferline.Config
 function M.set_all(conf)
   local msgs = {}
   for name, opts in pairs(conf.highlights) do
@@ -146,8 +146,8 @@ function M.reset_icon_hl_cache() icon_hl_cache = {} end
 --- Generate and set a highlight for an element's icon
 --- this value is cached until the colorscheme changes to prevent
 --- redundant calls to set the same highlight constantly
----@param state Visibility
----@param hls BufferlineHighlights
+---@param state bufferline.Visibility
+---@param hls bufferline.Highlights
 ---@param base_hl string
 ---@return string
 function M.set_icon_highlight(state, hls, base_hl)
@@ -174,8 +174,8 @@ function M.set_icon_highlight(state, hls, base_hl)
   return icon_hl
 end
 
----@param vis Visibility
----@param hls BufferlineHighlights
+---@param vis bufferline.Visibility
+---@param hls bufferline.Highlights
 ---@param name string
 ---@param base string?
 ---@return string
@@ -188,7 +188,7 @@ local function get_hl_group_for_state(vis, hls, name, base)
   return ""
 end
 
----@param element NvimBuffer | NvimTab
+---@param element bufferline.Buffer | bufferline.Tab
 ---@return table<string, string>
 function M.for_element(element)
   local hl = {}

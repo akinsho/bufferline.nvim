@@ -158,7 +158,7 @@ end
 
 ---Get an icon for a filetype using either nvim-web-devicons or vim-devicons
 ---if using the lua plugin this also returns the icon's highlights
----@param opts IconFetcherOpts
+---@param opts bufferline.IconFetcherOpts
 ---@return string, string?
 function M.get_icon(opts)
   local user_func = config.options.get_element_icon

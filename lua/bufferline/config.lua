@@ -9,94 +9,8 @@ local highlights = lazy.require("bufferline.highlights") ---@module "bufferline.
 local colors = lazy.require("bufferline.colors") ---@module "bufferline.colors"
 local constants = lazy.require("bufferline.constants") ---@module "bufferline.colors"
 
----@class DebugOpts
----@field logging boolean
-
----@class GroupOptions
----@field toggle_hidden_on_enter boolean re-open hidden groups on bufenter
-
----@class GroupOpts
----@field options GroupOptions
----@field items Group[]
-
----@class BufferlineIndicator
----@field style "underline" | "icon" | "none"
----@field icon string?
-
----@alias BufferlineMode 'tabs' | 'buffers'
-
----@alias DiagnosticIndicator fun(count: number, level: number, errors: table<string, any>, ctx: table<string, any>): string
-
----@alias HoverOptions {reveal: string[], delay: integer, enabled: boolean}
----@alias IconFetcherOpts {directory: boolean, path: string, extension: string, filetype: string?}
-
----@class BufferlineOptions
----@field public mode BufferlineMode
----@field public view string
----@field public debug DebugOpts
----@field public numbers string | fun(ordinal: number, id: number, lower: number_helper, raise: number_helper): string
----@field public buffer_close_icon string
----@field public modified_icon string
----@field public close_icon string
----@field public close_command string | function
----@field public custom_filter fun(buf: number, bufnums: number[]): boolean
----@field public left_mouse_command string | function
----@field public right_mouse_command string | function
----@field public middle_mouse_command (string | function)?
----@field public indicator BufferlineIndicator
----@field public left_trunc_marker string
----@field public right_trunc_marker string
----@field public separator_style string | {[1]: string, [2]: string}
----@field public name_formatter (fun(path: string):string)?
----@field public tab_size number
----@field public truncate_names boolean
----@field public max_name_length number
----@field public color_icons boolean
----@field public show_buffer_icons boolean
----@field public show_buffer_close_icons boolean
----@field public show_buffer_default_icon boolean
----@field public get_element_icon fun(opts: IconFetcherOpts): string?, string?
----@field public show_close_icon boolean
----@field public show_tab_indicators boolean
----@field public show_duplicate_prefix boolean
----@field public enforce_regular_tabs boolean
----@field public always_show_bufferline boolean
----@field public persist_buffer_sort boolean
----@field public max_prefix_length number
----@field public sort_by string
----@field public diagnostics boolean | 'nvim_lsp' | 'coc'
----@field public diagnostics_indicator DiagnosticIndicator
----@field public diagnostics_update_in_insert boolean
----@field public offsets table[]
----@field public groups GroupOpts
----@field public themable boolean
----@field public hover HoverOptions
-
----@class BufferlineHLGroup
----@field fg string
----@field bg string
----@field sp string
----@field special string
----@field bold boolean
----@field italic boolean
----@field underline boolean
----@field undercurl boolean
----@field hl_group string
----@field hl_name string
-
----@alias BufferlineHighlights table<string, BufferlineHLGroup>
-
----@class BufferlineConfig
----@field public options BufferlineOptions
----@field public highlights BufferlineHighlights | fun(BufferlineHighlights): BufferlineHighlights
----@field user BufferlineConfig original copy of user preferences
----@field merge fun(self: BufferlineConfig, defaults: BufferlineConfig): BufferlineConfig
----@field validate fun(self: BufferlineConfig, defaults: BufferlineConfig, resolved: BufferlineHighlights): nil
----@field resolve fun(self: BufferlineConfig, defaults: BufferlineConfig): BufferlineConfig
----@field is_tabline fun(self: BufferlineConfig):boolean
-
 --- Convert highlights specified as tables to the correct existing colours
----@param map BufferlineHighlights
+---@param map bufferline.Highlights
 local function hl_table_to_color(map)
   if not map or vim.tbl_isempty(map) then return {} end
   -- we deep copy the highlights table as assigning the attributes
@@ -123,11 +37,11 @@ end
 
 ---The local class instance of the merged user's configuration
 ---this includes all default values and highlights filled out
----@type BufferlineConfig
+---@type bufferline.Config
 local config = {}
 
 ---The class definition for the user configuration
----@type BufferlineConfig
+---@type bufferline.Config
 local Config = {}
 
 function Config:new(o)
@@ -142,8 +56,8 @@ function Config:new(o)
 end
 
 ---Combine user preferences with defaults preferring the user's own settings
----@param defaults BufferlineConfig
----@return BufferlineConfig
+---@param defaults bufferline.Config
+---@return bufferline.Config
 function Config:merge(defaults)
   assert(defaults and type(defaults) == "table", "A valid config table must be passed to merge")
   self.options = vim.tbl_deep_extend("force", defaults.options, self.options or {})
@@ -158,7 +72,7 @@ local deprecations = {
   },
 }
 
----@param options BufferlineOptions
+---@param options bufferline.Options
 local function validate_user_options(options)
   if not options then return end
   for key, _ in pairs(options) do
@@ -172,7 +86,7 @@ local function validate_user_options(options)
   end
 end
 
----@param options BufferlineOptions
+---@param options bufferline.Options
 ---@return {[string]: table}[]
 local function get_offset_highlights(options)
   if not options or not options.offsets then return {} end
@@ -184,7 +98,7 @@ local function get_offset_highlights(options)
   end, options.offsets)
 end
 
----@param options BufferlineOptions
+---@param options bufferline.Options
 ---@return table[]
 local function get_group_highlights(options)
   if not options or not options.groups then return {} end
@@ -242,7 +156,7 @@ local function validate_user_highlights(opts, defaults, hls)
 end
 
 --- Check that the user has not placed setting in the wrong tables
----@param conf BufferlineConfig
+---@param conf bufferline.Config
 local function validate_config_structure(conf)
   local invalid = {}
   for key, _ in pairs(conf) do
@@ -258,8 +172,8 @@ local function validate_config_structure(conf)
 end
 
 ---Ensure the user has only specified highlight groups that exist
----@param defaults BufferlineConfig
----@param resolved BufferlineHighlights
+---@param defaults bufferline.Config
+---@param resolved bufferline.Highlights
 function Config:validate(defaults, resolved)
   validate_config_structure(self.user)
   validate_user_options(self.user.options)
@@ -276,8 +190,8 @@ function Config:is_bufferline() return self:mode() == "buffers" end
 function Config:is_tabline() return self:mode() == "tabs" end
 
 ---Derive the colors for the bufferline
----@return BufferlineHighlights
 local function derive_colors()
+---@return bufferline.Highlights
   local hex = colors.get_color
   local shade = colors.shade_color
 
@@ -692,9 +606,9 @@ end
 -- be so nice it's what anyone using this plugin sticks with. It should ideally
 -- work across any well designed colorscheme deriving colors automagically.
 -- Icons from https://fontawesome.com/cheatsheet
----@return BufferlineConfig
+---@return bufferline.Config
 local function get_defaults()
-  ---@type BufferlineOptions
+  ---@type bufferline.Options
   local opts = {
     mode = "buffers",
     themable = true, -- whether or not bufferline highlights can be overridden externally
@@ -795,7 +709,7 @@ local function set_highlight_names(map)
 end
 
 ---Add highlight groups for a group
----@param hls BufferlineHighlights
+---@param hls bufferline.Highlights
 local function set_group_highlights(hls)
   for _, group in pairs(groups.get_all()) do
     local group_hl, name = group.highlight, group.name
@@ -829,7 +743,7 @@ end
 
 --- Merge user config with defaults
 --- @param quiet boolean? whether or not to validate the configuration
---- @return BufferlineConfig
+--- @return bufferline.Config
 function M.apply(quiet)
   local defaults = get_defaults()
   local resolved = config:resolve(defaults)
@@ -843,7 +757,7 @@ end
 ---Keep track of a users config for use throughout the plugin as well as ensuring
 ---defaults are set. This is also so we can diff what the user set this is useful
 ---for setting the highlight groups etc. once this has been merged with the defaults
----@param conf BufferlineConfig?
+---@param conf bufferline.Config?
 function M.set(conf) config = Config:new(conf or {}) end
 
 ---Update highlight colours when the colour scheme changes by resetting the user config
@@ -855,7 +769,7 @@ function M.update_highlights()
 end
 
 ---Get the user's configuration or a key from it
----@return BufferlineConfig?
+---@return bufferline.Config?
 function M.get()
   if config then return config end
 end

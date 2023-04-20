@@ -25,7 +25,7 @@ local function on_hover(current)
   previous_pos = current
 end
 
----@param conf BufferlineConfig
+---@param conf bufferline.Config
 function M.setup(conf)
   local opts = conf.options.hover
 

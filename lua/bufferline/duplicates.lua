@@ -65,7 +65,7 @@ local function truncate(dir, depth, max_size)
 end
 
 --- @param context RenderContext
---- @return Segment?
+--- @return bufferline.Segment?
 function M.component(context)
   local element = context.tab
   local hl = context.current_highlights

@@ -50,8 +50,8 @@ local function restore_positions()
   if ids and #ids > 0 then state.custom_sort = vim.tbl_map(tonumber, ids) end
 end
 
----@param list Component[]
----@return Component[]
+---@param list bufferline.Component[]
+---@return bufferline.Component[]
 local function filter_invisible(list)
   return utils.fold(function(accum, item)
     if item.focusable ~= false and not item.hidden then table.insert(accum, item) end
@@ -60,8 +60,8 @@ local function filter_invisible(list)
 end
 
 ---sort a list of components using a sort function
----@param list Component[]
----@return Component[]
+---@param list bufferline.Component[]
+---@return bufferline.Component[]
 local function sorter(list)
   -- if the user has reshuffled the buffers manually don't try and sort them
   if state.custom_sort then return list end
@@ -77,7 +77,7 @@ local function get_current_index(current_state)
   end
 end
 
---- @return string, Segment[][]
+--- @return string, bufferline.Segment[][]
 local function bufferline()
   local conf = config.get()
   if not conf then return "", {} end
@@ -118,7 +118,7 @@ end
 ---@alias group_actions "close" | "toggle"
 ---Execute an action on a group of buffers
 ---@param name string
----@param action group_actions | fun(b: NvimBuffer)
+---@param action group_actions | fun(b: bufferline.Buffer)
 function M.group_action(name, action)
   assert(name, "A name must be passed to execute a group action")
   if action == "close" then
@@ -161,7 +161,7 @@ local function handle_group_enter()
   end, state.components)
 end
 
----@param conf BufferlineConfig
+---@param conf bufferline.Config
 local function setup_autocommands(conf)
   local options = conf.options
   api.nvim_create_augroup(BUFFERLINE_GROUP, { clear = true })
@@ -255,7 +255,7 @@ function _G.nvim_bufferline()
   return bufferline()
 end
 
----@param conf BufferlineConfig?
+---@param conf bufferline.Config?
 function M.setup(conf)
   if not utils.is_current_stable_release() then
     utils.notify(

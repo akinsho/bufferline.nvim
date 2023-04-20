@@ -5,10 +5,10 @@ local M = {}
 -----------------------------------------------------------------------------//
 
 ---@class BufferlineState
----@field components Component[]
+---@field components bufferline.Component[]
 ---@field current_element_index number?
----@field visible_components Component[]
----@field __components Component[]
+---@field visible_components bufferline.Component[]
+---@field __components bufferline.Component[]
 ---@field custom_sort number[]
 ---@field left_offset_size number
 ---@field right_offset_size number

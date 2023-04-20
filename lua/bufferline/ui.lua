@@ -44,7 +44,7 @@ local components = {
 -- Hover events
 ----------------------------------------------------------------------------------------------------
 
----@param item Component?
+---@param item bufferline.Component?
 local function set_hover_state(item)
   state.set({ hovered = item })
   vim.schedule(M.refresh)
@@ -67,9 +67,9 @@ end
 
 function M.on_hover_out() set_hover_state(vim.NIL) end
 
----@param component Segment?
+---@param component bufferline.Segment?
 ---@param id string
----@return Segment?
+---@return bufferline.Segment?
 local function set_id(component, id)
   if component then
     component.attr = component.attr or {}
@@ -85,9 +85,9 @@ local function get_id(component) return component and component.attr and compone
 -----------------------------------------------------------------------------//
 
 ---@class RenderContext
----@field preferences BufferlineConfig
+---@field preferences bufferline.Config
 ---@field current_highlights table<string, string>
----@field tab NvimTab | NvimBuffer
+---@field tab bufferline.Tab | bufferline.Buffer
 ---@field is_picking boolean
 ---@type RenderContext
 local Context = {}
@@ -98,7 +98,7 @@ local Context = {}
 ---@field suffix string
 ---@field extends number how many positions the attribute extends for
 
---- @class Segment
+--- @class bufferline.Segment
 --- @field text string
 --- @field highlight string
 --- @field attr SegmentAttribute
@@ -113,20 +113,20 @@ function Context:new(ctx)
 end
 
 -----------------------------------------------------------------------------//
----@param s Segment?
+---@param s bufferline.Segment?
 ---@return boolean
 local function has_text(s)
   if s == nil or s.text == nil or s.text == "" then return false end
   return true
 end
 
----@param parts Segment[]
----@return Segment[]
+---@param parts bufferline.Segment[]
+---@return bufferline.Segment[]
 local function filter_invalid(parts)
   return vim.tbl_filter(function(p) return p ~= nil end, parts)
 end
 
----@param segments Segment[]
+---@param segments bufferline.Segment[]
 ---@return integer
 local function get_component_size(segments)
   assert(utils.is_list(segments), "Segments must be a list")
@@ -149,7 +149,7 @@ end
 ---Add click action to a component
 ---@param func_name string
 ---@param id number
----@param component Segment
+---@param component bufferline.Segment
 function M.make_clickable(func_name, id, component)
   component.attr = component.attr or {}
   component.attr.prefix = "%" .. id .. "@v:lua.___bufferline_private." .. func_name .. "@"
@@ -168,7 +168,7 @@ end
 
 ---Add padding to either side of a component
 ---@param opts PadOpts
----@return Segment, Segment
+---@return bufferline.Segment, bufferline.Segment
 local function pad(opts)
   opts.left, opts.right = opts.left or {}, opts.right or {}
   local left, left_hl = opts.left.size or 0, opts.left.hl or ""
@@ -177,9 +177,9 @@ local function pad(opts)
   return { text = left_p, highlight = left_hl }, { text = right_p, highlight = right_hl }
 end
 
----@param options BufferlineOptions
----@param hls BufferlineHighlights
----@return Segment[]
+---@param options bufferline.Options
+---@param hls bufferline.Highlights
+---@return bufferline.Segment[]
 local function get_tab_close_button(options, hls)
   if options.show_close_icon and (#vim.api.nvim_list_tabpages() > 1) then
     return {
@@ -193,7 +193,7 @@ local function get_tab_close_button(options, hls)
   return {}
 end
 
----@param items Component[]
+---@param items bufferline.Component[]
 ---@return Section
 ---@return Section
 ---@return Section
@@ -219,7 +219,7 @@ end
 
 ---@param ctx RenderContext
 ---@param length number
----@return Segment?, Segment?
+---@return bufferline.Segment?, bufferline.Segment?
 local function add_space(ctx, length)
   local options = config.options
   local curr_hl = ctx.current_highlights
@@ -242,8 +242,8 @@ local function add_space(ctx, length)
 end
 
 --- @param buffer TabElement
---- @param hl_defs BufferlineHighlights
---- @return Segment?
+--- @param hl_defs bufferline.Highlights
+--- @return bufferline.Segment?
 local function get_icon(buffer, hl_defs)
   local icon = buffer.icon
   local original_hl = buffer.icon_highlight
@@ -275,7 +275,7 @@ local function get_separator(focused, style)
 end
 
 --- @param buf_id number
---- @return Segment?
+--- @return bufferline.Segment?
 local function get_close_icon(buf_id, context)
   local options = config.options
   if
@@ -295,7 +295,7 @@ local function get_close_icon(buf_id, context)
 end
 
 --- @param context RenderContext
---- @return Segment?
+--- @return bufferline.Segment?
 local function add_indicator(context)
   local element = context.tab
   local hl = config.highlights
@@ -321,7 +321,7 @@ local function add_indicator(context)
 end
 
 --- @param context RenderContext
---- @return Segment?
+--- @return bufferline.Segment?
 local function add_icon(context)
   local element = context.tab
   local options = config.options
@@ -335,7 +335,7 @@ end
 --- The suffix can be either the modified icon, space to replace the icon if
 --- a user has turned them off or the close icon if the element is not currently modified
 --- @param context RenderContext
---- @return Segment?
+--- @return bufferline.Segment?
 local function add_suffix(context)
   local element = context.tab
   local hl = context.current_highlights
@@ -354,7 +354,7 @@ end
 --- TODO: We increment the buffer length by the separator although the final
 --- buffer will not have a separator so we are technically off by 1
 --- @param context RenderContext
---- @return Segment?, Segment
+--- @return bufferline.Segment?, bufferline.Segment
 local function add_separators(context)
   local hl = config.highlights
   local options = config.options
@@ -392,7 +392,7 @@ local function get_max_length(context)
 end
 
 ---@param ctx RenderContext
----@return Segment
+---@return bufferline.Segment
 local function get_name(ctx)
   local name = utils.truncate_name(ctx.tab.name, get_max_length(ctx))
   -- escape filenames that contain "%" as this breaks in statusline patterns
@@ -402,14 +402,14 @@ end
 
 ---Create the render function that components need to position their
 ---separators once rendering calculations are complete
----@param left_separator Segment?
----@param right_separator Segment?
----@param component Segment[]
----@return fun(next: Component): Segment[]
+---@param left_separator bufferline.Segment?
+---@param right_separator bufferline.Segment?
+---@param component bufferline.Segment[]
+---@return fun(next: bufferline.Component): bufferline.Segment[]
 local function create_renderer(left_separator, right_separator, component)
   --- We return a function from render buffer as we do not yet have access to
   --- information regarding which buffers will actually be rendered
-  --- @param next_item Component
+  --- @param next_item bufferline.Component
   --- @returns string
   return function(next_item)
     -- if using the non-slanted tab style then we must check if the component is at the end of
@@ -432,7 +432,7 @@ local function create_renderer(left_separator, right_separator, component)
 end
 
 ---@param id number
----@return Segment
+---@return bufferline.Segment
 local function tab_click_handler(id)
   return M.make_clickable("handle_click", id, { attr = { global = true } })
 end
@@ -443,7 +443,7 @@ end
 
 ---Create a spacing component that can be dependent on other items in a component
 ---@param opts SpacingOpts?
----@return Segment?
+---@return bufferline.Segment?
 local function spacing(opts)
   opts = opts or { when = true }
   if not opts.when then return end
@@ -454,7 +454,7 @@ end
 ---@param count_hl string
 ---@param icon_hl string
 ---@param count number
----@return Segment[]?
+---@return bufferline.Segment[]?
 local function get_trunc_marker(trunc_icon, count_hl, icon_hl, count)
   if count > 0 then
     return {
@@ -464,9 +464,9 @@ local function get_trunc_marker(trunc_icon, count_hl, icon_hl, count)
   end
 end
 
----@param tab_indicators table<string, Segment>
----@param options BufferlineOptions
----@return Segment[]
+---@param tab_indicators table<string, bufferline.Segment>
+---@param options bufferline.Options
+---@return bufferline.Segment[]
 ---@return integer
 local function get_tab_indicator(tab_indicators, options)
   local items, length = {}, 0
@@ -534,8 +534,8 @@ end
 -- The extends field means that the components highlights should be applied
 -- to another with a matching ID. This function does an initial scan of the component
 -- parts and updates the highlights for any part that has an extension.
----@param component Segment[]
----@return Segment[]
+---@param component bufferline.Segment[]
+---@return bufferline.Segment[]
 local function extend_highlight(component)
   local locations, extension_map = {}, {}
   for index, part in pairs(component) do
@@ -558,7 +558,7 @@ end
 --- Takes a list of Segments of the shape {text = <text>, highlight = <hl>, attr = <table>}
 --- and converts them into an nvim tabline format string i.e. `%#HL#text`. It handles cases
 --- like applying global or local attributes like click handlers. As well as extending highlights
----@param component Segment[]
+---@param component bufferline.Segment[]
 local function to_tabline_str(component)
   component = component or {}
   local str = {}
@@ -594,10 +594,10 @@ end
 ---@param after Section
 ---@param available_width number
 ---@param marker table
----@param visible Component[]
----@return Segment[][]
+---@param visible bufferline.Component[]
+---@return bufferline.Segment[][]
 ---@return table
----@return NvimBuffer[]
+---@return bufferline.Buffer[]
 local function truncate(before, current, after, available_width, marker, visible)
   visible = visible or {}
 
@@ -639,7 +639,7 @@ local function truncate(before, current, after, available_width, marker, visible
   end
 end
 
----@param list Segment[][]
+---@param list bufferline.Segment[][]
 local function join(list)
   local str = ""
   for _, item in pairs(list) do
@@ -660,12 +660,12 @@ end
 ---@field str string
 ---@field left_offset_size integer
 ---@field right_offset_size integer
----@field segments Segment[][]
+---@field segments bufferline.Segment[][]
 ---@field visible_components TabElement[]
 
 --- TODO: All components should return Segment[] that are then combined in one go into a tabline
---- @param items Component[]
---- @param tab_indicators Segment[]
+--- @param items bufferline.Component[]
+--- @param tab_indicators bufferline.Segment[]
 --- @return BufferlineTablineData
 function M.tabline(items, tab_indicators)
   local options = config.options

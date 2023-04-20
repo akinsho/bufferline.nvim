@@ -12,14 +12,14 @@ local function full_path(path) return fnamemodify(path, ":p") end
 -- @param path string
 local function is_relative_path(path) return full_path(path) ~= path end
 
---- @param buf_a NvimBuffer
---- @param buf_b NvimBuffer
+--- @param buf_a bufferline.Buffer
+--- @param buf_b bufferline.Buffer
 local function sort_by_extension(buf_a, buf_b)
   return fnamemodify(buf_a.name, ":e") < fnamemodify(buf_b.name, ":e")
 end
 
---- @param buf_a NvimBuffer
---- @param buf_b NvimBuffer
+--- @param buf_a bufferline.Buffer
+--- @param buf_b bufferline.Buffer
 local function sort_by_relative_directory(buf_a, buf_b)
   local ra = is_relative_path(buf_a.path)
   local rb = is_relative_path(buf_b.path)
@@ -28,12 +28,12 @@ local function sort_by_relative_directory(buf_a, buf_b)
   return buf_a.path < buf_b.path
 end
 
---- @param buf_a NvimBuffer
---- @param buf_b NvimBuffer
+--- @param buf_a bufferline.Buffer
+--- @param buf_b bufferline.Buffer
 local function sort_by_directory(buf_a, buf_b) return full_path(buf_a.path) < full_path(buf_b.path) end
 
---- @param buf_a NvimBuffer
---- @param buf_b NvimBuffer
+--- @param buf_a bufferline.Buffer
+--- @param buf_b bufferline.Buffer
 local function sort_by_id(buf_a, buf_b)
   if not buf_a and buf_b then
     return true
@@ -43,7 +43,7 @@ local function sort_by_id(buf_a, buf_b)
   return buf_a.id < buf_b.id
 end
 
---- @param buf NvimBuffer
+--- @param buf bufferline.Buffer
 local function init_buffer_tabnr(buf)
   local maxinteger = 1000000000
   -- If the buffer is visible, then its initial value shouldn't be
@@ -55,8 +55,8 @@ local function init_buffer_tabnr(buf)
   return maxinteger
 end
 
---- @param buf_a NvimBuffer
---- @param buf_b NvimBuffer
+--- @param buf_a bufferline.Buffer
+--- @param buf_b bufferline.Buffer
 local function sort_by_tabpage_number(buf_a, buf_b)
   local a = vim.api.nvim_tabpage_get_number(buf_a.id)
   local b = vim.api.nvim_tabpage_get_number(buf_b.id)
@@ -86,8 +86,8 @@ end
 
 --- @param state BufferlineState
 local sort_by_new_after_existing = function(state)
-  --- @param item_a NvimBuffer
-  --- @param item_b NvimBuffer
+  --- @param item_a bufferline.Buffer
+  --- @param item_b bufferline.Buffer
   return function(item_a, item_b)
     if item_a:is_new(state) and item_b:is_existing(state) then
       return false
@@ -100,8 +100,8 @@ end
 
 --- @param state BufferlineState
 local sort_by_new_after_current = function(state)
-  --- @param item_a NvimBuffer
-  --- @param item_b NvimBuffer
+  --- @param item_a bufferline.Buffer
+  --- @param item_b bufferline.Buffer
   return function(item_a, item_b)
     local a_index = item_a:find_index(state)
     local a_is_new = item_a:is_new(state)

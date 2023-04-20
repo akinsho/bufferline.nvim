@@ -152,7 +152,7 @@ function M.get(opts)
 end
 
 ---@param context RenderContext
----@return Segment?
+---@return bufferline.Segment?
 function M.component(context)
   local opts = config.options
   if is_disabled(opts.diagnostics) then return end

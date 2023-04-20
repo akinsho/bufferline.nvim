@@ -20,7 +20,7 @@ function M.reload(module)
 end
 
 ---helper to find text in a Segment[]
----@param component Segment[]
+---@param component bufferline.Segment[]
 ---@param text string
 ---@return boolean
 function M.find_text(component, text)
@@ -51,7 +51,7 @@ function MockBuffer:visible() return vim.F.if_nil(self._is_visible, true) end
 
 ---@param name string
 ---@param state BufferlineState
----@return Component?
+---@return bufferline.Component?
 function M.find_buffer(name, state)
   for _, component in ipairs(state.components) do
     local element = component:as_element()
