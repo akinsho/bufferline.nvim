@@ -62,15 +62,6 @@ local function filter_invisible(list)
   end, list, {})
 end
 
----sort a list of components using a sort function
----@param list bufferline.Component[]
----@return bufferline.Component[]
-local function sorter(list)
-  -- if the user has reshuffled the buffers manually don't try and sort them
-  if state.custom_sort then return list end
-  return sorters.sort(list, nil, state)
-end
-
 ---Get the index of the current element
 ---@param current_state bufferline.State
 ---@return number?
@@ -90,7 +81,8 @@ local function bufferline()
   --- NOTE: this cannot be added to state as a meta method since
   --- state is not actually set till after sorting and component creation is done
   state.set({ current_element_index = get_current_index(state) })
-  components = not is_tabline and groups.render(components, sorter) or sorter(components)
+  components = not is_tabline and groups.render(components, sorters.sort)
+    or sorters.sort(components)
   local tabline = ui.tabline(components, tabpages.get())
 
   state.set({

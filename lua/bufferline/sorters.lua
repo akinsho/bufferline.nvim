@@ -1,4 +1,5 @@
-local config = require("bufferline.config")
+local lazy = require("bufferline.lazy")
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
 
 local M = {}
 ---------------------------------------------------------------------------//
@@ -126,9 +127,12 @@ end
 
 --- sorts a list of buffers in place
 --- @param elements bufferline.TabElement[]
---- @param sort_by (string|function)?
---- @param state bufferline.State?
-function M.sort(elements, sort_by, state)
+--- @param opts {sort_by: (string|function)?, state: bufferline.State?}
+function M.sort(elements, opts)
+  opts = opts or {}
+  local sort_by, state = opts.sort_by, opts.state
+  -- the user has manually sorted the buffers don't try to re-sort them
+  if state and state.custom_sort then return elements end
   sort_by = sort_by or config.options.sort_by
   if sort_by == "none" then
     return elements

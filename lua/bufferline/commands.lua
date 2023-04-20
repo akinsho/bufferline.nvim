@@ -231,7 +231,7 @@ function M.sort_by(sort_by)
   if next(state.components) == nil then
     return utils.notify("Unable to find elements to sort, sorry", "warn")
   end
-  sorters.sort(state.components, sort_by)
+  sorters.sort(state.components, { sort_by = sort_by })
   state.custom_sort = get_ids(state.components)
   local opts = config.options
   if opts.persist_buffer_sort then save_positions(state.custom_sort) end
