@@ -18,9 +18,6 @@ _G.___bufferline_private = _G.___bufferline_private or {} -- to guard against re
 
 local api = vim.api
 
-local positions_key = constants.positions_key
-local BUFFERLINE_GROUP = "BufferlineCmds"
-
 local M = {
   move = commands.move,
   move_to = commands.move_to,
@@ -28,21 +25,26 @@ local M = {
   go_to = commands.go_to,
   cycle = commands.cycle,
   sort_by = commands.sort_by,
-  pick_buffer = commands.pick,
+  pick = commands.pick,
   get_elements = commands.get_elements,
   close_with_pick = commands.close_with_pick,
   close_in_direction = commands.close_in_direction,
-  -- @deprecate
-  go_to_buffer = commands.go_to,
-  sort_buffers_by = commands.sort_by,
-  close_buffer_with_pick = commands.close_with_pick,
   unpin_and_close = commands.unpin_and_close,
 
-  ----------------------------------------------------------------------------------------------------------------------
+  ---@deprecated
+  pick_buffer = commands.pick,
+  ---@deprecated
+  go_to_buffer = commands.go_to,
+  ---@deprecated
+  sort_buffers_by = commands.sort_by,
+  ---@deprecated
+  close_buffer_with_pick = commands.close_with_pick,
+
+  -----------------------------------------------------------------------------//
   --- API values
-  ----------------------------------------------------------------------------------------------------------------------
+  -----------------------------------------------------------------------------//
   style_preset = config.STYLE_PRESETS,
-  ----------------------------------------------------------------------------------------------------------------------
+  -----------------------------------------------------------------------------//
 
   groups = groups,
 }
@@ -50,7 +52,7 @@ local M = {
 -- Helpers
 -----------------------------------------------------------------------------//
 local function restore_positions()
-  local str = vim.g[positions_key]
+  local str = vim.g[constants.positions_key]
   if not str then return str end
   -- these are converted to strings when stored
   -- so have to be converted back before usage
@@ -171,6 +173,7 @@ end
 
 ---@param conf bufferline.Config
 local function setup_autocommands(conf)
+  local BUFFERLINE_GROUP = "BufferlineCmds"
   local options = conf.options
   api.nvim_create_augroup(BUFFERLINE_GROUP, { clear = true })
   api.nvim_create_autocmd("ColorScheme", {
@@ -227,22 +230,20 @@ local function complete_groups(arg_lead, cmd_line, cursor_pos) return groups.nam
 local function setup_commands()
   local function command(name, cmd, opts) api.nvim_create_user_command(name, cmd, opts or {}) end
 
-  command("BufferLinePick", function() M.pick_buffer() end)
-  command("BufferLinePickClose", function() M.close_buffer_with_pick() end)
+  command("BufferLinePick", function() M.pick() end)
+  command("BufferLinePickClose", function() M.close_with_pick() end)
   command("BufferLineCycleNext", function() M.cycle(1) end)
   command("BufferLineCyclePrev", function() M.cycle(-1) end)
   command("BufferLineCloseRight", function() M.close_in_direction("right") end)
   command("BufferLineCloseLeft", function() M.close_in_direction("left") end)
   command("BufferLineMoveNext", function() M.move(1) end)
   command("BufferLineMovePrev", function() M.move(-1) end)
-  command("BufferLineSortByExtension", function() M.sort_buffers_by("extension") end)
-  command("BufferLineSortByDirectory", function() M.sort_buffers_by("directory") end)
-  command(
-    "BufferLineSortByRelativeDirectory",
-    function() M.sort_buffers_by("relative_directory") end
-  )
-  command("BufferLineSortByTabs", function() M.sort_buffers_by("tabs") end)
-  command("BufferLineGoToBuffer", function(opts) M.go_to_buffer(opts.args) end, { nargs = 1 })
+  command("BufferLineSortByExtension", function() M.sort_by("extension") end)
+  command("BufferLineSortByDirectory", function() M.sort_by("directory") end)
+  command("BufferLineSortByRelativeDirectory", function() M.sort_by("relative_directory") end)
+  command("BufferLineSortByTabs", function() M.sort_by("tabs") end)
+  command("BufferLineGoToBuffer", function(opts) M.go_to(opts.args) end, { nargs = 1 })
+  command("BufferLineTogglePin", function() M.toggle_pin() end, { nargs = 0 })
   command("BufferLineGroupClose", function(opts) M.group_action(opts.args, "close") end, {
     nargs = 1,
     complete = complete_groups,
@@ -251,7 +252,6 @@ local function setup_commands()
     nargs = 1,
     complete = complete_groups,
   })
-  command("BufferLineTogglePin", function() M.toggle_pin() end, { nargs = 0 })
 end
 
 ---@private
