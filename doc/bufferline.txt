@@ -217,12 +217,20 @@ bufferline is more unobtrusive.
 
 e.g.
 >lua
-    options = {
-        style_preset = require('bufferline').preset.no_italics,
-        -- or you can combine these e.g.
-        style_preset = {require('bufferline').preset.no_italics, require('bufferline').preset.no_bold},
-    }
+    local bufferline = require('bufferline')
+    bufferline.setup({
+        options = {
+            style_preset = bufferline.preset.no_italics,
+            -- or you can combine these e.g.
+            style_preset = {bufferline.preset.no_italics, bufferline.preset.no_bold},
+        }
+    })
 <
+The available options are
+ - `no_italics`
+ - `no_bold`
+ - `minimal`
+
 ==============================================================================
 TABPAGES                                                          *bufferline-tabpages*
 
