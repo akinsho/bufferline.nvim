@@ -156,7 +156,7 @@ local function validate_user_highlights(opts, defaults, hls)
 end
 
 --- Check that the user has not placed setting in the wrong tables
----@param conf bufferline.Config
+---@param conf bufferline.UserConfig
 local function validate_config_structure(conf)
   local invalid = {}
   for key, _ in pairs(conf) do
@@ -757,7 +757,7 @@ end
 ---Keep track of a users config for use throughout the plugin as well as ensuring
 ---defaults are set. This is also so we can diff what the user set this is useful
 ---for setting the highlight groups etc. once this has been merged with the defaults
----@param conf bufferline.Config?
+---@param conf bufferline.UserConfig?
 function M.set(conf) config = Config:new(conf or {}) end
 
 ---Update highlight colours when the colour scheme changes by resetting the user config

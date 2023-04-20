@@ -78,10 +78,14 @@
 
 ---@alias bufferline.Highlights table<string, bufferline.HLGroup>
 
----@class bufferline.Config
+---@class bufferline.UserConfig
 ---@field public options bufferline.Options
 ---@field public highlights bufferline.Highlights | fun(BufferlineHighlights): bufferline.Highlights
----@field user bufferline.Config original copy of user preferences
+
+---@class bufferline.Config
+---@field public options bufferline.Options
+---@field public highlights bufferline.Highlights
+---@field user bufferline.UserConfig original copy of user preferences
 ---@field merge fun(self: bufferline.Config, defaults: bufferline.Config): bufferline.Config
 ---@field validate fun(self: bufferline.Config, defaults: bufferline.Config, resolved: bufferline.Highlights): nil
 ---@field resolve fun(self: bufferline.Config, defaults: bufferline.Config): bufferline.Config
