@@ -108,8 +108,8 @@ end
 
 ---Apply a single highlight
 ---@param name string
----@param opts table<string, string>
----@return table<string, string>?
+---@param opts {[string]: string | boolean}
+---@return {[string]: string | boolean}?
 function M.set_one(name, opts)
   if not opts or vim.tbl_isempty(opts) then return end
   local hl = filter_invalid_keys(opts)
@@ -122,8 +122,6 @@ function M.set_one(name, opts)
   )
 end
 
---- Map through user colors and convert the keys to highlight names
---- by changing the strings to pascal case and using those for highlight name
 --- @param conf bufferline.Config
 function M.set_all(conf)
   local msgs = {}
