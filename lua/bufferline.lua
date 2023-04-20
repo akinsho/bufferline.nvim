@@ -77,7 +77,7 @@ local function sorter(list)
 end
 
 ---Get the index of the current element
----@param current_state BufferlineState
+---@param current_state bufferline.State
 ---@return number?
 local function get_current_index(current_state)
   for index, component in ipairs(current_state.components) do

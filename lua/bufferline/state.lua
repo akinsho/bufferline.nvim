@@ -4,14 +4,7 @@ local M = {}
 -- State
 -----------------------------------------------------------------------------//
 
----@class BufferlineState
----@field components bufferline.Component[]
----@field current_element_index number?
----@field visible_components bufferline.Component[]
----@field __components bufferline.Component[]
----@field custom_sort number[]
----@field left_offset_size number
----@field right_offset_size number
+---@type bufferline.State
 local state = {
   is_picking = false,
   hovered = nil,
@@ -24,7 +17,7 @@ local state = {
   right_offset_size = 0,
 }
 
----@param new_state BufferlineState
+---@param new_state bufferline.State
 function M.set(new_state)
   for key, value in pairs(new_state) do
     if value == vim.NIL then value = nil end

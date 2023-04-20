@@ -134,7 +134,7 @@ function M.go_to(num, absolute)
   if element then open_element(element.id) end
 end
 
----@param current_state BufferlineState
+---@param current_state bufferline.State
 ---@param opts table?
 ---@return number?
 ---@return bufferline.TabElement?

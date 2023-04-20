@@ -84,7 +84,7 @@ local function sort_by_tabs(buf_a, buf_b)
   return buf_a_tabnr < buf_b_tabnr
 end
 
---- @param state BufferlineState
+--- @param state bufferline.State
 local sort_by_new_after_existing = function(state)
   --- @param item_a bufferline.Buffer
   --- @param item_b bufferline.Buffer
@@ -98,7 +98,7 @@ local sort_by_new_after_existing = function(state)
   end
 end
 
---- @param state BufferlineState
+--- @param state bufferline.State
 local sort_by_new_after_current = function(state)
   --- @param item_a bufferline.Buffer
   --- @param item_b bufferline.Buffer
@@ -127,7 +127,7 @@ end
 --- sorts a list of buffers in place
 --- @param elements bufferline.TabElement[]
 --- @param sort_by (string|function)?
---- @param state BufferlineState?
+--- @param state bufferline.State?
 function M.sort(elements, sort_by, state)
   sort_by = sort_by or config.options.sort_by
   if sort_by == "none" then

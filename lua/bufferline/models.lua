@@ -197,14 +197,14 @@ function Buffer:current() return api.nvim_get_current_buf() == self.id end
 
 --- If the buffer is already part of state then it is existing
 --- otherwise it is new
----@param state BufferlineState
+---@param state bufferline.State
 ---@return boolean
 function Buffer:is_existing(state)
   return utils.find(function(component) return component.id == self.id end, state.components) ~= nil
 end
 
 -- Find and return the index of the matching buffer (by id) in the list in state
---- @param state BufferlineState
+--- @param state bufferline.State
 function Buffer:find_index(state)
   for index, component in ipairs(state.components) do
     if component.id == self.id then return index end

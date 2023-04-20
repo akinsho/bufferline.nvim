@@ -2,7 +2,7 @@ describe("Sorters - ", function()
   local sorters = require("bufferline.sorters")
   local utils = require("bufferline.utils")
   local bufferline ---@module "bufferline"
-  local state ---@type BufferlineState
+  local state ---@type bufferline.State
 
   before_each(function()
     package.loaded["bufferline"] = nil

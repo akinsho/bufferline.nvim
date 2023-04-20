@@ -110,7 +110,7 @@ local function get_diagnostics(buffers, options)
   return diagnostics.combine(buffer_diagnostics)
 end
 
----@param state BufferlineState
+---@param state bufferline.State
 ---@return bufferline.Tab[]
 function M.get_components(state)
   local options = config.options

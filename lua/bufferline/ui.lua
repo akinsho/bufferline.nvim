@@ -462,7 +462,7 @@ local function get_tab_indicator(tab_indicators, options)
   return items, length
 end
 
---- @param current_state BufferlineState
+--- @param current_state bufferline.State
 --- @param element bufferline.TabElement
 --- @return bufferline.TabElement
 function M.element(current_state, element)

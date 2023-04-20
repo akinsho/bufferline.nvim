@@ -47,7 +47,7 @@ local function apply_buffer_filter(buf_nums, callback)
 end
 
 ---Return a list of the buffers open in nvim as Components
----@param state BufferlineState
+---@param state bufferline.State
 ---@return bufferline.Buffer[]
 function M.get_components(state)
   local options = config.options

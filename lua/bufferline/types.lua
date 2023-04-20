@@ -203,3 +203,12 @@
 ---@field length integer
 ---@field drop fun(self: bufferline.Section, count: integer): bufferline.Section?
 ---@field add fun(self: bufferline.Section, item: bufferline.Component)
+
+---@class bufferline.State
+---@field components bufferline.Component[]
+---@field current_element_index number?
+---@field visible_components bufferline.Component[]
+---@field __components bufferline.Component[]
+---@field custom_sort number[]
+---@field left_offset_size number
+---@field right_offset_size number

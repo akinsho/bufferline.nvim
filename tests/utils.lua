@@ -50,7 +50,7 @@ function MockBuffer:visibility() return vim.F.if_nil(self._visiblity, 0) end
 function MockBuffer:visible() return vim.F.if_nil(self._is_visible, true) end
 
 ---@param name string
----@param state BufferlineState
+---@param state bufferline.State
 ---@return bufferline.Component?
 function M.find_buffer(name, state)
   for _, component in ipairs(state.components) do
