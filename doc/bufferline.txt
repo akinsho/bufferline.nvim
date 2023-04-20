@@ -139,7 +139,7 @@ The available configuration are:
               -- This can be used to change how bufferline fetches the icon
               -- for an element e.g. a buffer or a tab.
               -- e.g.
-              local icon, hl = require('nvim-web-devicons').get_icon_by_filetype(opts.filetype, { default = false })
+              local icon, hl = require('nvim-web-devicons').get_icon_by_filetype(element.filetype, { default = false })
               return icon, hl
               -- or
               local custom_map = {my_thing_ft: {icon = "my_thing_icon", hl}}
@@ -147,7 +147,6 @@ The available configuration are:
             end,
             show_buffer_icons = true | false, -- disable filetype icons for buffers
             show_buffer_close_icons = true | false,
-            show_buffer_default_icon = true | false, -- whether or not an unrecognised filetype should show a default icon
             show_close_icon = true | false,
             show_tab_indicators = true | false,
             show_duplicate_prefix = true | false, -- whether to show duplicate buffer prefix
@@ -453,9 +452,9 @@ Bufferline allows you to sort the visible buffers by `extension` or `directory`:
     :BufferLineSortByTabs
 
     -- Or using lua functions
-    :lua require'bufferline'.sort_buffers_by('extension')`
-    :lua require'bufferline'.sort_buffers_by('directory')`
-    :lua require'bufferline'.sort_buffers_by('tabs')`
+    :lua require'bufferline'.sort_by('extension')`
+    :lua require'bufferline'.sort_by('directory')`
+    :lua require'bufferline'.sort_by('tabs')`
 
 By default bufferline will sort by buffer number which is an integer value
 provided by vim to identify a buffer that increases as new buffers are opened
@@ -705,25 +704,25 @@ This can then be mapped using
 If you'd rather map these yourself, use:
 
 >vim
-    nnoremap mymap :lua require"bufferline".go_to_buffer(num)<CR>
+    nnoremap mymap :lua require"bufferline".go_to(num)<CR>
 
 Alternatively, if you want to instead jump to the absolute position of the
 buffer in the bufferline (as displayed by the ordinal buffer numbers), you can
-use the `lua` API to set it up using `require'bufferline'.go_to_buffer(number, absolute)`,
+use the `lua` API to set it up using `require'bufferline'.go_to(number, absolute)`,
 where absolute is a boolean that determines whether to use the
 absolute buffer position or the visible/relative one.
 
 >vim
-  nnoremap <silent><leader>1 <cmd>lua require("bufferline").go_to_buffer(1, true)<cr>
-  nnoremap <silent><leader>2 <cmd>lua require("bufferline").go_to_buffer(2, true)<cr>
-  nnoremap <silent><leader>3 <cmd>lua require("bufferline").go_to_buffer(3, true)<cr>
-  nnoremap <silent><leader>4 <cmd>lua require("bufferline").go_to_buffer(4, true)<cr>
-  nnoremap <silent><leader>5 <cmd>lua require("bufferline").go_to_buffer(5, true)<cr>
-  nnoremap <silent><leader>6 <cmd>lua require("bufferline").go_to_buffer(6, true)<cr>
-  nnoremap <silent><leader>7 <cmd>lua require("bufferline").go_to_buffer(7, true)<cr>
-  nnoremap <silent><leader>8 <cmd>lua require("bufferline").go_to_buffer(8, true)<cr>
-  nnoremap <silent><leader>9 <cmd>lua require("bufferline").go_to_buffer(9, true)<cr>
-  nnoremap <silent><leader>$ <cmd>lua require("bufferline").go_to_buffer(-1, true)<cr>
+  nnoremap <silent><leader>1 <cmd>lua require("bufferline").go_to(1, true)<cr>
+  nnoremap <silent><leader>2 <cmd>lua require("bufferline").go_to(2, true)<cr>
+  nnoremap <silent><leader>3 <cmd>lua require("bufferline").go_to(3, true)<cr>
+  nnoremap <silent><leader>4 <cmd>lua require("bufferline").go_to(4, true)<cr>
+  nnoremap <silent><leader>5 <cmd>lua require("bufferline").go_to(5, true)<cr>
+  nnoremap <silent><leader>6 <cmd>lua require("bufferline").go_to(6, true)<cr>
+  nnoremap <silent><leader>7 <cmd>lua require("bufferline").go_to(7, true)<cr>
+  nnoremap <silent><leader>8 <cmd>lua require("bufferline").go_to(8, true)<cr>
+  nnoremap <silent><leader>9 <cmd>lua require("bufferline").go_to(9, true)<cr>
+  nnoremap <silent><leader>$ <cmd>lua require("bufferline").go_to(-1, true)<cr>
 <
 
 You can close buffers by clicking the close icon or by right clicking the tab anywhere
@@ -748,7 +747,7 @@ A few of this plugins commands can be mapped for ease of use. >vim
     " These commands will sort buffers by directory, language, or a custom criteria
     nnoremap <silent>be :BufferLineSortByExtension<CR>
     nnoremap <silent>bd :BufferLineSortByDirectory<CR>
-    nnoremap <silent><mymap> :lua require'bufferline'.sort_buffers_by(function (buf_a, buf_b) return buf_a.id < buf_b.id end)<CR>
+    nnoremap <silent><mymap> :lua require'bufferline'.sort_by(function (buf_a, buf_b) return buf_a.id < buf_b.id end)<CR>
 
 If you manually arrange your buffers using `:BufferLineMove{Prev|Next}` during an nvim session this can be persisted for the session.
 This is enabled by default but you need to ensure that your `sessionoptions+=globals` otherwise the session file will
