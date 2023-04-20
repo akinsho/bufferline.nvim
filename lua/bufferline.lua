@@ -8,7 +8,6 @@ local sorters = lazy.require("bufferline.sorters") ---@module "bufferline.sorter
 local buffers = lazy.require("bufferline.buffers") ---@module "bufferline.buffers"
 local commands = lazy.require("bufferline.commands") ---@module "bufferline.commands"
 local tabpages = lazy.require("bufferline.tabpages") ---@module "bufferline.tabpages"
-local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
 local highlights = lazy.require("bufferline.highlights") ---@module "bufferline.highlights"
 local hover = lazy.require("bufferline.hover") ---@module "bufferline.hover"
 
@@ -51,14 +50,8 @@ local M = {
 -----------------------------------------------------------------------------//
 -- Helpers
 -----------------------------------------------------------------------------//
-local function restore_positions()
-  local str = vim.g[constants.positions_key]
-  if not str then return str end
-  -- these are converted to strings when stored
-  -- so have to be converted back before usage
-  local ids = vim.split(str, ",")
-  if ids and #ids > 0 then state.custom_sort = vim.tbl_map(tonumber, ids) end
-end
+-- TODO: move helpers into the relevant module for each
+-- the core module should contain as little feature code as possible
 
 ---@param list bufferline.Component[]
 ---@return bufferline.Component[]
@@ -186,7 +179,7 @@ local function setup_autocommands(conf)
     api.nvim_create_autocmd("SessionLoadPost", {
       pattern = "*",
       group = BUFFERLINE_GROUP,
-      callback = function() restore_positions() end,
+      callback = function() state.restore_positions() end,
     })
   end
   if not options.always_show_bufferline then
