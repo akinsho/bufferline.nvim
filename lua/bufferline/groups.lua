@@ -237,13 +237,12 @@ end
 --- NOTE: this function mutates the user's configuration.
 --- Add group highlights to the user highlights table
 ---
----@param conf bufferline.Config
+---@param conf bufferline.UserConfig
 function M.setup(conf)
   if not conf then return end
-  ---@type bufferline.Group[]
-  local groups = vim.tbl_get(conf, "options", "groups", "items") or {}
+  local groups = vim.tbl_get(conf, "options", "groups", "items") or {} ---@type bufferline.Group[]
 
-  -- NOTE: if the user has already set the pinned builtin themselves
+  -- if the user has already set the pinned builtin themselves
   -- then we want each group to have a priority based on it's position in the list
   -- otherwise we want to shift the priorities of their groups by 1 to accommodate the pinned group
   local has_set_pinned =

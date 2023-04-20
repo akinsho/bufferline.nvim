@@ -763,12 +763,12 @@ end
 ---defaults are set. This is also so we can diff what the user set this is useful
 ---for setting the highlight groups etc. once this has been merged with the defaults
 ---@param conf bufferline.UserConfig?
-function M.set(conf) config = Config:new(conf or {}) end
+function M.setup(conf) config = Config:new(conf or {}) end
 
 ---Update highlight colours when the colour scheme changes by resetting the user config
 ---to what was initially passed in and reload the highlighting
 function M.update_highlights()
-  M.set(config.user)
+  M.setup(config.user)
   M.apply(true)
   return config
 end

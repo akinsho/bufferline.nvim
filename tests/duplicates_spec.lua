@@ -81,7 +81,7 @@ describe("Duplicate Tests - ", function()
   end)
 
   it("should return a prefixed element if duplicated", function()
-    config.set({ options = { enforce_regular_tabs = false } })
+    config.setup({ options = { enforce_regular_tabs = false } })
     config.apply()
 
     local component = duplicates.component({
@@ -124,7 +124,7 @@ describe("Duplicate Tests - ", function()
   end)
 
   it("should truncate a very long directory name", function()
-    config.set({ options = { enforce_regular_tabs = false, max_prefix_length = 10 } })
+    config.setup({ options = { enforce_regular_tabs = false, max_prefix_length = 10 } })
     config.apply()
 
     local component = duplicates.component({

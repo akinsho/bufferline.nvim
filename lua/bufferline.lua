@@ -263,7 +263,7 @@ function _G.nvim_bufferline()
   return bufferline()
 end
 
----@param conf bufferline.Config?
+---@param conf bufferline.UserConfig?
 function M.setup(conf)
   if not utils.is_current_stable_release() then
     utils.notify(
@@ -274,7 +274,7 @@ function M.setup(conf)
     return
   end
   conf = conf or {}
-  config.set(conf)
+  config.setup(conf)
   groups.setup(conf) -- Groups must be set up before the config is applied
   local preferences = config.apply()
   -- on loading (and reloading) the plugin's config reset all the highlights

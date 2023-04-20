@@ -35,7 +35,7 @@ describe("UI Tests", function()
     end)
 
     it("should not render an indicator if the style is underline", function()
-      config.set({ options = { indicator = { style = "underline" } } })
+      config.setup({ options = { indicator = { style = "underline" } } })
       config.apply()
       local result = ui.add_indicator({ tab = MockBuffer:new({}), highlights = {} })
       assert.is_truthy(result)
@@ -43,7 +43,7 @@ describe("UI Tests", function()
     end)
 
     it("should render an indicator if the style is icon", function()
-      config.set({ highlights = { indicator_selected = { hl_group = "IndicatorSelected" } } })
+      config.setup({ highlights = { indicator_selected = { hl_group = "IndicatorSelected" } } })
       config.apply()
       local result = ui.add_indicator({ tab = MockBuffer:new({}), highlights = {} })
       assert.is_truthy(result)
@@ -51,7 +51,7 @@ describe("UI Tests", function()
     end)
 
     it("should not truncate the tab name if disabled", function()
-      config.set({ options = { truncate_names = false } })
+      config.setup({ options = { truncate_names = false } })
       config.apply()
       local segment = ui.get_name({
         tab = { name = "a_very_very_very_very_long_name_that_i_use.js", icon = "x" },
@@ -61,7 +61,7 @@ describe("UI Tests", function()
     end)
 
     it("should truncate the tab name if enabled", function()
-      config.set({ options = { truncate_names = true } })
+      config.setup({ options = { truncate_names = true } })
       config.apply()
       local segment = ui.get_name({
         tab = { name = "a_very_very_very_very_long_name_that_i_use.js", icon = "x" },
@@ -73,7 +73,7 @@ describe("UI Tests", function()
 
   describe("Hover events - ", function()
     it("should set the state with on hover of a tab", function()
-      config.set({ options = { hover = { reveal = { "close" } } } })
+      config.setup({ options = { hover = { reveal = { "close" } } } })
       config.apply()
       state.set({
         visible_components = {
@@ -95,7 +95,7 @@ describe("UI Tests", function()
     end)
 
     it("should remove the hovered item on mouse out", function()
-      config.set({ options = { hover = { reveal = { "close" } } } })
+      config.setup({ options = { hover = { reveal = { "close" } } } })
       config.apply()
       state.set({
         visible_components = {
@@ -121,7 +121,7 @@ describe("UI Tests", function()
     end)
 
     it("should not render a close icon if not hovered", function()
-      config.set({ options = { hover = { enabled = true, reveal = { "close" } } } })
+      config.setup({ options = { hover = { enabled = true, reveal = { "close" } } } })
       config.apply()
       local buf = MockBuffer:new({ id = 1, name = "file.txt", _is_current = false })
       local el = ui.element({}, buf)
@@ -130,7 +130,7 @@ describe("UI Tests", function()
     end)
 
     it("should render a close icon if hovered", function()
-      config.set({ options = { hover = { enabled = true, reveal = { "close" } } } })
+      config.setup({ options = { hover = { enabled = true, reveal = { "close" } } } })
       config.apply()
       local buf1 = MockBuffer:new({ id = 1, name = "file.txt", length = 10, _is_current = true })
       local buf2 = MockBuffer:new({

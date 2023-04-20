@@ -10,7 +10,7 @@ describe("Config tests", function()
 
   describe("Setting config", function()
     it("should add defaults to user values", function()
-      config.set({
+      config.setup({
         options = {
           show_close_icon = false,
         },
@@ -22,7 +22,7 @@ describe("Config tests", function()
     end)
 
     it("should create vim highlight groups names for the highlights", function()
-      config.set({
+      config.setup({
         highlights = {
           fill = {
             guifg = "red",
@@ -37,13 +37,13 @@ describe("Config tests", function()
 
     it("should derive colors from the existing highlights", function()
       vim.cmd(fmt("hi Comment guifg=%s", whitesmoke))
-      config.set({})
+      config.setup({})
       local under_test = config.apply()
       assert.equal(whitesmoke:lower(), under_test.highlights.info.fg)
     end)
 
     it('should not underline anything if options.indicator.style = "icon"', function()
-      config.set({ options = { indicator = { style = "icon" } } })
+      config.setup({ options = { indicator = { style = "icon" } } })
       local conf = config.apply()
       for _, value in pairs(conf.highlights) do
         assert.is_falsy(value.underline)
@@ -51,7 +51,7 @@ describe("Config tests", function()
     end)
 
     it('should only underline valid fields if options.indicator.style = "underline"', function()
-      config.set({ options = { indicator = { style = "underline" } } })
+      config.setup({ options = { indicator = { style = "underline" } } })
       local conf = config.apply()
       local valid = {
         "numbers_selected",
@@ -86,7 +86,7 @@ describe("Config tests", function()
 
     describe("- Style Presets - ", function()
       it("should disable all bolding if the preset contains no bold", function()
-        config.set({ options = { style_preset = config.STYLE_PRESETS.no_bold } })
+        config.setup({ options = { style_preset = config.STYLE_PRESETS.no_bold } })
         local conf = config.apply()
         local some_italic = false
         for _, value in pairs(conf.highlights) do
@@ -97,7 +97,7 @@ describe("Config tests", function()
       end)
 
       it("should disable all italics if the preset contains no italic", function()
-        config.set({ options = { style_preset = config.STYLE_PRESETS.no_italic } })
+        config.setup({ options = { style_preset = config.STYLE_PRESETS.no_italic } })
         local conf = config.apply()
         local some_bold = false
         for _, value in pairs(conf.highlights) do
@@ -108,7 +108,7 @@ describe("Config tests", function()
       end)
 
       it("should disable both italics and bold, if no_bold and no_italic are specified", function()
-        config.set({
+        config.setup({
           options = {
             style_preset = { config.STYLE_PRESETS.no_italic, config.STYLE_PRESETS.no_bold },
           },
@@ -128,7 +128,7 @@ describe("Config tests", function()
       local colors = require("bufferline.colors")
       local blue_bg = colors.get_color({ name = "Normal", attribute = "bg" })
       local blue_fg = colors.get_color({ name = "Normal", attribute = "fg" })
-      config.set()
+      config.setup()
       config.apply()
       assert.equal(config.highlights.buffer_selected.bg, blue_bg)
       assert.equal(config.highlights.buffer_selected.fg, blue_fg)
