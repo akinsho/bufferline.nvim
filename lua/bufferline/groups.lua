@@ -160,7 +160,7 @@ local function persist_pinned_buffers()
   end
 end
 
----@param element TabElement
+---@param element bufferline.TabElement
 ---@return string
 local function get_manual_group(element) return state.manual_groupings[element.id] end
 
@@ -291,12 +291,12 @@ end
 local group_by_name = group_by("name")
 local group_by_priority = group_by("priority")
 
----@param element TabElement
+---@param element bufferline.TabElement
 function M.is_pinned(element) return get_manual_group(element) == PINNED_ID end
 
 --- Add a buffer to a group manually
 ---@param group_name string
----@param element TabElement?
+---@param element bufferline.TabElement?
 function M.add_to_group(group_name, element)
   local group = group_by_name(group_name)
   if group and element then
@@ -306,7 +306,7 @@ function M.add_to_group(group_name, element)
 end
 
 ---@param group_name string
----@param element TabElement
+---@param element bufferline.TabElement
 function M.remove_from_group(group_name, element)
   local group = group_by_name(group_name)
   if group then

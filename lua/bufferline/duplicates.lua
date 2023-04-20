@@ -19,8 +19,8 @@ local function is_same_path(a, b, depth)
 end
 --- This function marks any duplicate buffers granted
 --- the buffer names have changes
----@param elements TabElement[]
----@return TabElement[]
+---@param elements bufferline.TabElement[]
+---@return bufferline.TabElement[]
 function M.mark(elements)
   return utils.map(function(current)
     if current.path == "" then return current end

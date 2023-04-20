@@ -59,7 +59,7 @@ function Component:current() not_implemented("current") end
 ---@return boolean
 function Component:is_end() return self.type:match("group") end
 
----@return TabElement?
+---@return bufferline.TabElement?
 function Component:as_element()
   -- TODO: Figure out how to correctly type cast a component to a TabElement
   ---@diagnostic disable-next-line: return-type-mismatch
@@ -92,8 +92,6 @@ function GroupView:new(group)
 end
 
 function GroupView:current() return false end
-
----@alias TabElement bufferline.Tab|bufferline.Buffer
 
 ---@type bufferline.Tab
 local Tabpage = Component:new({ type = "tab" })
@@ -145,8 +143,8 @@ function Tabpage:current() return api.nvim_get_current_tabpage() == self.id end
 function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 
 --- @param depth number
---- @param formatter function(string, number)
---- @returns string
+--- @param formatter fun(string, number)
+--- @return string
 function Tabpage:ancestor(depth, formatter)
   if self.duplicated == "element" then return "(duplicated) " end
   return self:__ancestor(depth, formatter)
@@ -219,8 +217,8 @@ function Buffer:is_new(state) return not self:is_existing(state) end
 function Buffer:visible() return fn.bufwinnr(self.id) > 0 end
 
 --- @param depth integer
---- @param formatter function(string, integer)
---- @returns string
+--- @param formatter fun(string, integer)
+--- @return string
 function Buffer:ancestor(depth, formatter) return self:__ancestor(depth, formatter) end
 
 ---@type bufferline.Section

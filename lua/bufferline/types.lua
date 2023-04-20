@@ -103,7 +103,8 @@
 ---@field hidden boolean
 ---@field focusable boolean
 ---@field type 'group_end' | 'group_start' | 'buffer' | 'tabpage'
----@field __ancestor fun(self: bufferline.Component, depth: integer, formatter: (fun(string, integer): string)?): string
+
+---@alias bufferline.TabElement bufferline.Tab|bufferline.Buffer view is an abstract type that represents either a Buffer or Tab
 
 ---@class bufferline.Tab
 ---@field public id integer
@@ -117,7 +118,10 @@
 ---@field public duplicated bufferline.Duplicate
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
----@field __ancestor fun(self: bufferline.Component, depth: integer, formatter: (fun(string, integer): string)?): string
+---@field public visibility fun(self: bufferline.Tab): integer
+---@field public current fun(self: bufferline.Tab): boolean
+---@field public visible fun(self: bufferline.Tab): boolean
+---@field __ancestor fun(self: bufferline.Tab, depth: integer, formatter: (fun(string, integer): string)?): string
 
 -- A single buffer class
 -- this extends the [Component] class
@@ -142,11 +146,10 @@
 ---@field public group string?
 ---@field public group_fn string
 ---@field public length integer the length of the buffer component
----@field public visibility fun(self: bufferline.Component): integer
----@field public current fun(self: bufferline.Component): boolean
----@field public visible fun(self: bufferline.Component): boolean
----@field public ancestor fun(self: bufferline.Buffer, depth: integer, formatter: fun(string): string, depth: integer): string
----@field private __ancestor fun(self: bufferline.Component, depth: integer, formatter: (fun(string, integer): string)?): string
+---@field public visibility fun(self: bufferline.Buffer): integer
+---@field public current fun(self: bufferline.Buffer): boolean
+---@field public visible fun(self: bufferline.Buffer): boolean
+---@field  __ancestor fun(self: bufferline.Buffer, depth: integer, formatter: (fun(string, integer): string)?): string
 ---@field public find_index fun(Buffer, BufferlineState): integer?
 ---@field public is_new fun(Buffer, BufferlineState): boolean
 ---@field public is_existing fun(Buffer, BufferlineState): boolean
@@ -180,8 +183,8 @@
 
 ---@class bufferline.RenderContext
 ---@field preferences bufferline.Config
----@field current_highlights table<string, string>
----@field tab bufferline.Tab | bufferline.Buffer
+---@field current_highlights {[string]: string}
+---@field tab bufferline.TabElement
 ---@field is_picking boolean
 
 ---@class bufferline.SegmentAttribute
@@ -198,3 +201,5 @@
 ---@class bufferline.Section
 ---@field items bufferline.Component[]
 ---@field length integer
+---@field drop fun(self: bufferline.Section, count: integer): bufferline.Section?
+---@field add fun(self: bufferline.Section, item: bufferline.Component)

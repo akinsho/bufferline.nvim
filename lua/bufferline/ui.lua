@@ -224,7 +224,7 @@ local function add_space(ctx, length)
   })
 end
 
---- @param buffer TabElement
+--- @param buffer bufferline.TabElement
 --- @param hl_defs bufferline.Highlights
 --- @return bufferline.Segment?
 local function get_icon(buffer, hl_defs)
@@ -463,8 +463,8 @@ local function get_tab_indicator(tab_indicators, options)
 end
 
 --- @param current_state BufferlineState
---- @param element TabElement
---- @return TabElement
+--- @param element bufferline.TabElement
+--- @return bufferline.TabElement
 function M.element(current_state, element)
   local curr_hl = highlights.for_element(element)
   local ctx = Context:new({
@@ -644,7 +644,7 @@ end
 ---@field left_offset_size integer
 ---@field right_offset_size integer
 ---@field segments bufferline.Segment[][]
----@field visible_components TabElement[]
+---@field visible_components bufferline.TabElement[]
 
 --- TODO: All components should return Segment[] that are then combined in one go into a tabline
 --- @param items bufferline.Component[]

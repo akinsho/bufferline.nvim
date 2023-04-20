@@ -21,7 +21,7 @@ local api = vim.api
 ---@param ids number[]
 local function save_positions(ids) vim.g[positions_key] = table.concat(ids, ",") end
 
---- @param elements TabElement[]
+--- @param elements bufferline.TabElement[]
 --- @return number[]
 local function get_ids(elements)
   return vim.tbl_map(function(item) return item.id end, elements)
@@ -137,7 +137,7 @@ end
 ---@param current_state BufferlineState
 ---@param opts table?
 ---@return number?
----@return TabElement?
+---@return bufferline.TabElement?
 function M.get_current_element_index(current_state, opts)
   opts = opts or { include_hidden = false }
   local list = opts.include_hidden and current_state.__components or current_state.components

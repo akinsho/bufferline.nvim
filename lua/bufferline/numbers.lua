@@ -62,7 +62,7 @@ end
 local lower, raise = to_style(subscript_numbers), to_style(superscript_numbers)
 
 ---Add a number prefix to the buffer matching a user's preference
----@param buffer TabElement
+---@param buffer bufferline.TabElement
 ---@param numbers numbers_opt
 ---@return string
 local function prefix(buffer, numbers)

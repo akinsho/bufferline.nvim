@@ -125,7 +125,7 @@ local sort_by_new_after_current = function(state)
 end
 
 --- sorts a list of buffers in place
---- @param elements TabElement[]
+--- @param elements bufferline.TabElement[]
 --- @param sort_by (string|function)?
 --- @param state BufferlineState?
 function M.sort(elements, sort_by, state)
