@@ -223,14 +223,12 @@ function Buffer:visible() return fn.bufwinnr(self.id) > 0 end
 --- @returns string
 function Buffer:ancestor(depth, formatter) return self:__ancestor(depth, formatter) end
 
----@class Section
----@field items bufferline.Component[]
----@field length integer
+---@type bufferline.Section
 local Section = {}
 
 ---Create a segment of tab views
----@param n Section?
----@return Section
+---@param n bufferline.Section?
+---@return bufferline.Section
 function Section:new(n)
   local t = n or { length = 0, items = {} }
   setmetatable(t, self)

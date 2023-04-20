@@ -84,7 +84,7 @@ local function prefix(buffer, numbers)
   return construct_number(numbers == "ordinal" and buffer.ordinal or buffer.id)
 end
 
---- @param context RenderContext
+--- @param context bufferline.RenderContext
 --- @return bufferline.Segment?
 function M.component(context)
   local element = context.tab

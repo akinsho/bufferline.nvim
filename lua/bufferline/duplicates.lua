@@ -64,7 +64,7 @@ local function truncate(dir, depth, max_size)
   return table.concat(truncated, utils.path_sep)
 end
 
---- @param context RenderContext
+--- @param context bufferline.RenderContext
 --- @return bufferline.Segment?
 function M.component(context)
   local element = context.tab

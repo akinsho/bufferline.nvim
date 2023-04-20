@@ -83,28 +83,11 @@ local function get_id(component) return component and component.attr and compone
 -----------------------------------------------------------------------------//
 -- Context
 -----------------------------------------------------------------------------//
-
----@class RenderContext
----@field preferences bufferline.Config
----@field current_highlights table<string, string>
----@field tab bufferline.Tab | bufferline.Buffer
----@field is_picking boolean
----@type RenderContext
+---@type bufferline.RenderContext
 local Context = {}
 
----@class SegmentAttribute
----@field global boolean whether or not the attribute applies to other elements apart from the current one
----@field prefix string
----@field suffix string
----@field extends number how many positions the attribute extends for
-
---- @class bufferline.Segment
---- @field text string
---- @field highlight string
---- @field attr SegmentAttribute
-
----@param ctx RenderContext
----@return RenderContext
+---@param ctx bufferline.RenderContext
+---@return bufferline.RenderContext
 function Context:new(ctx)
   assert(ctx.tab, "A tab view entity is required to create a context")
   self.tab = ctx.tab
@@ -194,9 +177,9 @@ local function get_tab_close_button(options, hls)
 end
 
 ---@param items bufferline.Component[]
----@return Section
----@return Section
----@return Section
+---@return bufferline.Section
+---@return bufferline.Section
+---@return bufferline.Section
 local function get_sections(items)
   local Section = require("bufferline.models").Section
   local current = Section:new()
@@ -217,7 +200,7 @@ local function get_sections(items)
   return before, current, after
 end
 
----@param ctx RenderContext
+---@param ctx bufferline.RenderContext
 ---@param length number
 ---@return bufferline.Segment?, bufferline.Segment?
 local function add_space(ctx, length)
@@ -294,7 +277,7 @@ local function get_close_icon(buf_id, context)
   })
 end
 
---- @param context RenderContext
+--- @param context bufferline.RenderContext
 --- @return bufferline.Segment?
 local function add_indicator(context)
   local element = context.tab
@@ -320,7 +303,7 @@ local function add_indicator(context)
   return { text = symbol, highlight = highlight }
 end
 
---- @param context RenderContext
+--- @param context bufferline.RenderContext
 --- @return bufferline.Segment?
 local function add_icon(context)
   local element = context.tab
@@ -334,7 +317,7 @@ end
 
 --- The suffix can be either the modified icon, space to replace the icon if
 --- a user has turned them off or the close icon if the element is not currently modified
---- @param context RenderContext
+--- @param context bufferline.RenderContext
 --- @return bufferline.Segment?
 local function add_suffix(context)
   local element = context.tab
@@ -353,7 +336,7 @@ end
 
 --- TODO: We increment the buffer length by the separator although the final
 --- buffer will not have a separator so we are technically off by 1
---- @param context RenderContext
+--- @param context bufferline.RenderContext
 --- @return bufferline.Segment?, bufferline.Segment
 local function add_separators(context)
   local hl = config.highlights
@@ -371,7 +354,7 @@ end
 -- if we are enforcing regular tab size then all components will try and fit
 -- into the maximum tab size. If not we enforce a minimum tab size
 -- and allow components to be larger than the max.
----@param context RenderContext
+---@param context bufferline.RenderContext
 ---@return number
 local function get_max_length(context)
   local modified = config.options.modified_icon
@@ -391,7 +374,7 @@ local function get_max_length(context)
   return options.tab_size - strwidth(modified) - icon_size - padding_size
 end
 
----@param ctx RenderContext
+---@param ctx bufferline.RenderContext
 ---@return bufferline.Segment
 local function get_name(ctx)
   local name = utils.truncate_name(ctx.tab.name, get_max_length(ctx))
@@ -589,9 +572,9 @@ end
 --- section
 --- 4. Re-check the size, if still too long truncate recursively till it fits
 --- 5. Add the number of truncated buffers as an indicator
----@param before Section
----@param current Section
----@param after Section
+---@param before bufferline.Section
+---@param current bufferline.Section
+---@param after bufferline.Section
 ---@param available_width number
 ---@param marker table
 ---@param visible bufferline.Component[]

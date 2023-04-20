@@ -151,7 +151,7 @@ function M.get(opts)
   return setmetatable(result, mt)
 end
 
----@param context RenderContext
+---@param context bufferline.RenderContext
 ---@return bufferline.Segment?
 function M.component(context)
   local opts = config.options

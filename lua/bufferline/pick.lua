@@ -51,7 +51,7 @@ function M.get(element)
   end
 end
 
----@param ctx RenderContext
+---@param ctx bufferline.RenderContext
 ---@return bufferline.Segment?
 function M.component(ctx)
   local padding = require("bufferline.constants").padding

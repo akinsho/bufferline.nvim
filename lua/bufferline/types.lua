@@ -177,3 +177,24 @@
 ---@field public hidden boolean
 ---@field public with fun(Group, Group): bufferline.Group
 ---@field auto_close boolean when leaving the group automatically close it
+
+---@class bufferline.RenderContext
+---@field preferences bufferline.Config
+---@field current_highlights table<string, string>
+---@field tab bufferline.Tab | bufferline.Buffer
+---@field is_picking boolean
+
+---@class bufferline.SegmentAttribute
+---@field global boolean whether or not the attribute applies to other elements apart from the current one
+---@field prefix string
+---@field suffix string
+---@field extends number how many positions the attribute extends for
+
+--- @class bufferline.Segment
+--- @field text string
+--- @field highlight string
+--- @field attr bufferline.SegmentAttribute
+
+---@class bufferline.Section
+---@field items bufferline.Component[]
+---@field length integer
