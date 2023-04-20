@@ -124,25 +124,8 @@ describe("Bufferline tests:", function()
       assert.is_equal(snapshot, snapshots[3])
     end)
 
-    it("should not show a default icon if specified", function()
-      bufferline.setup({
-        options = {
-          show_buffer_default_icon = false,
-        },
-      })
-      vim.cmd("edit test.rrj")
-      local _, components = nvim_bufferline()
-      local snapshot = utils.tabline_from_components(components)
-      local icon = icons.get_icon("")
-      assert.is_falsy(snapshot:match(icon))
-    end)
-
     it("should show a default icon if specified", function()
-      bufferline.setup({
-        options = {
-          show_buffer_default_icon = true,
-        },
-      })
+      bufferline.setup({})
       vim.cmd("edit test.rrj")
       local _, components = nvim_bufferline()
       local snapshot = utils.tabline_from_components(components)
