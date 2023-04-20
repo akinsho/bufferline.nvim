@@ -170,6 +170,20 @@ local function get_manual_group(element) return state.manual_groupings[element.i
 ---@param group_id string?
 local function set_manual_group(id, group_id) state.manual_groupings[id] = group_id end
 
+---A temporary helper to inform user of the full buffer object that using it's full value is deprecated.
+---@param obj table
+---@return table
+local function with_deprecation(obj)
+  return setmetatable(obj, {
+    __index = function(_, k)
+      vim.schedule(function()
+        -- stylua: ignore
+        vim.deprecate(k, "the buffer ID to get any other value option you need", "v4.0.0", "bufferline")
+      end)
+    end,
+  })
+end
+
 ---Group buffers based on user criteria
 ---buffers only carry a copy of the group ID which is then used to retrieve the correct group
 ---@param buffer bufferline.Buffer
@@ -179,7 +193,16 @@ function M.set_id(buffer)
   local manual_group = get_manual_group(buffer)
   if manual_group then return manual_group end
   for id, group in pairs(state.user_groups) do
-    if type(group.matcher) == "function" and group.matcher(buffer) then return id end
+    if type(group.matcher) == "function" then
+      local matched = group.matcher(with_deprecation({
+        id = buffer.id,
+        name = buffer.name,
+        path = buffer.path,
+        modified = buffer.modified,
+        buftype = buffer.buftype,
+      }))
+      if matched then return id end
+    end
   end
   return UNGROUPED_ID
 end
@@ -223,9 +246,7 @@ local function restore_pinned_buffers()
   if not pinned then return end
   local manual_groupings = vim.split(pinned, ",") or {}
   for _, path in ipairs(manual_groupings) do
-    local buf_id = fn.bufnr(
-      path --[[@as integer]]
-    )
+    local buf_id = fn.bufnr(path --[[@as integer]])
     if buf_id ~= -1 then
       set_manual_group(buf_id, PINNED_ID)
       persist_pinned_buffers()
@@ -234,8 +255,7 @@ local function restore_pinned_buffers()
   ui.refresh()
 end
 
---- NOTE: this function mutates the user's configuration.
---- Add group highlights to the user highlights table
+--- NOTE: this function mutates the user's configuration by adding group highlights to the user highlights table.
 ---
 ---@param conf bufferline.UserConfig
 function M.setup(conf)

@@ -180,7 +180,8 @@ function Buffer:new(buf)
       name = buf.name_formatter({ name = name, path = buf.path, bufnr = buf.id }) or name
     end
   end
-  buf.name, buf.filename = name, name -- TODO: remove this 'filename' field
+  buf.name = name
+
   setmetatable(buf, self)
   self.__index = self
   return buf
