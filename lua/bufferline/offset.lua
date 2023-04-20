@@ -162,9 +162,7 @@ function M.get()
         if is_valid and win_id then
           local width = api.nvim_win_get_width(win_id) + (offset.padding or 0)
 
-          local hl_name = offset.highlight
-            or guess_window_highlight(win_id)
-            or config.highlights.fill.hl_group
+          local hl_name = offset.highlight or guess_window_highlight(win_id) or config.highlights.fill.hl_group
 
           local hl = highlights.hl(hl_name)
           local component = get_section_text(width, { text = hl, sep = sep_hl }, offset, is_left)

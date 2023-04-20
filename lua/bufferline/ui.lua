@@ -120,9 +120,7 @@ local function get_component_size(segments)
   return sum
 end
 
-local function get_marker_size(count, element_size)
-  return count > 0 and strwidth(tostring(count)) + element_size or 0
-end
+local function get_marker_size(count, element_size) return count > 0 and strwidth(tostring(count)) + element_size or 0 end
 
 function M.refresh()
   vim.cmd("redrawtabline")
@@ -261,11 +259,7 @@ end
 --- @return bufferline.Segment?
 local function get_close_icon(buf_id, context)
   local options = config.options
-  if
-    options.hover.enabled
-    and not context.tab:current()
-    and vim.tbl_contains(options.hover.reveal, "close")
-  then
+  if options.hover.enabled and not context.tab:current() and vim.tbl_contains(options.hover.reveal, "close") then
     if not state.hovered or state.hovered.id ~= context.tab.id then return end
   end
   local buffer_close_icon = options.buffer_close_icon
@@ -398,9 +392,7 @@ local function create_renderer(left_separator, right_separator, component)
     -- if using the non-slanted tab style then we must check if the component is at the end of
     -- of a section e.g. the end of a group and if so it should not be wrapped with separators
     -- as it can use those of the next item
-    if not is_slant(config.options.separator_style) and next_item and next_item:is_end() then
-      return component
-    end
+    if not is_slant(config.options.separator_style) and next_item and next_item:is_end() then return component end
 
     if left_separator then
       table.insert(component, 1, left_separator)
@@ -416,9 +408,7 @@ end
 
 ---@param id number
 ---@return bufferline.Segment
-local function tab_click_handler(id)
-  return M.make_clickable("handle_click", id, { attr = { global = true } })
-end
+local function tab_click_handler(id) return M.make_clickable("handle_click", id, { attr = { global = true } }) end
 
 ---@class SpacingOpts
 ---@field when any

@@ -37,9 +37,7 @@ local function format_name(name) return name:gsub("[^%w]+", "_") end
 ----------------------------------------------------------------------------------------------------
 local separator = {}
 
-local function space_end(hl_groups)
-  return { { highlight = hl_groups.fill.hl_group, text = C.padding } }
-end
+local function space_end(hl_groups) return { { highlight = hl_groups.fill.hl_group, text = C.padding } } end
 
 ---@param group bufferline.Group,
 ---@param hls  table<string, table<string, string>>
@@ -267,8 +265,7 @@ function M.setup(conf)
   -- if the user has already set the pinned builtin themselves
   -- then we want each group to have a priority based on it's position in the list
   -- otherwise we want to shift the priorities of their groups by 1 to accommodate the pinned group
-  local has_set_pinned =
-    not vim.tbl_isempty(vim.tbl_filter(function(group) return group.id == PINNED_ID end, groups))
+  local has_set_pinned = not vim.tbl_isempty(vim.tbl_filter(function(group) return group.id == PINNED_ID end, groups))
 
   for index, current in ipairs(groups) do
     local priority = has_set_pinned and index or index + 1
@@ -276,9 +273,7 @@ function M.setup(conf)
     group_state.user_groups[group.id] = group
   end
   -- We only set the builtin groups after we know what the user has configured
-  if not group_state.user_groups[PINNED_ID] then
-    group_state.user_groups[PINNED_ID] = builtin.pinned
-  end
+  if not group_state.user_groups[PINNED_ID] then group_state.user_groups[PINNED_ID] = builtin.pinned end
   if not group_state.user_groups[UNGROUPED_ID] then
     group_state.user_groups[UNGROUPED_ID] = builtin.ungrouped:with({
       priority = vim.tbl_count(group_state.user_groups) + 1,
@@ -292,10 +287,7 @@ end
 ---@param group_name string
 ---@param callback fun(b: bufferline.Buffer)
 local function command(group_name, callback)
-  local group = utils.find(
-    function(list) return list.name == group_name end,
-    group_state.components_by_group
-  )
+  local group = utils.find(function(list) return list.name == group_name end, group_state.components_by_group)
 
   if not group then return end
 
@@ -388,10 +380,7 @@ local function create_indicator(group, hls, count)
   local count_item = group.hidden and fmt("(%s)", count) or ""
   local seps = group.separator.style(group, hls, count_item)
   if seps.sep_start then
-    table.insert(
-      seps.sep_start,
-      ui.make_clickable("handle_group_click", group.priority, { attr = { global = true } })
-    )
+    table.insert(seps.sep_start, ui.make_clickable("handle_group_click", group.priority, { attr = { global = true } }))
   end
   return seps
 end
@@ -507,9 +496,7 @@ function M.handle_group_enter()
   end
   utils.for_each(function(tab)
     local group = M.get_by_id(tab.group)
-    if group and group.auto_close and group.id ~= current_group.id then
-      M.set_hidden(group.id, true)
-    end
+    if group and group.auto_close and group.id ~= current_group.id then M.set_hidden(group.id, true) end
   end, state.components)
 end
 

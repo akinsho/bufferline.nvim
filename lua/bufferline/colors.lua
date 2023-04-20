@@ -93,10 +93,7 @@ function M.get_color(opts)
   if fallback and type(fallback) == "string" then return fallback end
   -- bit of recursive fallback logic
   if fallback and type(fallback) == "table" then
-    assert(
-      fallback.name and fallback.attribute,
-      'Fallback should have "name" and "attribute" fields'
-    )
+    assert(fallback.name and fallback.attribute, 'Fallback should have "name" and "attribute" fields')
     return M.get_color(fallback) -- allow chaining
   end
 

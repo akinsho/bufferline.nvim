@@ -60,11 +60,7 @@ local function validate_user_options(options)
   if not options then return end
   for key, _ in pairs(options) do
     local item = deprecations[key]
-    if item then
-      vim.schedule(
-        function() vim.deprecate(item.name, item.alternative, item.version, "bufferline") end
-      )
-    end
+    if item then vim.schedule(function() vim.deprecate(item.name, item.alternative, item.version, "bufferline") end) end
   end
 end
 
@@ -73,9 +69,7 @@ end
 local function get_offset_highlights(options)
   if not options or not options.offsets then return {} end
   return utils.fold(function(accum, offset, i)
-    if offset.highlight and type(offset.highlight) == "table" then
-      accum[fmt("offset_%d", i)] = offset.highlight
-    end
+    if offset.highlight and type(offset.highlight) == "table" then accum[fmt("offset_%d", i)] = offset.highlight end
     return accum
   end, options.offsets)
 end

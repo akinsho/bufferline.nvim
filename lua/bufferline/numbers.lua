@@ -77,9 +77,7 @@ local function prefix(buffer, numbers)
   end
   -- if mode is both, numbers will look similar to lightline-bufferline,
   -- buffer_id at top left and ordinal number at bottom right
-  if numbers == "both" then
-    return construct_number(buffer.id) .. construct_number(buffer.ordinal, maps.subscript)
-  end
+  if numbers == "both" then return construct_number(buffer.id) .. construct_number(buffer.ordinal, maps.subscript) end
 
   return construct_number(numbers == "ordinal" and buffer.ordinal or buffer.id)
 end

@@ -37,9 +37,7 @@ end
 --- Generate highlight groups names i.e
 --- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
 ---@param name string
-function M.generate_name(name)
-  return PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper)
-end
+function M.generate_name(name) return PREFIX .. name:gsub("_(.)", name.upper):gsub("^%l", string.upper) end
 
 --- Wrap a string in vim's tabline highlight syntax
 ---@param item string
@@ -116,10 +114,7 @@ function M.set_one(name, opts)
   hl.default = vim.F.if_nil(opts.default, config.options.themable)
   local ok, msg = pcall(api.nvim_set_hl, 0, name, hl)
   if ok then return hl end
-  utils.notify(
-    fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, msg),
-    "error"
-  )
+  utils.notify(fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, msg), "error")
 end
 
 --- @param conf bufferline.Config

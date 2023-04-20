@@ -15,9 +15,7 @@ local function is_relative_path(path) return full_path(path) ~= path end
 
 --- @param buf_a bufferline.Buffer
 --- @param buf_b bufferline.Buffer
-local function sort_by_extension(buf_a, buf_b)
-  return fnamemodify(buf_a.name, ":e") < fnamemodify(buf_b.name, ":e")
-end
+local function sort_by_extension(buf_a, buf_b) return fnamemodify(buf_a.name, ":e") < fnamemodify(buf_b.name, ":e") end
 
 --- @param buf_a bufferline.Buffer
 --- @param buf_b bufferline.Buffer
@@ -112,9 +110,7 @@ local sort_by_new_after_current = function(state)
     if not a_is_new and not b_is_new then
       -- If both buffers are either before or after (inclusive) the current
       -- buffer, respect the current order.
-      if (a_index - current_index) * (b_index - current_index) >= 0 then
-        return a_index < b_index
-      end
+      if (a_index - current_index) * (b_index - current_index) >= 0 then return a_index < b_index end
       return a_index < current_index
     elseif not a_is_new and b_is_new then
       return a_index <= current_index

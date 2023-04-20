@@ -102,9 +102,7 @@ local get_diagnostics = {
       end)
     end
 
-    vim.cmd(
-      [[autocmd User CocDiagnosticChange lua require('bufferline.diagnostics').refresh_coc_diagnostics()]]
-    )
+    vim.cmd([[autocmd User CocDiagnosticChange lua require('bufferline.diagnostics').refresh_coc_diagnostics()]])
 
     return function() return diagnostics end
   end)(),
@@ -134,9 +132,7 @@ end
 ---@param opts table
 function M.get(opts)
   if is_disabled(opts.diagnostics) then return setmetatable({}, mt) end
-  if is_insert() and not opts.diagnostics_update_in_insert then
-    return setmetatable(last_diagnostics_result, mt)
-  end
+  if is_insert() and not opts.diagnostics_update_in_insert then return setmetatable(last_diagnostics_result, mt) end
   local diagnostics = get_diagnostics[opts.diagnostics]()
   local result = {}
   for buf_num, items in pairs(diagnostics) do
@@ -172,9 +168,7 @@ function M.component(context)
   end
 
   local highlight = highlights[diagnostics.level] or ""
-  local diag_highlight = highlights[diagnostics.level .. "_diagnostic"]
-    or highlights.diagnostic
-    or ""
+  local diag_highlight = highlights[diagnostics.level .. "_diagnostic"] or highlights.diagnostic or ""
   return {
     text = indicator,
     highlight = diag_highlight,

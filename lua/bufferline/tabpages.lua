@@ -67,10 +67,7 @@ local function get_buffer_name(buf)
 end
 
 local function get_valid_tabs()
-  return vim.tbl_filter(
-    function(t) return api.nvim_tabpage_is_valid(t) end,
-    api.nvim_list_tabpages()
-  )
+  return vim.tbl_filter(function(t) return api.nvim_tabpage_is_valid(t) end, api.nvim_list_tabpages())
 end
 
 ---Filter the buffers to show based on the user callback passed in
@@ -92,9 +89,7 @@ end
 --- a number
 ---@param tab_num number
 ---@return number[]
-local function get_tab_buffers(tab_num)
-  return vim.tbl_map(api.nvim_win_get_buf, api.nvim_tabpage_list_wins(tab_num))
-end
+local function get_tab_buffers(tab_num) return vim.tbl_map(api.nvim_win_get_buf, api.nvim_tabpage_list_wins(tab_num)) end
 
 local function get_diagnostics(buffers, options)
   local all_diagnostics = diagnostics.get(options)

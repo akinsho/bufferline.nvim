@@ -20,17 +20,13 @@ describe("Number tests: ", function()
   end)
 
   it("should handle a custom numbers function", function()
-    local function numbers_func(opts)
-      return string.format("%s·%s", opts.raise(opts.id), opts.lower(opts.ordinal))
-    end
+    local function numbers_func(opts) return string.format("%s·%s", opts.raise(opts.id), opts.lower(opts.ordinal)) end
     local result = prefix(test_buf, numbers_func)
     assert.equal(result, "¹⁰⁰·₂")
   end)
 
   it("should return two superscript numbers", function()
-    local function numbers_func(opts)
-      return string.format("%s·%s", opts.raise(opts.id), opts.raise(opts.ordinal))
-    end
+    local function numbers_func(opts) return string.format("%s·%s", opts.raise(opts.id), opts.raise(opts.ordinal)) end
     local result = prefix(test_buf, numbers_func)
     assert.equal(result, "¹⁰⁰·²")
   end)

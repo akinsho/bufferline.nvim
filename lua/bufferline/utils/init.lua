@@ -39,11 +39,7 @@ end
 ---@vararg string
 ---@return integer
 function M.measure(...)
-  return M.fold(
-    function(accum, item) return accum + api.nvim_strwidth(tostring(item)) end,
-    { ... },
-    0
-  )
+  return M.fold(function(accum, item) return accum + api.nvim_strwidth(tostring(item)) end, { ... }, 0)
 end
 
 ---Concatenate a series of strings together
@@ -175,9 +171,7 @@ function M.get_icon(opts)
 
   if not loaded then
     -- TODO: deprecate this in favour of nvim-web-devicons
-    if fn.exists("*WebDevIconsGetFileTypeSymbol") > 0 then
-      return fn.WebDevIconsGetFileTypeSymbol(opts.path), ""
-    end
+    if fn.exists("*WebDevIconsGetFileTypeSymbol") > 0 then return fn.WebDevIconsGetFileTypeSymbol(opts.path), "" end
     return "", ""
   end
   if type == "terminal" then return webdev_icons.get_icon(type) end

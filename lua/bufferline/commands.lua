@@ -214,9 +214,7 @@ function M.close_in_direction(direction)
   local index = M.get_current_element_index(state)
   if not index then return end
   local length = #state.components
-  if
-    not (index == length and direction == "right") and not (index == 1 and direction == "left")
-  then
+  if not (index == length and direction == "right") and not (index == 1 and direction == "left") then
     local start = direction == "left" and 1 or index + 1
     local _end = direction == "left" and index - 1 or length
     for _, item in ipairs(vim.list_slice(state.components, start, _end)) do
@@ -229,9 +227,7 @@ end
 --- sorts all elements
 --- @param sort_by (string|function)?
 function M.sort_by(sort_by)
-  if next(state.components) == nil then
-    return utils.notify("Unable to find elements to sort, sorry", "warn")
-  end
+  if next(state.components) == nil then return utils.notify("Unable to find elements to sort, sorry", "warn") end
   sorters.sort(state.components, { sort_by = sort_by })
   state.custom_sort = get_ids(state.components)
   local opts = config.options

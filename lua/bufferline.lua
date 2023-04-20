@@ -56,8 +56,7 @@ local function bufferline()
   --- NOTE: this cannot be added to state as a meta method since
   --- state is not actually set till after sorting and component creation is done
   state.set({ current_element_index = state.get_current_index() })
-  components = not is_tabline and groups.render(components, sorters.sort)
-    or sorters.sort(components)
+  components = not is_tabline and groups.render(components, sorters.sort) or sorters.sort(components)
   local tabline = ui.tabline(components, tabpages.get())
 
   state.set({
