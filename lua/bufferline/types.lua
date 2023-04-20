@@ -104,7 +104,10 @@
 ---@field focusable boolean
 ---@field type 'group_end' | 'group_start' | 'buffer' | 'tabpage'
 
----@alias bufferline.TabElement bufferline.Tab|bufferline.Buffer view is an abstract type that represents either a Buffer or Tab
+---@generic T
+---@alias bufferline.AncestorSearch fun(self: T, depth: integer, formatter: (fun(string, integer): string)?): string
+
+---@alias bufferline.TabElement bufferline.Tab|bufferline.Buffer
 
 ---@class bufferline.Tab
 ---@field public id integer
@@ -121,7 +124,8 @@
 ---@field public visibility fun(self: bufferline.Tab): integer
 ---@field public current fun(self: bufferline.Tab): boolean
 ---@field public visible fun(self: bufferline.Tab): boolean
----@field __ancestor fun(self: bufferline.Tab, depth: integer, formatter: (fun(string, integer): string)?): string
+---@field public ancestor bufferline.AncestorSearch
+---@field public __ancestor bufferline.AncestorSearch
 
 -- A single buffer class
 -- this extends the [Component] class
@@ -149,7 +153,8 @@
 ---@field public visibility fun(self: bufferline.Buffer): integer
 ---@field public current fun(self: bufferline.Buffer): boolean
 ---@field public visible fun(self: bufferline.Buffer): boolean
----@field  __ancestor fun(self: bufferline.Buffer, depth: integer, formatter: (fun(string, integer): string)?): string
+---@field public ancestor bufferline.AncestorSearch
+---@field public __ancestor bufferline.AncestorSearch
 ---@field public find_index fun(Buffer, BufferlineState): integer?
 ---@field public is_new fun(Buffer, BufferlineState): boolean
 ---@field public is_existing fun(Buffer, BufferlineState): boolean
