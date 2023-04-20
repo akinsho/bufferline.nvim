@@ -23,7 +23,7 @@
 
 ---@class bufferline.Options
 ---@field public mode bufferline.Mode
----@field style_preset 'minimal' | 'default'
+---@field public style_preset bufferline.StylePreset | bufferline.StylePreset[]
 ---@field public view string
 ---@field public debug bufferline.DebugOpts
 ---@field public numbers string | fun(ordinal: number, id: number, lower: number_helper, raise: number_helper): string

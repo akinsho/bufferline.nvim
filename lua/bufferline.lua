@@ -37,6 +37,8 @@ local M = {
   sort_buffers_by = commands.sort_by,
   close_buffer_with_pick = commands.close_with_pick,
   unpin_and_close = commands.unpin_and_close,
+
+  style_preset = config.STYLE_PRESETS,
 }
 -----------------------------------------------------------------------------//
 -- Helpers

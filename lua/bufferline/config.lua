@@ -9,31 +9,13 @@ local highlights = lazy.require("bufferline.highlights") ---@module "bufferline.
 local colors = lazy.require("bufferline.colors") ---@module "bufferline.colors"
 local constants = lazy.require("bufferline.constants") ---@module "bufferline.colors"
 
---- Convert highlights specified as tables to the correct existing colours
----@param map bufferline.Highlights
-local function hl_table_to_color(map)
-  if not map or vim.tbl_isempty(map) then return {} end
-  -- we deep copy the highlights table as assigning the attributes
-  -- will only pass the references so will mutate the original table otherwise
-  local updated = vim.deepcopy(map)
-  for hl, attributes in pairs(map) do
-    for attribute, value in pairs(attributes) do
-      if type(value) == "table" then
-        if value.highlight and value.attribute then
-          updated[hl][attribute] = colors.get_color({
-            name = value.highlight,
-            attribute = value.attribute,
-            cterm = attribute:match("cterm") ~= nil,
-          })
-        else
-          updated[hl][attribute] = nil
-          utils.notify(fmt("removing %s as it is not formatted correctly", hl), "warn")
-        end
-      end
-    end
-  end
-  return updated
-end
+---@enum bufferline.StylePreset
+local PRESETS = {
+  default = 1,
+  minimal = 2,
+  no_bold = 3,
+  no_italic = 4,
+}
 
 ---The local class instance of the merged user's configuration
 ---this includes all default values and highlights filled out
@@ -190,10 +172,15 @@ function Config:is_bufferline() return self:mode() == "buffers" end
 function Config:is_tabline() return self:mode() == "tabs" end
 
 ---Derive the colors for the bufferline
-local function derive_colors()
+---@param preset bufferline.StylePreset | bufferline.StylePreset[]
 ---@return bufferline.Highlights
+local function derive_colors(preset)
   local hex = colors.get_color
-  local shade = colors.shade_color
+  local tint = colors.shade_color
+  if type(preset) ~= "table" then preset = { preset } end
+  local is_minimal = vim.tbl_contains(preset, PRESETS.minimal)
+  local italic = not vim.tbl_contains(preset, PRESETS.no_italic)
+  local bold = not vim.tbl_contains(preset, PRESETS.no_bold)
 
   local comment_fg = hex({
     name = "Comment",
@@ -205,31 +192,26 @@ local function derive_colors()
   local normal_bg = hex({ name = "Normal", attribute = "bg" })
   local string_fg = hex({ name = "String", attribute = "fg" })
 
-  local error_hl = "DiagnosticError"
-  local warning_hl = "DiagnosticWarn"
-  local info_hl = "DiagnosticInfo"
-  local hint_hl = "DiagnosticHint"
-
   local error_fg = hex({
-    name = error_hl,
+    name = "DiagnosticError",
     attribute = "fg",
     fallback = { name = "Error", attribute = "fg" },
   })
 
   local warning_fg = hex({
-    name = warning_hl,
+    name = "DiagnosticWarn",
     attribute = "fg",
     fallback = { name = "WarningMsg", attribute = "fg" },
   })
 
   local info_fg = hex({
-    name = info_hl,
+    name = "DiagnosticInfo",
     attribute = "fg",
     fallback = { name = "Normal", attribute = "fg" },
   })
 
   local hint_fg = hex({
-    name = hint_hl,
+    name = "DiagnosticHint",
     attribute = "fg",
     fallback = { name = "Directory", attribute = "fg" },
   })
@@ -262,18 +244,19 @@ local function derive_colors()
   local background_shading = is_bright_background and -12 or -25
   local diagnostic_shading = is_bright_background and -12 or -25
 
-  local visible_bg = shade(normal_bg, -8)
-  local duplicate_color = shade(comment_fg, -5)
-  local separator_background_color = shade(normal_bg, separator_shading)
-  local background_color = shade(normal_bg, background_shading)
+  local duplicate_color = tint(comment_fg, -5)
+  local visible_bg = is_minimal and normal_bg or tint(normal_bg, -8)
+  local visible_fg = is_minimal and tint(normal_fg, -30) or comment_fg
+  local separator_background_color = is_minimal and normal_bg or tint(normal_bg, separator_shading)
+  local background_color = is_minimal and normal_bg or tint(normal_bg, background_shading)
 
   -- diagnostic colors by default are a few shades darker
-  local normal_diagnostic_fg = shade(normal_fg, diagnostic_shading)
-  local comment_diagnostic_fg = shade(comment_fg, diagnostic_shading)
-  local hint_diagnostic_fg = shade(hint_fg, diagnostic_shading)
-  local info_diagnostic_fg = shade(info_fg, diagnostic_shading)
-  local warning_diagnostic_fg = shade(warning_fg, diagnostic_shading)
-  local error_diagnostic_fg = shade(error_fg, diagnostic_shading)
+  local normal_diagnostic_fg = tint(normal_fg, diagnostic_shading)
+  local comment_diagnostic_fg = tint(comment_fg, diagnostic_shading)
+  local hint_diagnostic_fg = tint(hint_fg, diagnostic_shading)
+  local info_diagnostic_fg = tint(info_fg, diagnostic_shading)
+  local warning_diagnostic_fg = tint(warning_fg, diagnostic_shading)
+  local error_diagnostic_fg = tint(error_fg, diagnostic_shading)
 
   local indicator_style = vim.tbl_get(config, "user", "options", "indicator", "style")
   local has_underline_indicator = indicator_style == "underline"
@@ -301,6 +284,7 @@ local function derive_colors()
       fg = tabline_sel_bg,
       bg = normal_bg,
       sp = underline_sp,
+      bold = is_minimal and bold,
       underline = has_underline_indicator,
     },
     tab_close = {
@@ -312,7 +296,7 @@ local function derive_colors()
       bg = background_color,
     },
     close_button_visible = {
-      fg = comment_fg,
+      fg = visible_fg,
       bg = visible_bg,
     },
     close_button_selected = {
@@ -330,14 +314,16 @@ local function derive_colors()
       bg = background_color,
     },
     buffer_visible = {
-      fg = comment_fg,
+      fg = visible_fg,
       bg = visible_bg,
+      italic = is_minimal and italic,
+      bold = is_minimal and bold,
     },
     buffer_selected = {
       fg = normal_fg,
       bg = normal_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
       sp = underline_sp,
       underline = has_underline_indicator,
     },
@@ -348,13 +334,13 @@ local function derive_colors()
     numbers_selected = {
       fg = normal_fg,
       bg = normal_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
       sp = underline_sp,
       underline = has_underline_indicator,
     },
     numbers_visible = {
-      fg = comment_fg,
+      fg = visible_fg,
       bg = visible_bg,
     },
     diagnostic = {
@@ -368,8 +354,8 @@ local function derive_colors()
     diagnostic_selected = {
       fg = normal_diagnostic_fg,
       bg = normal_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
       sp = underline_sp,
       underline = has_underline_indicator,
     },
@@ -379,14 +365,16 @@ local function derive_colors()
       bg = background_color,
     },
     hint_visible = {
-      fg = comment_fg,
+      fg = visible_fg,
       bg = visible_bg,
+      italic = is_minimal and italic,
+      bold = is_minimal and bold,
     },
     hint_selected = {
       fg = hint_fg,
       bg = normal_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
       underline = has_underline_indicator,
       sp = underline_sp or hint_fg,
     },
@@ -402,8 +390,8 @@ local function derive_colors()
     hint_diagnostic_selected = {
       fg = hint_diagnostic_fg,
       bg = normal_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
       underline = has_underline_indicator,
       sp = underline_sp or hint_diagnostic_fg,
     },
@@ -413,14 +401,16 @@ local function derive_colors()
       bg = background_color,
     },
     info_visible = {
-      fg = comment_fg,
+      fg = visible_fg,
       bg = visible_bg,
+      italic = is_minimal and italic,
+      bold = is_minimal and bold,
     },
     info_selected = {
       fg = info_fg,
       bg = normal_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
       underline = has_underline_indicator,
       sp = underline_sp or info_fg,
     },
@@ -436,8 +426,8 @@ local function derive_colors()
     info_diagnostic_selected = {
       fg = info_diagnostic_fg,
       bg = normal_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
       underline = has_underline_indicator,
       sp = underline_sp or info_diagnostic_fg,
     },
@@ -447,14 +437,16 @@ local function derive_colors()
       bg = background_color,
     },
     warning_visible = {
-      fg = comment_fg,
+      fg = visible_fg,
       bg = visible_bg,
+      italic = is_minimal and italic,
+      bold = is_minimal and bold,
     },
     warning_selected = {
       fg = warning_fg,
       bg = normal_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
       underline = has_underline_indicator,
       sp = underline_sp or warning_fg,
     },
@@ -470,8 +462,8 @@ local function derive_colors()
     warning_diagnostic_selected = {
       fg = warning_diagnostic_fg,
       bg = normal_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
       underline = has_underline_indicator,
       sp = underline_sp or warning_diagnostic_fg,
     },
@@ -481,14 +473,16 @@ local function derive_colors()
       sp = error_fg,
     },
     error_visible = {
-      fg = comment_fg,
+      fg = visible_fg,
       bg = visible_bg,
+      italic = is_minimal and italic,
+      bold = is_minimal and bold,
     },
     error_selected = {
       fg = error_fg,
       bg = normal_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
       underline = has_underline_indicator,
       sp = underline_sp or error_fg,
     },
@@ -504,8 +498,8 @@ local function derive_colors()
     error_diagnostic_selected = {
       fg = error_diagnostic_fg,
       bg = normal_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
       underline = has_underline_indicator,
       sp = underline_sp or error_diagnostic_fg,
     },
@@ -525,19 +519,19 @@ local function derive_colors()
     },
     duplicate_selected = {
       fg = duplicate_color,
-      italic = true,
+      italic = italic,
       bg = normal_bg,
       sp = underline_sp,
       underline = has_underline_indicator,
     },
     duplicate_visible = {
       fg = duplicate_color,
-      italic = true,
+      italic = italic,
       bg = visible_bg,
     },
     duplicate = {
       fg = duplicate_color,
-      italic = true,
+      italic = italic,
       bg = background_color,
     },
     separator_selected = {
@@ -560,7 +554,7 @@ local function derive_colors()
     },
     tab_separator_selected = {
       fg = separator_background_color,
-      bg = normal_bg,
+      bg = visible_bg,
       sp = underline_sp,
       underline = has_underline_indicator,
     },
@@ -577,22 +571,22 @@ local function derive_colors()
     pick_selected = {
       fg = error_fg,
       bg = normal_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
       sp = underline_sp,
       underline = has_underline_indicator,
     },
     pick_visible = {
       fg = error_fg,
       bg = visible_bg,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
     },
     pick = {
       fg = error_fg,
       bg = background_color,
-      bold = true,
-      italic = true,
+      bold = bold,
+      italic = italic,
     },
     offset_separator = {
       fg = win_separator_fg,
@@ -608,10 +602,12 @@ end
 -- Icons from https://fontawesome.com/cheatsheet
 ---@return bufferline.Config
 local function get_defaults()
+  local preset = vim.tbl_get(config, "user", "options", "style_preset") --[[@as bufferline.StylePreset]]
   ---@type bufferline.Options
   local opts = {
     mode = "buffers",
     themable = true, -- whether or not bufferline highlights can be overridden externally
+    style_preset = preset,
     numbers = "none",
     buffer_close_icon = "",
     modified_icon = "●",
@@ -623,10 +619,7 @@ local function get_defaults()
     -- U+2590 ▐ Right half block, this character is right aligned so the
     -- background highlight doesn't appear in the middle
     -- alternatives:  right aligned => ▕ ▐ ,  left aligned => ▍
-    indicator = {
-      icon = constants.indicator,
-      style = "icon",
-    },
+    indicator = { icon = constants.indicator, style = "icon" },
     left_trunc_marker = "",
     right_trunc_marker = "",
     separator_style = "thin",
@@ -652,25 +645,37 @@ local function get_defaults()
     diagnostics_indicator = nil,
     diagnostics_update_in_insert = true,
     offsets = {},
-    groups = {
-      items = {},
-      options = {
-        toggle_hidden_on_enter = true,
-      },
-    },
-    hover = {
-      enabled = false,
-      reveal = {},
-      delay = 200,
-    },
-    debug = {
-      logging = false,
-    },
+    groups = { items = {}, options = { toggle_hidden_on_enter = true } },
+    hover = { enabled = false, reveal = {}, delay = 200 },
+    debug = { logging = false },
   }
-  return {
-    options = opts,
-    highlights = derive_colors(),
-  }
+  return { options = opts, highlights = derive_colors(opts.style_preset) }
+end
+
+--- Convert highlights specified as tables to the correct existing colours
+---@param map bufferline.Highlights
+local function resolve_user_highlight_links(map)
+  if not map or vim.tbl_isempty(map) then return {} end
+  -- we deep copy the highlights table as assigning the attributes
+  -- will only pass the references so will mutate the original table otherwise
+  local updated = vim.deepcopy(map)
+  for hl, attributes in pairs(map) do
+    for attribute, value in pairs(attributes) do
+      if type(value) == "table" then
+        if value.highlight and value.attribute then
+          updated[hl][attribute] = colors.get_color({
+            name = value.highlight,
+            attribute = value.attribute,
+            cterm = attribute:match("cterm") ~= nil,
+          })
+        else
+          updated[hl][attribute] = nil
+          utils.notify(fmt("removing %s as it is not formatted correctly", hl), "warn")
+        end
+      end
+    end
+  end
+  return updated
 end
 
 --- Resolve (and update) any incompatible options based on the values of other options
@@ -682,7 +687,7 @@ function Config:resolve(defaults)
   self.highlights = utils.fold(function(accum, opts, hl_name)
     accum[hl_name] = highlights.translate_user_highlights(opts)
     return accum
-  end, hl_table_to_color(hl))
+  end, resolve_user_highlight_links(hl))
 
   local indicator_icon = vim.tbl_get(self, "options", "indicator_icon")
   if indicator_icon then self.options.indicator = { icon = indicator_icon, style = "icon" } end
@@ -776,8 +781,9 @@ end
 
 --- This function is only intended for use in tests
 ---@private
----@diagnostic disable-next-line: cast-local-type
 function M.__reset() config = nil end
+
+M.STYLE_PRESETS = PRESETS
 
 return setmetatable(M, {
   __index = function(_, k) return config[k] end,

@@ -13,6 +13,7 @@ Usage..................................: |bufferline-usage|
 Configuration..........................: |bufferline-configuration|
 Hover Events...........................: |bufferline-hover-events|
 Styling................................: |bufferline-styling|
+Style Presets..........................: |bufferline-style-presets|
 Tabpages...............................: |bufferline-tabpages|
 Numbers................................: |bufferline-numbers|
 LSP Diagnostics........................: |bufferline-diagnostics|
@@ -63,9 +64,11 @@ CONFIGURATION					     *bufferline-configuration*
 
 The available configuration are:
 >lua
-    require('bufferline').setup {
+    local bufferline = require('bufferline')
+    bufferline.setup {
         options = {
             mode = "buffers", -- set to "tabs" to only show tabpages instead
+            style_preset = bufferline.presets.default, -- or bufferline.presets.minimal,
             themable = true | false, -- allows highlight groups to be overriden i.e. sets highlights as default
             numbers = "none" | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
             close_command = "bdelete! %d",       -- can be a string | function, | false see "Mouse actions"
@@ -202,7 +205,24 @@ You can change the appearance of the bufferline separators by setting the
   used as the separators e.g. `{"|", "|"}`, the first is the left and the
   second is the right separator
 
+==============================================================================
+STYLE PRESETS                                        *bufferline-style-presets*
 
+You also use one of the pre-defined rulesets i.e. preset for the bufferline
+e.g. you can remove all bold text by setting the `options.style_preset` to
+`require('bufferline').presets.no_bold` or `no_italics`.
+There are also stylist presets such as `minimal` which makes the foreground
+match the background so that only the text of the buffers is visible and the
+bufferline is more unobtrusive.
+
+e.g.
+>lua
+    options = {
+        style_preset = require('bufferline').preset.no_italics,
+        -- or you can combine these e.g.
+        style_preset = {require('bufferline').preset.no_italics, require('bufferline').preset.no_bold},
+    }
+<
 ==============================================================================
 TABPAGES                                                          *bufferline-tabpages*
 
