@@ -225,35 +225,33 @@ end
 local function complete_groups(arg_lead, cmd_line, cursor_pos) return groups.names() end
 
 local function setup_commands()
-  local cmd = api.nvim_create_user_command
-  cmd("BufferLinePick", function() M.pick_buffer() end, {})
-  cmd("BufferLinePickClose", function() M.close_buffer_with_pick() end, {})
-  cmd("BufferLineCycleNext", function() M.cycle(1) end, {})
-  cmd("BufferLineCyclePrev", function() M.cycle(-1) end, {})
-  cmd("BufferLineCloseRight", function() M.close_in_direction("right") end, {})
-  cmd("BufferLineCloseLeft", function() M.close_in_direction("left") end, {})
-  cmd("BufferLineMoveNext", function() M.move(1) end, {})
-  cmd("BufferLineMovePrev", function() M.move(-1) end, {})
-  cmd("BufferLineSortByExtension", function() M.sort_buffers_by("extension") end, {})
-  cmd("BufferLineSortByDirectory", function() M.sort_buffers_by("directory") end, {})
-  cmd(
+  local function command(name, cmd, opts) api.nvim_create_user_command(name, cmd, opts or {}) end
+
+  command("BufferLinePick", function() M.pick_buffer() end)
+  command("BufferLinePickClose", function() M.close_buffer_with_pick() end)
+  command("BufferLineCycleNext", function() M.cycle(1) end)
+  command("BufferLineCyclePrev", function() M.cycle(-1) end)
+  command("BufferLineCloseRight", function() M.close_in_direction("right") end)
+  command("BufferLineCloseLeft", function() M.close_in_direction("left") end)
+  command("BufferLineMoveNext", function() M.move(1) end)
+  command("BufferLineMovePrev", function() M.move(-1) end)
+  command("BufferLineSortByExtension", function() M.sort_buffers_by("extension") end)
+  command("BufferLineSortByDirectory", function() M.sort_buffers_by("directory") end)
+  command(
     "BufferLineSortByRelativeDirectory",
-    function() M.sort_buffers_by("relative_directory") end,
-    {}
+    function() M.sort_buffers_by("relative_directory") end
   )
-  cmd("BufferLineSortByTabs", function() M.sort_buffers_by("tabs") end, {})
-  cmd("BufferLineGoToBuffer", function(opts) M.go_to_buffer(opts.args) end, { nargs = 1 })
-  cmd(
-    "BufferLineGroupClose",
-    function(opts) M.group_action(opts.args, "close") end,
-    { nargs = 1, complete = complete_groups }
-  )
-  cmd(
-    "BufferLineGroupToggle",
-    function(opts) M.group_action(opts.args, "toggle") end,
-    { nargs = 1, complete = complete_groups }
-  )
-  cmd("BufferLineTogglePin", function() M.toggle_pin() end, { nargs = 0 })
+  command("BufferLineSortByTabs", function() M.sort_buffers_by("tabs") end)
+  command("BufferLineGoToBuffer", function(opts) M.go_to_buffer(opts.args) end, { nargs = 1 })
+  command("BufferLineGroupClose", function(opts) M.group_action(opts.args, "close") end, {
+    nargs = 1,
+    complete = complete_groups,
+  })
+  command("BufferLineGroupToggle", function(opts) M.group_action(opts.args, "toggle") end, {
+    nargs = 1,
+    complete = complete_groups,
+  })
+  command("BufferLineTogglePin", function() M.toggle_pin() end, { nargs = 0 })
 end
 
 ---@private
