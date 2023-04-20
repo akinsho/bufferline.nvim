@@ -17,6 +17,9 @@ _G.___bufferline_private = _G.___bufferline_private or {} -- to guard against re
 
 local api = vim.api
 
+-----------------------------------------------------------------------------//
+--- API values
+-----------------------------------------------------------------------------//
 local M = {
   move = commands.move,
   move_to = commands.move_to,
@@ -39,14 +42,11 @@ local M = {
   ---@deprecated
   close_buffer_with_pick = commands.close_with_pick,
 
-  -----------------------------------------------------------------------------//
-  --- API values
-  -----------------------------------------------------------------------------//
   style_preset = config.STYLE_PRESETS,
-  -----------------------------------------------------------------------------//
 
   groups = groups,
 }
+-----------------------------------------------------------------------------//
 
 --- @return string, bufferline.Segment[][]
 local function bufferline()
@@ -80,49 +80,11 @@ local function toggle_bufferline()
   if vim.o.showtabline ~= status then vim.o.showtabline = status end
 end
 
----@alias group_actions "close" | "toggle"
----Execute an action on a group of buffers
----@param name string
----@param action group_actions | fun(b: bufferline.Buffer)
-function M.group_action(name, action)
-  assert(name, "A name must be passed to execute a group action")
-  if action == "close" then
-    groups.command(name, function(b) api.nvim_buf_delete(b.id, { force = true }) end)
-    ui.refresh()
-    groups.reset_manual_groupings(name)
-  elseif action == "toggle" then
-    groups.toggle_hidden(nil, name)
-    ui.refresh()
-  elseif type(action) == "function" then
-    groups.command(name, action)
-  end
-end
-
-function M.toggle_pin()
-  local _, element = commands.get_current_element_index(state)
-  if not element then return end
-  if groups.is_pinned(element) then
-    groups.remove_from_group("pinned", element)
-  else
-    groups.add_to_group("pinned", element)
-  end
-  ui.refresh()
-end
-
-local function handle_group_enter()
-  local options = config.options
-  local _, element = commands.get_current_element_index(state, { include_hidden = true })
-  if not element or not element.group then return end
-  local current_group = groups.get_by_id(element.group)
-  if options.groups.options.toggle_hidden_on_enter then
-    if current_group.hidden then groups.set_hidden(current_group.id, false) end
-  end
-  utils.for_each(function(tab)
-    local group = groups.get_by_id(tab.group)
-    if group and group.auto_close and group.id ~= current_group.id then
-      groups.set_hidden(group.id, true)
-    end
-  end, state.components)
+---@private
+function _G.nvim_bufferline()
+  -- Always populate state regardless of if tabline status is less than 2 #352
+  toggle_bufferline()
+  return bufferline()
 end
 
 ---@param conf bufferline.Config
@@ -158,12 +120,12 @@ local function setup_autocommands(conf)
   api.nvim_create_autocmd("BufRead", {
     pattern = "*",
     once = true,
-    callback = function() vim.schedule(handle_group_enter) end,
+    callback = function() vim.schedule(groups.handle_group_enter) end,
   })
 
   api.nvim_create_autocmd("BufEnter", {
     pattern = "*",
-    callback = function() handle_group_enter() end,
+    callback = function() groups.handle_group_enter() end,
   })
 
   api.nvim_create_autocmd("User", {
@@ -176,13 +138,6 @@ local function setup_autocommands(conf)
     callback = ui.on_hover_out,
   })
 end
-
----@param arg_lead string
----@param cmd_line string
----@param cursor_pos number
----@return string[]
----@diagnostic disable-next-line: unused-local
-local function complete_groups(arg_lead, cmd_line, cursor_pos) return groups.names() end
 
 local function command(name, cmd, opts) api.nvim_create_user_command(name, cmd, opts or {}) end
 
@@ -200,22 +155,15 @@ local function setup_commands()
   command("BufferLineSortByRelativeDirectory", function() M.sort_by("relative_directory") end)
   command("BufferLineSortByTabs", function() M.sort_by("tabs") end)
   command("BufferLineGoToBuffer", function(opts) M.go_to(opts.args) end, { nargs = 1 })
-  command("BufferLineTogglePin", function() M.toggle_pin() end, { nargs = 0 })
-  command("BufferLineGroupClose", function(opts) M.group_action(opts.args, "close") end, {
+  command("BufferLineTogglePin", function() groups.toggle_pin() end, { nargs = 0 })
+  command("BufferLineGroupClose", function(opts) groups.action(opts.args, "close") end, {
     nargs = 1,
-    complete = complete_groups,
+    complete = groups.complete_groups,
   })
-  command("BufferLineGroupToggle", function(opts) M.group_action(opts.args, "toggle") end, {
+  command("BufferLineGroupToggle", function(opts) groups.action(opts.args, "toggle") end, {
     nargs = 1,
-    complete = complete_groups,
+    complete = groups.complete_groups,
   })
-end
-
----@private
-function _G.nvim_bufferline()
-  -- Always populate state regardless of if tabline status is less than 2 #352
-  toggle_bufferline()
-  return bufferline()
 end
 
 ---@param conf bufferline.UserConfig?

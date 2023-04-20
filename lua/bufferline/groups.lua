@@ -3,6 +3,8 @@ local ui = lazy.require("bufferline.ui") ---@module "bufferline.ui"
 local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
 local models = lazy.require("bufferline.models") ---@module "bufferline.models"
 local config = lazy.require("bufferline.config") ---@module "bufferline.config"
+local commands = lazy.require("bufferline.commands") ---@module "bufferline.commands"
+local state = lazy.require("bufferline.state") ---@module "bufferline.state"
 local C = lazy.require("bufferline.constants") ---@module "bufferline.constants"
 
 local fn = vim.fn
@@ -134,7 +136,7 @@ builtin.pinned = Group:new({
 ----------------------------------------------------------------------------------------------------
 
 --- @type bufferline.GroupState
-local state = {
+local group_state = {
   -- A table of buffers mapped to a specific group by a user
   manual_groupings = {},
   user_groups = {},
@@ -149,7 +151,7 @@ local state = {
 --- in a vim.g global variable that can be persisted across vim sessions
 local function persist_pinned_buffers()
   local pinned = {}
-  for buf, group in pairs(state.manual_groupings) do
+  for buf, group in pairs(group_state.manual_groupings) do
     if group == PINNED_ID then table.insert(pinned, api.nvim_buf_get_name(buf)) end
   end
 
@@ -162,13 +164,13 @@ end
 
 ---@param element bufferline.TabElement
 ---@return string
-local function get_manual_group(element) return state.manual_groupings[element.id] end
+local function get_manual_group(element) return group_state.manual_groupings[element.id] end
 
 --- Wrapper to abstract interacting directly with manual groups as the access mechanism
 -- can vary i.e. buffer id or path and this should be changed in a centralised way.
 ---@param id number
 ---@param group_id string?
-local function set_manual_group(id, group_id) state.manual_groupings[id] = group_id end
+local function set_manual_group(id, group_id) group_state.manual_groupings[id] = group_id end
 
 ---A temporary helper to inform user of the full buffer object that using it's full value is deprecated.
 ---@param obj table
@@ -189,10 +191,10 @@ end
 ---@param buffer bufferline.Buffer
 ---@return string?
 function M.set_id(buffer)
-  if vim.tbl_isempty(state.user_groups) then return end
+  if vim.tbl_isempty(group_state.user_groups) then return end
   local manual_group = get_manual_group(buffer)
   if manual_group then return manual_group end
-  for id, group in pairs(state.user_groups) do
+  for id, group in pairs(group_state.user_groups) do
     if type(group.matcher) == "function" then
       local matched = group.matcher(with_deprecation({
         id = buffer.id,
@@ -209,7 +211,7 @@ end
 
 ---@param id string
 ---@return bufferline.Group
-function M.get_by_id(id) return state.user_groups[id] end
+function M.get_by_id(id) return group_state.user_groups[id] end
 
 local function generate_sublists(size)
   local list = {}
@@ -225,7 +227,7 @@ end
 function M.component(ctx)
   local element = ctx.tab
   local hls = ctx.current_highlights
-  local group = state.user_groups[element.group]
+  local group = group_state.user_groups[element.group]
   if not group then return end
   local group_hl = hls[group.name]
   local hl = group_hl or hls.buffer
@@ -246,9 +248,7 @@ local function restore_pinned_buffers()
   if not pinned then return end
   local manual_groupings = vim.split(pinned, ",") or {}
   for _, path in ipairs(manual_groupings) do
-    local buf_id = fn.bufnr(
-      path --[[@as integer]]
-    )
+    local buf_id = fn.bufnr(path --[[@as integer]])
     if buf_id ~= -1 then
       set_manual_group(buf_id, PINNED_ID)
       persist_pinned_buffers()
@@ -273,13 +273,15 @@ function M.setup(conf)
   for index, current in ipairs(groups) do
     local priority = has_set_pinned and index or index + 1
     local group = Group:new(current, priority)
-    state.user_groups[group.id] = group
+    group_state.user_groups[group.id] = group
   end
   -- We only set the builtin groups after we know what the user has configured
-  if not state.user_groups[PINNED_ID] then state.user_groups[PINNED_ID] = builtin.pinned end
-  if not state.user_groups[UNGROUPED_ID] then
-    state.user_groups[UNGROUPED_ID] = builtin.ungrouped:with({
-      priority = vim.tbl_count(state.user_groups) + 1,
+  if not group_state.user_groups[PINNED_ID] then
+    group_state.user_groups[PINNED_ID] = builtin.pinned
+  end
+  if not group_state.user_groups[UNGROUPED_ID] then
+    group_state.user_groups[UNGROUPED_ID] = builtin.ungrouped:with({
+      priority = vim.tbl_count(group_state.user_groups) + 1,
     })
   end
   -- Restore pinned buffer from the previous session
@@ -289,10 +291,10 @@ end
 ---Execute a command on each buffer of a group
 ---@param group_name string
 ---@param callback fun(b: bufferline.Buffer)
-function M.command(group_name, callback)
+local function command(group_name, callback)
   local group = utils.find(
     function(list) return list.name == group_name end,
-    state.components_by_group
+    group_state.components_by_group
   )
 
   if not group then return end
@@ -305,7 +307,7 @@ end
 ---@return fun(arg: T): bufferline.Group
 local function group_by(attr)
   return function(value)
-    for _, grp in pairs(state.user_groups) do
+    for _, grp in pairs(group_state.user_groups) do
       if grp[attr] == value then return grp end
     end
   end
@@ -315,12 +317,12 @@ local group_by_name = group_by("name")
 local group_by_priority = group_by("priority")
 
 ---@param element bufferline.TabElement
-function M.is_pinned(element) return get_manual_group(element) == PINNED_ID end
+local function is_pinned(element) return get_manual_group(element) == PINNED_ID end
 
 --- Add a buffer to a group manually
 ---@param group_name string
 ---@param element bufferline.TabElement?
-function M.add_to_group(group_name, element)
+function M.add_element(group_name, element)
   local group = group_by_name(group_name)
   if group and element then
     set_manual_group(element.id, group.id)
@@ -330,7 +332,7 @@ end
 
 ---@param group_name string
 ---@param element bufferline.TabElement
-function M.remove_from_group(group_name, element)
+function M.remove_element(group_name, element)
   local group = group_by_name(group_name)
   if group then
     local id = get_manual_group(element)
@@ -340,13 +342,13 @@ function M.remove_from_group(group_name, element)
 end
 
 ---@param id number
-function M.remove_id_from_manual_groupings(id) state.manual_groupings[id] = nil end
+function M.remove_id_from_manual_groupings(id) group_state.manual_groupings[id] = nil end
 
 ---@param id string
 ---@param value boolean
 function M.set_hidden(id, value)
   assert(id, "You must pass in a group ID to set its state")
-  local group = state.user_groups[id]
+  local group = group_state.user_groups[id]
   if group then group.hidden = value end
 end
 
@@ -360,14 +362,21 @@ end
 ---Get the names for all bufferline groups
 ---@param include_empty boolean?
 ---@return string[]
-function M.names(include_empty)
-  if not state.user_groups then return {} end
-  local names = {}
-  for _, group in pairs(state.components_by_group) do
-    if include_empty or (group and #group > 0) then table.insert(names, group.name) end
+local function names(include_empty)
+  if not group_state.user_groups then return {} end
+  local result = {}
+  for _, group in pairs(group_state.components_by_group) do
+    if include_empty or (group and #group > 0) then table.insert(result, group.name) end
   end
-  return names
+  return result
 end
+
+---@param arg_lead string
+---@param cmd_line string
+---@param cursor_pos number
+---@return string[]
+---@diagnostic disable-next-line: unused-local
+function M.complete(arg_lead, cmd_line, cursor_pos) return names() end
 
 --- Draw the separator start component for a group
 ---@param group bufferline.Group
@@ -393,7 +402,7 @@ end
 ---@return bufferline.Component?
 ---@return bufferline.Component?
 local function get_group_marker(group_id, components)
-  local group = state.user_groups[group_id]
+  local group = group_state.user_groups[group_id]
   if not group then return end
   local GroupView = models.GroupView
   local hl_groups = config.highlights
@@ -433,11 +442,11 @@ end
 ---@return bufferline.Component[], bufferline.ComponentsByGroup
 local function sort_by_groups(components)
   local sorted = {}
-  local clustered = generate_sublists(vim.tbl_count(state.user_groups))
+  local clustered = generate_sublists(vim.tbl_count(group_state.user_groups))
   for index, tab in ipairs(components) do
     local buf = tab:as_element()
     if buf then
-      local group = state.user_groups[buf.group]
+      local group = group_state.user_groups[buf.group]
       local sublist = clustered[group.priority]
       if not sublist.name then
         sublist.id = group.id
@@ -453,17 +462,56 @@ local function sort_by_groups(components)
   return sorted, clustered
 end
 
---- Resets manual mappings.
----@param name string Group name
-function M.reset_manual_groupings(name)
-  if name == PINNED_NAME then vim.g[PINNED_KEY] = {} end
+function M.get_all() return group_state.user_groups end
 
-  for buf, group_id in pairs(state.manual_groupings) do
-    if group_id == name then state.manual_groupings[buf] = nil end
+---@alias group_actions "close" | "toggle"
+---Execute an action on a group of buffers
+---@param name string
+---@param action group_actions | fun(b: bufferline.Buffer)
+function M.action(name, action)
+  assert(name, "A name must be passed to execute a group action")
+  if action == "close" then
+    command(name, function(b) api.nvim_buf_delete(b.id, { force = true }) end)
+    ui.refresh()
+
+    if name == PINNED_NAME then vim.g[PINNED_KEY] = {} end
+    for buf, group_id in pairs(group_state.manual_groupings) do
+      if group_id == name then group_state.manual_groupings[buf] = nil end
+    end
+  elseif action == "toggle" then
+    M.toggle_hidden(nil, name)
+    ui.refresh()
+  elseif type(action) == "function" then
+    command(name, action)
   end
 end
 
-function M.get_all() return state.user_groups end
+function M.toggle_pin()
+  local _, element = commands.get_current_element_index(state)
+  if not element then return end
+  if is_pinned(element) then
+    M.remove_element("pinned", element)
+  else
+    M.add_element("pinned", element)
+  end
+  ui.refresh()
+end
+
+function M.handle_group_enter()
+  local options = config.options
+  local _, element = commands.get_current_element_index(state, { include_hidden = true })
+  if not element or not element.group then return end
+  local current_group = M.get_by_id(element.group)
+  if options.groups.options.toggle_hidden_on_enter then
+    if current_group.hidden then M.set_hidden(current_group.id, false) end
+  end
+  utils.for_each(function(tab)
+    local group = M.get_by_id(tab.group)
+    if group and group.auto_close and group.id ~= current_group.id then
+      M.set_hidden(group.id, true)
+    end
+  end, state.components)
+end
 
 -- FIXME:
 -- 1. this function does a lot of looping that can maybe be consolidated
@@ -471,12 +519,12 @@ function M.get_all() return state.user_groups end
 ---@param sorter fun(list: bufferline.Component[]):bufferline.Component[]
 ---@return bufferline.Component[]
 function M.render(components, sorter)
-  components, state.components_by_group = sort_by_groups(components)
-  if vim.tbl_isempty(state.components_by_group) then return components end
+  components, group_state.components_by_group = sort_by_groups(components)
+  if vim.tbl_isempty(group_state.components_by_group) then return components end
   local result = {}
-  for _, sublist in ipairs(state.components_by_group) do
+  for _, sublist in ipairs(group_state.components_by_group) do
     local buf_group_id = sublist.id
-    local buf_group = state.user_groups[buf_group_id]
+    local buf_group = group_state.user_groups[buf_group_id]
     --- convert our components by group which is essentially and index of tab positions and ids
     --- to the actual tab by pulling the full value out of the tab map
     local items = utils.map(function(map)
@@ -507,7 +555,7 @@ M.builtin = builtin
 M.separator = separator
 
 if utils.is_test() then
-  M.state = state
+  M.state = group_state
   M.sort_by_groups = sort_by_groups
   M.get_manual_group = get_manual_group
   M.set_manual_group = set_manual_group
