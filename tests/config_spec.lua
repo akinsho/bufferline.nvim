@@ -83,7 +83,45 @@ describe("Config tests", function()
         end
       end
     end)
+
+    describe("- Style Presets - ", function()
+      it("should disable all bolding if the preset contains no bold", function()
+        config.set({ options = { style_preset = config.STYLE_PRESETS.no_bold } })
+        local conf = config.apply()
+        local some_italic = false
+        for _, value in pairs(conf.highlights) do
+          if not some_italic and value.italic then some_italic = true end
+          assert.is_falsy(value.bold)
+        end
+        assert.is_true(some_italic)
+      end)
+
+      it("should disable all italics if the preset contains no italic", function()
+        config.set({ options = { style_preset = config.STYLE_PRESETS.no_italic } })
+        local conf = config.apply()
+        local some_bold = false
+        for _, value in pairs(conf.highlights) do
+          if not some_bold and value.bold then some_bold = true end
+          assert.is_falsy(value.italic)
+        end
+        assert.is_true(some_bold)
+      end)
+
+      it("should disable both italics and bold, if no_bold and no_italic are specified", function()
+        config.set({
+          options = {
+            style_preset = { config.STYLE_PRESETS.no_italic, config.STYLE_PRESETS.no_bold },
+          },
+        })
+        local conf = config.apply()
+        for _, value in pairs(conf.highlights) do
+          assert.is_falsy(value.italic)
+          assert.is_falsy(value.bold)
+        end
+      end)
+    end)
   end)
+
   describe("Resetting config -", function()
     it("should use updated colors when the colorscheme changes", function()
       vim.cmd("colorscheme blue")
