@@ -211,7 +211,7 @@ STYLE PRESETS                                        *bufferline-style-presets*
 You also use one of the pre-defined rulesets i.e. preset for the bufferline
 e.g. you can remove all bold text by setting the `options.style_preset` to
 `require('bufferline').presets.no_bold` or `no_italics`.
-There are also stylist presets such as `minimal` which makes the foreground
+There are also more stylistic presets such as `minimal` which makes the foreground
 match the background so that only the text of the buffers is visible and the
 bufferline is more unobtrusive.
 
