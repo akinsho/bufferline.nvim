@@ -156,8 +156,8 @@
 ---@field public ancestor bufferline.AncestorSearch
 ---@field public __ancestor bufferline.AncestorSearch
 ---@field public find_index fun(Buffer, BufferlineState): integer?
----@field public is_new fun(Buffer, BufferlineState): boolean
----@field public is_existing fun(Buffer, BufferlineState): boolean
+---@field public newly_opened fun(Buffer, BufferlineState): boolean
+---@field public previously_opened fun(Buffer, BufferlineState): boolean
 
 ---@alias bufferline.ComponentsByGroup (bufferline.Group | bufferline.Component[])[]
 
@@ -198,10 +198,10 @@
 ---@field suffix string
 ---@field extends number how many positions the attribute extends for
 
---- @class bufferline.Segment
---- @field text string
---- @field highlight string
---- @field attr bufferline.SegmentAttribute
+---@class bufferline.Segment
+---@field text string
+---@field highlight string
+---@field attr bufferline.SegmentAttribute
 
 ---@class bufferline.Section
 ---@field items bufferline.Component[]
@@ -218,3 +218,11 @@
 ---@field custom_sort number[]
 ---@field left_offset_size number
 ---@field right_offset_size number
+
+---@alias bufferline.Sorter fun(buf_a: bufferline.Buffer, buf_b: bufferline.Buffer): boolean
+
+---@class bufferline.SorterOptions
+---@field sort_by (string|function)?
+---@field current_index integer?
+---@field custom_sort boolean?
+---@field prev_components bufferline.TabElement[]

@@ -53,10 +53,22 @@ local function bufferline()
   local is_tabline = config:is_tabline()
   local components = is_tabline and tabpages.get_components(state) or buffers.get_components(state)
 
+  -- NOTE: keep track of the previous state so it can be used for sorting
+  -- specifically to position newly opened buffers next to the buffer that was previously open
+  local prev_idx, prev_components = state.current_element_index, state.components
+
+  local function sorter(list)
+    return sorters.sort(list, {
+      current_index = prev_idx,
+      prev_components = prev_components,
+      custom_sort = state.custom_sort,
+    })
+  end
+
   local _, current_idx = utils.find(function(component) return component:current() end, components)
 
   state.set({ current_element_index = current_idx })
-  components = not is_tabline and groups.render(components, sorters.sort) or sorters.sort(components)
+  components = not is_tabline and groups.render(components, sorter) or sorter(components)
   local tabline = ui.tabline(components, tabpages.get())
 
   state.set({

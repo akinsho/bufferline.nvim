@@ -198,22 +198,22 @@ function Buffer:current() return api.nvim_get_current_buf() == self.id end
 
 --- If the buffer is already part of state then it is existing
 --- otherwise it is new
----@param state bufferline.State
+---@param components bufferline.TabElement[]
 ---@return boolean
-function Buffer:is_existing(state)
-  return utils.find(function(component) return component.id == self.id end, state.components) ~= nil
+function Buffer:previously_opened(components)
+  return utils.find(function(component) return component.id == self.id end, components) ~= nil
 end
 
--- Find and return the index of the matching buffer (by id) in the list in state
---- @param state bufferline.State
-function Buffer:find_index(state)
-  for index, component in ipairs(state.components) do
+--- Find and return the index of the matching buffer (by id) in the list in state
+---@param components bufferline.TabElement[]
+function Buffer:find_index(components)
+  for index, component in ipairs(components) do
     if component.id == self.id then return index end
   end
 end
 
--- @param state BufferlineState
-function Buffer:is_new(state) return not self:is_existing(state) end
+---@param components bufferline.TabElement[]
+function Buffer:newly_opened(components) return not self:previously_opened(components) end
 
 function Buffer:visible() return fn.bufwinnr(self.id) > 0 end
 
