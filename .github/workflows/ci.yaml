@@ -1,18 +1,18 @@
 name: CI
 on:
   push:
-  #   paths-ignore:
-  #     - ".github/**"
-  #     - "*.md"
+    #   paths-ignore:
+    #     - ".github/**"
+    #     - "*.md"
 
 jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: JohnnyMorganz/stylua-action@1.0.0
+      - uses: actions/checkout@v3
+      - uses: JohnnyMorganz/stylua-action@v2
         with:
-          version: v0.14.3
+          version: latest
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --config-path=stylua.toml lua/
       - name: Commit files
@@ -69,4 +69,3 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email github-actions[bot]@users.noreply.github.com
           git remote add gh-token "https://${{ secrets.GITHUB_TOKEN }}@github.com/google-github-actions/release-please-action.git"
-
