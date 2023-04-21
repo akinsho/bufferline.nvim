@@ -46,9 +46,7 @@ function M.set(new_state)
   for key, value in pairs(new_state) do
     if value == vim.NIL then value = nil end
     if vim.tbl_contains(component_keys, key) then
-      value = filter_invisible(
-        value --[=[@as bufferline.Component[]]=]
-      )
+      value = filter_invisible(value --[=[@as bufferline.Component[]]=])
     end
     state[key] = value
   end
