@@ -1,5 +1,6 @@
 local lazy = require("bufferline.lazy")
 local config = lazy.require("bufferline.config") ---@module "bufferline.config"
+local state = lazy.require("bufferline.state") ---@module "bufferline.state"
 
 local M = {}
 ---------------------------------------------------------------------------//
@@ -83,30 +84,30 @@ local function sort_by_tabs(buf_a, buf_b)
   return buf_a_tabnr < buf_b_tabnr
 end
 
---- @param state bufferline.State
-local sort_by_new_after_existing = function(state)
+--- @param s bufferline.State
+local sort_by_new_after_existing = function(s)
   --- @param item_a bufferline.Buffer
   --- @param item_b bufferline.Buffer
   return function(item_a, item_b)
-    if item_a:is_new(state) and item_b:is_existing(state) then
+    if item_a:is_new(s) and item_b:is_existing(s) then
       return false
-    elseif item_a:is_existing(state) and item_b:is_new(state) then
+    elseif item_a:is_existing(s) and item_b:is_new(s) then
       return true
     end
     return item_a.id < item_b.id
   end
 end
 
---- @param state bufferline.State
-local sort_by_new_after_current = function(state)
+--- @param s bufferline.State
+local sort_by_new_after_current = function(s)
   --- @param item_a bufferline.Buffer
   --- @param item_b bufferline.Buffer
   return function(item_a, item_b)
-    local a_index = item_a:find_index(state)
-    local a_is_new = item_a:is_new(state)
-    local b_index = item_b:find_index(state)
-    local b_is_new = item_b:is_new(state)
-    local current_index = state.current_element_index or 1
+    local a_index = item_a:find_index(s)
+    local a_is_new = item_a:is_new(s)
+    local b_index = item_b:find_index(s)
+    local b_is_new = item_b:is_new(s)
+    local current_index = s.current_element_index or 1
     if not a_is_new and not b_is_new then
       -- If both buffers are either before or after (inclusive) the current
       -- buffer, respect the current order.
@@ -123,13 +124,12 @@ end
 
 --- sorts a list of buffers in place
 --- @param elements bufferline.TabElement[]
---- @param opts {sort_by: (string|function)?, state: bufferline.State?}
+--- @param opts {sort_by: (string|function)?}
 function M.sort(elements, opts)
   opts = opts or {}
-  local sort_by, state = opts.sort_by, opts.state
+  local sort_by = opts.sort_by or config.options.sort_by
   -- the user has manually sorted the buffers don't try to re-sort them
-  if state and state.custom_sort then return elements end
-  sort_by = sort_by or config.options.sort_by
+  if state.custom_sort then return elements end
   if sort_by == "none" then
     return elements
   elseif sort_by == "insert_after_current" then
