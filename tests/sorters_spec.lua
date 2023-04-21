@@ -1,15 +1,19 @@
+---@diagnostic disable: need-check-nil
 describe("Sorters - ", function()
-  local sorters = require("bufferline.sorters")
   local utils = require("bufferline.utils")
   local bufferline ---@module "bufferline"
+  local sorters ---@module "bufferline.sorters"
   local state ---@type bufferline.State
 
   before_each(function()
     package.loaded["bufferline"] = nil
     package.loaded["bufferline.state"] = nil
-    bufferline = require("bufferline")
     package.loaded["bufferline.commands"] = nil
+    package.loaded["bufferline.sorters"] = nil
+
+    bufferline = require("bufferline")
     state = require("bufferline.state")
+    sorters = require("bufferline.sorters")
   end)
 
   after_each(function() vim.cmd("silent %bwipeout!") end)
@@ -94,7 +98,7 @@ describe("Sorters - ", function()
     assert.is_equal(2, state.current_element_index)
     vim.cmd("edit g.txt")
     nvim_bufferline()
-    local comp = state.components[3]:as_element()
+    local comp = state.components[3]
     assert.is_truthy(comp)
     assert.is_true(comp.name:match("g.txt") ~= nil)
   end)
