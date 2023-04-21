@@ -53,9 +53,9 @@ local function bufferline()
   local is_tabline = config:is_tabline()
   local components = is_tabline and tabpages.get_components(state) or buffers.get_components(state)
 
-  --- NOTE: this cannot be added to state as a meta method since
-  --- state is not actually set till after sorting and component creation is done
-  state.set({ current_element_index = state.get_current_index() })
+  local _, current_idx = utils.find(function(component) return component:current() end, components)
+
+  state.set({ current_element_index = current_idx })
   components = not is_tabline and groups.render(components, sorters.sort) or sorters.sort(components)
   local tabline = ui.tabline(components, tabpages.get())
 

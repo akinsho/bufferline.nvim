@@ -61,13 +61,15 @@ function M.map(callback, list)
   return accum
 end
 
+--- Search for an item in a list like table returning the item and its index
+--- if the predicate returns true for the item
 ---@generic T
 ---@param list T[]
----@param callback fun(item: T): boolean
----@return T?
+---@param callback fun(item: T, index: number): boolean
+---@return T?, number?
 function M.find(callback, list)
-  for _, v in ipairs(list) do
-    if callback(v) then return v end
+  for i, v in ipairs(list) do
+    if callback(v, i) then return v, i end
   end
 end
 

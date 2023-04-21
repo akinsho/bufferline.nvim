@@ -30,14 +30,6 @@ function M.restore_positions()
   if ids and #ids > 0 then state.custom_sort = vim.tbl_map(tonumber, ids) end
 end
 
----Get the index of the current element
----@return number?
-function M.get_current_index()
-  for index, component in ipairs(state.components) do
-    if component:current() then return index end
-  end
-end
-
 ---@param list bufferline.Component[]
 ---@return bufferline.Component[]
 local function filter_invisible(list)
