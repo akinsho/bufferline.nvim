@@ -6,75 +6,71 @@ local M = {}
 ---------------------------------------------------------------------------//
 -- Sorters
 ---------------------------------------------------------------------------//
-local fnamemodify = vim.fn.fnamemodify
+local api, fn = vim.api, vim.fn
 
--- @param path string
-local function full_path(path) return fnamemodify(path, ":p") end
+---@param path string
+local function full_path(path) return fn.fnamemodify(path, ":p") end
 
--- @param path string
+---@param path string
 local function is_relative_path(path) return full_path(path) ~= path end
 
---- @param buf_a bufferline.Buffer
---- @param buf_b bufferline.Buffer
-local function sort_by_extension(buf_a, buf_b) return fnamemodify(buf_a.name, ":e") < fnamemodify(buf_b.name, ":e") end
+---@type bufferline.Sorter
+local function sort_by_extension(a, b) return fn.fnamemodify(a.name, ":e") < fn.fnamemodify(b.name, ":e") end
 
---- @param buf_a bufferline.Buffer
---- @param buf_b bufferline.Buffer
-local function sort_by_relative_directory(buf_a, buf_b)
-  local ra = is_relative_path(buf_a.path)
-  local rb = is_relative_path(buf_b.path)
+---@type bufferline.Sorter
+local function sort_by_relative_directory(a, b)
+  local ra = is_relative_path(a.path)
+  local rb = is_relative_path(b.path)
   if ra and not rb then return false end
   if rb and not ra then return true end
-  return buf_a.path < buf_b.path
+  return a.path < b.path
 end
 
---- @param buf_a bufferline.Buffer
---- @param buf_b bufferline.Buffer
-local function sort_by_directory(buf_a, buf_b) return full_path(buf_a.path) < full_path(buf_b.path) end
+---@type bufferline.Sorter
+local function sort_by_directory(a, b) return full_path(a.path) < full_path(b.path) end
 
---- @param buf_a bufferline.Buffer
---- @param buf_b bufferline.Buffer
-local function sort_by_id(buf_a, buf_b)
-  if not buf_a and buf_b then
+---@type bufferline.Sorter
+local function sort_by_id(a, b)
+  if not a and b then
     return true
-  elseif buf_a and not buf_b then
+  elseif a and not b then
     return false
   end
-  return buf_a.id < buf_b.id
+  return a.id < b.id
 end
 
 --- @param buf bufferline.Buffer
-local function init_buffer_tabnr(buf)
+local function get_buf_tabnr(buf)
   local maxinteger = 1000000000
   -- If the buffer is visible, then its initial value shouldn't be
   -- maxed to prevent sorting it to the end of the list.
-  if next(vim.fn.win_findbuf(buf.id)) ~= nil then return 0 end
+  if next(fn.win_findbuf(buf.id)) ~= nil then return 0 end
   -- We use the max integer as a default tab number for hidden buffers,
   -- to order them at the end of the buffer list, since they won't be
   -- found in tab pages.
   return maxinteger
 end
 
---- @param buf_a bufferline.Buffer
---- @param buf_b bufferline.Buffer
-local function sort_by_tabpage_number(buf_a, buf_b)
-  local a = vim.api.nvim_tabpage_get_number(buf_a.id)
-  local b = vim.api.nvim_tabpage_get_number(buf_b.id)
-  return a < b
+---@type bufferline.Sorter
+local function sort_by_tabpage_number(a, b)
+  local tab_a = api.nvim_tabpage_get_number(a.id)
+  local tab_b = api.nvim_tabpage_get_number(b.id)
+  return tab_a < tab_b
 end
 
-local function sort_by_tabs(buf_a, buf_b)
-  local buf_a_tabnr = init_buffer_tabnr(buf_a)
-  local buf_b_tabnr = init_buffer_tabnr(buf_b)
+---@type bufferline.Sorter
+local function sort_by_tabs(a, b)
+  local buf_a_tabnr = get_buf_tabnr(a)
+  local buf_b_tabnr = get_buf_tabnr(b)
 
-  local tabs = vim.fn.gettabinfo()
+  local tabs = fn.gettabinfo()
   for _, tab in ipairs(tabs) do
-    local buffers = vim.fn.tabpagebuflist(tab.tabnr)
+    local buffers = fn.tabpagebuflist(tab.tabnr)
     if buffers ~= 0 then
       for _, buf_id in ipairs(buffers) do
-        if buf_id == buf_a.id then
+        if buf_id == a.id then
           buf_a_tabnr = tab.tabnr
-        elseif buf_id == buf_b.id then
+        elseif buf_id == b.id then
           buf_b_tabnr = tab.tabnr
         end
       end
@@ -84,10 +80,11 @@ local function sort_by_tabs(buf_a, buf_b)
   return buf_a_tabnr < buf_b_tabnr
 end
 
---- @param s bufferline.State
+---@alias bufferline.Sorter fun(buf_a: bufferline.Buffer, buf_b: bufferline.Buffer): boolean
+
+---@param s bufferline.State
+---@return bufferline.Sorter
 local sort_by_new_after_existing = function(s)
-  --- @param item_a bufferline.Buffer
-  --- @param item_b bufferline.Buffer
   return function(item_a, item_b)
     if item_a:is_new(s) and item_b:is_existing(s) then
       return false
@@ -98,10 +95,9 @@ local sort_by_new_after_existing = function(s)
   end
 end
 
---- @param s bufferline.State
+---@param s bufferline.State
+---@return bufferline.Sorter
 local sort_by_new_after_current = function(s)
-  --- @param item_a bufferline.Buffer
-  --- @param item_b bufferline.Buffer
   return function(item_a, item_b)
     local a_index = item_a:find_index(s)
     local a_is_new = item_a:is_new(s)
