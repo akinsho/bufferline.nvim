@@ -48,7 +48,7 @@ end
 local new_hl_api = api.nvim_get_hl ~= nil
 local get_hl = function(name, use_cterm)
   if new_hl_api then
-    local hl = api.nvim_get_hl(0, { name = name })
+    local hl = api.nvim_get_hl(0, { name = name, link = false })
     if use_cterm then
       hl.fg, hl.bg = hl.ctermfg, hl.ctermbg
     end
