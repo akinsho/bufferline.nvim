@@ -77,12 +77,15 @@ function M.get_color(opts)
   -- translate from internal part to hl part
   assert(
     hl_color_attrs[attribute],
-    fmt('unsupported attribute %s for %s, should be one of %s', attribute, name, table.concat(vim.tbl_keys(hl_color_attrs), ", "))
+    fmt(
+      "unsupported attribute %s for %s, should be one of %s",
+      attribute,
+      name,
+      table.concat(vim.tbl_keys(hl_color_attrs), ", ")
+    )
   )
   -- TODO: remove when 0.9 is stable
-  if not new_hl_api then
-    attribute = hl_color_attrs[attribute]
-  end
+  if not new_hl_api then attribute = hl_color_attrs[attribute] end
 
   -- try and get hl from name
   local success, hl = pcall(get_hl, name, cterm)
