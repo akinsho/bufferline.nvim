@@ -86,16 +86,13 @@ end
 
 local function validate_user_highlights(opts, defaults, hls)
   if not hls then return end
-  local incorrect = { invalid_hl = {}, invalid_attrs = {} }
+  local incorrect = { invalid_hl = {} }
 
   local offset_highlights = get_offset_highlights(opts)
   local group_highlights = get_group_highlights(opts)
   local all_hls = vim.tbl_extend("force", {}, hls, offset_highlights, group_highlights)
 
-  for k, hl in pairs(all_hls) do
-    for key, _ in pairs(hl) do
-      if key:match("gui") then table.insert(incorrect.invalid_attrs, fmt("- %s", k)) end
-    end
+  for k, _ in pairs(all_hls) do
     if hls[k] then
       if not defaults.highlights[k] then table.insert(incorrect.invalid_hl, k) end
     end
@@ -113,20 +110,6 @@ local function validate_user_highlights(opts, defaults, hls)
       is_plural and " groups. " or " group. ",
       "Please check :help bufferline-highlights for all valid highlights",
     })
-    utils.notify(msg, "error")
-  end
-  if next(incorrect.invalid_attrs) then
-    local msg = table.concat({
-      "Using `gui`, `guifg`, `guibg`, `guisp` is deprecated please, convert these as follows: ",
-      "- guifg -> fg",
-      "- guibg -> bg",
-      "- guisp -> sp",
-      "- gui -> underline = true, undercurl = true, italic = true",
-      " see :help bufferline-highlights for more details on how to update your highlights",
-      "",
-      "Please fix: ",
-      unpack(incorrect.invalid_attrs),
-    }, "\n")
     utils.notify(msg, "error")
   end
 end
@@ -703,11 +686,7 @@ end
 function Config:resolve(defaults)
   local user, hl = self.user.highlights, self.highlights
   if type(user) == "function" then hl = user(defaults) end
-
-  self.highlights = utils.fold(function(accum, opts, hl_name)
-    accum[hl_name] = highlights.translate_user_highlights(opts)
-    return accum
-  end, resolve_user_highlight_links(hl))
+  self.highlights = resolve_user_highlight_links(hl)
 
   local indicator_icon = vim.tbl_get(self, "options", "indicator_icon")
   if indicator_icon then self.options.indicator = { icon = indicator_icon, style = "icon" } end
@@ -724,7 +703,7 @@ function Config:resolve(defaults)
 end
 
 ---Generate highlight groups from user
----@param map table<string, table>
+---@param map {[string]: {fg: string, bg: string}}
 --- TODO: can this become part of a metatable for each highlight group so it is done at the point
 ---of usage
 local function set_highlight_names(map)
@@ -739,7 +718,6 @@ local function set_group_highlights(hls)
   for _, group in pairs(groups.get_all()) do
     local group_hl, name = group.highlight, group.name
     if group_hl and type(group_hl) == "table" then
-      group_hl = highlights.translate_user_highlights(group_hl)
       local sep_name = fmt("%s_separator", name)
       local label_name = fmt("%s_label", name)
       local selected_name = fmt("%s_selected", name)

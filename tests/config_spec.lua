@@ -21,20 +21,6 @@ describe("Config tests", function()
       assert.is_true(vim.tbl_count(under_test.highlights) > 10)
     end)
 
-    it("should create vim highlight groups names for the highlights", function()
-      config.setup({
-        highlights = {
-          fill = {
-            guifg = "red",
-          },
-        },
-      })
-      local under_test = config.apply()
-
-      assert.equal(under_test.highlights.fill.fg, "red")
-      assert.equal(under_test.highlights.fill.hl_group, "BufferLineFill")
-    end)
-
     it("should derive colors from the existing highlights", function()
       vim.cmd(fmt("hi Comment guifg=%s", whitesmoke))
       config.setup({})

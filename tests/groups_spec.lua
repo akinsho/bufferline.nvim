@@ -63,20 +63,20 @@ describe("Group tests - ", function()
     local c = {
       highlights = {
         buffer_selected = {
-          guifg = "black",
-          guibg = "white",
+          fg = "black",
+          bg = "white",
         },
         buffer_visible = {
-          guifg = "black",
-          guibg = "white",
+          fg = "black",
+          bg = "white",
         },
         buffer = {
-          guifg = "black",
-          guibg = "white",
+          fg = "black",
+          bg = "white",
         },
         fill = {
-          guifg = "Red",
-          guibg = "Green",
+          fg = "Red",
+          bg = "Green",
         },
       },
       options = {
@@ -84,7 +84,7 @@ describe("Group tests - ", function()
           items = {
             {
               name = "test-group",
-              highlight = { guifg = "red" },
+              highlight = { fg = "red" },
               matcher = function(buf) return buf.name:match("dummy") end,
             },
           },

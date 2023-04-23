@@ -47,34 +47,17 @@ function M.hl(item)
   return fmt("%%#%s#", item)
 end
 
-function M.hl_exists(name) return vim.fn.hlexists(name) > 0 end
-
-local function convert_gui(guistr)
-  local gui = {}
-  if guistr:lower():match("none") then return gui end
-  local parts = vim.split(guistr, ",")
-  for _, part in ipairs(parts) do
-    gui[part] = true
-  end
-  return gui
-end
-
 local hl_keys = {
-  guisp = "sp",
-  guibg = "bg",
-  guifg = "fg",
-  default = "default",
-  foreground = "fg",
-  background = "bg",
-  fg = "fg",
-  bg = "bg",
-  sp = "special",
-  special = "special",
-  italic = "italic",
-  bold = "bold",
-  underline = "underline",
-  undercurl = "undercurl",
-  underdot = "underdot",
+  fg = true,
+  bg = true,
+  sp = true,
+  default = true,
+  link = true,
+  italic = true,
+  bold = true,
+  underline = true,
+  undercurl = true,
+  underdot = true,
 }
 
 ---These values will error if a theme does not set a normal ctermfg or ctermbg @see: #433
@@ -82,19 +65,6 @@ if not vim.opt.termguicolors:get() then
   hl_keys.ctermfg = "ctermfg"
   hl_keys.ctermbg = "ctermbg"
   hl_keys.cterm = "cterm"
-end
-
---- Transform user highlight keys to the correct subset of nvim_set_hl API arguments
----@param opts table<string, string>
----@return table<string, string|boolean>
-function M.translate_user_highlights(opts)
-  assert(opts, '"opts" must be passed for conversion')
-  local attributes = {}
-  for attr, value in pairs(opts) do
-    if hl_keys[attr] then attributes[hl_keys[attr]] = value end
-  end
-  if opts.gui then attributes = vim.tbl_extend("force", attributes, convert_gui(opts.gui)) end
-  return attributes
 end
 
 local function filter_invalid_keys(hl)
@@ -108,7 +78,7 @@ end
 ---@param name string
 ---@param opts {[string]: string | boolean}
 ---@return {[string]: string | boolean}?
-function M.set_one(name, opts)
+function M.set(name, opts)
   if not opts or vim.tbl_isempty(opts) then return end
   local hl = filter_invalid_keys(opts)
   hl.default = vim.F.if_nil(opts.default, config.options.themable)
@@ -124,7 +94,7 @@ function M.set_all(conf)
     if not opts or not opts.hl_group then
       msgs[#msgs + 1] = fmt("* %s - %s", name, vim.inspect(opts))
     else
-      M.set_one(opts.hl_group, opts)
+      M.set(opts.hl_group, opts)
     end
   end
   if next(msgs) then
@@ -162,7 +132,7 @@ function M.set_icon_highlight(state, hls, base_hl)
     bold = false,
     hl_group = icon_hl,
   })
-  M.set_one(icon_hl, hl_colors)
+  M.set(icon_hl, hl_colors)
   icon_hl_cache[icon_hl] = true
   return icon_hl
 end
@@ -181,6 +151,8 @@ local function get_hl_group_for_state(vis, hls, name, base)
   return ""
 end
 
+--- Return the correct highlight groups for each element i.e.
+--- if the element is selected, visible or inactive it's highlights should differ
 ---@param element bufferline.Buffer | bufferline.Tab
 ---@return table<string, string>
 function M.for_element(element)
