@@ -66,10 +66,11 @@ local hl_color_attrs = {
   sp = "special",
 }
 
--- parses the gui hex color code (or cterm color number) from the given hl_name
---   color number (0-255) is returned if cterm is set to true in opts
---   if unable to parse, uses the fallback value
----@param opts table
+---@alias GetColorOpts { name: string, attribute: string, fallback: GetColorOpts?, not_match: string?, cterm: boolean? }
+--- parses the GUI hex color code (or cterm color number) from the given hl_name
+--- color number (0-255) is returned if cterm is set to true in opts
+--- if unable to parse, uses the fallback value
+---@param opts GetColorOpts
 ---@return string? | number?
 function M.get_color(opts)
   local name, attribute, fallback, not_match, cterm =
@@ -100,18 +101,14 @@ function M.get_color(opts)
   ---  but return correct numbers for groups like DevIconPl. this problem
   ---  does not happen for gui colors.
 
-  -- no fallback for cterm colors
-  if cterm then return end
-  -- basic fallback
-  if fallback and type(fallback) == "string" then return fallback end
-  -- bit of recursive fallback logic
-  if fallback and type(fallback) == "table" then
+  if cterm then return end -- no fallback for cterm colors
+  if fallback and type(fallback) == "string" then return fallback end -- basic fallback
+  if fallback and type(fallback) == "table" then -- bit of recursive fallback logic
     assert(fallback.name and fallback.attribute, 'Fallback should have "name" and "attribute" fields')
     return M.get_color(fallback) -- allow chaining
   end
 
-  -- we couldn't resolve the color
-  return "NONE"
+  return "NONE" -- we couldn't resolve the color
 end
 
 return M

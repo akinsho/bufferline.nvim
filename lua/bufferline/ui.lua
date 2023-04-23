@@ -387,7 +387,7 @@ local function create_renderer(left_separator, right_separator, component)
   --- We return a function from render buffer as we do not yet have access to
   --- information regarding which buffers will actually be rendered
   --- @param next_item bufferline.Component
-  --- @returns string
+  --- @return string
   return function(next_item)
     -- if using the non-slanted tab style then we must check if the component is at the end of
     -- of a section e.g. the end of a group and if so it should not be wrapped with separators
@@ -689,8 +689,8 @@ function M.tabline(items, tab_indicators)
   )
 
   --- NOTE: the custom areas are essentially mini tablines a user can define so they can't
-  -- be set safely converted to segments so they are concatenated to string and join with
-  -- the rest of the tabline
+  --- be safely converted to segments so they are concatenated to string and joined with
+  --- the rest of the tabline
   local tabline = utils.join(offsets.left, left_area, core, right_area, offsets.right)
 
   local left_offset_size = offsets.left_size + statusline_str_width(left_area)

@@ -186,6 +186,8 @@ end
 function M.for_element(element)
   local hl = {}
 
+  ---@param name string
+  ---@param fallback string?
   local function hl_group(name, fallback)
     return get_hl_group_for_state(element:visibility(), config.highlights, name, fallback)
   end
