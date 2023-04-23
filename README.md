@@ -124,7 +124,7 @@ see: `:h bufferline-styling`
 
 #### Hover events
 
-**NOTE**: this is only available for _neovim 0.8+ (nightly) ONLY_ and is still **experimental**
+**NOTE**: this is _only_ available for >= neovim 0.8+
 
 ![hover-event-preview](https://user-images.githubusercontent.com/22454918/189106657-163b0550-897c-42c8-a571-d899bdd69998.gif)
 
