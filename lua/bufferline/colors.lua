@@ -1,6 +1,5 @@
 local M = {}
 
-local fmt = string.format
 local api = vim.api
 
 ---Convert a hex color to rgb
@@ -66,7 +65,7 @@ local hl_color_attrs = {
   sp = "special",
 }
 
----@alias GetColorOpts { name: string, attribute: string, fallback: GetColorOpts?, not_match: string?, cterm: boolean? }
+---@alias GetColorOpts { name: string, attribute: "fg" | "bg" | "sp", fallback: GetColorOpts?, not_match: string?, cterm: boolean? }
 --- parses the GUI hex color code (or cterm color number) from the given hl_name
 --- color number (0-255) is returned if cterm is set to true in opts
 --- if unable to parse, uses the fallback value
@@ -75,16 +74,6 @@ local hl_color_attrs = {
 function M.get_color(opts)
   local name, attribute, fallback, not_match, cterm =
     opts.name, opts.attribute, opts.fallback, opts.not_match, opts.cterm
-  -- translate from internal part to hl part
-  assert(
-    hl_color_attrs[attribute],
-    fmt(
-      "unsupported attribute %s for %s, should be one of %s",
-      attribute,
-      name,
-      table.concat(vim.tbl_keys(hl_color_attrs), ", ")
-    )
-  )
   -- TODO: remove when 0.9 is stable
   if not new_hl_api then attribute = hl_color_attrs[attribute] end
 
@@ -103,10 +92,7 @@ function M.get_color(opts)
 
   if cterm then return end -- no fallback for cterm colors
   if fallback and type(fallback) == "string" then return fallback end -- basic fallback
-  if fallback and type(fallback) == "table" then -- bit of recursive fallback logic
-    assert(fallback.name and fallback.attribute, 'Fallback should have "name" and "attribute" fields')
-    return M.get_color(fallback) -- allow chaining
-  end
+  if fallback and type(fallback) == "table" then return M.get_color(fallback) end -- bit of recursive fallback logic, which allows chaining
 
   return "NONE" -- we couldn't resolve the color
 end
