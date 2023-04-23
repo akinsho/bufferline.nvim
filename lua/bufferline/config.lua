@@ -187,27 +187,55 @@ local function derive_colors(preset)
   local string_fg = hex({ name = "String", attribute = "fg" })
 
   local error_fg = hex({
-    name = "DiagnosticError",
+    name = "DiagnosticError", -- diagnostic with text highlight
     attribute = "fg",
-    fallback = { name = "Error", attribute = "fg" },
+    fallback = {
+      name = "DiagnosticError", -- diagnostic with underline highlight
+      attribute = "sp",
+      fallback = {
+        name = "Error",
+        attribute = "fg",
+      },
+    },
   })
 
   local warning_fg = hex({
     name = "DiagnosticWarn",
     attribute = "fg",
-    fallback = { name = "WarningMsg", attribute = "fg" },
+    fallback = {
+      name = "DiagnosticWarn",
+      attribute = "sp",
+      fallback = {
+        name = "WarningMsg",
+        attribute = "fg",
+      },
+    },
   })
 
   local info_fg = hex({
     name = "DiagnosticInfo",
     attribute = "fg",
-    fallback = { name = "Normal", attribute = "fg" },
+    fallback = {
+      name = "DiagnosticInfo",
+      attribute = "sp",
+      fallback = {
+        name = "Normal",
+        attribute = "fg",
+      },
+    },
   })
 
   local hint_fg = hex({
     name = "DiagnosticHint",
     attribute = "fg",
-    fallback = { name = "Directory", attribute = "fg" },
+    fallback = {
+      name = "DiagnosticHint",
+      attribute = "sp",
+      fallback = {
+        name = "Directory",
+        attribute = "fg",
+      },
+    },
   })
 
   local tabline_sel_bg = hex({

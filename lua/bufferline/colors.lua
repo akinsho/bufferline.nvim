@@ -48,7 +48,7 @@ end
 local new_hl_api = api.nvim_get_hl ~= nil
 local get_hl = function(name, use_cterm)
   if new_hl_api then
-    local hl = api.nvim_get_hl(0, { name = name })
+    local hl = api.nvim_get_hl(0, { name = name, link = false })
     if use_cterm then
       hl.fg, hl.bg = hl.ctermfg, hl.ctermbg
     end
@@ -57,6 +57,14 @@ local get_hl = function(name, use_cterm)
   ---@diagnostic disable-next-line: undefined-field
   return api.nvim_get_hl_by_name(name, not use_cterm)
 end
+
+-- Map of nvim_get_hl() highlight attributes (new API) to
+-- nvim_get_hl_by_name() highlight attributes (old API).
+local hl_color_attrs = {
+  fg = "foreground",
+  bg = "background",
+  sp = "special",
+}
 
 -- parses the gui hex color code (or cterm color number) from the given hl_name
 --   color number (0-255) is returned if cterm is set to true in opts
@@ -68,11 +76,13 @@ function M.get_color(opts)
     opts.name, opts.attribute, opts.fallback, opts.not_match, opts.cterm
   -- translate from internal part to hl part
   assert(
-    attribute == "fg" or attribute == "bg",
-    fmt('attribute for %s should be one of "fg" or "bg", "%s" was passed in ', name, attribute)
+    hl_color_attrs[attribute],
+    fmt('unsupported attribute %s for %s, should be one of %s', attribute, name, table.concat(vim.tbl_keys(hl_color_attrs), ", "))
   )
   -- TODO: remove when 0.9 is stable
-  if not new_hl_api then attribute = attribute == "fg" and "foreground" or "background" end
+  if not new_hl_api then
+    attribute = hl_color_attrs[attribute]
+  end
 
   -- try and get hl from name
   local success, hl = pcall(get_hl, name, cterm)
