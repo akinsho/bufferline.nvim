@@ -102,7 +102,7 @@ end
 ---@param callback fun(item: T)
 ---@param matcher (fun(item: T):boolean)?
 function M.for_each(callback, list, matcher)
-  for _, item in ipairs(list) do
+  for _, item in pairs(list) do
     if not matcher or matcher(item) then callback(item) end
   end
 end
@@ -229,5 +229,18 @@ end
 -- TODO: deprecate this in nvim-0.11 or use strict lists
 --- Determine which list-check function to use
 M.is_list = vim.tbl_isarray or vim.tbl_islist
+
+---parse command line arguments into a table
+---@generic T
+---@param args string
+---@param expected {[string]: fun(arg: string): any}
+---@return T:table<string, any>
+function M.parse_args(args, expected)
+  local opts = {}
+  for arg_name, arg_value in args:gmatch("(%S+)=(%S+)") do
+    if expected[arg_name] then opts[arg_name] = expected[arg_name](arg_value) end
+  end
+  return opts
+end
 
 return M
