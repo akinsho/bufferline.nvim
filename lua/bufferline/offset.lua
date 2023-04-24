@@ -62,7 +62,7 @@ local function get_section_text(size, highlight, offset, is_left)
 end
 
 ---A heuristic to attempt to derive a windows background color from a winhighlight
----@param win_id any[]
+---@param win_id integer
 ---@param attribute string?
 ---@param match string?
 ---@return string|nil
@@ -90,8 +90,7 @@ end
 --- `{'row', ['col', ['leaf', id], ['leaf', id]], ['leaf', id]}`
 ---
 ---@param windows any[]
----@return boolean
----@return number[]
+---@return boolean, number
 local function is_valid_layout(windows)
   local win_type, win_id = windows[1], windows[2]
   if utils.is_list(win_id) and win_type == t.COLUMN then win_id = win_id[1][2] end
@@ -104,7 +103,7 @@ end
 ---@param windows any[]
 ---@param offset table
 ---@return boolean
----@return number[]?
+---@return number?
 ---@return boolean?
 local function is_offset_section(windows, offset)
   local wins = { windows[1] }
