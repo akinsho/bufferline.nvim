@@ -8,31 +8,13 @@ local colors = require("bufferline.colors") ---@module "bufferline.colors"
 local log = lazy.require("bufferline.utils.log") ---@module "bufferline.utils.log"
 
 local api = vim.api
-local V = constants.visibility
+local visibility = constants.visibility
 ---------------------------------------------------------------------------//
 -- Highlights
 ---------------------------------------------------------------------------//
 local M = {}
 
 local PREFIX = "BufferLine"
-
---- @class NameGenerationArgs
---- @field visibility number
-
---- Create a highlight name from a string using the bufferline prefix as well as appending the state
---- of the element
----@param name string
----@param opts NameGenerationArgs
----@return string
-function M.generate_name_for_state(name, opts)
-  opts = opts or {}
-  local visibility_suffix = ({
-    [V.INACTIVE] = "Inactive",
-    [V.SELECTED] = "Selected",
-    [V.NONE] = "",
-  })[opts.visibility]
-  return fmt("%s%s%s", PREFIX, name, visibility_suffix)
-end
 
 --- Generate highlight groups names i.e
 --- convert 'bufferline_value' to 'BufferlineValue' -> snake to pascal
@@ -114,14 +96,13 @@ function M.reset_icon_hl_cache() icon_hl_cache = {} end
 ---@param base_hl string
 ---@return string
 function M.set_icon_highlight(state, hls, base_hl)
-  local icon_hl = M.generate_name_for_state(base_hl, { visibility = state })
-  if icon_hl_cache[icon_hl] then return icon_hl end
-
-  local parent = ({
-    [V.INACTIVE] = hls.buffer_visible,
-    [V.SELECTED] = hls.buffer_selected,
-    [V.NONE] = hls.background,
+  local state_props = ({
+    [visibility.INACTIVE] = { "Inactive", hls.buffer_visible },
+    [visibility.SELECTED] = { "Selected", hls.buffer_selected },
+    [visibility.NONE] = { "", hls.background },
   })[state]
+  local icon_hl, parent = PREFIX .. base_hl .. state_props[1], state_props[2]
+  if icon_hl_cache[icon_hl] then return icon_hl end
 
   local color_icons = config.options.color_icons
   local color = not color_icons and "NONE"
@@ -144,7 +125,7 @@ end
 ---@return string
 local function get_hl_group_for_state(vis, hls, name, base)
   if not base then base = name end
-  local state = ({ [V.INACTIVE] = "visible", [V.SELECTED] = "selected" })[vis]
+  local state = ({ [visibility.INACTIVE] = "visible", [visibility.SELECTED] = "selected" })[vis]
   local hl_name = state and fmt("%s_%s", name, state) or base
   if hls[hl_name].hl_group then return hls[hl_name].hl_group end
   log.debug(fmt("%s highlight not found", name))
