@@ -168,11 +168,11 @@ local function setup_commands()
   command("BufferLineTogglePin", function() groups.toggle_pin() end, { nargs = 0 })
   command("BufferLineGroupClose", function(opts) groups.action(opts.args, "close") end, {
     nargs = 1,
-    complete = groups.complete_groups,
+    complete = groups.complete,
   })
   command("BufferLineGroupToggle", function(opts) groups.action(opts.args, "toggle") end, {
     nargs = 1,
-    complete = groups.complete_groups,
+    complete = groups.complete,
   })
 end
 
