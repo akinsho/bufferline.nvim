@@ -810,6 +810,16 @@ NOTE: you can specify colors the same way you specify colors for
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>'
             },
+            tab_separator = {
+              fg = separator_background_color,
+              bg = background_color,
+            },
+            tab_separator_selected = {
+              fg = separator_background_color,
+              bg = visible_bg,
+              sp = underline_sp,
+              underline = has_underline_indicator,
+            },
             close_button = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>'
