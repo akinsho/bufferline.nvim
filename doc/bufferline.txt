@@ -1031,6 +1031,10 @@ NOTE: you can specify colors the same way you specify colors for
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>'
             },
+            indicator_visible = {
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
+            },
             pick_selected = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
