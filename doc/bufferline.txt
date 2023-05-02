@@ -68,7 +68,7 @@ The available configuration are:
     bufferline.setup {
         options = {
             mode = "buffers", -- set to "tabs" to only show tabpages instead
-            style_preset = bufferline.presets.default, -- or bufferline.presets.minimal,
+            style_preset = bufferline.style_preset.default, -- or bufferline.style_preset.minimal,
             themable = true | false, -- allows highlight groups to be overriden i.e. sets highlights as default
             numbers = "none" | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
             close_command = "bdelete! %d",       -- can be a string | function, | false see "Mouse actions"
@@ -211,7 +211,7 @@ STYLE PRESETS                                        *bufferline-style-presets*
 
 You also use one of the pre-defined rulesets i.e. preset for the bufferline
 e.g. you can remove all bold text by setting the `options.style_preset` to
-`require('bufferline').presets.no_bold` or `no_italics`.
+`require('bufferline').style_preset.no_bold` or `no_italic`.
 There are also more stylistic presets such as `minimal` which makes the foreground
 match the background so that only the text of the buffers is visible and the
 bufferline is more unobtrusive.
@@ -221,14 +221,17 @@ e.g.
     local bufferline = require('bufferline')
     bufferline.setup({
         options = {
-            style_preset = bufferline.preset.no_italics,
+            style_preset = bufferline.style_preset.no_italic,
             -- or you can combine these e.g.
-            style_preset = {bufferline.preset.no_italics, bufferline.preset.no_bold},
+            style_preset = {
+                bufferline.style_preset.no_italic,
+                bufferline.style_preset.no_bold
+            },
         }
     })
 <
 The available options are
- - `no_italics`
+ - `no_italic`
  - `no_bold`
  - `minimal`
 
