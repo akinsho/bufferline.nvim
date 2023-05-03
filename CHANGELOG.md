@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.1.0](https://github.com/akinsho/bufferline.nvim/compare/v4.0.0...v4.1.0) (2023-05-03)
+
+
+### Features
+
+* **ui:** add `padded_slope` style ([#739](https://github.com/akinsho/bufferline.nvim/issues/739)) ([f336811](https://github.com/akinsho/bufferline.nvim/commit/f336811168e04362dfceb51b7e992dfd6ae4e78e))
+
+
+### Bug Fixes
+
+* **docs:** use correct value for style presets ([#747](https://github.com/akinsho/bufferline.nvim/issues/747)) ([9eed863](https://github.com/akinsho/bufferline.nvim/commit/9eed86350dcb4a5cca13056d0d16ba85e20e5024))
+* **groups:** use correct cmdline completion function ([a4bd445](https://github.com/akinsho/bufferline.nvim/commit/a4bd44523316928a7c4a5c09a3407d02c30b6027))
+
 ## [4.0.0](https://github.com/akinsho/bufferline.nvim/compare/v3.7.0...v4.0.0) (2023-04-23)
 
 
