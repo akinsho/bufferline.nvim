@@ -508,7 +508,7 @@ end
 function M.render(components, sorter)
   components, group_state.components_by_group = sort_by_groups(components)
   if vim.tbl_isempty(group_state.components_by_group) then return components end
-  local result = {}
+  local result = {} ---@type bufferline.Component[]
   for _, sublist in ipairs(group_state.components_by_group) do
     local buf_group_id = sublist.id
     local buf_group = group_state.user_groups[buf_group_id]
@@ -530,10 +530,7 @@ function M.render(components, sorter)
         items[#items + 1] = group_end
       end
     end
-    --- NOTE: there is no easy way to flatten a list of lists of non-scalar values like these
-    --- lists of objects since each object needs to be checked that it is in fact an object
-    --- not a list
-    vim.list_extend(result, items)
+    result = utils.merge_lists(result, items)
   end
   return result
 end
