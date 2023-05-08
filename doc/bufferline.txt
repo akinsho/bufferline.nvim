@@ -150,6 +150,7 @@ The available configuration are:
             show_close_icon = true | false,
             show_tab_indicators = true | false,
             show_duplicate_prefix = true | false, -- whether to show duplicate buffer prefix
+            duplicates_across_groups = true, -- whether to consider duplicate paths in different groups as duplicates
             persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
             move_wraps_at_ends = false, -- whether or not the move command "wraps" at the first or last position
             -- can also be a table containing 2 custom separators
