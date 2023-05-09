@@ -500,8 +500,8 @@ function M.handle_group_enter()
   end, state.components)
 end
 
--- FIXME:
--- 1. this function does a lot of looping that can maybe be consolidated
+-- FIXME: this function does a lot of looping that can maybe be consolidated
+--
 ---@param components bufferline.Component[]
 ---@param sorter fun(list: bufferline.Component[]):bufferline.Component[]
 ---@return bufferline.Component[]
