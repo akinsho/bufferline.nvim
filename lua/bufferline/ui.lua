@@ -106,7 +106,11 @@ end
 ---@param parts bufferline.Segment[]
 ---@return bufferline.Segment[]
 local function filter_invalid(parts)
-  return vim.tbl_filter(function(p) return p ~= nil end, parts)
+  local result = {}
+  for _, p in pairs(parts) do
+    if p ~= nil then result[#result + 1] = p end
+  end
+  return result
 end
 
 ---@param segments bufferline.Segment[]
