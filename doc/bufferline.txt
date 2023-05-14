@@ -791,7 +791,7 @@ default value for that key.
 NOTE: you can specify colors the same way you specify colors for
 `nvim_set_hl`. See `:h vim.api.nvim_set_hl` .
 >lua
-    lua require'bufferline'.setup{
+    require('bufferline').setup({
         highlights = {
             fill = {
                 fg = '<colour-value-here>',
@@ -806,8 +806,18 @@ NOTE: you can specify colors the same way you specify colors for
                 bg = '<colour-value-here>'
             },
             tab_selected = {
-                fg = tabline_sel_bg,
+                fg = '<colour-value-here>',
                 bg = '<colour-value-here>'
+            },
+            tab_separator = {
+              fg = '<colour-value-here>',
+              bg = '<colour-value-here>',
+            },
+            tab_separator_selected = {
+              fg = '<colour-value-here>',
+              bg = '<colour-value-here>',
+              sp = '<colour-value-here>',
+              underline = '<colour-value-here>',
             },
             tab_close = {
                 fg = '<colour-value-here>',
@@ -830,7 +840,7 @@ NOTE: you can specify colors the same way you specify colors for
                 bg = '<colour-value-here>'
             },
             buffer_selected = {
-                fg = normal_fg,
+                fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
                 bold = true,
                 italic = true,
@@ -955,7 +965,7 @@ NOTE: you can specify colors the same way you specify colors for
             warning_diagnostic_selected = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
-                sp = warning_diagnostic_fg
+                sp = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
@@ -1030,6 +1040,10 @@ NOTE: you can specify colors the same way you specify colors for
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>'
             },
+            indicator_visible = {
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>'
+            },
             indicator_selected = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>'
@@ -1053,11 +1067,11 @@ NOTE: you can specify colors the same way you specify colors for
                 italic = true,
             },
             offset_separator = {
-                fg = win_separator_fg,
-                bg = separator_background_color,
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
             },
         };
-    }
+    })
 <
 When `termguicolors` is not enabled, a user is expected to specify colour values
 similar to the format above (use `ctermbg` and `ctermfg` instead). A user can
