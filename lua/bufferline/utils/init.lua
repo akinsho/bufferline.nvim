@@ -132,7 +132,14 @@ function M.is_valid(buf_num)
 end
 
 ---@return integer
-function M.get_buf_count() return #fn.getbufinfo({ buflisted = 1 }) end
+function M.get_buf_count()
+  local buffers = vim.tbl_filter(
+    function(buf) return vim.fn.getbufvar(buf.bufnr, "&bufhidden") ~= "hide" end,
+    fn.getbufinfo({ buflisted = 1 })
+  )
+
+  return #buffers
+end
 
 ---@return integer[]
 function M.get_valid_buffers() return vim.tbl_filter(M.is_valid, vim.api.nvim_list_bufs()) end
