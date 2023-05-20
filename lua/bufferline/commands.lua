@@ -147,6 +147,16 @@ function M.get_current_element_index(current_state, opts)
   end
 end
 
+---@param current_state bufferline.State
+---@return number
+local get_last_pinned_index = function(current_state)
+  for index, item in ipairs(current_state.components) do
+    local element = item:as_element()
+    if not groups.is_pinned(element) then return index - 1 end
+  end
+  return 0
+end
+
 --- Move the buffer at index `from_index` (or current index if not specified) to position `to_index`
 --- @param to_index number negative indices are accepted (counting from the right instead of the left, e.g. -1 for the last position, -2 for the second-last, etc.)
 --- @param from_index number?
@@ -169,8 +179,25 @@ end
 
 --- @param direction number
 function M.move(direction)
-  local index = M.get_current_element_index(state)
-  M.move_to(index + direction, index)
+  local index, element = M.get_current_element_index(state)
+  local next_index = index + direction
+  if not config.options.move_wraps_at_ends or not index then return M.move_to(next_index, index) end
+
+  local last_pinned_index = get_last_pinned_index(state)
+  if groups.is_pinned(element) then
+    if next_index <= 0 then
+      next_index = last_pinned_index
+    elseif next_index > last_pinned_index then
+      next_index = 1
+    end
+  else
+    if next_index <= last_pinned_index then
+      next_index = #state.components
+    elseif next_index > #state.components then
+      next_index = last_pinned_index + 1
+    end
+  end
+  M.move_to(next_index, index)
 end
 
 --- @param direction number
