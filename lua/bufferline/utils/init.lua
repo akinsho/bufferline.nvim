@@ -39,7 +39,7 @@ end
 ---@vararg string
 ---@return integer
 function M.measure(...)
-  return M.fold(function(accum, item) return accum + api.nvim_strwidth(tostring(item)) end, { ... }, 0)
+  return M.fold(function(accum, item) return accum + strwidth(tostring(item)) end, { ... }, 0)
 end
 
 ---Concatenate a series of strings together
@@ -200,12 +200,12 @@ function M.is_current_stable_release() return vim.version().minor >= current_sta
 ---@param col_limit integer
 ---@return string
 local function truncate_by_cell(str, col_limit)
-  if str and str:len() == api.nvim_strwidth(str) then return fn.strcharpart(str, 0, col_limit) end
+  if str and str:len() == strwidth(str) then return fn.strcharpart(str, 0, col_limit) end
   local short = fn.strcharpart(str, 0, col_limit)
-  local width = api.nvim_strwidth(short)
+  local width = strwidth(short)
   while width > 1 and width > col_limit do
     short = fn.strcharpart(short, 0, fn.strchars(short) - 1)
-    width = api.nvim_strwidth(short)
+    width = strwidth(short)
   end
   return short
 end
@@ -221,7 +221,7 @@ function M.truncate_name(name, word_limit)
   local ext = fn.fnamemodify(name, ":e")
   if ext ~= "" then
     local truncated = name:gsub("%." .. ext, "", 1)
-    if api.nvim_strwidth(truncated) < word_limit then return truncated .. constants.ELLIPSIS end
+    if strwidth(truncated) < word_limit then return truncated .. constants.ELLIPSIS end
   end
   return truncate_by_cell(name, word_limit - 1) .. constants.ELLIPSIS
 end
