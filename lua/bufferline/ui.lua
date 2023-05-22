@@ -313,6 +313,19 @@ local function add_icon(context)
   end
 end
 
+--- Determine if the modified icon should be shown for the current element.
+--- @param context bufferline.RenderContext
+--- @return boolean
+local function show_modified(context)
+  local show = config.options.show_modified
+  if type(show) == "boolean" then
+    return show
+  elseif type(show) == "function" then
+    return show(context)
+  end
+  return false
+end
+
 --- The suffix can be either the modified icon, space to replace the icon if
 --- a user has turned them off or the close icon if the element is not currently modified
 --- @param context bufferline.RenderContext
@@ -329,7 +342,7 @@ local function add_suffix(context)
     highlight = element.modified and hl.modified or nil,
   }
   local close = get_close_icon(element.id, context)
-  return not element.modified and close or modified
+  return not (show_modified(context) and element.modified) and close or modified
 end
 
 --- TODO: We increment the buffer length by the separator although the final
