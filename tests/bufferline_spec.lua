@@ -22,14 +22,7 @@ describe("Bufferline tests:", function()
     state = require("bufferline.state")
     config = require("bufferline.config")
     icons = require("nvim-web-devicons")
-    icons.setup({
-      default = true,
-      override = {
-        default = {
-          icon = "",
-        },
-      },
-    })
+    icons.setup({ default = true })
   end)
 
   after_each(function() vim.cmd("silent %bwipeout!") end)
@@ -92,7 +85,7 @@ describe("Bufferline tests:", function()
       "       a.txt              b.txt              c.txt       ",
     }
     it("should add correct padding if close icons are present", function()
-      bufferline.setup()
+      bufferline.setup({ options = { get_element_icon = function() return "" end } })
       vim.cmd("file! a.txt")
       vim.cmd("edit b.txt")
       vim.cmd("edit c.txt")
@@ -105,6 +98,7 @@ describe("Bufferline tests:", function()
     it("should add correct padding if close icons are absent", function()
       bufferline.setup({
         options = {
+          get_element_icon = function() return "" end,
           show_buffer_close_icons = false,
         },
       })
@@ -119,6 +113,7 @@ describe("Bufferline tests:", function()
     it("should show the correct separators", function()
       bufferline.setup({
         options = {
+          get_element_icon = function() return "" end,
           separator_style = "slant",
         },
       })
