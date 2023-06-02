@@ -309,7 +309,7 @@ local group_by_name = group_by("name")
 local group_by_priority = group_by("priority")
 
 ---@param element bufferline.TabElement
-local function is_pinned(element) return get_manual_group(element) == PINNED_ID end
+function M.is_pinned(element) return get_manual_group(element) == PINNED_ID end
 
 --- Add a buffer to a group manually
 ---@param group_name string
@@ -478,7 +478,7 @@ end
 function M.toggle_pin()
   local _, element = commands.get_current_element_index(state)
   if not element then return end
-  if is_pinned(element) then
+  if M.is_pinned(element) then
     M.remove_element("pinned", element)
   else
     M.add_element("pinned", element)

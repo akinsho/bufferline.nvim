@@ -54,6 +54,7 @@
 ---@field public enforce_regular_tabs boolean
 ---@field public always_show_bufferline boolean
 ---@field public persist_buffer_sort boolean
+---@field public move_wraps_at_ends boolean
 ---@field public max_prefix_length number
 ---@field public sort_by string
 ---@field public diagnostics boolean | 'nvim_lsp' | 'coc'
