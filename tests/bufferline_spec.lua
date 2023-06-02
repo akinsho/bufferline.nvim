@@ -22,7 +22,14 @@ describe("Bufferline tests:", function()
     state = require("bufferline.state")
     config = require("bufferline.config")
     icons = require("nvim-web-devicons")
-    icons.setup({ default = true })
+    icons.setup({
+      default = true,
+      override = {
+        default = {
+          icon = "",
+        },
+      },
+    })
   end)
 
   after_each(function() vim.cmd("silent %bwipeout!") end)
