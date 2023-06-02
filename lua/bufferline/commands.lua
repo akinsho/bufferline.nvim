@@ -152,7 +152,7 @@ end
 local get_last_pinned_index = function(current_state)
   for index, item in ipairs(current_state.components) do
     local element = item:as_element()
-    if not groups.is_pinned(element) then return index - 1 end
+    if element and not groups._is_pinned(element) then return index - 1 end
   end
   return 0
 end
@@ -180,11 +180,13 @@ end
 --- @param direction number
 function M.move(direction)
   local index, element = M.get_current_element_index(state)
+  if not element then return end
+
   local next_index = index + direction
   if not config.options.move_wraps_at_ends or not index then return M.move_to(next_index, index) end
 
   local last_pinned_index = get_last_pinned_index(state)
-  if groups.is_pinned(element) then
+  if groups._is_pinned(element) then
     if next_index <= 0 then
       next_index = last_pinned_index
     elseif next_index > last_pinned_index then
