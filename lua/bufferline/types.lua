@@ -157,8 +157,6 @@
 ---@field public ancestor bufferline.AncestorSearch
 ---@field public __ancestor bufferline.AncestorSearch
 ---@field public find_index fun(Buffer, BufferlineState): integer?
----@field public newly_opened fun(Buffer, BufferlineState): boolean
----@field public previously_opened fun(Buffer, BufferlineState): boolean
 
 ---@alias bufferline.ComponentsByGroup (bufferline.Group | bufferline.Component[])[]
 
@@ -221,9 +219,3 @@
 ---@field right_offset_size number
 
 ---@alias bufferline.Sorter fun(buf_a: bufferline.Buffer, buf_b: bufferline.Buffer): boolean
-
----@class bufferline.SorterOptions
----@field sort_by (string|function)?
----@field current_index integer?
----@field custom_sort boolean?
----@field prev_components bufferline.TabElement[]

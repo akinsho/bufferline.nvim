@@ -78,55 +78,13 @@ local function sort_by_tabs(a, b)
   return buf_a_tabnr < buf_b_tabnr
 end
 
----@param components bufferline.TabElement[]
----@return bufferline.Sorter
-local sort_by_new_after_existing = function(components)
-  return function(item_a, item_b)
-    if item_a:newly_opened(components) and item_b:previously_opened(components) then
-      return false
-    elseif item_a:previously_opened(components) and item_b:newly_opened(components) then
-      return true
-    end
-    return item_a.id < item_b.id
-  end
-end
-
----@param prev_components bufferline.TabElement[]
----@return bufferline.Sorter
-local sort_by_new_after_current = function(prev_components, current_index)
-  return function(item_a, item_b)
-    local a_index = item_a:find_index(prev_components)
-    local a_is_new = item_a:newly_opened(prev_components)
-    local b_index = item_b:find_index(prev_components)
-    local b_is_new = item_b:newly_opened(prev_components)
-    current_index = current_index or 1
-    if not a_is_new and not b_is_new then
-      -- If both buffers are either before or after (inclusive) the current buffer, respect the current order.
-      if (a_index - current_index) * (b_index - current_index) >= 0 then return a_index < b_index end
-      return a_index < current_index
-    elseif not a_is_new and b_is_new then
-      return a_index <= current_index
-    elseif a_is_new and not b_is_new then
-      return current_index < b_index
-    end
-    return item_a.id < item_b.id
-  end
-end
-
 --- sorts a list of buffers in place
 --- @param elements bufferline.TabElement[]
---- @param opts bufferline.SorterOptions
-function M.sort(elements, opts)
-  opts = opts or {}
-  local sort_by = opts.sort_by or config.options.sort_by
-  -- the user has manually sorted the buffers don't try to re-sort them
-  if opts.custom_sort then return elements end
+--- @param sort_by (string|function)?
+function M.sort(elements, sort_by)
+  sort_by = sort_by or config.options.sort_by
   if sort_by == "none" then
     return elements
-  elseif sort_by == "insert_after_current" then
-    table.sort(elements, sort_by_new_after_current(opts.prev_components, opts.current_index))
-  elseif sort_by == "insert_at_end" then
-    table.sort(elements, sort_by_new_after_existing(opts.prev_components))
   elseif sort_by == "extension" then
     table.sort(elements, sort_by_extension)
   elseif sort_by == "directory" then
