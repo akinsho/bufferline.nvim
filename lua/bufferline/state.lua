@@ -23,11 +23,14 @@ local state = {
 
 function M.restore_positions()
   local str = vim.g[constants.positions_key]
-  if not str then return str end
-  -- these are converted to strings when stored
-  -- so have to be converted back before usage
-  local ids = vim.split(str, ",")
-  if ids and #ids > 0 then state.custom_sort = vim.tbl_map(tonumber, ids) end
+  local ok, paths = pcall(vim.json.decode, str)
+  if not ok or type(paths) ~= "table" or #paths == 0 then return end
+  local ids = vim.tbl_map(function(path)
+    local escaped = vim.fn.fnameescape(path)
+    return vim.fn.bufnr("^" .. escaped .. "$" --[[@as integer]])
+  end, paths)
+  ids = vim.tbl_filter(function(id) return id ~= -1 end, ids)
+  state.custom_sort = ids
 end
 
 ---@param list bufferline.Component[]

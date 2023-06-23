@@ -13,13 +13,14 @@ local pick = lazy.require("bufferline.pick") ---@module "bufferline.pick"
 
 local M = {}
 
-local positions_key = constants.positions_key
-
 local fmt = string.format
 local api = vim.api
 
 ---@param ids number[]
-local function save_positions(ids) vim.g[positions_key] = table.concat(ids, ",") end
+local function save_positions(ids)
+  local paths = vim.tbl_map(function(id) return vim.api.nvim_buf_get_name(id) end, ids)
+  vim.g[constants.positions_key] = vim.json.encode(paths)
+end
 
 --- @param elements bufferline.TabElement[]
 --- @return number[]
