@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.2.0](https://github.com/akinsho/bufferline.nvim/compare/v4.1.0...v4.2.0) (2023-06-26)
+
+
+### Features
+
+* **commands/go_to:** go to the last element if index out of bounds ([#758](https://github.com/akinsho/bufferline.nvim/issues/758)) ([6073426](https://github.com/akinsho/bufferline.nvim/commit/60734264a8655a7db3595159fb50076dc24c2f2c))
+* **commands:** add option to wrap when moving buffers at ends ([#759](https://github.com/akinsho/bufferline.nvim/issues/759)) ([da1875c](https://github.com/akinsho/bufferline.nvim/commit/da1875c1eee9aa9b7e19cda5c70ed7d7702d5f06))
+
+
+### Performance Improvements
+
+* **ui:** avoid (some) expensive functions ([#754](https://github.com/akinsho/bufferline.nvim/issues/754)) ([018bdf6](https://github.com/akinsho/bufferline.nvim/commit/018bdf61a97e00caeff05d16977437c63018762e))
+
 ## [4.1.0](https://github.com/akinsho/bufferline.nvim/compare/v4.0.0...v4.1.0) (2023-05-03)
 
 
