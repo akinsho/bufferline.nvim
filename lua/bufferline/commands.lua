@@ -259,7 +259,7 @@ function M.close_others()
   if not index then return end
 
   for i, item in ipairs(state.components) do
-    if not (i == index) then
+    if i ~= index then
       delete_element(item.id)
     end
   end
