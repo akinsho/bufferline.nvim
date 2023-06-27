@@ -154,6 +154,17 @@ function M.notify(msg, level, opts)
   vim.schedule(function() vim.notify(msg, level, nopts) end)
 end
 
+local positions_key = constants.positions_key
+
+---@param ids number[]
+function M.save_positions(ids) vim.g[positions_key] = table.concat(ids, ",") end
+
+--- @param elements bufferline.TabElement[]
+--- @return number[]
+function M.get_ids(elements)
+  return vim.tbl_map(function(item) return item.id end, elements)
+end
+
 ---Get an icon for a filetype using either nvim-web-devicons or vim-devicons
 ---if using the lua plugin this also returns the icon's highlights
 ---@param opts bufferline.IconFetcherOpts
