@@ -259,9 +259,7 @@ function M.close_others()
   if not index then return end
 
   for i, item in ipairs(state.components) do
-    if i ~= index then
-      delete_element(item.id)
-    end
+    if i ~= index then delete_element(item.id) end
   end
   ui.refresh()
 end
