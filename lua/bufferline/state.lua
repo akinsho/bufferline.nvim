@@ -1,7 +1,6 @@
 local M = {}
 
 local lazy = require("bufferline.lazy")
-local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
 local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
 
 -----------------------------------------------------------------------------//
@@ -20,18 +19,6 @@ local state = {
   left_offset_size = 0,
   right_offset_size = 0,
 }
-
-function M.restore_positions()
-  local str = vim.g[constants.positions_key]
-  local ok, paths = pcall(vim.json.decode, str)
-  if not ok or type(paths) ~= "table" or #paths == 0 then return end
-  local ids = vim.tbl_map(function(path)
-    local escaped = vim.fn.fnameescape(path)
-    return vim.fn.bufnr("^" .. escaped .. "$" --[[@as integer]])
-  end, paths)
-  ids = vim.tbl_filter(function(id) return id ~= -1 end, ids)
-  state.custom_sort = ids
-end
 
 ---@param list bufferline.Component[]
 ---@return bufferline.Component[]

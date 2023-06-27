@@ -216,7 +216,7 @@
 ---@field is_picking boolean
 ---@field visible_components bufferline.Component[]
 ---@field __components bufferline.Component[]
----@field custom_sort number[]
+---@field custom_sort number[]?
 ---@field left_offset_size number
 ---@field right_offset_size number
 

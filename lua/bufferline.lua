@@ -116,7 +116,7 @@ local function setup_autocommands(conf)
     api.nvim_create_autocmd("SessionLoadPost", {
       pattern = "*",
       group = BUFFERLINE_GROUP,
-      callback = function() state.restore_positions() end,
+      callback = function() state.custom_sort = utils.restore_positions() end,
     })
   end
   if not options.always_show_bufferline then
