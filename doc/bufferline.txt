@@ -543,6 +543,7 @@ are:
   current buffer
 * `BufferLineCloseLeft` - close all visible buffers to the left of the current
   buffer
+* `BufferLineCloseOthers` - close all other visible buffers
 
 These commands apply the configured `close_command` to each of the corresponding buffers.
 
