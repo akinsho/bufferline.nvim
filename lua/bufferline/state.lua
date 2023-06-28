@@ -1,7 +1,6 @@
 local M = {}
 
 local lazy = require("bufferline.lazy")
-local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
 local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
 
 -----------------------------------------------------------------------------//
@@ -20,15 +19,6 @@ local state = {
   left_offset_size = 0,
   right_offset_size = 0,
 }
-
-function M.restore_positions()
-  local str = vim.g[constants.positions_key]
-  if not str then return str end
-  -- these are converted to strings when stored
-  -- so have to be converted back before usage
-  local ids = vim.split(str, ",")
-  if ids and #ids > 0 then state.custom_sort = vim.tbl_map(tonumber, ids) end
-end
 
 ---@param list bufferline.Component[]
 ---@return bufferline.Component[]

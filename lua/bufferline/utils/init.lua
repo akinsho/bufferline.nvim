@@ -154,6 +154,30 @@ function M.notify(msg, level, opts)
   vim.schedule(function() vim.notify(msg, level, nopts) end)
 end
 
+---@return number[]?
+function M.restore_positions()
+  local str = vim.g[constants.positions_key]
+  local ok, paths = pcall(vim.json.decode, str)
+  if not ok or type(paths) ~= "table" or #paths == 0 then return nil end
+  local ids = vim.tbl_map(function(path)
+    local escaped = vim.fn.fnameescape(path)
+    return vim.fn.bufnr("^" .. escaped .. "$" --[[@as integer]])
+  end, paths)
+  return vim.tbl_filter(function(id) return id ~= -1 end, ids)
+end
+
+---@param ids number[]
+function M.save_positions(ids)
+  local paths = vim.tbl_map(function(id) return vim.api.nvim_buf_get_name(id) end, ids)
+  vim.g[constants.positions_key] = vim.json.encode(paths)
+end
+
+--- @param elements bufferline.TabElement[]
+--- @return number[]
+function M.get_ids(elements)
+  return vim.tbl_map(function(item) return item.id end, elements)
+end
+
 ---Get an icon for a filetype using either nvim-web-devicons or vim-devicons
 ---if using the lua plugin this also returns the icon's highlights
 ---@param opts bufferline.IconFetcherOpts

@@ -8,24 +8,12 @@ local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
 local config = lazy.require("bufferline.config") ---@module "bufferline.config"
 local groups = lazy.require("bufferline.groups") ---@module "bufferline.groups"
 local sorters = lazy.require("bufferline.sorters") ---@module "bufferline.sorters"
-local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
 local pick = lazy.require("bufferline.pick") ---@module "bufferline.pick"
 
 local M = {}
 
-local positions_key = constants.positions_key
-
 local fmt = string.format
 local api = vim.api
-
----@param ids number[]
-local function save_positions(ids) vim.g[positions_key] = table.concat(ids, ",") end
-
---- @param elements bufferline.TabElement[]
---- @return number[]
-local function get_ids(elements)
-  return vim.tbl_map(function(item) return item.id end, elements)
-end
 
 --- open the current element
 ---@param id number
@@ -170,9 +158,9 @@ function M.move_to(to_index, from_index)
     local destination_buf = state.components[next_index]
     state.components[next_index] = item
     state.components[index] = destination_buf
-    state.custom_sort = get_ids(state.components)
+    state.custom_sort = utils.get_ids(state.components)
     local opts = config.options
-    if opts.persist_buffer_sort then save_positions(state.custom_sort) end
+    if opts.persist_buffer_sort then utils.save_positions(state.custom_sort) end
     ui.refresh()
   end
 end
@@ -269,9 +257,9 @@ end
 function M.sort_by(sort_by)
   if next(state.components) == nil then return utils.notify("Unable to find elements to sort, sorry", "warn") end
   sorters.sort(state.components, { sort_by = sort_by })
-  state.custom_sort = get_ids(state.components)
+  state.custom_sort = utils.get_ids(state.components)
   local opts = config.options
-  if opts.persist_buffer_sort then save_positions(state.custom_sort) end
+  if opts.persist_buffer_sort then utils.save_positions(state.custom_sort) end
   ui.refresh()
 end
 
