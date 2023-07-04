@@ -268,7 +268,14 @@ local function derive_colors(preset)
 
   local underline_sp = has_underline_indicator and tabline_sel_bg or nil
 
+  local trunc_marker_fg = comment_fg
+  local trunc_marker_bg = separator_background_color
+
   return {
+    trunc_marker = {
+      fg = trunc_marker_fg,
+      bg = trunc_marker_bg
+    },
     fill = {
       fg = comment_fg,
       bg = separator_background_color,

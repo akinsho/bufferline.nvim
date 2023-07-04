@@ -680,9 +680,9 @@ function M.tabline(items, tab_indicators)
     right_element_size = right_element_size,
   })
 
-  local fill = hl.fill.hl_group
-  local left_marker = get_trunc_marker(left_trunc_icon, fill, fill, marker.left_count)
-  local right_marker = get_trunc_marker(right_trunc_icon, fill, fill, marker.right_count)
+  local marker_hl = hl.trunc_marker.hl_group
+  local left_marker = get_trunc_marker(left_trunc_icon, marker_hl, marker_hl, marker.left_count)
+  local right_marker = get_trunc_marker(right_trunc_icon, marker_hl, marker_hl, marker.right_count)
 
   local core = join(
     utils.merge_lists(
