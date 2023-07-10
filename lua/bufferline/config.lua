@@ -559,7 +559,7 @@ local function derive_colors(preset)
     },
     tab_separator_selected = {
       fg = separator_background_color,
-      bg = visible_bg,
+      bg = normal_bg,
       sp = underline_sp,
       underline = has_underline_indicator,
     },
