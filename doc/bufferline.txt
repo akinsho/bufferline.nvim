@@ -151,6 +151,7 @@ The available configuration are:
             show_tab_indicators = true | false,
             show_duplicate_prefix = true | false, -- whether to show duplicate buffer prefix
             persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
+            move_wraps_at_ends = false, -- whether or not the move command "wraps" at the first or last position
             -- can also be a table containing 2 custom separators
             -- [focused and unfocused]. eg: { '|', '|' }
             separator_style = "slant" | "slope" | "thick" | "thin" | { 'any', 'any' },
@@ -542,6 +543,7 @@ are:
   current buffer
 * `BufferLineCloseLeft` - close all visible buffers to the left of the current
   buffer
+* `BufferLineCloseOthers` - close all other visible buffers
 
 These commands apply the configured `close_command` to each of the corresponding buffers.
 
@@ -799,15 +801,15 @@ NOTE: you can specify colors the same way you specify colors for
             },
             background = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             tab = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             tab_selected = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             tab_separator = {
               fg = '<colour-value-here>',
@@ -821,23 +823,23 @@ NOTE: you can specify colors the same way you specify colors for
             },
             tab_close = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             close_button = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             close_button_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             close_button_selected = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             buffer_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             buffer_selected = {
                 fg = '<colour-value-here>',
@@ -876,91 +878,91 @@ NOTE: you can specify colors the same way you specify colors for
             hint = {
                 fg = '<colour-value-here>',
                 sp = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             hint_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             hint_selected = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
-                sp = '<colour-value-here>'
+                sp = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
             hint_diagnostic = {
                 fg = '<colour-value-here>',
                 sp = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             hint_diagnostic_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             hint_diagnostic_selected = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
-                sp = '<colour-value-here>'
+                sp = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
             info = {
                 fg = '<colour-value-here>',
                 sp = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             info_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             info_selected = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
-                sp = '<colour-value-here>'
+                sp = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
             info_diagnostic = {
                 fg = '<colour-value-here>',
                 sp = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             info_diagnostic_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             info_diagnostic_selected = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
-                sp = '<colour-value-here>'
+                sp = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
             warning = {
                 fg = '<colour-value-here>',
                 sp = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             warning_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             warning_selected = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
-                sp = '<colour-value-here>'
+                sp = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
             warning_diagnostic = {
                 fg = '<colour-value-here>',
                 sp = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             warning_diagnostic_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             warning_diagnostic_selected = {
                 fg = '<colour-value-here>',
@@ -972,81 +974,81 @@ NOTE: you can specify colors the same way you specify colors for
             error = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
-                sp = '<colour-value-here>'
+                sp = '<colour-value-here>',
             },
             error_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             error_selected = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
-                sp = '<colour-value-here>'
+                sp = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
             error_diagnostic = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
-                sp = '<colour-value-here>'
+                sp = '<colour-value-here>',
             },
             error_diagnostic_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             error_diagnostic_selected = {
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
-                sp = '<colour-value-here>'
+                sp = '<colour-value-here>',
                 bold = true,
                 italic = true,
             },
             modified = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             modified_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             modified_selected = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             duplicate_selected = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
                 italic = true,
             },
             duplicate_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
-                italic = true
+                bg = '<colour-value-here>',
+                italic = true,
             },
             duplicate = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
-                italic = true
+                bg = '<colour-value-here>',
+                italic = true,
             },
             separator_selected = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             separator_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             separator = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             indicator_visible = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             indicator_selected = {
                 fg = '<colour-value-here>',
-                bg = '<colour-value-here>'
+                bg = '<colour-value-here>',
             },
             pick_selected = {
                 fg = '<colour-value-here>',
@@ -1081,8 +1083,8 @@ numbers](https://www.ditig.com/256-colors-cheat-sheet).
 for example: >lua
     highlights = {
         fill = {
-            ctermbg = 7
-            ctermfg = 0
+            ctermbg = 7,
+            ctermfg = 0,
         }
     }
 

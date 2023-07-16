@@ -31,6 +31,7 @@ local M = {
   get_elements = commands.get_elements,
   close_with_pick = commands.close_with_pick,
   close_in_direction = commands.close_in_direction,
+  close_others = commands.close_others,
   unpin_and_close = commands.unpin_and_close,
 
   ---@deprecated
@@ -115,7 +116,7 @@ local function setup_autocommands(conf)
     api.nvim_create_autocmd("SessionLoadPost", {
       pattern = "*",
       group = BUFFERLINE_GROUP,
-      callback = function() state.restore_positions() end,
+      callback = function() state.custom_sort = utils.restore_positions() end,
     })
   end
   if not options.always_show_bufferline then
@@ -158,6 +159,7 @@ local function setup_commands()
   command("BufferLineCyclePrev", function() M.cycle(-1) end)
   command("BufferLineCloseRight", function() M.close_in_direction("right") end)
   command("BufferLineCloseLeft", function() M.close_in_direction("left") end)
+  command("BufferLineCloseOthers", function() M.close_others() end)
   command("BufferLineMoveNext", function() M.move(1) end)
   command("BufferLineMovePrev", function() M.move(-1) end)
   command("BufferLineSortByExtension", function() M.sort_by("extension") end)

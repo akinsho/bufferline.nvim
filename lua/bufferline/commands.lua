@@ -8,24 +8,12 @@ local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
 local config = lazy.require("bufferline.config") ---@module "bufferline.config"
 local groups = lazy.require("bufferline.groups") ---@module "bufferline.groups"
 local sorters = lazy.require("bufferline.sorters") ---@module "bufferline.sorters"
-local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
 local pick = lazy.require("bufferline.pick") ---@module "bufferline.pick"
 
 local M = {}
 
-local positions_key = constants.positions_key
-
 local fmt = string.format
 local api = vim.api
-
----@param ids number[]
-local function save_positions(ids) vim.g[positions_key] = table.concat(ids, ",") end
-
---- @param elements bufferline.TabElement[]
---- @return number[]
-local function get_ids(elements)
-  return vim.tbl_map(function(item) return item.id end, elements)
-end
 
 --- open the current element
 ---@param id number
@@ -130,8 +118,8 @@ function M.go_to(num, absolute)
   num = type(num) == "string" and tonumber(num) or num
   local list = absolute and state.components or state.visible_components
   local element = list[num]
-  if num == -1 then element = list[#list] end
-  if element then open_element(element.id) end
+  if num == -1 or not element then element = list[#list] end
+  open_element(element.id)
 end
 
 ---@param current_state bufferline.State
@@ -147,6 +135,16 @@ function M.get_current_element_index(current_state, opts)
   end
 end
 
+---@param current_state bufferline.State
+---@return number
+local get_last_pinned_index = function(current_state)
+  for index, item in ipairs(current_state.components) do
+    local element = item:as_element()
+    if element and not groups._is_pinned(element) then return index - 1 end
+  end
+  return 0
+end
+
 --- Move the buffer at index `from_index` (or current index if not specified) to position `to_index`
 --- @param to_index number negative indices are accepted (counting from the right instead of the left, e.g. -1 for the last position, -2 for the second-last, etc.)
 --- @param from_index number?
@@ -160,17 +158,36 @@ function M.move_to(to_index, from_index)
     local destination_buf = state.components[next_index]
     state.components[next_index] = item
     state.components[index] = destination_buf
-    state.custom_sort = get_ids(state.components)
+    state.custom_sort = utils.get_ids(state.components)
     local opts = config.options
-    if opts.persist_buffer_sort then save_positions(state.custom_sort) end
+    if opts.persist_buffer_sort then utils.save_positions(state.custom_sort) end
     ui.refresh()
   end
 end
 
 --- @param direction number
 function M.move(direction)
-  local index = M.get_current_element_index(state)
-  M.move_to(index + direction, index)
+  local index, element = M.get_current_element_index(state)
+  if not element then return end
+
+  local next_index = index + direction
+  if not config.options.move_wraps_at_ends or not index then return M.move_to(next_index, index) end
+
+  local last_pinned_index = get_last_pinned_index(state)
+  if groups._is_pinned(element) then
+    if next_index <= 0 then
+      next_index = last_pinned_index
+    elseif next_index > last_pinned_index then
+      next_index = 1
+    end
+  else
+    if next_index <= last_pinned_index then
+      next_index = #state.components
+    elseif next_index > #state.components then
+      next_index = last_pinned_index + 1
+    end
+  end
+  M.move_to(next_index, index)
 end
 
 --- @param direction number
@@ -224,14 +241,25 @@ function M.close_in_direction(direction)
   ui.refresh()
 end
 
+--Close other buffers
+function M.close_others()
+  local index = M.get_current_element_index(state)
+  if not index then return end
+
+  for i, item in ipairs(state.components) do
+    if i ~= index then delete_element(item.id) end
+  end
+  ui.refresh()
+end
+
 --- sorts all elements
 --- @param sort_by (string|function)?
 function M.sort_by(sort_by)
   if next(state.components) == nil then return utils.notify("Unable to find elements to sort, sorry", "warn") end
   sorters.sort(state.components, { sort_by = sort_by })
-  state.custom_sort = get_ids(state.components)
+  state.custom_sort = utils.get_ids(state.components)
   local opts = config.options
-  if opts.persist_buffer_sort then save_positions(state.custom_sort) end
+  if opts.persist_buffer_sort then utils.save_positions(state.custom_sort) end
   ui.refresh()
 end
 

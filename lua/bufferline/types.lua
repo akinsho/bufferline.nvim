@@ -54,6 +54,7 @@
 ---@field public enforce_regular_tabs boolean
 ---@field public always_show_bufferline boolean
 ---@field public persist_buffer_sort boolean
+---@field public move_wraps_at_ends boolean
 ---@field public max_prefix_length number
 ---@field public sort_by string
 ---@field public diagnostics boolean | 'nvim_lsp' | 'coc'
@@ -215,7 +216,7 @@
 ---@field is_picking boolean
 ---@field visible_components bufferline.Component[]
 ---@field __components bufferline.Component[]
----@field custom_sort number[]
+---@field custom_sort number[]?
 ---@field left_offset_size number
 ---@field right_offset_size number
 

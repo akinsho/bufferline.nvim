@@ -47,7 +47,7 @@ local components = {
 ---@param item bufferline.Component?
 local function set_hover_state(item)
   state.set({ hovered = item })
-  vim.schedule(M.refresh)
+  M.refresh()
 end
 
 ---@class HoverOpts
@@ -127,8 +127,10 @@ end
 local function get_marker_size(count, element_size) return count > 0 and strwidth(tostring(count)) + element_size or 0 end
 
 function M.refresh()
-  vim.cmd("redrawtabline")
-  vim.cmd("redraw")
+  vim.schedule(function()
+    vim.cmd("redrawtabline")
+    vim.cmd("redraw")
+  end)
 end
 
 ---Add click action to a component
