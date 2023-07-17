@@ -1072,6 +1072,10 @@ NOTE: you can specify colors the same way you specify colors for
                 fg = '<colour-value-here>',
                 bg = '<colour-value-here>',
             },
+            trunc_marker = {
+                fg = '<colour-value-here>',
+                bg = '<colour-value-here>',
+            }
         };
     })
 <
