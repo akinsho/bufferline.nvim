@@ -274,7 +274,7 @@ local function derive_colors(preset)
   return {
     trunc_marker = {
       fg = trunc_marker_fg,
-      bg = trunc_marker_bg
+      bg = trunc_marker_bg,
     },
     fill = {
       fg = comment_fg,
