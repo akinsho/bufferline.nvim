@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.3.0](https://github.com/akinsho/bufferline.nvim/compare/v4.2.0...v4.3.0) (2023-07-17)
+
+
+### Features
+
+* **command:** add BufferLineCloseOthers command ([#774](https://github.com/akinsho/bufferline.nvim/issues/774)) ([9d6ab3a](https://github.com/akinsho/bufferline.nvim/commit/9d6ab3a56ad71bed9929c7acd7620e827a073d25))
+* **ui:** trunc marker highlights ([#781](https://github.com/akinsho/bufferline.nvim/issues/781)) ([77779e3](https://github.com/akinsho/bufferline.nvim/commit/77779e34d673dd41244b710c22fb18bbfa4c455f)), closes [#792](https://github.com/akinsho/bufferline.nvim/issues/792)
+
+
+### Bug Fixes
+
+* **config:** highlighting for tab separators ([#784](https://github.com/akinsho/bufferline.nvim/issues/784)) ([cd27a52](https://github.com/akinsho/bufferline.nvim/commit/cd27a52ecdfed7f14a41b61b7976f155e3d593c7))
+* store paths in g:BufferlinePositions ([#780](https://github.com/akinsho/bufferline.nvim/issues/780)) ([2f391fd](https://github.com/akinsho/bufferline.nvim/commit/2f391fde91b9c3876eee359ee24cc352050e5e48))
+* **ui:** always schedule refreshing ([fe77474](https://github.com/akinsho/bufferline.nvim/commit/fe774743cc7434d8f5539093108bf7d6d950f416))
+
 ## [4.2.0](https://github.com/akinsho/bufferline.nvim/compare/v4.1.0...v4.2.0) (2023-06-26)
 
 
