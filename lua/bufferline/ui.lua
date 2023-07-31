@@ -538,19 +538,25 @@ end
 --- and converts them into an nvim tabline format string i.e. `%#HL#text`. It handles cases
 --- like applying global or local attributes like click handlers. As well as extending highlights
 ---@param component bufferline.Segment[]
-local function to_tabline_str(component)
+local function to_tabline_str(component, tabline_index)
   component = component or {}
+  local highlight_found = false
   local str = {}
   local globals = {}
   extend_highlight(component)
   for _, part in ipairs(component) do
     local attr = part.attr
     if attr and attr.global then table.insert(globals, { attr.prefix or "", attr.suffix or "" }) end
+    local text = part.text or ""
+    if part.highlight == 'BufferLineNumbers' or part.highlight == 'BufferLineNumbersSelected' then
+      text = text .. vim.inspect(tabline_index)
+      highlight_found = true
+    end
     local hl = highlights.hl(part.highlight)
     table.insert(str, {
       hl,
       ((attr and not attr.global) and attr.prefix or ""),
-      (part.text or ""),
+      text,
       ((attr and not attr.global) and attr.suffix or ""),
     })
   end
@@ -558,7 +564,7 @@ local function to_tabline_str(component)
     table.insert(str, 1, attr[1])
     table.insert(str, #str + 1, attr[1])
   end
-  return table.concat(vim.tbl_flatten(str))
+  return table.concat(vim.tbl_flatten(str)), highlight_found
 end
 
 --- PREREQUISITE: active buffer always remains in view
@@ -621,8 +627,13 @@ end
 ---@param list bufferline.Segment[][]
 local function join(list)
   local str = ""
+  local bufline_index = 1
   for _, item in pairs(list) do
-    str = str .. to_tabline_str(item)
+    local tablinestr, buffer_found = to_tabline_str(item, bufline_index)
+    str = str .. tablinestr
+    if buffer_found then
+      bufline_index = bufline_index + 1
+    end
   end
   return str
 end
