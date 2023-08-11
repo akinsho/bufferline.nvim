@@ -338,7 +338,7 @@ for this upstream.
 - **Doesn't this plugin go against the "vim way"?**
 
   This is much better explained by [buftablines's author](https://github.com/ap/vim-buftabline#why-this-and-not-vim-tabs).
-  Please read this for a more comprehensive answer to this questions. The short answer to this is
+  Please read this for a more comprehensive answer to this question. The short answer to this is
   buffers represent files in nvim and tabs, a collection of windows (or just one). Vim natively allows visualising tabs i.e. collections
   of window, but not just the files that are open. There are _endless_ debates on this topic, but allowing a user to see what files they
   have open doesn't go against any clearly stated vim philosophy. It's a text editor and not a religion 🙏.
