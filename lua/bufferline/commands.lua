@@ -129,9 +129,11 @@ end
 function M.get_current_element_index(current_state, opts)
   opts = opts or { include_hidden = false }
   local list = opts.include_hidden and current_state.__components or current_state.components
-  for index, item in ipairs(list) do
-    local element = item:as_element()
-    if element and element.id == get_current_element() then return index, element end
+  if (list ~= nil) then
+    for index, item in ipairs(list) do
+      local element = item:as_element()
+      if element and element.id == get_current_element() then return index, element end
+    end
   end
 end
 
