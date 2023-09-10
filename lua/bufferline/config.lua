@@ -151,7 +151,7 @@ function Config:is_tabline() return self:mode() == "tabs" end
 ---Derive the colors for the bufferline
 ---@param preset bufferline.StylePreset | bufferline.StylePreset[]
 ---@return bufferline.Highlights
-local function derive_colors(preset)
+local function derive_colors(preset, base_colors)
   local hex = colors.get_color
   local tint = colors.shade_color
   if type(preset) ~= "table" then preset = { preset } end
@@ -159,88 +159,95 @@ local function derive_colors(preset)
   local italic = not vim.tbl_contains(preset, PRESETS.no_italic)
   local bold = not vim.tbl_contains(preset, PRESETS.no_bold)
 
-  local comment_fg = hex({
-    name = "Comment",
-    attribute = "fg",
-    fallback = { name = "Normal", attribute = "fg" },
-  })
+  local comment_fg = base_colors.comment_fg
+    or hex({
+      name = "Comment",
+      attribute = "fg",
+      fallback = { name = "Normal", attribute = "fg" },
+    })
 
-  local normal_fg = hex({ name = "Normal", attribute = "fg" })
-  local normal_bg = hex({ name = "Normal", attribute = "bg" })
-  local string_fg = hex({ name = "String", attribute = "fg" })
+  local normal_fg = base_colors.normal_fg or hex({ name = "Normal", attribute = "fg" })
+  local normal_bg = base_colors.normal_bg or hex({ name = "Normal", attribute = "bg" })
+  local string_fg = base_colors.string_fg or hex({ name = "String", attribute = "fg" })
 
-  local error_fg = hex({
-    name = "DiagnosticError", -- diagnostic with text highlight
-    attribute = "fg",
-    fallback = {
-      name = "DiagnosticError", -- diagnostic with underline highlight
-      attribute = "sp",
+  local error_fg = base_colors.error_fg
+    or hex({
+      name = "DiagnosticError", -- diagnostic with text highlight
+      attribute = "fg",
       fallback = {
-        name = "Error",
-        attribute = "fg",
+        name = "DiagnosticError", -- diagnostic with underline highlight
+        attribute = "sp",
+        fallback = {
+          name = "Error",
+          attribute = "fg",
+        },
       },
-    },
-  })
+    })
 
-  local warning_fg = hex({
-    name = "DiagnosticWarn",
-    attribute = "fg",
-    fallback = {
+  local warning_fg = base_colors.warning_fg
+    or hex({
       name = "DiagnosticWarn",
-      attribute = "sp",
+      attribute = "fg",
       fallback = {
-        name = "WarningMsg",
-        attribute = "fg",
+        name = "DiagnosticWarn",
+        attribute = "sp",
+        fallback = {
+          name = "WarningMsg",
+          attribute = "fg",
+        },
       },
-    },
-  })
+    })
 
-  local info_fg = hex({
-    name = "DiagnosticInfo",
-    attribute = "fg",
-    fallback = {
+  local info_fg = base_colors.info_fg
+    or hex({
       name = "DiagnosticInfo",
-      attribute = "sp",
+      attribute = "fg",
       fallback = {
-        name = "Normal",
-        attribute = "fg",
+        name = "DiagnosticInfo",
+        attribute = "sp",
+        fallback = {
+          name = "Normal",
+          attribute = "fg",
+        },
       },
-    },
-  })
+    })
 
-  local hint_fg = hex({
-    name = "DiagnosticHint",
-    attribute = "fg",
-    fallback = {
+  local hint_fg = base_colors.hint_fg
+    or hex({
       name = "DiagnosticHint",
-      attribute = "sp",
+      attribute = "fg",
       fallback = {
-        name = "Directory",
+        name = "DiagnosticHint",
+        attribute = "sp",
+        fallback = {
+          name = "Directory",
+          attribute = "fg",
+        },
+      },
+    })
+
+  local tabline_sel_bg = base_colors.tabline_sel_bg
+    or hex({
+      name = "TabLineSel",
+      attribute = "bg",
+      not_match = normal_bg,
+      fallback = {
+        name = "TabLineSel",
+        attribute = "fg",
+        not_match = normal_bg,
+        fallback = { name = "WildMenu", attribute = "fg" },
+      },
+    })
+
+  local win_separator_fg = base_colors.win_separator_fg
+    or hex({
+      name = "WinSeparator",
+      attribute = "fg",
+      fallback = {
+        name = "VertSplit",
         attribute = "fg",
       },
-    },
-  })
-
-  local tabline_sel_bg = hex({
-    name = "TabLineSel",
-    attribute = "bg",
-    not_match = normal_bg,
-    fallback = {
-      name = "TabLineSel",
-      attribute = "fg",
-      not_match = normal_bg,
-      fallback = { name = "WildMenu", attribute = "fg" },
-    },
-  })
-
-  local win_separator_fg = hex({
-    name = "WinSeparator",
-    attribute = "fg",
-    fallback = {
-      name = "VertSplit",
-      attribute = "fg",
-    },
-  })
+    })
 
   -- If the colorscheme is bright we shouldn't do as much shading
   -- as this makes light color schemes harder to read
@@ -252,8 +259,8 @@ local function derive_colors(preset)
   local duplicate_color = tint(comment_fg, -5)
   local visible_bg = is_minimal and normal_bg or tint(normal_bg, -8)
   local visible_fg = is_minimal and tint(normal_fg, -30) or comment_fg
-  local separator_background_color = is_minimal and normal_bg or tint(normal_bg, separator_shading)
-  local background_color = is_minimal and normal_bg or tint(normal_bg, background_shading)
+  local separator_background_color = base_colors.separator_background_color or (is_minimal and normal_bg or tint(normal_bg, separator_shading))
+  local background_color = base_colors.background_color or (is_minimal and normal_bg or tint(normal_bg, background_shading))
 
   -- diagnostic colors by default are a few shades darker
   local normal_diagnostic_fg = tint(normal_fg, diagnostic_shading)
@@ -615,6 +622,7 @@ end
 ---@return bufferline.Config
 local function get_defaults()
   local preset = vim.tbl_get(config, "user", "options", "style_preset") --[[@as bufferline.StylePreset]]
+  local base_colors = vim.tbl_get(config, "user", "options", "base_colors") or {}
   ---@type bufferline.Options
   local opts = {
     mode = "buffers",
@@ -660,7 +668,7 @@ local function get_defaults()
     hover = { enabled = false, reveal = {}, delay = 200 },
     debug = { logging = false },
   }
-  return { options = opts, highlights = derive_colors(opts.style_preset) }
+  return { options = opts, highlights = derive_colors(opts.style_preset, base_colors) }
 end
 
 --- Convert highlights specified as tables to the correct existing colours
