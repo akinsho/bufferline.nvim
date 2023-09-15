@@ -71,8 +71,10 @@ local get_diagnostics = {
     local results = {}
     local diagnostics = vim.diagnostic.get()
     for _, d in pairs(diagnostics) do
-      if not results[d.bufnr] then results[d.bufnr] = {} end
-      table.insert(results[d.bufnr], d)
+      if not vim.diagnostic.is_disabled(d.bufnr, d.namespace) then
+        if not results[d.bufnr] then results[d.bufnr] = {} end
+        table.insert(results[d.bufnr], d)
+      end
     end
     return results
   end,
