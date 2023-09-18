@@ -202,7 +202,7 @@ function M.get_icon(opts)
   end
   if type == "terminal" then return webdev_icons.get_icon(type) end
 
-  local icon, hl = webdev_icons.get_icon(fn.fnamemodify(opts.path, ":t"), opts.extension, {
+  local icon, hl = webdev_icons.get_icon(fn.fnamemodify(opts.path, ":t"), nil, {
     default = true,
   })
 
