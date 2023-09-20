@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.4.0](https://github.com/akinsho/bufferline.nvim/compare/v4.3.0...v4.4.0) (2023-09-20)
+
+
+### Features
+
+* Support `name_formatter` for unnamed buffers ([#806](https://github.com/akinsho/bufferline.nvim/issues/806)) ([9961d87](https://github.com/akinsho/bufferline.nvim/commit/9961d87bb3ec008213c46ba14b3f384a5f520eb5))
+
+
+### Bug Fixes
+
+* **diagnostics:** ignore disabled diagnostics ([#816](https://github.com/akinsho/bufferline.nvim/issues/816)) ([8a51c4b](https://github.com/akinsho/bufferline.nvim/commit/8a51c4b5d105d93fd2bc435bf93d4d5556fb2a60))
+* **icons:** display overriden devicons ([#817](https://github.com/akinsho/bufferline.nvim/issues/817)) ([81cd04f](https://github.com/akinsho/bufferline.nvim/commit/81cd04fe7c914d020d331cea1e707da5f14c2665))
+* **readme:** Typo ([#793](https://github.com/akinsho/bufferline.nvim/issues/793)) ([99f0932](https://github.com/akinsho/bufferline.nvim/commit/99f0932365b34e22549ff58e1bea388465d15e99))
+
 ## [4.3.0](https://github.com/akinsho/bufferline.nvim/compare/v4.2.0...v4.3.0) (2023-07-17)
 
 
