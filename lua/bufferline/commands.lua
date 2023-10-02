@@ -119,7 +119,10 @@ function M.go_to(num, absolute)
   local list = absolute and state.components or state.visible_components
   local element = list[num]
   if num == -1 or not element then element = list[#list] end
-  open_element(element.id)
+
+  if element then
+    open_element(element.id)
+  end
 end
 
 ---@param current_state bufferline.State
