@@ -120,9 +120,7 @@ function M.go_to(num, absolute)
   local element = list[num]
   if num == -1 or not element then element = list[#list] end
 
-  if element then
-    open_element(element.id)
-  end
+  if element then open_element(element.id) end
 end
 
 ---@param current_state bufferline.State
