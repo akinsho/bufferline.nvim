@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.4.1](https://github.com/akinsho/bufferline.nvim/compare/v4.4.0...v4.4.1) (2023-12-06)
+
+
+### Bug Fixes
+
+* **commands:** potential nil access ([#821](https://github.com/akinsho/bufferline.nvim/issues/821)) ([6e96fa2](https://github.com/akinsho/bufferline.nvim/commit/6e96fa27a0d4dd6c00a252b51c0b43b9b95cd302))
+* remove `missing required fields` diagnostic from config ([#812](https://github.com/akinsho/bufferline.nvim/issues/812)) ([1a33975](https://github.com/akinsho/bufferline.nvim/commit/1a3397556d194bb1f2cc530b07124ccc512c5501))
+* use link if specified in custom areas ([#839](https://github.com/akinsho/bufferline.nvim/issues/839)) ([9ca364d](https://github.com/akinsho/bufferline.nvim/commit/9ca364d488b98894ca780c40aae9ea63967c8fcf))
+
 ## [4.4.0](https://github.com/akinsho/bufferline.nvim/compare/v4.3.0...v4.4.0) (2023-09-20)
 
 
