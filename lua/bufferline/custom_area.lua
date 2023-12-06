@@ -11,9 +11,12 @@ local fmt = string.format
 ---generate a custom highlight group
 ---@param index integer
 ---@param side string
----@param section {fg: string, bg: string, text: string}
+---@param section {fg: string, bg: string, text: string, link: string}
 ---@param bg string?
 local function create_hl(index, side, section, bg)
+  if section.link then
+    return highlights.hl(section.link)
+  end
   local name = fmt("BufferLine%sCustomAreaText%d", side:gsub("^%l", string.upper), index)
   section.bg = section.bg or bg
   section.default = true -- We need to be able to constantly override these highlights so they should always be default
