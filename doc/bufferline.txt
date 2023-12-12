@@ -21,7 +21,7 @@ Groups.................................: |bufferline-groups|
 Sorting................................: |bufferline-sorting|
 Filtering..............................: |bufferline-filtering|
 Commands...............................: |bufferline-commands|
-Custom functions.......................: |bufferline-exec|
+Custom functions.......................: |bufferline-functions|
 Pick...................................: |bufferline-pick|
 Mappings...............................: |bufferline-mappings|
 Highlights.............................: |bufferline-highlights|
