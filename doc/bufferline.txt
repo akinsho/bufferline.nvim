@@ -246,6 +246,14 @@ has a lot of the same features/styling but not all. A few things to note are
 * Sorting doesn't work yet as that needs to be thought through.
 * Grouping doesn't work yet as that also needs to be thought through.
 
+`BufferLineTabRename`
+
+Tabs can be renamed using the `BufferLineTabRename` command:
+
+e.g.
+
+- Rename the current tab: `BufferLineTabRename Code`
+- Rename a tab based on it's `tabnr`: `BufferLineTabRename 1 Code`
 
 ==============================================================================
 NUMBERS                                                    *bufferline-numbers*
