@@ -41,7 +41,7 @@ function M.rename_tab(tabnr, name)
   if name == "" then
     name = string(tabnr)
   end
-  vim.api.nvim_tabpage_set_var(tabnr, "name", name)
+  api.nvim_tabpage_set_var(tabnr, "name", name)
   M.get()
 end
 
