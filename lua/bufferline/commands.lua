@@ -269,7 +269,7 @@ function M.rename_tab(args)
   if #args == 0 then return end
   local tabnr = tonumber(args[1])
   local name = table.concat(args, " ", 2)
-  if tabnr == nil then
+  if not tabnr then
     name = table.concat(args, " ")
     tabnr = 0
   end
