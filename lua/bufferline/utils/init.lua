@@ -243,7 +243,7 @@ function M.truncate_name(name, word_limit)
   -- truncate nicely by seeing if we can drop the extension first
   -- to make things fit if not then truncate abruptly
   local ext = fn.fnamemodify(name, ":e")
-  if ext ~= "" then
+  if ext ~= "" and ext:match("^%w+$") then
     local truncated = name:gsub("%." .. ext, "", 1)
     if strwidth(truncated) < word_limit then return truncated .. constants.ELLIPSIS end
   end

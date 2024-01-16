@@ -21,7 +21,7 @@ Groups.................................: |bufferline-groups|
 Sorting................................: |bufferline-sorting|
 Filtering..............................: |bufferline-filtering|
 Commands...............................: |bufferline-commands|
-Custom functions.......................: |bufferline-exec|
+Custom functions.......................: |bufferline-functions|
 Pick...................................: |bufferline-pick|
 Mappings...............................: |bufferline-mappings|
 Highlights.............................: |bufferline-highlights|
@@ -551,17 +551,17 @@ These commands apply the configured `close_command` to each of the corresponding
 CUSTOM-FUNCTIONS                                     *bufferline-functions*
 
 A user can also execute arbitrary functions against a buffer using the
-`buf_exec` function. For example
+`exec` function. For example
 
 >lua
-    require('bufferline').buf_exec(
+    require('bufferline').exec(
         4, -- the forth visible buffer from the left
         user_function -- an arbitrary user function which gets passed the buffer
     )
 
     -- e.g.
     function _G.bdel(num)
-        require('bufferline').buf_exec(num, function(buf, visible_buffers)
+        require('bufferline').exec(num, function(buf, visible_buffers)
             vim.cmd('bdelete '..buf.id)
         end
     end
