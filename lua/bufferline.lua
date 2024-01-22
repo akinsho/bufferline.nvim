@@ -169,7 +169,7 @@ local function setup_commands()
   command("BufferLineSortByTabs", function() M.sort_by("tabs") end)
   command("BufferLineGoToBuffer", function(opts) M.go_to(opts.args) end, { nargs = 1 })
   command("BufferLineTogglePin", function() groups.toggle_pin() end, { nargs = 0 })
-  command("BufferLineTabRename", function(opts) M.rename_tab(opts.fargs) end, { nargs = '*' })
+  command("BufferLineTabRename", function(opts) M.rename_tab(opts.fargs) end, { nargs = "*" })
   command("BufferLineGroupClose", function(opts) groups.action(opts.args, "close") end, {
     nargs = 1,
     complete = groups.complete,
