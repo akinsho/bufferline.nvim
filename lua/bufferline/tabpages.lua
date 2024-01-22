@@ -42,7 +42,7 @@ function M.rename_tab(tabnr, name)
     name = string(tabnr)
   end
   api.nvim_tabpage_set_var(tabnr, "name", name)
-  M.get()
+  ui.refresh()
 end
 
 function M.get()
