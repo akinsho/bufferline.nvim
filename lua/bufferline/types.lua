@@ -16,7 +16,7 @@
 
 ---@alias bufferline.Mode 'tabs' | 'buffers'
 
----@alias bufferline.DiagnosticIndicator fun(count: number, level: number, errors: table<string, any>, ctx: table<string, any>): string
+---@alias bufferline.DiagnosticIndicator fun(count: number, level: string, errors: table<string, any>, ctx: table<string, any>): string
 
 ---@alias bufferline.HoverOptions {reveal: string[], delay: integer, enabled: boolean}
 ---@alias bufferline.IconFetcherOpts {directory: boolean, path: string, extension: string, filetype: string?}
