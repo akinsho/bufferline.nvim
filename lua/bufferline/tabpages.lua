@@ -148,7 +148,7 @@ function M.get_components(state)
       hidden = false,
       focusable = true,
     })
-    tab.letter = pick.get(tab)
+    tab.letter = pick.get_tab(tab)
     components[#components + 1] = tab
   end
   return vim.tbl_map(function(tab) return ui.element(state, tab) end, duplicates.mark(components))
