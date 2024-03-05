@@ -53,6 +53,7 @@
 ---@field public show_duplicate_prefix? boolean
 ---@field public enforce_regular_tabs? boolean
 ---@field public always_show_bufferline? boolean
+---@field public auto_toggle_bufferline? boolean
 ---@field public persist_buffer_sort? boolean
 ---@field public move_wraps_at_ends? boolean
 ---@field public max_prefix_length? number
