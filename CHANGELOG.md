@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.5.1](https://github.com/akinsho/bufferline.nvim/compare/v4.5.0...v4.5.1) (2024-03-05)
+
+
+### Bug Fixes
+
+* **tabpages:** typo in rename_tab ([#873](https://github.com/akinsho/bufferline.nvim/issues/873)) ([5bf13d1](https://github.com/akinsho/bufferline.nvim/commit/5bf13d17a8c8abbce8d3ef83c8658b32e08ce913))
+
 ## [4.5.0](https://github.com/akinsho/bufferline.nvim/compare/v4.4.1...v4.5.0) (2024-01-22)
 
 
