@@ -23,6 +23,7 @@ local api = vim.api
 local M = {
   move = commands.move,
   move_to = commands.move_to,
+  slide_to = commands.slide_to,
   exec = commands.exec,
   go_to = commands.go_to,
   cycle = commands.cycle,
