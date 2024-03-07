@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.5.2](https://github.com/akinsho/bufferline.nvim/compare/v4.5.1...v4.5.2) (2024-03-07)
+
+
+### Bug Fixes
+
+* **tabpages:** renaming bug on reopened tab ([#877](https://github.com/akinsho/bufferline.nvim/issues/877)) ([1064399](https://github.com/akinsho/bufferline.nvim/commit/10643990c33ca295bfe970d775c6e7697354aa0f))
+
 ## [4.5.1](https://github.com/akinsho/bufferline.nvim/compare/v4.5.0...v4.5.1) (2024-03-05)
 
 
