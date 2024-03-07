@@ -35,9 +35,8 @@ local function render(tabpage, is_active, style, highlights)
 end
 
 function M.rename_tab(tabnr, name)
-  if tabnr == 0 then tabnr = vim.fn.tabpagenr() end
   if name == "" then name = tostring(tabnr) end
-  api.nvim_tabpage_set_var(tabnr, "name", name)
+  api.nvim_tabpage_set_var(0, "name", name)
   ui.refresh()
 end
 
