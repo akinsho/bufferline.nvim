@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.6.0](https://github.com/akinsho/bufferline.nvim/compare/v4.5.1...v4.6.0) (2024-03-07)
+
+
+### Features
+
+* **duplicates:** only treat as duplicate if in the same group ([#750](https://github.com/akinsho/bufferline.nvim/issues/750)) ([66949d0](https://github.com/akinsho/bufferline.nvim/commit/66949d0468b311e37fa815713c0c330e4da34243))
+
+
+### Bug Fixes
+
+* **tabpages:** renaming bug on reopened tab ([#877](https://github.com/akinsho/bufferline.nvim/issues/877)) ([1064399](https://github.com/akinsho/bufferline.nvim/commit/10643990c33ca295bfe970d775c6e7697354aa0f))
+
 ## [4.5.2](https://github.com/akinsho/bufferline.nvim/compare/v4.5.1...v4.5.2) (2024-03-07)
 
 
