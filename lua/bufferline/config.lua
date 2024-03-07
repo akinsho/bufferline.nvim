@@ -649,6 +649,7 @@ local function get_defaults()
     duplicates_across_groups = true,
     enforce_regular_tabs = false,
     always_show_bufferline = true,
+    auto_toggle_bufferline = true,
     persist_buffer_sort = true,
     move_wraps_at_ends = false,
     max_prefix_length = 15,
