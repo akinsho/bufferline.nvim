@@ -276,6 +276,17 @@ function M.rename_tab(args)
   tabpage.rename_tab(tabnr, name)
 end
 
+--- Gets the index for a given buffer id
+--- @param id number the vim assigned buffer id
+--- @return bufferline.TabElement?
+function M.get_index(id)
+  local list = current_state.components
+  for index, item in ipairs(list) do
+    local element = item:as_element()
+    if element and element.id == id then return index, element end
+  end
+end
+
 _G.___bufferline_private.handle_close = handle_close
 _G.___bufferline_private.handle_click = handle_click
 _G.___bufferline_private.handle_group_click = handle_group_click

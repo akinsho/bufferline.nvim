@@ -29,6 +29,7 @@ local M = {
   sort_by = commands.sort_by,
   pick = commands.pick,
   get_elements = commands.get_elements,
+  get_index = commands.get_index,
   close_with_pick = commands.close_with_pick,
   close_in_direction = commands.close_in_direction,
   rename_tab = commands.rename_tab,
