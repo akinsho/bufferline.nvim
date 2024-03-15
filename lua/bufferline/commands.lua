@@ -280,7 +280,7 @@ end
 --- @param id number the vim assigned buffer id
 --- @return bufferline.TabElement?
 function M.get_index(id)
-  local list = current_state.components
+  local list = state.components
   for index, item in ipairs(list) do
     local element = item:as_element()
     if element and element.id == id then return index, element end
