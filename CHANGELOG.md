@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.5.3](https://github.com/akinsho/bufferline.nvim/compare/v4.5.2...v4.5.3) (2024-04-19)
+
+
+### Bug Fixes
+
+* **utils:** improve path separator detection on Windows ([#888](https://github.com/akinsho/bufferline.nvim/issues/888)) ([d7ebc0d](https://github.com/akinsho/bufferline.nvim/commit/d7ebc0de62a2f752dcd3cadf6f3235a0702f15a3))
+
 ## [4.5.2](https://github.com/akinsho/bufferline.nvim/compare/v4.5.1...v4.5.2) (2024-03-07)
 
 
