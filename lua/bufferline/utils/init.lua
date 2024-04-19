@@ -121,7 +121,7 @@ function M.tbl_reverse_lookup(tbl)
   return ret
 end
 
-M.path_sep = vim.startswith(vim.loop.os_uname().sysname, "Windows") and "\\" or "/"
+M.path_sep = vim.fn.has("win32") == 1 and "\\" or "/"
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
 --- @param buf_num integer
