@@ -22,6 +22,8 @@ end
 ---@param elements bufferline.TabElement[]
 ---@return bufferline.TabElement[]
 function M.mark(elements)
+  local options = config.options
+  local duplicates_across_groups = options.duplicates_across_groups
   return utils.map(function(current)
     if current.path == "" then return current end
     local duplicate = duplicates[current.name]
@@ -30,6 +32,7 @@ function M.mark(elements)
     else
       local depth, limit, is_same_buffer = 1, 10, false
       for _, element in ipairs(duplicate) do
+        if (duplicates_across_groups == false) and (current.group ~= element.group) then return current end
         local element_depth = 1
         is_same_buffer = current.path == element.path
         while is_same_path(current.path, element.path, element_depth) and not is_same_buffer do

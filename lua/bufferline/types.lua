@@ -51,6 +51,7 @@
 ---@field public show_close_icon? boolean
 ---@field public show_tab_indicators? boolean
 ---@field public show_duplicate_prefix? boolean
+---@field public duplicates_across_groups? boolean
 ---@field public enforce_regular_tabs? boolean
 ---@field public always_show_bufferline? boolean
 ---@field public persist_buffer_sort? boolean

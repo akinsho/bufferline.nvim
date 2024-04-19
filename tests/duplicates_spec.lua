@@ -11,6 +11,8 @@ describe("Duplicate Tests - ", function()
   end)
 
   it("should mark duplicate files", function()
+    config.setup({})
+    config.apply()
     local result = duplicates.mark({
       {
         path = "/test/dir_a/dir_b/file.txt",
@@ -32,6 +34,62 @@ describe("Duplicate Tests - ", function()
     assert.is_equal(result[2].duplicated, "path")
     assert.falsy(result[3].duplicated)
     assert.is_equal(#result, 3)
+  end)
+
+  it("should show duplicates across groups", function()
+    config.setup({ options = { duplicates_across_groups = true } })
+    config.apply()
+    local result = duplicates.mark({
+      {
+        path = "/test/dir_a/dir_b/file.txt",
+        name = "file.txt",
+        ordinal = 1,
+        group = "A",
+      },
+      {
+        path = "/test/dir_a/dir_c/file.txt",
+        name = "file.txt",
+        ordinal = 2,
+        group = "A",
+      },
+      {
+        path = "/test/dir_a/dir_d/file.txt",
+        name = "file.txt",
+        ordinal = 1,
+        group = "B",
+      },
+    })
+    assert.is_equal(result[1].duplicated, "path")
+    assert.is_equal(result[2].duplicated, "path")
+    assert.is_equal(result[3].duplicated, "path")
+  end)
+
+  it("should not show duplicates across groups", function()
+    config.setup({ options = { duplicates_across_groups = false } })
+    config.apply()
+    local result = duplicates.mark({
+      {
+        path = "/test/dir_a/dir_b/file.txt",
+        name = "file.txt",
+        ordinal = 1,
+        group = "A",
+      },
+      {
+        path = "/test/dir_a/dir_c/file.txt",
+        name = "file.txt",
+        ordinal = 2,
+        group = "A",
+      },
+      {
+        path = "/test/dir_a/dir_d/file.txt",
+        name = "file.txt",
+        ordinal = 1,
+        group = "B",
+      },
+    })
+    assert.is_equal(result[1].duplicated, "path")
+    assert.is_equal(result[2].duplicated, "path")
+    assert.falsy(result[3].duplicated)
   end)
 
   it("should return the correct prefix count", function()

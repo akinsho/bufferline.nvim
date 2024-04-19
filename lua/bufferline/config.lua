@@ -646,6 +646,7 @@ local function get_defaults()
     show_close_icon = true,
     show_tab_indicators = true,
     show_duplicate_prefix = true,
+    duplicates_across_groups = true,
     enforce_regular_tabs = false,
     always_show_bufferline = true,
     persist_buffer_sort = true,
