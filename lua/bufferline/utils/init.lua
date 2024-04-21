@@ -252,6 +252,6 @@ end
 
 -- TODO: deprecate this in nvim-0.11 or use strict lists
 --- Determine which list-check function to use
-M.is_list = vim.tbl_isarray or vim.tbl_islist
+M.is_list = vim.isarray or vim.islist
 
 return M
