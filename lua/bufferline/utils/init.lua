@@ -121,7 +121,7 @@ function M.tbl_reverse_lookup(tbl)
   return ret
 end
 
-M.path_sep = vim.startswith(vim.loop.os_uname().sysname, "Windows") and "\\" or "/"
+M.path_sep = vim.fn.has("win32") == 1 and "\\" or "/"
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
 --- @param buf_num integer
@@ -252,6 +252,11 @@ end
 
 -- TODO: deprecate this in nvim-0.11 or use strict lists
 --- Determine which list-check function to use
-M.is_list = vim.tbl_isarray or vim.tbl_islist
+
+if vim.fn.has("nvim-0.10") == 1 then
+  M.is_list = vim.isarray or vim.islist
+else
+  M.is_list = vim.tbl_isarray or vim.tbl_islist
+end
 
 return M
