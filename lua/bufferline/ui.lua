@@ -113,15 +113,24 @@ local function filter_invalid(parts)
   return result
 end
 
+-- Define is_list in utils module
+function utils.is_list(item)
+    return type(item) == "table"
+end
+
 ---@param segments bufferline.Segment[]
 ---@return integer
 local function get_component_size(segments)
-  assert(utils.is_list(segments), "Segments must be a list")
-  local sum = 0
-  for _, s in pairs(segments) do
-    if has_text(s) then sum = sum + strwidth(tostring(s.text)) end
-  end
-  return sum
+    -- Check if segments is a list
+    assert(utils.is_list(segments), "Segments must be a list")
+    
+    local sum = 0
+    for _, s in pairs(segments) do
+        if has_text(s) then
+            sum = sum + strwidth(tostring(s.text))
+        end
+    end
+    return sum
 end
 
 local function get_marker_size(count, element_size) return count > 0 and strwidth(tostring(count)) + element_size or 0 end
