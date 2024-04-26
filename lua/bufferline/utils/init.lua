@@ -256,6 +256,7 @@ end
 if vim.fn.has("nvim-0.10") == 1 then
   M.is_list = vim.isarray or vim.islist
 else
+---@diagnostic disable-next-line: deprecated
   M.is_list = vim.tbl_isarray or vim.tbl_islist
 end
 
