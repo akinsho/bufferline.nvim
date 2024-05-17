@@ -121,6 +121,22 @@ function M.tbl_reverse_lookup(tbl)
   return ret
 end
 
+--- creates a table containing the forward and reversed mapping from the provided
+--- table.
+--- similar to the now deprecated vim.tbl_add_reverse_lookup
+--- @generic K,V
+--- @param tbl table<K,V>
+--- @return table<V,K>
+function M.tbl_add_reverse_lookup(tbl)
+  local ret = {}
+  for k, v in pairs(tbl) do
+    ret[k] = v
+    ret[v] = k
+  end
+
+  return ret
+end
+
 M.path_sep = vim.fn.has("win32") == 1 and "\\" or "/"
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
