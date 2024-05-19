@@ -1,13 +1,14 @@
 local lazy = require("bufferline.lazy")
 local config = lazy.require("bufferline.config") ---@module "bufferline.config"
 local ui = lazy.require("bufferline.ui") ---@module "bufferline.ui"
+local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
 
 local M = {}
 
 local fn = vim.fn
 local fmt = string.format
 
-local severity_name = vim.tbl_add_reverse_lookup({
+local severity_name = utils.tbl_add_reverse_lookup({
   [1] = "error",
   [2] = "warning",
   [3] = "info",
