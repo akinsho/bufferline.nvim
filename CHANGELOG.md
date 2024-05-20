@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.6.0](https://github.com/akinsho/bufferline.nvim/compare/v4.5.3...v4.6.0) (2024-05-20)
+
+
+### Features
+
+* add `auto_toggle_bufferline` option ([#876](https://github.com/akinsho/bufferline.nvim/issues/876)) ([f6f00d9](https://github.com/akinsho/bufferline.nvim/commit/f6f00d9ac1a51483ac78418f9e63126119a70709))
+
+
+### Bug Fixes
+
+* maintain backwards compatibility ([#909](https://github.com/akinsho/bufferline.nvim/issues/909)) ([155b257](https://github.com/akinsho/bufferline.nvim/commit/155b257b0c1d7999b0ffc837e1dd3a110cdc33d0))
+* reimplement the deprecated function tbl_add_reverse_lookup ([#904](https://github.com/akinsho/bufferline.nvim/issues/904)) ([9ae49d7](https://github.com/akinsho/bufferline.nvim/commit/9ae49d71c84b42b91795f7b7cead223c6346e774))
+* **utils:** update is_list to handle breaking change ([#892](https://github.com/akinsho/bufferline.nvim/issues/892)) ([a6ad228](https://github.com/akinsho/bufferline.nvim/commit/a6ad228f77c276a4324924a6899cbfad70541547))
+* vim.diagnostic.is_disabled() deprecation warning ([#907](https://github.com/akinsho/bufferline.nvim/issues/907)) ([2cd3984](https://github.com/akinsho/bufferline.nvim/commit/2cd39842c6426fb6c9a79fa57420121cc81c9804))
+
 ## [4.5.3](https://github.com/akinsho/bufferline.nvim/compare/v4.5.2...v4.5.3) (2024-04-19)
 
 
