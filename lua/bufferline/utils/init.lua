@@ -277,8 +277,6 @@ else
   M.is_list = vim.tbl_isarray or vim.tbl_islist
 end
 
-function M.tbl_flatten(t)
-  return isNvimEleven and vim.iter(t):flatten(math.huge):totable() or vim.tbl_flatten(t)
-end
+function M.tbl_flatten(t) return isNvimEleven and vim.iter(t):flatten(math.huge):totable() or vim.tbl_flatten(t) end
 
 return M
