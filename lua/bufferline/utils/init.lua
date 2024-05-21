@@ -10,7 +10,7 @@ local M = {}
 local fn, api = vim.fn, vim.api
 local strwidth = api.nvim_strwidth
 
-local isNvimEleven = vim.fn.has("nvim-0.11") == 1
+local is_version_11 = fn.has("nvim-0.11") == 1
 
 function M.is_test()
   ---@diagnostic disable-next-line: undefined-global
@@ -260,15 +260,11 @@ function M.truncate_name(name, word_limit)
   return truncate_by_cell(name, word_limit - 1) .. constants.ELLIPSIS
 end
 
--- TODO: deprecate this in nvim-0.11 or use strict lists
---- Determine which list-check function to use
+---@diagnostic disable: deprecated
+-- TODO: deprecate this in nvim-0.11 or use strict lists. Determine which list-check function to use
+M.is_list = vim.isarray or vim.islist or vim.tbl_isarray or vim.tbl_islist
 
-if vim.fn.has("nvim-0.10") == 1 then
-  M.is_list = vim.isarray or vim.islist
-else
-  M.is_list = vim.tbl_isarray or vim.tbl_islist
-end
-
-function M.tbl_flatten(t) return isNvimEleven and vim.iter(t):flatten(math.huge):totable() or vim.tbl_flatten(t) end
+---@diagnostic disable: deprecated
+function M.tbl_flatten(t) return is_version_11 and vim.iter(t):flatten(math.huge):totable() or vim.tbl_flatten(t) end
 
 return M
