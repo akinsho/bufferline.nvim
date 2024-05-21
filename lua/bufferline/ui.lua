@@ -555,7 +555,7 @@ local function to_tabline_str(component)
     table.insert(str, 1, attr[1])
     table.insert(str, #str + 1, attr[1])
   end
-  return table.concat(vim.tbl_flatten(str))
+  return table.concat(utils.tbl_flatten(str))
 end
 
 --- PREREQUISITE: active buffer always remains in view
