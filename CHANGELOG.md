@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.6.1](https://github.com/akinsho/bufferline.nvim/compare/v4.6.0...v4.6.1) (2024-05-21)
+
+
+### Bug Fixes
+
+* replace tbl_flatten to flatten():totable() ([#912](https://github.com/akinsho/bufferline.nvim/issues/912)) ([b2dc003](https://github.com/akinsho/bufferline.nvim/commit/b2dc003aca1dc638ccc3e7752ab3969b4184a690))
+
 ## [4.6.0](https://github.com/akinsho/bufferline.nvim/compare/v4.5.3...v4.6.0) (2024-05-20)
 
 
