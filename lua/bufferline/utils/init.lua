@@ -10,6 +10,8 @@ local M = {}
 local fn, api = vim.fn, vim.api
 local strwidth = api.nvim_strwidth
 
+local isNvimTen = vim.fn.has("nvim-0.10") == 1
+
 function M.is_test()
   ---@diagnostic disable-next-line: undefined-global
   return __TEST
@@ -269,14 +271,14 @@ end
 -- TODO: deprecate this in nvim-0.11 or use strict lists
 --- Determine which list-check function to use
 
-if vim.fn.has("nvim-0.10") == 1 then
+if isNvimTen then
   M.is_list = vim.isarray or vim.islist
 else
   M.is_list = vim.tbl_isarray or vim.tbl_islist
 end
 
 function M.tbl_flatten(t)
-  return vim.fn.has("nvim-0.10") == 1 and vim.iter(t):flatten(math.huge):totable() or vim.tbl_flatten(t)
+  return isNvimTen and vim.iter(t):flatten(math.huge):totable() or vim.tbl_flatten(t) 
 end
 
 return M
