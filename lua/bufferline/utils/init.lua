@@ -228,14 +228,6 @@ function M.get_icon(opts)
   return icon, hl
 end
 
-local current_stable = {
-  major = 0,
-  minor = 7, -- TODO: bump this 0.9 by 30/04/2023
-  patch = 0,
-}
-
-function M.is_current_stable_release() return vim.version().minor >= current_stable.minor end
-
 -- truncate a string based on number of display columns/cells it occupies
 -- so that multibyte characters are not broken up mid character
 ---@param str string
