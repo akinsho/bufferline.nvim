@@ -139,7 +139,7 @@ function M.tbl_add_reverse_lookup(tbl)
   return ret
 end
 
-M.path_sep = vim.fn.has("win32") == 1 and "\\" or "/"
+M.path_sep = fn.has("win32") == 1 and "\\" or "/"
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
 --- @param buf_num integer
@@ -178,8 +178,8 @@ function M.restore_positions()
   local ok, paths = pcall(vim.json.decode, str)
   if not ok or type(paths) ~= "table" or #paths == 0 then return nil end
   local ids = vim.tbl_map(function(path)
-    local escaped = vim.fn.fnameescape(path)
-    return vim.fn.bufnr("^" .. escaped .. "$" --[[@as integer]])
+    local escaped = fn.fnameescape(path)
+    return fn.bufnr("^" .. escaped .. "$" --[[@as integer]])
   end, paths)
   return vim.tbl_filter(function(id) return id ~= -1 end, ids)
 end
