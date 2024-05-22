@@ -10,6 +10,8 @@ local M = {}
 local fn, api = vim.fn, vim.api
 local strwidth = api.nvim_strwidth
 
+local is_version_11 = fn.has("nvim-0.11") == 1
+
 function M.is_test()
   ---@diagnostic disable-next-line: undefined-global
   return __TEST
@@ -121,7 +123,23 @@ function M.tbl_reverse_lookup(tbl)
   return ret
 end
 
-M.path_sep = vim.fn.has("win32") == 1 and "\\" or "/"
+--- creates a table containing the forward and reversed mapping from the provided
+--- table.
+--- similar to the now deprecated vim.tbl_add_reverse_lookup
+--- @generic K,V
+--- @param tbl table<K,V>
+--- @return table<V,K>
+function M.tbl_add_reverse_lookup(tbl)
+  local ret = {}
+  for k, v in pairs(tbl) do
+    ret[k] = v
+    ret[v] = k
+  end
+
+  return ret
+end
+
+M.path_sep = fn.has("win32") == 1 and "\\" or "/"
 
 -- The provided api nvim_is_buf_loaded filters out all hidden buffers
 --- @param buf_num integer
@@ -160,8 +178,8 @@ function M.restore_positions()
   local ok, paths = pcall(vim.json.decode, str)
   if not ok or type(paths) ~= "table" or #paths == 0 then return nil end
   local ids = vim.tbl_map(function(path)
-    local escaped = vim.fn.fnameescape(path)
-    return vim.fn.bufnr("^" .. escaped .. "$" --[[@as integer]])
+    local escaped = fn.fnameescape(path)
+    return fn.bufnr("^" .. escaped .. "$" --[[@as integer]])
   end, paths)
   return vim.tbl_filter(function(id) return id ~= -1 end, ids)
 end
@@ -210,14 +228,6 @@ function M.get_icon(opts)
   return icon, hl
 end
 
-local current_stable = {
-  major = 0,
-  minor = 7, -- TODO: bump this 0.9 by 30/04/2023
-  patch = 0,
-}
-
-function M.is_current_stable_release() return vim.version().minor >= current_stable.minor end
-
 -- truncate a string based on number of display columns/cells it occupies
 -- so that multibyte characters are not broken up mid character
 ---@param str string
@@ -250,13 +260,11 @@ function M.truncate_name(name, word_limit)
   return truncate_by_cell(name, word_limit - 1) .. constants.ELLIPSIS
 end
 
--- TODO: deprecate this in nvim-0.11 or use strict lists
---- Determine which list-check function to use
+---@diagnostic disable: deprecated
+-- TODO: deprecate this in nvim-0.11 or use strict lists. Determine which list-check function to use
+M.is_list = vim.isarray or vim.islist or vim.tbl_isarray or vim.tbl_islist
 
-if vim.fn.has("nvim-0.10") == 1 then
-  M.is_list = vim.isarray or vim.islist
-else
-  M.is_list = vim.tbl_isarray or vim.tbl_islist
-end
+---@diagnostic disable: deprecated
+function M.tbl_flatten(t) return is_version_11 and vim.iter(t):flatten(math.huge):totable() or vim.tbl_flatten(t) end
 
 return M

@@ -1,13 +1,14 @@
 local lazy = require("bufferline.lazy")
 local config = lazy.require("bufferline.config") ---@module "bufferline.config"
 local ui = lazy.require("bufferline.ui") ---@module "bufferline.ui"
+local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
 
 local M = {}
 
 local fn = vim.fn
 local fmt = string.format
 
-local severity_name = vim.tbl_add_reverse_lookup({
+local severity_name = utils.tbl_add_reverse_lookup({
   [1] = "error",
   [2] = "warning",
   [3] = "info",
@@ -66,13 +67,21 @@ local function is_insert() -- insert or replace
   return mode == "i" or mode == "ic" or mode == "ix" or mode == "R" or mode == "Rc" or mode == "Rx"
 end
 
+local function diagnostic_is_enabled(d)
+  if vim.fn.has("nvim-0.10") == 1 then
+    return vim.diagnostic.is_enabled({ ns_id = d.namespace, bufnr = d.bufnr })
+  else
+    -- neovim 0.9.x
+    return not (vim.diagnostic.is_disabled and vim.diagnostic.is_disabled(d.bufnr, d.namespace))
+  end
+end
+
 local get_diagnostics = {
   nvim_lsp = function()
     local results = {}
     local diagnostics = vim.diagnostic.get()
     for _, d in pairs(diagnostics) do
-      -- TODO remove is_disabled nil check when 0.9 is stable
-      if vim.diagnostic.is_disabled == nil or not vim.diagnostic.is_disabled(d.bufnr, d.namespace) then
+      if diagnostic_is_enabled(d) then
         if not results[d.bufnr] then results[d.bufnr] = {} end
         table.insert(results[d.bufnr], d)
       end

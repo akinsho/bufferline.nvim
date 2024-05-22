@@ -28,7 +28,6 @@
   - [Unique names](#unique-names)
   - [Close icons](#close-icons)
   - [Re-ordering](#re-ordering)
-  - [LSP indicators](#lsp-indicators)
   - [Custom areas](#custom-areas)
 - [How do I see only buffers per tab?](#how-do-i-see-only-buffers-per-tab)
 - [Caveats](#caveats)
