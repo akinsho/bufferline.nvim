@@ -68,7 +68,7 @@ local function is_insert() -- insert or replace
 end
 
 local function diagnostic_is_enabled(d)
-  if vim.fn.has("nvim-0.10") == 1 then
+  if vim.fn.has("nvim-0.10") == 1 and vim.diagnostic ~= nil and vim.diagnostic.is_enabled ~= nil then
     return vim.diagnostic.is_enabled({ ns_id = d.namespace, bufnr = d.bufnr })
   else
     -- neovim 0.9.x
