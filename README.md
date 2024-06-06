@@ -22,7 +22,7 @@ use {'sherocktong/bufferline.nvim', tag = "*", requires = 'nvim-tree/nvim-web-de
 ```
 Plug 'nvim-tree/nvim-web-devicons' " Recommended (for coloured icons)
 " Plug 'ryanoasis/vim-devicons' Icons without colours
-Plug 'akinsho/bufferline.nvim', { 'tag': '*' }
+Plug 'sherocktong/bufferline.nvim', { 'tag': '*' }
 ```
 
 I will submit a PR to the extension. This fork will be deleted once the PR was merged.
