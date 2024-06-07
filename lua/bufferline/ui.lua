@@ -116,7 +116,10 @@ end
 ---@param segments bufferline.Segment[]
 ---@return integer
 local function get_component_size(segments)
-  assert(utils.is_list(segments), "Segments must be a list")
+  -- See https://neovim.io/doc/user/deprecated.html#vim.tbl_islist() for why.
+  -- Use vim.isarray on neovim >= 0.10 and vim.tbl_islist otherwise.
+  local check_fn = vim.isarray or vim.tbl_islist
+  assert(check_fn(segments), "Segments must be a list")
   local sum = 0
   for _, s in pairs(segments) do
     if has_text(s) then sum = sum + strwidth(tostring(s.text)) end
