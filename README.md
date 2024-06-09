@@ -52,10 +52,10 @@ If you'd like to use an older version of the plugin compatible with nvim-0.6.1 a
 
 ```lua
 -- using packer.nvim
-use {'akinsho/bufferline.nvim', tag = "*", requires = 'nvim-tree/nvim-web-devicons'}
+use { "akinsho/bufferline.nvim", tag = "*", requires = "nvim-tree/nvim-web-devicons" }
 
 -- using lazy.nvim
-{'akinsho/bufferline.nvim', version = "*", dependencies = 'nvim-tree/nvim-web-devicons'}
+{ "akinsho/bufferline.nvim", version = "*", dependencies = "nvim-tree/nvim-web-devicons" }
 ```
 
 **Vimscript**
@@ -79,7 +79,7 @@ of various highlight groups.
 " In your init.lua or init.vim
 set termguicolors
 lua << EOF
-require("bufferline").setup{}
+require("bufferline").setup()
 EOF
 ```
 
@@ -87,7 +87,7 @@ EOF
 
 ```lua
 vim.opt.termguicolors = true
-require("bufferline").setup{}
+require("bufferline").setup()
 ```
 
 You can close buffers by clicking the close icon or by _right clicking_ the tab anywhere
@@ -178,7 +178,6 @@ diagnostics_indicator = function(count, level, diagnostics_dict, context)
   local icon = level:match("error") and " " or " "
   return " " .. icon .. count
 end
-
 ```
 
 </details>
@@ -189,12 +188,10 @@ end
   <summary><b>snippet</b></summary>
 
 ```lua
-
 diagnostics_indicator = function(count, level, diagnostics_dict, context)
   local s = " "
   for e, n in pairs(diagnostics_dict) do
-    local sym = e == "error" and " "
-      or (e == "warning" and " " or " ")
+    local sym = e == "error" and " " or (e == "warning" and " " or " ")
     s = s .. n .. sym
   end
   return s
@@ -212,10 +209,10 @@ LSP indicators can additionally be reported conditionally, based on buffer conte
 ```lua
 diagnostics_indicator = function(count, level, diagnostics_dict, context)
   if context.buffer:current() then
-    return ''
+    return ""
   end
 
-  return ''
+  return ""
 end
 ```
 

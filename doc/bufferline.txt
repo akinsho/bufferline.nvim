@@ -57,15 +57,15 @@ this option entirely at your discretion. >vim
 
     set termguicolors
     " In your init.vim or init.lua
-    lua require"bufferline".setup()
+    lua require("bufferline").setup()
 <
 ==============================================================================
 CONFIGURATION					     *bufferline-configuration*
 
 The available configuration are:
 >lua
-    local bufferline = require('bufferline')
-    bufferline.setup {
+    local bufferline = require("bufferline")
+    bufferline.setup({
         options = {
             mode = "buffers", -- set to "tabs" to only show tabpages instead
             style_preset = bufferline.style_preset.default, -- or bufferline.style_preset.minimal,
@@ -76,14 +76,14 @@ The available configuration are:
             left_mouse_command = "buffer %d",    -- can be a string | function, | false see "Mouse actions"
             middle_mouse_command = nil,          -- can be a string | function, | false see "Mouse actions"
             indicator = {
-                icon = '▎', -- this should be omitted if indicator style is not 'icon'
-                style = 'icon' | 'underline' | 'none',
+                icon = "▎", -- this should be omitted if indicator style is not "icon"
+                style = "icon" | "underline" | "none",
             },
-            buffer_close_icon = '󰅖',
-            modified_icon = '●',
-            close_icon = '',
-            left_trunc_marker = '',
-            right_trunc_marker = '',
+            buffer_close_icon = "󰅖",
+            modified_icon = "●",
+            close_icon = "",
+            left_trunc_marker = " ",
+            right_trunc_marker = " ",
             --- name_formatter can be used to change the buffer's label in the bufferline.
             --- Please note some names can/will break the
             --- bufferline so use this at your discretion knowing that it has
@@ -103,7 +103,7 @@ The available configuration are:
             diagnostics_update_in_insert = false,
             -- The diagnostics indicator can be set to nil to keep the buffer name highlight but delete the highlighting
             diagnostics_indicator = function(count, level, diagnostics_dict, context)
-                return "("..count..")"
+                return "(" .. count .. ")"
             end,
             -- NOTE: this will be called a lot so don't do any heavy processing here
             custom_filter = function(buf_number, buf_numbers)
@@ -128,22 +128,22 @@ The available configuration are:
             offsets = {
                 {
                     filetype = "NvimTree",
-                    text = "File Explorer" | function ,
-                    text_align = "left" | "center" | "right"
-                    separator = true
-                }
+                    text = "File Explorer" | function,
+                    text_align = "left" | "center" | "right",
+                    separator = true,
+                },
             },
             color_icons = true, -- whether or not to add the filetype icon highlights
             get_element_icon = function(element)
-              -- element consists of {filetype: string, path: string, extension: string, directory: string}
-              -- This can be used to change how bufferline fetches the icon
-              -- for an element e.g. a buffer or a tab.
-              -- e.g.
-              local icon, hl = require('nvim-web-devicons').get_icon_by_filetype(element.filetype, { default = false })
-              return icon, hl
-              -- or
-              local custom_map = {my_thing_ft: {icon = "my_thing_icon", hl}}
-              return custom_map[element.filetype]
+                -- element consists of {filetype: string, path: string, extension: string, directory: string}
+                -- This can be used to change how bufferline fetches the icon
+                -- for an element e.g. a buffer or a tab.
+                -- e.g.
+                local icon, hl = require("nvim-web-devicons").get_icon_by_filetype(element.filetype, { default = false })
+                return icon, hl
+                -- or
+                local custom_map = { my_thing_ft = { icon = "my_thing_icon", hl } }
+                return custom_map[element.filetype]
             end,
             show_buffer_icons = true, -- disable filetype icons for buffers
             show_buffer_close_icons = true,
@@ -154,25 +154,25 @@ The available configuration are:
             persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
             move_wraps_at_ends = false, -- whether or not the move command "wraps" at the first or last position
             -- can also be a table containing 2 custom separators
-            -- [focused and unfocused]. eg: { '|', '|' }
-            separator_style = "slant" | "slope" | "thick" | "thin" | { 'any', 'any' },
+            -- [focused and unfocused]. eg: { "|", "|" }
+            separator_style = "slant" | "slope" | "thick" | "thin" | { "any", "any" },
             enforce_regular_tabs = false,
             always_show_bufferline = true,
             auto_toggle_bufferline = true,
             hover = {
                 enabled = true,
                 delay = 200,
-                reveal = {'close'}
+                reveal = { "close" },
             },
-            sort_by = 'insert_after_current' |'insert_at_end' | 'id' | 'extension' | 'relative_directory' | 'directory' | 'tabs' | function(buffer_a, buffer_b)
+            sort_by = "insert_after_current" | "insert_at_end" | "id" | "extension" | "relative_directory" | "directory" | "tabs" | function(buffer_a, buffer_b)
                 print(vim.inspect(buffer_a))
                 -- add custom logic
                 local modified_a = vim.fn.getftime(buffer_a.path)
                 local modified_b = vim.fn.getftime(buffer_b.path)
                 return modified_a > modified_b
-            end
-        }
-    }
+            end,
+        },
+    })
 <
 ==============================================================================
 HOVER EVENTS                                           *bufferline-hover-events*
@@ -187,8 +187,8 @@ NOTE: currently only hiding/revealing the buffer close icon is possible.
         hover = {
             enabled = true,
             delay = 200,
-            reveal = {'close'}
-        }
+            reveal = { "close" },
+        },
     }
 <
 
@@ -224,16 +224,16 @@ bufferline is more unobtrusive.
 
 e.g.
 >lua
-    local bufferline = require('bufferline')
+    local bufferline = require("bufferline")
     bufferline.setup({
         options = {
             style_preset = bufferline.style_preset.no_italic,
             -- or you can combine these e.g.
             style_preset = {
                 bufferline.style_preset.no_italic,
-                bufferline.style_preset.no_bold
+                bufferline.style_preset.no_bold,
             },
-        }
+        },
     })
 <
 The available options are
@@ -273,26 +273,26 @@ It is passed a table with the following keys:
   * `lower` - a helper function to convert the passed number to subscript e.g. `lower(id)`.
   * `ordinal` - The buffer ordinal number.
   * `id` - The buffer ID.
->
-  -- For ⁸·₂
-  numbers = function(opts)
-    return string.format('%s·%s', opts.raise(opts.id), opts.lower(opts.ordinal))
-  end,
+>lua
+    -- For ⁸·₂
+    numbers = function(opts)
+        return string.format("%s·%s", opts.raise(opts.id), opts.lower(opts.ordinal))
+    end,
 
-  -- For ₈.₂
-  numbers = function(opts)
-    return string.format('%s.%s', opts.lower(opts.id), opts.lower(opts.ordinal))
-  end,
+    -- For ₈.₂
+    numbers = function(opts)
+        return string.format("%s.%s", opts.lower(opts.id), opts.lower(opts.ordinal))
+    end,
 
-  -- For 2.)8.) - change the order of arguments to change the order in the string
-  numbers = function(opts)
-    return string.format('%s.)%s.)', opts.ordinal, opts.id)
-  end,
+    -- For 2.)8.) - change the order of arguments to change the order in the string
+    numbers = function(opts)
+        return string.format("%s.)%s.)", opts.ordinal, opts.id)
+    end,
 
-  -- For 8|² -
-  numbers = function(opts)
-    return string.format('%s|%s', opts.id, opts.raise(opts.ordinal))
-  end,
+    -- For 8|² -
+    numbers = function(opts)
+        return string.format("%s|%s", opts.id, opts.raise(opts.ordinal))
+    end,
 <
 
 ==============================================================================
@@ -334,10 +334,10 @@ current buffer and only have them appear for other buffers.
 >lua
     diagnostics_indicator = function(count, level, diagnostics_dict, context)
         if context.buffer:current() then
-            return ''
+            return ""
         end
 
-        return ''
+        return ""
     end
 <
 
@@ -352,33 +352,33 @@ tabs as well as centaur tab's groups.
 
 In order to group buffers specify a list of groups in your config e.g.
 >lua
-  groups = {
-    options = {
-      toggle_hidden_on_enter = true -- when you re-enter a hidden group this options re-opens that group so the buffer is visible
-    },
-    items = {
-      {
-        name = "Tests", -- Mandatory
-        highlight = {underline = true, sp = "blue"}, -- Optional
-        priority = 2, -- determines where it will appear relative to other groups (Optional)
-        icon = "", -- Optional
-        matcher = function(buf) -- Mandatory
-          return buf.filename:match('%_test') or buf.filename:match('%_spec')
-        end,
-      },
-      {
-        name = "Docs",
-        highlight = {undercurl = true, sp = "green"},
-        auto_close = false,  -- whether or not close this group if it doesn't contain the current buffer
-        matcher = function(buf)
-          return buf.filename:match('%.md') or buf.filename:match('%.txt')
-        end,
-        separator = { -- Optional
-          style = require('bufferline.groups').separator.tab
+    groups = {
+        options = {
+            toggle_hidden_on_enter = true, -- when you re-enter a hidden group this options re-opens that group so the buffer is visible
         },
-      }
+        items = {
+            {
+                name = "Tests", -- Mandatory
+                highlight = { underline = true, sp = "blue" }, -- Optional
+                priority = 2, -- determines where it will appear relative to other groups (Optional)
+                icon = " ", -- Optional
+                matcher = function(buf) -- Mandatory
+                    return buf.filename:match("%_test") or buf.filename:match("%_spec")
+                end,
+            },
+            {
+                name = "Docs",
+                highlight = { undercurl = true, sp = "green" },
+                auto_close = false,    -- whether or not close this group if it doesn't contain the current buffer
+                matcher = function(buf)
+                    return buf.filename:match("%.md") or buf.filename:match("%.txt")
+                end,
+                separator = { -- Optional
+                    style = require("bufferline.groups").separator.tab,
+                },
+            },
+        },
     }
-  }
 <
 
 ==============================================================================
@@ -394,14 +394,14 @@ In this case built-in groups are provided (for now just the `ungrouped`)
 built-in so you can achieve the order above using
 
 >lua
-  local groups = require('bufferline.groups')
-  groups = {
-    items = {
-      {name = "group 1", ... },
-      groups.builtin.ungrouped, -- the ungrouped buffers will be in the middle of the grouped ones
-      {name = "group 2", ...},
+    local groups = require("bufferline.groups")
+    groups = {
+        items = {
+            { name = "group 1", ... },
+            groups.builtin.ungrouped, -- the ungrouped buffers will be in the middle of the grouped ones
+            { name = "group 2", ... },
+        },
     }
-  }
 <
 
 ==============================================================================
@@ -417,8 +417,8 @@ Other group related functionality can be implemented using the
 e.g.
 >lua
     function _G.__group_open()
-        require('bufferline').group_action(<GROUP_NAME>, function(buf)
-            vim.cmd('vsplit '..buf.path)
+        require("bufferline").group_action(<GROUP_NAME>, function(buf)
+            vim.cmd("vsplit " .. buf.path)
         end)
     end
 <
@@ -435,16 +435,16 @@ elements. The icons and highlights for pinned buffers can be changed similarly
 to other groups e.g.
 
 >lua
- config = {
-    options = {
-        groups = {
-            items = {
-                require('bufferline.groups').builtin.pinned:with({ icon = "" })
-                ... -- other items
-            }
-        }
+    config = {
+        options = {
+            groups = {
+                items = {
+                    require("bufferline.groups").builtin.pinned:with({ icon = "" }),
+                    ..., -- other items
+                },
+            },
+        },
     }
- }
 <
 
 ==============================================================================
@@ -471,9 +471,9 @@ Bufferline allows you to sort the visible buffers by `extension` or `directory`:
     :BufferLineSortByTabs
 
     -- Or using lua functions
-    :lua require'bufferline'.sort_by('extension')`
-    :lua require'bufferline'.sort_by('directory')`
-    :lua require'bufferline'.sort_by('tabs')`
+    :lua require("bufferline").sort_by("extension")`
+    :lua require("bufferline").sort_by("directory")`
+    :lua require("bufferline").sort_by("tabs")`
 
 By default bufferline will sort by buffer number which is an integer value
 provided by vim to identify a buffer that increases as new buffers are opened
@@ -508,14 +508,14 @@ appear and `false` if not.
 For example: >lua
     custom_filter = function(buf, buf_nums)
         -- dont show help buffers in the bufferline
-        return not vim.bo[buf].filetype == "help" then
+        return not vim.bo[buf].filetype == "help"
 
         -- you can use more custom logic for example
         -- don't show files matching a pattern
-        return not vim.fn.bufname(buf):match('test')
+        return not vim.fn.bufname(buf):match("test")
 
         -- show only certain filetypes in certain tabs e.g. js in one, css in
-        another etc.
+        -- another etc.
         local tab_num = vim.fn.tabpagenr()
         if tab_num == 1 and vim.bo[buf].filetype == "javascript" then
             return true
@@ -569,15 +569,15 @@ A user can also execute arbitrary functions against a buffer using the
 `exec` function. For example
 
 >lua
-    require('bufferline').exec(
+    require("bufferline").exec(
         4, -- the forth visible buffer from the left
         user_function -- an arbitrary user function which gets passed the buffer
     )
 
     -- e.g.
     function _G.bdel(num)
-        require('bufferline').exec(num, function(buf, visible_buffers)
-            vim.cmd('bdelete '..buf.id)
+        require("bufferline").exec(num, function(buf, visible_buffers)
+            vim.cmd("bdelete " .. buf.id)
         end)
     end
 
@@ -600,8 +600,8 @@ for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or
             filetype = "NvimTree",
             text = "File Explorer",
             highlight = "Directory",
-            separator = true -- use a "true" to enable the default, or set your own character
-        }
+            separator = true, -- use a "true" to enable the default, or set your own character
+        },
     }
 <
 The `filetype` is used to check whether a particular window is a match, the
@@ -609,16 +609,16 @@ The `filetype` is used to check whether a particular window is a match, the
 `text` can be either a string or a function which should also return a string.
 See the example below.
 >lua
-  offsets = {
-    {
-      filetype = "NvimTree",
-      text = function()
-        return vim.fn.getcwd()
-      end,
-      highlight = "Directory",
-      text_align = "left"
+    offsets = {
+        {
+            filetype = "NvimTree",
+            text = function()
+                return vim.fn.getcwd()
+            end,
+            highlight = "Directory",
+            text_align = "left",
+        },
     }
-  }
 
 
 If it is too long it will be truncated. The highlight controls what highlight
@@ -686,7 +686,7 @@ please for example you can use another plugin such as `bufdelete.nvim`
 the `close_command`.
 >lua
     left_mouse_command = function(bufnum)
-        require('bufdelete').bufdelete(bufnum, true)
+        require("bufdelete").bufdelete(bufnum, true)
     end
 <
 You can also set this value to an empty string or to `false` to disable the
@@ -763,13 +763,13 @@ A few of this plugins commands can be mapped for ease of use. >vim
     nnoremap <silent><mymap> :BufferLineMovePrev<CR>
 
     " These commands will move the current buffer to the first or the last position in the bufferline
-    nnoremap <silent><mymap> :lua require'bufferline'.move_to(1)<CR>
-    nnoremap <silent><mymap> :lua require'bufferline'.move_to(-1)<CR>
+    nnoremap <silent><mymap> :lua require("bufferline").move_to(1)<CR>
+    nnoremap <silent><mymap> :lua require("bufferline").move_to(-1)<CR>
 
     " These commands will sort buffers by directory, language, or a custom criteria
     nnoremap <silent>be :BufferLineSortByExtension<CR>
     nnoremap <silent>bd :BufferLineSortByDirectory<CR>
-    nnoremap <silent><mymap> :lua require'bufferline'.sort_by(function (buf_a, buf_b) return buf_a.id < buf_b.id end)<CR>
+    nnoremap <silent><mymap> :lua require("bufferline").sort_by(function (buf_a, buf_b) return buf_a.id < buf_b.id end)<CR>
 
 If you manually arrange your buffers using `:BufferLineMove{Prev|Next}` during an nvim session this can be persisted for the session.
 This is enabled by default but you need to ensure that your `sessionoptions+=globals` otherwise the session file will
@@ -796,9 +796,9 @@ for example: >lua
         fill = {
             bg = {
                 attribute = "fg",
-                highlight = "Pmenu"
-            }
-        }
+                highlight = "Pmenu",
+            },
+        },
     }
 <
 This will automatically pull the value of `Pmenu` fg colour and use it
@@ -808,289 +808,289 @@ default value for that key.
 NOTE: you can specify colors the same way you specify colors for
 `nvim_set_hl`. See `:h vim.api.nvim_set_hl` .
 >lua
-    require('bufferline').setup({
+    require("bufferline").setup({
         highlights = {
             fill = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             background = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             tab = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             tab_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             tab_separator = {
-              fg = '<colour-value-here>',
-              bg = '<colour-value-here>',
+              fg = "<colour-value-here>",
+              bg = "<colour-value-here>",
             },
             tab_separator_selected = {
-              fg = '<colour-value-here>',
-              bg = '<colour-value-here>',
-              sp = '<colour-value-here>',
-              underline = '<colour-value-here>',
+              fg = "<colour-value-here>",
+              bg = "<colour-value-here>",
+              sp = "<colour-value-here>",
+              underline = "<colour-value-here>",
             },
             tab_close = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             close_button = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             close_button_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             close_button_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             buffer_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             buffer_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             numbers = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             numbers_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             numbers_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             diagnostic = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             diagnostic_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             diagnostic_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             hint = {
-                fg = '<colour-value-here>',
-                sp = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                sp = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             hint_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             hint_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
-                sp = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
+                sp = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             hint_diagnostic = {
-                fg = '<colour-value-here>',
-                sp = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                sp = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             hint_diagnostic_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             hint_diagnostic_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
-                sp = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
+                sp = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             info = {
-                fg = '<colour-value-here>',
-                sp = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                sp = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             info_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             info_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
-                sp = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
+                sp = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             info_diagnostic = {
-                fg = '<colour-value-here>',
-                sp = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                sp = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             info_diagnostic_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             info_diagnostic_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
-                sp = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
+                sp = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             warning = {
-                fg = '<colour-value-here>',
-                sp = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                sp = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             warning_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             warning_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
-                sp = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
+                sp = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             warning_diagnostic = {
-                fg = '<colour-value-here>',
-                sp = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                sp = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             warning_diagnostic_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             warning_diagnostic_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
-                sp = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
+                sp = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             error = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
-                sp = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
+                sp = "<colour-value-here>",
             },
             error_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             error_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
-                sp = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
+                sp = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             error_diagnostic = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
-                sp = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
+                sp = "<colour-value-here>",
             },
             error_diagnostic_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             error_diagnostic_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
-                sp = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
+                sp = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             modified = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             modified_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             modified_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             duplicate_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
                 italic = true,
             },
             duplicate_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
                 italic = true,
             },
             duplicate = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
                 italic = true,
             },
             separator_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             separator_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             separator = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             indicator_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             indicator_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             pick_selected = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             pick_visible = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             pick = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
                 bold = true,
                 italic = true,
             },
             offset_separator = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
             },
             trunc_marker = {
-                fg = '<colour-value-here>',
-                bg = '<colour-value-here>',
-            }
+                fg = "<colour-value-here>",
+                bg = "<colour-value-here>",
+            },
         };
     })
 <
@@ -1104,7 +1104,7 @@ for example: >lua
         fill = {
             ctermbg = 7,
             ctermfg = 0,
-        }
+        },
     }
 
 This will set the background of the highlight group to gray and foreground to
@@ -1122,31 +1122,31 @@ to be shown in a list of tables. For example:
 
 >lua
     custom_areas = {
-    right = function()
-        local result = {}
-        local seve = vim.diagnostic.severity
-        local error = #vim.diagnostic.get(0, {severity = seve.ERROR})
-        local warning = #vim.diagnostic.get(0, {severity = seve.WARN})
-        local info = #vim.diagnostic.get(0, {severity = seve.INFO})
-        local hint = #vim.diagnostic.get(0, {severity = seve.HINT})
+        right = function()
+            local result = {}
+            local seve = vim.diagnostic.severity
+            local error = #vim.diagnostic.get(0, { severity = seve.ERROR })
+            local warning = #vim.diagnostic.get(0, { severity = seve.WARN })
+            local info = #vim.diagnostic.get(0, { severity = seve.INFO })
+            local hint = #vim.diagnostic.get(0, { severity = seve.HINT })
 
-        if error ~= 0 then
-            table.insert(result, {text = "  " .. error, fg = "#EC5241"})
-        end
+            if error ~= 0 then
+                table.insert(result, { text = "  " .. error, fg = "#EC5241" })
+            end
 
-        if warning ~= 0 then
-            table.insert(result, {text = "  " .. warning, fg = "#EFB839"})
-        end
+            if warning ~= 0 then
+                table.insert(result, { text = "  " .. warning, fg = "#EFB839" })
+            end
 
-        if hint ~= 0 then
-            table.insert(result, {text = "  " .. hint, fg = "#A3BA5E"})
-        end
+            if hint ~= 0 then
+                table.insert(result, { text = "  " .. hint, fg = "#A3BA5E" })
+            end
 
-        if info ~= 0 then
-            table.insert(result, {text = "  " .. info, fg = "#7EA9A7"})
-        end
-        return result
-    end,
+            if info ~= 0 then
+                table.insert(result, { text = "  " .. info, fg = "#7EA9A7" })
+            end
+            return result
+        end,
     }
 <
 
@@ -1165,21 +1165,21 @@ The output has the following structure:
 
 >lua
     {
-        mode = "tabs" -- depends on your config setting for mode
+        mode = "tabs", -- depends on your config setting for mode
         elements = {
-            {id = 1, name = "hi.txt", path = "/tmp/folder/hi.txt"},
+            { id = 1, name = "hi.txt", path = "/tmp/folder/hi.txt" },
             -- and so on for all open buffers
-        }
+        },
     }
 <
 
 Here's an example that will let you close all open buffers.
 
 >lua
-    function close_all_buffers ()
+    function close_all_buffers()
         for _, e in ipairs(bufferline.get_elements().elements) do
             vim.schedule(function()
-                vim.cmd("bd ".. e.id)
+                vim.cmd("bd " .. e.id)
             end)
         end
     end
