@@ -165,8 +165,11 @@ The available configuration are:
                 reveal = {'close'}
             },
             sort_by = 'insert_after_current' |'insert_at_end' | 'id' | 'extension' | 'relative_directory' | 'directory' | 'tabs' | function(buffer_a, buffer_b)
+                print(vim.inspect(buffer_a))
                 -- add custom logic
-                return buffer_a.modified > buffer_b.modified
+                local modified_a = vim.fn.getftime(buffer_a.path)
+                local modified_b = vim.fn.getftime(buffer_b.path)
+                return modified_a > modified_b
             end
         }
     }
@@ -483,7 +486,9 @@ are available to use using >lua
     sort_by = function(buffer_a, buffer_b)
         print(vim.inspect(buffer_a))
         -- add custom logic
-        return buffer_a.modified > buffer_b.modified
+        local modified_a = vim.fn.getftime(buffer_a.path)
+        local modified_b = vim.fn.getftime(buffer_b.path)
+        return modified_a > modified_b
     end
 <
 
