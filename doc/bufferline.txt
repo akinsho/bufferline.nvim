@@ -578,7 +578,7 @@ A user can also execute arbitrary functions against a buffer using the
     function _G.bdel(num)
         require('bufferline').exec(num, function(buf, visible_buffers)
             vim.cmd('bdelete '..buf.id)
-        end
+        end)
     end
 
     vim.cmd [[
