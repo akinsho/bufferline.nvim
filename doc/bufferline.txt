@@ -316,7 +316,7 @@ a custom function in your setup.
     --- this should return a string
     --- Don't get too fancy as this function will be executed a lot
     diagnostics_indicator = function(count, level)
-        local icon = level:match("error") and " " or ""
+        local icon = level:match("error") and " " or ""
         return " " .. icon .. count
     end
 <
@@ -439,7 +439,7 @@ to other groups e.g.
     options = {
         groups = {
             items = {
-                require('bufferline.groups').builtin.pinned:with({ icon = "" })
+                require('bufferline.groups').builtin.pinned:with({ icon = "󰐃" })
                 ... -- other items
             }
         }
@@ -1131,19 +1131,19 @@ to be shown in a list of tables. For example:
         local hint = #vim.diagnostic.get(0, {severity = seve.HINT})
 
         if error ~= 0 then
-            table.insert(result, {text = "  " .. error, link = "DiagnosticError"})
+            table.insert(result, {text = "  " .. error, link = "DiagnosticError"})
         end
 
         if warning ~= 0 then
-            table.insert(result, {text = "  " .. warning, link = "DiagnosticWarn"})
+            table.insert(result, {text = "  " .. warning, link = "DiagnosticWarn"})
         end
 
         if hint ~= 0 then
-            table.insert(result, {text = "  " .. hint, link = "DiagnosticHint"})
+            table.insert(result, {text = "  " .. hint, link = "DiagnosticHint"})
         end
 
         if info ~= 0 then
-            table.insert(result, {text = "  " .. info, link = "DiagnosticInfo"})
+            table.insert(result, {text = "  " .. info, link = "DiagnosticInfo"})
         end
         return result
     end,
