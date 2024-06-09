@@ -69,7 +69,7 @@ The available configuration are:
         options = {
             mode = "buffers", -- set to "tabs" to only show tabpages instead
             style_preset = bufferline.style_preset.default, -- or bufferline.style_preset.minimal,
-            themable = true | false, -- allows highlight groups to be overriden i.e. sets highlights as default
+            themable = true, -- allows highlight groups to be overriden i.e. sets highlights as default
             numbers = "none" | "ordinal" | "buffer_id" | "both" | function({ ordinal, id, lower, raise }): string,
             close_command = "bdelete! %d",       -- can be a string | function, | false see "Mouse actions"
             right_mouse_command = "bdelete! %d", -- can be a string | function | false, see "Mouse actions"
@@ -133,7 +133,7 @@ The available configuration are:
                     separator = true
                 }
             },
-            color_icons = true | false, -- whether or not to add the filetype icon highlights
+            color_icons = true, -- whether or not to add the filetype icon highlights
             get_element_icon = function(element)
               -- element consists of {filetype: string, path: string, extension: string, directory: string}
               -- This can be used to change how bufferline fetches the icon
@@ -145,20 +145,20 @@ The available configuration are:
               local custom_map = {my_thing_ft: {icon = "my_thing_icon", hl}}
               return custom_map[element.filetype]
             end,
-            show_buffer_icons = true | false, -- disable filetype icons for buffers
-            show_buffer_close_icons = true | false,
-            show_close_icon = true | false,
-            show_tab_indicators = true | false,
-            show_duplicate_prefix = true | false, -- whether to show duplicate buffer prefix
+            show_buffer_icons = true, -- disable filetype icons for buffers
+            show_buffer_close_icons = true,
+            show_close_icon = true,
+            show_tab_indicators = true,
+            show_duplicate_prefix = true, -- whether to show duplicate buffer prefix
             duplicates_across_groups = true, -- whether to consider duplicate paths in different groups as duplicates
             persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
             move_wraps_at_ends = false, -- whether or not the move command "wraps" at the first or last position
             -- can also be a table containing 2 custom separators
             -- [focused and unfocused]. eg: { '|', '|' }
             separator_style = "slant" | "slope" | "thick" | "thin" | { 'any', 'any' },
-            enforce_regular_tabs = false | true,
-            always_show_bufferline = true | false,
-            auto_toggle_bufferline = true | false,
+            enforce_regular_tabs = false,
+            always_show_bufferline = true,
+            auto_toggle_bufferline = true,
             hover = {
                 enabled = true,
                 delay = 200,
