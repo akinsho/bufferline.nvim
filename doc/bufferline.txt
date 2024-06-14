@@ -128,6 +128,7 @@ The available configuration are:
             offsets = {
                 {
                     filetype = "NvimTree",
+                    raw = "File Text" | function
                     text = "File Explorer" | function ,
                     text_align = "left" | "center" | "right"
                     separator = true
@@ -594,14 +595,19 @@ for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or
         {
             filetype = "NvimTree",
             text = "File Explorer",
+            -- or
+            raw = "File Explorer"
             highlight = "Directory",
             separator = true -- use a "true" to enable the default, or set your own character
         }
     }
 <
 The `filetype` is used to check whether a particular window is a match, the
-`text` is *optional* and will show above the window if specified.
-`text` can be either a string or a function which should also return a string.
+`text` is *optional* and will show above the window if specified. Also it's
+possible to define the *optional* `raw`, this will show text as is, without
+any alignment.
+`text` and `raw` can be either a string or a function which should also return a
+string.
 See the example below.
 >lua
   offsets = {
@@ -610,17 +616,24 @@ See the example below.
       text = function()
         return vim.fn.getcwd()
       end,
+      -- or
+      raw = function()
+        return vim.fn.getcwd()
+      end,
       highlight = "Directory",
       text_align = "left"
     }
   }
 
+NOTE: when specify both `text` and `raw`, the raw content takes preference over
+text content.
 
 If it is too long it will be truncated. The highlight controls what highlight
 is shown above the window.
 
 You can also change the alignment of the text in the offset section using
-`text_align` which can be set to `left`, `right` or `center`.
+`text_align` which can be set to `left`, `right` or `center`. `raw` ignores
+this value.
 
 An offset can also have a separator which mimics the appearance of the
 win separator, and the intent is give a vertical split the appearance of
