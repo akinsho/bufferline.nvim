@@ -254,6 +254,15 @@ function M.close_others()
   ui.refresh()
 end
 
+--Close current buffer
+function M.close_current()
+  local index = M.get_current_element_index(state)
+  if not index then return end
+  local item = state.components[index]
+  delete_element(item.id)
+  ui.refresh()
+end
+
 --- sorts all elements
 --- @param sort_by (string|function)?
 function M.sort_by(sort_by)
