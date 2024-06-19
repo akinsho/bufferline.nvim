@@ -51,7 +51,7 @@ end
 ---@return bufferline.Buffer[]
 function M.get_components(state)
   local options = config.options
-  local buf_nums = utils.get_valid_buffers()
+  local buf_nums = vim.tbl_map(function(buf) return buf.bufnr end, utils.get_valid_buffers())
   local filter = options.custom_filter
   buf_nums = filter and apply_buffer_filter(buf_nums, filter) or buf_nums
   buf_nums = get_updated_buffers(buf_nums, state.custom_sort)
