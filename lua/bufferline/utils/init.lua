@@ -145,8 +145,9 @@ M.path_sep = fn.has("win32") == 1 and "\\" or "/"
 --- @param buf_num integer
 function M.is_valid(buf_num)
   if not buf_num or buf_num < 1 then return false end
-  local exists = vim.api.nvim_buf_is_valid(buf_num)
-  return vim.bo[buf_num].buflisted and exists
+  local exists = vim.api.nvim_buf_is_loaded(buf_num)
+  if not exists then return false end
+  return vim.bo[buf_num].buflisted
 end
 
 ---@return integer
