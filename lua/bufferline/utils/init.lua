@@ -153,8 +153,15 @@ end
 ---@return integer
 function M.get_buf_count() return #fn.getbufinfo({ buflisted = 1 }) end
 
----@return table[]
-function M.get_valid_buffers() return vim.tbl_filter(M.is_valid, vim.fn.getbufinfo()) end
+---@return integer[]
+function M.get_valid_buffers()
+  local bufs = vim.fn.getbufinfo()
+  local valid_bufs = {}
+  for _, buf in ipairs(bufs) do
+    if M.is_valid(buf) then table.insert(valid_bufs, buf.bufnr) end
+  end
+  return valid_bufs
+end
 
 ---@return integer
 function M.get_tab_count() return #fn.gettabinfo() end
