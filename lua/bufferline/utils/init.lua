@@ -141,19 +141,27 @@ end
 
 M.path_sep = fn.has("win32") == 1 and "\\" or "/"
 
--- The provided api nvim_is_buf_loaded filters out all hidden buffers
---- @param buf_num integer
-function M.is_valid(buf_num)
-  if not buf_num or buf_num < 1 then return false end
-  local exists = vim.api.nvim_buf_is_valid(buf_num)
-  return exists and vim.bo[buf_num].buflisted
+-- The provided api nvim_is_buf_valid filters out all invalid or unlisted buffers
+--- @param buf table
+function M.is_valid(buf)
+  if not buf.bufnr or buf.bufnr < 1 then return false end
+  local valid = vim.api.nvim_buf_is_valid(buf.bufnr)
+  if not valid then return false end
+  return buf.listed == 1
 end
 
 ---@return integer
 function M.get_buf_count() return #fn.getbufinfo({ buflisted = 1 }) end
 
 ---@return integer[]
-function M.get_valid_buffers() return vim.tbl_filter(M.is_valid, vim.api.nvim_list_bufs()) end
+function M.get_valid_buffers()
+  local bufs = vim.fn.getbufinfo()
+  local valid_bufs = {}
+  for _, buf in ipairs(bufs) do
+    if M.is_valid(buf) then table.insert(valid_bufs, buf.bufnr) end
+  end
+  return valid_bufs
+end
 
 ---@return integer
 function M.get_tab_count() return #fn.gettabinfo() end
