@@ -28,7 +28,7 @@ local supported_win_types = {
 ---@param is_left boolean?
 ---@return string
 local function get_section_text(size, highlight, offset, is_left)
-  local text = offset.text
+  local text = offset.raw or offset.text
 
   if type(text) == "function" then text = text() end
   text = text or padding:rep(size - 2)
@@ -36,7 +36,9 @@ local function get_section_text(size, highlight, offset, is_left)
   local text_size, left, right = api.nvim_strwidth(text), 0, 0
   local alignment = offset.text_align or "center"
 
-  if text_size + 2 >= size then
+  if offset.raw then
+    -- display content as is
+  elseif text_size + 2 >= size then
     text, left, right = utils.truncate_name(text, size - 2), 1, 1
   else
     local remainder = size - text_size
