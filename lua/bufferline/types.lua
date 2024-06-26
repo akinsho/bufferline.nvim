@@ -62,6 +62,7 @@
 ---@field public diagnostics? boolean | 'nvim_lsp' | 'coc'
 ---@field public diagnostics_indicator? bufferline.DiagnosticIndicator
 ---@field public diagnostics_update_in_insert? boolean
+---@field public diagnostics_update_on_event? boolean
 ---@field public offsets? table[]
 ---@field public groups? bufferline.GroupOpts
 ---@field public themable? boolean

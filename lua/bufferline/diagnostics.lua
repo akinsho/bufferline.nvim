@@ -144,7 +144,9 @@ end
 ---@param opts table
 function M.get(opts)
   if is_disabled(opts.diagnostics) then return setmetatable({}, mt) end
-  if is_insert() and not opts.diagnostics_update_in_insert then return setmetatable(last_diagnostics_result, mt) end
+  local update_nvim = opts.diagnostics == "nvim_lsp" and vim.diagnostic.config().update_in_insert
+  local update_coc = opts.diagnostics == "coc" and opts.diagnostics_update_in_insert
+  if is_insert() and not update_nvim and not update_coc then return setmetatable(last_diagnostics_result, mt) end
   local diagnostics = get_diagnostics[opts.diagnostics]()
   local result = {}
   for buf_num, items in pairs(diagnostics) do
