@@ -68,9 +68,13 @@
 ---@field public themable? boolean
 ---@field public hover? bufferline.HoverOptions
 
+---@class bufferline.HLLink
+---@field attribute 'fg' | 'bg'
+---@field highlight string
+
 ---@class bufferline.HLGroup
----@field fg? string
----@field bg? string
+---@field fg? string | bufferline.HLLink
+---@field bg? string | bufferline.HLLink
 ---@field sp? string
 ---@field special? string
 ---@field bold? boolean
@@ -214,14 +218,14 @@
 ---@field add fun(self: bufferline.Section, item: bufferline.Component)
 
 ---@class bufferline.State
----@field components bufferline.Component[]
+---@field components bufferline.Component[]?
 ---@field current_element_index number?
----@field is_picking boolean
----@field visible_components bufferline.Component[]
----@field __components bufferline.Component[]
+---@field is_picking boolean?
+---@field visible_components bufferline.Component[]?
+---@field __components bufferline.Component[]?
 ---@field custom_sort number[]?
----@field left_offset_size number
----@field right_offset_size number
+---@field left_offset_size number?
+---@field right_offset_size number?
 
 ---@alias bufferline.Sorter fun(buf_a: bufferline.Buffer, buf_b: bufferline.Buffer): boolean
 
