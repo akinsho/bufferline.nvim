@@ -51,11 +51,11 @@ local is_valid_version = fn.has("nvim-0.5") > 0
 
 local function is_disabled(diagnostics)
   if
-    not diagnostics
-    or not vim.tbl_contains({ "nvim_lsp", "coc" }, diagnostics)
-    -- check if the current nvim version is one that will have either vim.diagnostics or vim.lsp.diagnostics
-    or (diagnostics == "nvim_lsp" and not is_valid_version)
-    or (diagnostics == "coc" and vim.g.coc_service_initialized ~= 1)
+      not diagnostics
+      or not vim.tbl_contains({ "nvim_lsp", "coc" }, diagnostics)
+      -- check if the current nvim version is one that will have either vim.diagnostics or vim.lsp.diagnostics
+      or (diagnostics == "nvim_lsp" and not is_valid_version)
+      or (diagnostics == "coc" and vim.g.coc_service_initialized ~= 1)
   then
     return true
   end
@@ -188,7 +188,7 @@ function M.component(context)
     highlight = diag_highlight,
     attr = {
       extends = {
-        { id = ui.components.id.name, highlight = highlight },
+        { id = ui.components.id.name,   highlight = highlight },
         { id = ui.components.id.groups, highlight = highlight },
       },
     },
