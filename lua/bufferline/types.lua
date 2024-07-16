@@ -5,6 +5,8 @@
 
 ---@class bufferline.GroupOptions
 ---@field toggle_hidden_on_enter? boolean re-open hidden groups on bufenter
+---@field separator_position? "start" | "end" | "both" -- new option
+---@field separator_style? "thin" | "thick" | {[1]: string, [2]: string}
 
 ---@class bufferline.GroupOpts
 ---@field options? bufferline.GroupOptions
@@ -188,7 +190,7 @@
 ---@field public icon? string
 ---@field public hidden? boolean
 ---@field public with? fun(Group, Group): bufferline.Group
----@field auto_close boolean when leaving the group automatically close it
+---@field auto_close boolean? when leaving the group automatically close it
 
 ---@class bufferline.RenderContext
 ---@field preferences bufferline.Config

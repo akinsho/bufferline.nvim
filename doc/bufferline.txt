@@ -75,7 +75,7 @@ The available configuration are:
             right_mouse_command = "bdelete! %d", -- can be a string | function | false, see "Mouse actions"
             left_mouse_command = "buffer %d",    -- can be a string | function, | false see "Mouse actions"
             middle_mouse_command = nil,          -- can be a string | function, | false see "Mouse actions"
-            indicator = {
+            indicator = {   -- marker for the current active tab
                 icon = '▎', -- this should be omitted if indicator style is not 'icon'
                 style = 'icon' | 'underline' | 'none',
             },
@@ -157,7 +157,7 @@ The available configuration are:
             -- can also be a table containing 2 custom separators
             -- [focused and unfocused]. eg: { '|', '|' }
             separator_style = "slant" | "slope" | "thick" | "thin" | { 'any', 'any' },
-            enforce_regular_tabs = false | true,
+            enforce_regular_tabs = false | true, -- Whether to enforce all tabs having uniform width or variable width
             always_show_bufferline = true | false,
             auto_toggle_bufferline = true | false,
             hover = {
@@ -353,11 +353,17 @@ In order to group buffers specify a list of groups in your config e.g.
   groups = {
     options = {
       toggle_hidden_on_enter = true -- when you re-enter a hidden group this options re-opens that group so the buffer is visible
+      -- position separator at the end/start/both sides for buffers
+      separator_position = "both", -- start | end | both
+      separator_style = "thin" -- thin | thick | {leftIcon,rightIcon}
     },
     items = {
       {
         name = "Tests", -- Mandatory
         highlight = {underline = true, sp = "blue"}, -- Optional
+        -- Additional Highlights can be configured by setting the hl groups
+        -- BufferLineTestLabel, BufferLineTest, BufferLineTestSelected, BufferLineTestVisible
+
         priority = 2, -- determines where it will appear relative to other groups (Optional)
         icon = "", -- Optional
         matcher = function(buf) -- Mandatory
@@ -595,7 +601,7 @@ for left or right aligned sidebar windows such as `NvimTree`, `NERDTree` or
         {
             filetype = "NvimTree",
             text = "File Explorer",
-            highlight = "Directory",
+            highlight = "Directory", -- Highlight group applied for the Explorer
             separator = true -- use a "true" to enable the default, or set your own character
         }
     }
