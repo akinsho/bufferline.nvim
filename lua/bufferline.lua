@@ -52,7 +52,7 @@ local M = {
 }
 -----------------------------------------------------------------------------//
 
-local debug_tabline = false
+local capture_next_render = false
 
 --- @return string, bufferline.Segment[][]
 local function bufferline()
@@ -74,7 +74,6 @@ local function bufferline()
   local _, current_idx = utils.find(function(component) return component:current() end, components)
 
   state.set({ current_element_index = current_idx })
-
   components = not is_tabline and groups.render(components, sorter) or sorter(components)
   local tabline = ui.tabline(components, tabpages.get())
 
@@ -90,9 +89,9 @@ local function bufferline()
   })
 
   -- :BufferLineDebug -> prints the rendered tabline from the BufferLineDebug command
-  if debug_tabline then
+  if capture_next_render then
     print("Current Tabline and Highlights:\n" .. vim.inspect(get_tabline_text_and_highlights(tabline.str)))
-    debug_tabline = false
+    capture_next_render = false
   end
 
   return tabline.str, tabline.segments
@@ -229,6 +228,7 @@ function M.setup(conf)
   hover.setup(preferences)
   setup_commands()
   setup_autocommands(preferences)
+  setup_diagnostic_handler(preferences)
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
   toggle_bufferline()
 end

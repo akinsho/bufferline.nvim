@@ -670,7 +670,6 @@ function M.tabline(items, tab_indicators)
     - tab_close_button_length
 
   local before, current, after = get_sections(items)
-
   local segments, marker, visible_components = truncate(before, current, after, available_width, {
     left_count = 0,
     right_count = 0,

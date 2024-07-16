@@ -202,6 +202,7 @@ function M.cycle(direction)
   if not index then return end
   local length = #state.components
   local next_index = index + direction
+
   if next_index <= length and next_index >= 1 then
     next_index = index + direction
   elseif index + direction <= 0 then
@@ -209,6 +210,7 @@ function M.cycle(direction)
   else
     next_index = 1
   end
+
   local item = state.components[next_index]
   if not item then return utils.notify(fmt("This %s does not exist", item.type), "error") end
   open_element(item.id)

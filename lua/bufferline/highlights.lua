@@ -9,7 +9,6 @@ local log = lazy.require("bufferline.utils.log") ---@module "bufferline.utils.lo
 
 local api = vim.api
 local visibility = constants.visibility
-
 ---------------------------------------------------------------------------//
 -- Highlights
 ---------------------------------------------------------------------------//
@@ -170,7 +169,6 @@ function M.for_element(element)
     local group = groups.get_all()[element.group]
     if group and group.name and group.highlight then hl.buffer = hl_group(group.name) end
   end
-
   return hl
 end
 
