@@ -48,7 +48,7 @@ local M = {
 
   style_preset = config.STYLE_PRESETS,
 
-  groups = groups, -- imported full module from groups.lua
+  groups = groups,
 }
 -----------------------------------------------------------------------------//
 
@@ -79,20 +79,17 @@ local function bufferline()
   local tabline = ui.tabline(components, tabpages.get())
 
   state.set({
-
     --- store the full unfiltered lists
     __components = components,
-
     --- Store copies without focusable/hidden elements
     components = components,
-
     visible_components = tabline.visible_components,
     --- size data stored for use elsewhere e.g. hover positioning
     left_offset_size = tabline.left_offset_size,
     right_offset_size = tabline.right_offset_size,
   })
 
-  -- prints the rendered tabline from the BufferLineDebug command
+  -- :BufferLineDebug -> prints the rendered tabline from the BufferLineDebug command
   if debug_tabline then
     print("Current Tabline and Highlights:\n" .. vim.inspect(get_tabline_text_and_highlights(tabline.str)))
     debug_tabline = false
@@ -186,19 +183,20 @@ local function setup_commands()
   command("BufferLineGoToBuffer", function(opts) M.go_to(opts.args) end, { nargs = 1 })
   command("BufferLineTogglePin", function() groups.toggle_pin() end, { nargs = 0 })
   command("BufferLineTabRename", function(opts) M.rename_tab(opts.fargs) end, { nargs = "*" })
-  command(
-    "BufferLineGroupToggle",
-    function(opts) groups.action(opts.args, "toggle") end,
-    { nargs = 1, complete = groups.complete }
-  )
-
+  command("BufferLineGroupClose", function(opts) groups.action(opts.args, "close") end, {
+    nargs = 1,
+    complete = groups.complete,
+  })
+  command("BufferLineGroupToggle", function(opts) groups.action(opts.args, "toggle") end, {
+    nargs = 1,
+    complete = groups.complete,
+  })
   --- New commands
   --- 1. Print the current rendered tabline so users can easily find which Highlight group to change
   command("BufferLineDebug", function()
     debug_tabline = true
     ui.refresh()
   end, { nargs = 0 })
-
   -- 2. Remove Command to remove a single buffer from a Group instead of only allowing buffer naming to control groups
   -- Moves the buf from the group to the ungrouped group
   command("BufferLineRemove", function(opts)
