@@ -50,8 +50,7 @@ end
 local deprecations = {
   show_buffer_default_icon = {
     name = "show_buffer_default_icon",
-    alternative =
-    "get_element_icon = function(buf) return require('nvim-web-devicons').get_icon(..., {default = false})",
+    alternative = "get_element_icon = function(buf) return require('nvim-web-devicons').get_icon(..., {default = false})",
     version = "4.0.0",
   },
 }
@@ -672,7 +671,10 @@ local function get_defaults()
     diagnostics_update_in_insert = true,
     diagnostics_update_on_event = true,
     offsets = {},
-    groups = { items = {}, options = { toggle_hidden_on_enter = true, separator_position = "both", separator_style = "thin" } },
+    groups = {
+      items = {},
+      options = { toggle_hidden_on_enter = true, separator_position = "both", separator_style = "thin" },
+    },
     hover = { enabled = false, reveal = {}, delay = 200 },
     debug = { logging = false },
   }

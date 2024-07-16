@@ -1,6 +1,5 @@
 local utils = require("tests.utils")
 
-
 describe("Bufferline tests:", function()
   vim.opt.swapfile = false
   vim.opt.hidden = true

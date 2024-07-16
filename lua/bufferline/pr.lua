@@ -1,6 +1,5 @@
 local fmt = string.format
 
-
 -------------
 --- @Utils
 
@@ -15,9 +14,7 @@ local P = {}
 -- 5. Added a BufferLineDebug user command to print the rendered tabline with HL's and Text + Padding [bufferline:207]
 -- 6. Updated doc to provide more info on how to use options [doc/bufferline.txt]
 -- 7. Added a  set_bufferline_hls function for the user to directly specify all the styles required for Group Labels and Buffers in one go [pr:38]
--- 8. Fixed the error of BufferLineCyclePrev/Next not working when current buffer is toggled and in a group [commands.lua:204 and groups:67]
-
-
+-- 8. Fixed the error of BufferLineCyclePrev/Next not working when current buffer is toggled and in a group [commands.lua:203 and groups:67]
 
 -- The functions used from this file are -
 -- 1. set_group_hls -> Not sure if this should go in config or groups
@@ -36,12 +33,9 @@ local P = {}
 
 --- @alias BufferLineHighlights HighlightOpts
 
-
 --- @param group string
 --- @param highlight vim.api.keyset.highlight
-local function set_hl(group, highlight)
-  vim.api.nvim_set_hl(0, group, highlight)
-end
+local function set_hl(group, highlight) vim.api.nvim_set_hl(0, group, highlight) end
 
 local inactive = "#7a8aaa"
 
@@ -115,16 +109,18 @@ end
 
 -- these are defined in groups.lua
 --- @param count 1 | -1
-local function update_toggled(count)
-  P.toggled_groups = P.toggled_groups + count
-end
+local function update_toggled(count) P.toggled_groups = P.toggled_groups + count end
 
 --- just updated toggle function to increment/decrement the toggled counter at [groups:463]
 --- @param group_by_callback function
 local function toggle_hidden(group_by_callback)
   local group = group_by_callback()
   if group then
-    if not group.hidden then update_toggled(1) else update_toggled(-1) end
+    if not group.hidden then
+      update_toggled(1)
+    else
+      update_toggled(-1)
+    end
     group.hidden = not group.hidden
   end
 end
@@ -137,7 +133,6 @@ end
 ---@field highlights ActiveHighlights
 ---@field modified   boolean
 
-
 ---@class ActiveHighlights
 ---@field text string
 ---@field highlight string
@@ -149,13 +144,10 @@ end
 --- @return string
 local function convert_highlight_name(highlight)
   local name = highlight:gsub("^BufferLine", "")
-  name = name:gsub("(%u)", function(c)
-    return "_" .. c:lower()
-  end)
+  name = name:gsub("(%u)", function(c) return "_" .. c:lower() end)
   name = name:gsub("^_", "")
   return name
 end
-
 
 --- Get the current segments with their text and HL groups
 --- @return ActiveBuffers[], string
@@ -170,7 +162,7 @@ function P:get_highlight_groups(tabline_data)
       local segments = tabline_data.segments[i] -- Directly use segments
       local component_segments = {}
       for _, seg in ipairs(segments) do
-        local visible_component        = {}
+        local visible_component = {}
         local visible_text, visible_hl = seg.text, seg.highlight
         if visible_text then visible_component.text = visible_text end
 
@@ -178,7 +170,7 @@ function P:get_highlight_groups(tabline_data)
           visible_component.highlight = visible_hl
           visible_component.config_hl = convert_highlight_name(visible_hl)
           if visible_text and visible_text == name then
-            buf_str = buf_str .. '\n' .. name .. " : " .. visible_component.config_hl
+            buf_str = buf_str .. "\n" .. name .. " : " .. visible_component.config_hl
           end
         end
         table.insert(component_segments, visible_component)
@@ -192,11 +184,9 @@ function P:get_highlight_groups(tabline_data)
         modified = component.modified,
       }
 
-
       table.insert(active_bufs, active_component)
     end
   end
-
 
   return active_bufs, self:compact(active_bufs)
 end
@@ -210,7 +200,11 @@ local function compact_print(t, indent, printed)
   local result = "{"
   local first = true
   for k, v in pairs(t) do
-    if not first then result = result .. "," else first = false end
+    if not first then
+      result = result .. ","
+    else
+      first = false
+    end
     result = result .. k .. "="
     if type(v) == "table" then
       if next(v) == nil then
@@ -229,16 +223,12 @@ local function compact_print(t, indent, printed)
   return result .. "}"
 end
 
-
-function P:compact(data)
-  return compact_print(data)
-end
+function P:compact(data) return compact_print(data) end
 
 local function rgb_to_hex(rgb)
   local hex = string.format("#%06x", rgb)
   return hex
 end
-
 
 local function parse_to_objects(parsed_tabline)
   local objects = {}
@@ -257,12 +247,8 @@ end
 local function get_highlight_attributes(group)
   local hl = vim.api.nvim_get_hl(0, { name = group })
   if hl then
-    if hl.fg then
-      hl.fg = rgb_to_hex(hl.fg)
-    end
-    if hl.bg then
-      hl.bg = rgb_to_hex(hl.bg)
-    end
+    if hl.fg then hl.fg = rgb_to_hex(hl.fg) end
+    if hl.bg then hl.bg = rgb_to_hex(hl.bg) end
     return hl
   else
     return nil
@@ -285,15 +271,12 @@ local function enhance_with_highlight(objects)
   return objects
 end
 
-
 --- Get all of the Highlight groups and Text (including spaces) to get a complete picture of how the tabline is rendered
 --- @param tabline string
-function P:get_tabline_text_and_highlights(tabline)
+local function get_tabline_text_and_highlights(tabline)
   local result = {}
   for part in tabline:gmatch("([^%%]*)") do
-    if part ~= "" then
-      table.insert(result, part)
-    end
+    if part ~= "" then table.insert(result, part) end
   end
   local split = parse_to_objects(result)
   local whl = enhance_with_highlight(split)
@@ -305,7 +288,7 @@ end
 --- private utils for debugging, not relevant
 -------------------------------------------------------------------------------------
 local delim = "-------------------"
-P.delimn = '\n' .. delim .. '\n'
+P.delimn = "\n" .. delim .. "\n"
 P.nl = "\n\n"
 P.override = false
 
@@ -331,7 +314,7 @@ end
 --- @param data any
 function P:write(msg, data)
   if self.file then
-    self.file:write('\n' .. msg .. self.delimn)
+    self.file:write("\n" .. msg .. self.delimn)
     if data then self.file:write(vim.inspect(data) .. self.delimn) end
   else
     if type(data) == "string" then
@@ -344,7 +327,7 @@ end
 
 --- @param data string
 function P:writestr(data)
-  if self.debug == true and data then self.file:write('\n' .. data .. self.delimn) end
+  if self.debug == true and data then self.file:write("\n" .. data .. self.delimn) end
 end
 
 function P:set_logfile(path)
@@ -381,7 +364,7 @@ end
 
 function P:writef(key, msg, data)
   if self.files[key] then
-    self.files[key]:write('\n' .. msg .. '\n')
+    self.files[key]:write("\n" .. msg .. "\n")
     if data then
       local compact_data = self:compact(data)
       self.files[key]:write(compact_data .. self.delimn)
@@ -401,10 +384,12 @@ end
 
 --- @return PR
 local function get_instance()
-  if not instance then
-    instance = P.new()
-  end
+  if not instance then instance = P.new() end
   return instance
 end
 
-return { get_instance = get_instance, set_group_hls = set_group_hls }
+return {
+  get_instance = get_instance,
+  set_group_hls = set_group_hls,
+  get_tabline_text_and_highlights = get_tabline_text_and_highlights,
+}

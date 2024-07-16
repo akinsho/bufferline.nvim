@@ -73,7 +73,7 @@ local hl_color_attrs = {
 ---@return string? | number?
 function M.get_color(opts)
   local name, attribute, fallback, not_match, cterm =
-      opts.name, opts.attribute, opts.fallback, opts.not_match, opts.cterm
+    opts.name, opts.attribute, opts.fallback, opts.not_match, opts.cterm
   -- TODO: remove when 0.9 is stable
   if not new_hl_api then attribute = hl_color_attrs[attribute] end
 
@@ -90,11 +90,11 @@ function M.get_color(opts)
   ---  but return correct numbers for groups like DevIconPl. this problem
   ---  does not happen for gui colors.
 
-  if cterm then return end                                                        -- no fallback for cterm colors
-  if fallback and type(fallback) == "string" then return fallback end             -- basic fallback
+  if cterm then return end -- no fallback for cterm colors
+  if fallback and type(fallback) == "string" then return fallback end -- basic fallback
   if fallback and type(fallback) == "table" then return M.get_color(fallback) end -- bit of recursive fallback logic, which allows chaining
 
-  return "NONE"                                                                   -- we couldn't resolve the color
+  return "NONE" -- we couldn't resolve the color
 end
 
 return M

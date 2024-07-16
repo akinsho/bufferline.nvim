@@ -11,7 +11,6 @@ local sorters = lazy.require("bufferline.sorters") ---@module "bufferline.sorter
 local pick = lazy.require("bufferline.pick") ---@module "bufferline.pick"
 local tabpage = lazy.require("bufferline.tabpages") ---@module "bufferline.tabpages"
 
-
 local M = {}
 
 local fmt = string.format
@@ -216,7 +215,6 @@ function M.cycle(direction)
   end
 
   local item = state.components[next_index]
-
 
   if not item then return utils.notify(fmt("This %s does not exist", item.type), "error") end
   open_element(item.id)

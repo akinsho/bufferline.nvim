@@ -11,17 +11,12 @@ local tabpages = lazy.require("bufferline.tabpages") ---@module "bufferline.tabp
 local highlights = lazy.require("bufferline.highlights") ---@module "bufferline.highlights"
 local hover = lazy.require("bufferline.hover") ---@module "bufferline.hover"
 
-
-local pr = require('bufferline.pr').get_instance() ---@module "bufferline.pr"
-
+local get_tabline_text_and_highlights = require("bufferline.pr").get_tabline_text_and_highlights
 
 -- @v:lua@ in the tabline only supports global functions, so this is
 -- the only way to add click handlers without autoloaded vimscript functions
 _G.___bufferline_private = _G.___bufferline_private or {} -- to guard against reloads
 
------------------------
-
---------------------
 local api = vim.api
 
 -----------------------------------------------------------------------------//
@@ -64,11 +59,9 @@ local function bufferline()
   local is_tabline = config:is_tabline()
   local components = is_tabline and tabpages.get_components(state) or buffers.get_components(state)
 
-
   -- NOTE: keep track of the previous state so it can be used for sorting
   -- specifically to position newly opened buffers next to the buffer that was previously open
   local prev_idx, prev_components = state.current_element_index, state.components
-
 
   local function sorter(list)
     return sorters.sort(list, {
@@ -82,10 +75,8 @@ local function bufferline()
 
   state.set({ current_element_index = current_idx })
 
-
   components = not is_tabline and groups.render(components, sorter) or sorter(components)
   local tabline = ui.tabline(components, tabpages.get())
-
 
   state.set({
 
@@ -101,10 +92,9 @@ local function bufferline()
     right_offset_size = tabline.right_offset_size,
   })
 
-
   -- prints the rendered tabline from the BufferLineDebug command
   if debug_tabline then
-    print("Current Tabline and Highlights:\n" .. vim.inspect(pr:get_tabline_text_and_highlights(tabline.str)))
+    print("Current Tabline and Highlights:\n" .. vim.inspect(get_tabline_text_and_highlights(tabline.str)))
     debug_tabline = false
   end
 
@@ -196,10 +186,11 @@ local function setup_commands()
   command("BufferLineGoToBuffer", function(opts) M.go_to(opts.args) end, { nargs = 1 })
   command("BufferLineTogglePin", function() groups.toggle_pin() end, { nargs = 0 })
   command("BufferLineTabRename", function(opts) M.rename_tab(opts.fargs) end, { nargs = "*" })
-  command("BufferLineGroupToggle", function(opts)
-    groups.action(opts.args, "toggle")
-  end, { nargs = 1, complete = groups.complete })
-
+  command(
+    "BufferLineGroupToggle",
+    function(opts) groups.action(opts.args, "toggle") end,
+    { nargs = 1, complete = groups.complete }
+  )
 
   --- New commands
   --- 1. Print the current rendered tabline so users can easily find which Highlight group to change

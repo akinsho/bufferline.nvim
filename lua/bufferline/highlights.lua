@@ -10,8 +10,6 @@ local log = lazy.require("bufferline.utils.log") ---@module "bufferline.utils.lo
 local api = vim.api
 local visibility = constants.visibility
 
---local pr = require('bufferline.pr').get_instance() ---@module "bufferline.pr"
-
 ---------------------------------------------------------------------------//
 -- Highlights
 ---------------------------------------------------------------------------//
@@ -172,9 +170,6 @@ function M.for_element(element)
     local group = groups.get_all()[element.group]
     if group and group.name and group.highlight then hl.buffer = hl_group(group.name) end
   end
-
-
-  --pr:logf("flow", "2. element.foreach: Apply highlights [highlights:746]")
 
   return hl
 end

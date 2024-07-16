@@ -290,8 +290,8 @@ local function add_indicator(context)
 
   symbol = is_current and options.indicator.icon or symbol
   highlight = is_current and hl.indicator_selected.hl_group
-      or element:visible() and hl.indicator_visible.hl_group
-      or curr_hl.buffer
+    or element:visible() and hl.indicator_visible.hl_group
+    or curr_hl.buffer
 
   if options.indicator.style ~= "icon" then return { text = padding, highlight = highlight } end
 
@@ -435,7 +435,7 @@ local function get_trunc_marker(trunc_icon, count_hl, icon_hl, count)
   if count > 0 then
     return {
       { highlight = count_hl, text = padding .. count .. padding },
-      { highlight = icon_hl,  text = trunc_icon .. padding },
+      { highlight = icon_hl, text = trunc_icon .. padding },
     }
   end
 end
@@ -639,8 +639,6 @@ end
 ---@field segments bufferline.Segment[][]
 ---@field visible_components bufferline.TabElement[]
 
-
-
 --- TODO: All components should return Segment[] that are then combined in one go into a tabline
 --- @param items bufferline.Component[]
 --- @param tab_indicators bufferline.Segment[]
@@ -666,13 +664,12 @@ function M.tabline(items, tab_indicators)
   local custom_area_size, left_area, right_area = custom_area.get()
 
   local available_width = vim.o.columns
-      - custom_area_size
-      - offsets.total_size
-      - tab_indicator_length
-      - tab_close_button_length
+    - custom_area_size
+    - offsets.total_size
+    - tab_indicator_length
+    - tab_close_button_length
 
   local before, current, after = get_sections(items)
-
 
   local segments, marker, visible_components = truncate(before, current, after, available_width, {
     left_count = 0,
@@ -680,7 +677,6 @@ function M.tabline(items, tab_indicators)
     left_element_size = left_element_size,
     right_element_size = right_element_size,
   })
-
 
   local marker_hl = hl.trunc_marker.hl_group
   local left_marker = get_trunc_marker(left_trunc_icon, marker_hl, marker_hl, marker.left_count)
@@ -696,12 +692,10 @@ function M.tabline(items, tab_indicators)
     )
   )
 
-
   --- NOTE: the custom areas are essentially mini tablines a user can define so they can't
   --- be safely converted to segments so they are concatenated to string and joined with
   --- the rest of the tabline
   local tabline = utils.join(offsets.left, left_area, core, right_area, offsets.right)
-
 
   local left_offset_size = offsets.left_size + statusline_str_width(left_area)
   local left_marker_size = left_marker and get_component_size(left_marker) or 0
