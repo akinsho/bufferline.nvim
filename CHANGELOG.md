@@ -1,5 +1,24 @@
 # Changelog
 
+## [4.7.0](https://github.com/akinsho/bufferline.nvim/compare/v4.6.1...v4.7.0) (2024-07-10)
+
+
+### Features
+
+* **diag:** add `diagnostics_update_on_event` option ([#932](https://github.com/akinsho/bufferline.nvim/issues/932)) ([aa16daf](https://github.com/akinsho/bufferline.nvim/commit/aa16dafdc642594c7ade7e88d31a6119feb189d6))
+
+
+### Bug Fixes
+
+* **tabs:** use custom separator_style in tabpages ([#852](https://github.com/akinsho/bufferline.nvim/issues/852)) ([81820ca](https://github.com/akinsho/bufferline.nvim/commit/81820cac7c85e51e4cf179f8a66d13dbf7b032d9))
+* UNKNOWN PLUGIN error resulting from unloaded buffers ([#928](https://github.com/akinsho/bufferline.nvim/issues/928)) ([6ac7e4f](https://github.com/akinsho/bufferline.nvim/commit/6ac7e4f1eead72507cfdbc94dcd0c26b98b2f86e))
+* UNKNOWN PLUGIN error resulting from unloaded buffers ([#931](https://github.com/akinsho/bufferline.nvim/issues/931)) ([1662fed](https://github.com/akinsho/bufferline.nvim/commit/1662fed6ecd512d1f381fc2a4e77532c379d25c6))
+
+
+### Reverts
+
+* remove fix for referencing unloaded buffers ([#930](https://github.com/akinsho/bufferline.nvim/issues/930)) ([46192e7](https://github.com/akinsho/bufferline.nvim/commit/46192e794b73f92136326c10ecdbdbf15e35705f))
+
 ## [4.6.1](https://github.com/akinsho/bufferline.nvim/compare/v4.6.0...v4.6.1) (2024-05-21)
 
 
