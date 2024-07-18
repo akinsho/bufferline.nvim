@@ -175,7 +175,7 @@ In order to customise the appearance of the diagnostic count you can pass a cust
 --- this should return a string
 --- Don't get too fancy as this function will be executed a lot
 diagnostics_indicator = function(count, level, diagnostics_dict, context)
-  local icon = level:match("error") and " " or " "
+  local icon = level:match("error") and " " or " "
   return " " .. icon .. count
 end
 
@@ -194,7 +194,7 @@ diagnostics_indicator = function(count, level, diagnostics_dict, context)
   local s = " "
   for e, n in pairs(diagnostics_dict) do
     local sym = e == "error" and " "
-      or (e == "warning" and " " or "" )
+      or (e == "warning" and " " or " ")
     s = s .. n .. sym
   end
   return s
