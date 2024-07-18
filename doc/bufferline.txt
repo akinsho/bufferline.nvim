@@ -167,7 +167,9 @@ The available configuration are:
             },
             sort_by = 'insert_after_current' |'insert_at_end' | 'id' | 'extension' | 'relative_directory' | 'directory' | 'tabs' | function(buffer_a, buffer_b)
                 -- add custom logic
-                return buffer_a.modified > buffer_b.modified
+                local modified_a = vim.fn.getftime(buffer_a.path)
+                local modified_b = vim.fn.getftime(buffer_b.path)
+                return modified_a > modified_b
             end
         }
     }
@@ -484,7 +486,9 @@ are available to use using >lua
     sort_by = function(buffer_a, buffer_b)
         print(vim.inspect(buffer_a))
         -- add custom logic
-        return buffer_a.modified > buffer_b.modified
+        local modified_a = vim.fn.getftime(buffer_a.path)
+        local modified_b = vim.fn.getftime(buffer_b.path)
+        return modified_a > modified_b
     end
 <
 
@@ -574,7 +578,7 @@ A user can also execute arbitrary functions against a buffer using the
     function _G.bdel(num)
         require('bufferline').exec(num, function(buf, visible_buffers)
             vim.cmd('bdelete '..buf.id)
-        end
+        end)
     end
 
     vim.cmd [[
@@ -1127,19 +1131,19 @@ to be shown in a list of tables. For example:
         local hint = #vim.diagnostic.get(0, {severity = seve.HINT})
 
         if error ~= 0 then
-            table.insert(result, {text = "  " .. error, fg = "#EC5241"})
+            table.insert(result, {text = "  " .. error, link = "DiagnosticError"})
         end
 
         if warning ~= 0 then
-            table.insert(result, {text = "  " .. warning, fg = "#EFB839"})
+            table.insert(result, {text = "  " .. warning, link = "DiagnosticWarn"})
         end
 
         if hint ~= 0 then
-            table.insert(result, {text = "  " .. hint, fg = "#A3BA5E"})
+            table.insert(result, {text = "  " .. hint, link = "DiagnosticHint"})
         end
 
         if info ~= 0 then
-            table.insert(result, {text = "  " .. info, fg = "#7EA9A7"})
+            table.insert(result, {text = "  " .. info, link = "DiagnosticInfo"})
         end
         return result
     end,
