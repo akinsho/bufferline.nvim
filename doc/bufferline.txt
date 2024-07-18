@@ -136,7 +136,7 @@ The available configuration are:
             },
             color_icons = true | false, -- whether or not to add the filetype icon highlights
             get_element_icon = function(element)
-              -- element consists of {filetype: string, path: string, extension: string, directory: string}
+              -- element consists of {filetype: string, extension: string, directory: string, type:string?}, and all the properties same as the `name_formatter` function
               -- This can be used to change how bufferline fetches the icon
               -- for an element e.g. a buffer or a tab.
               -- e.g.

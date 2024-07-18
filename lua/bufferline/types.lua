@@ -19,6 +19,8 @@
 ---@alias bufferline.DiagnosticIndicator fun(count: number, level: string, errors: table<string, any>, ctx: table<string, any>): string
 
 ---@alias bufferline.HoverOptions {reveal: string[], delay: integer, enabled: boolean}
+---@alias bufferline.BufFormatterOpts {name: string, path: string, bufnr: number}
+---@alias bufferline.TabFormatterOpts {buffers: number[], tabnr: number} | bufferline.BufFormatterOpts
 ---@alias bufferline.IconFetcherOpts {directory: boolean, path: string, extension: string, filetype: string?}
 
 ---@class bufferline.Options
@@ -136,7 +138,7 @@
 ---@class bufferline.Buffer
 ---@field public extension string the file extension
 ---@field public path string the full path to the file
----@field public name_formatter function? dictates how the name should be shown
+---@field public name_formatter fun(opts: bufferline.BufFormatterOpts): string?
 ---@field public id integer the buffer number
 ---@field public name string the visible name for the file
 ---@field public filename string

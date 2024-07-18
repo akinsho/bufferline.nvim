@@ -110,22 +110,23 @@ function Tabpage:new(tab)
   tab.modified = get_modified_state(tab.buffers)
   tab.buftype = vim.bo[tab.buf].buftype
   tab.extension = fn.fnamemodify(tab.path, ":e")
-  tab.icon, tab.icon_highlight = utils.get_icon({
+  ---@type bufferline.TabFormatterOpts
+  local formatter_opts = {
+    name = tab.name,
+    path = tab.path,
+    bufnr = tab.buf,
+    tabnr = tab.id,
+    buffers = tab.buffers,
+  }
+  if tab.name_formatter and type(tab.name_formatter) == "function" then
+    tab.name = tab.name_formatter(formatter_opts) or tab.name
+  end
+  tab.icon, tab.icon_highlight = utils.get_icon(vim.tbl_extend("keep", {
     filetype = vim.bo[tab.buf].filetype,
     directory = fn.isdirectory(tab.path) > 0,
-    path = tab.path,
     extension = tab.extension,
     type = tab.buftype,
-  })
-  if tab.name_formatter and type(tab.name_formatter) == "function" then
-    tab.name = tab.name_formatter({
-      name = tab.name,
-      path = tab.path,
-      bufnr = tab.buf,
-      tabnr = tab.id,
-      buffers = tab.buffers,
-    }) or tab.name
-  end
+  }, formatter_opts))
   setmetatable(tab, self)
   self.__index = self
   return tab
@@ -166,22 +167,28 @@ function Buffer:new(buf)
   buf.buftype = vim.bo[buf.id].buftype
   buf.extension = fn.fnamemodify(buf.path, ":e")
   local is_directory = fn.isdirectory(buf.path) > 0
-  buf.icon, buf.icon_highlight = utils.get_icon({
-    filetype = vim.bo[buf.id].filetype,
-    directory = is_directory,
-    path = buf.path,
-    extension = buf.extension,
-    type = buf.buftype,
-  })
   local name = "[No Name]"
   if buf.path and #buf.path > 0 then
     name = fn.fnamemodify(buf.path, ":t")
     name = is_directory and name .. "/" or name
   end
 
+  ---@type bufferline.BufFormatterOpts
+  local formatter_opts = {
+    name = name,
+    path = buf.path,
+    bufnr = buf.id,
+  }
   if buf.name_formatter and type(buf.name_formatter) == "function" then
-    name = buf.name_formatter({ name = name, path = buf.path, bufnr = buf.id }) or name
+    name = buf.name_formatter(formatter_opts) or name
   end
+
+  buf.icon, buf.icon_highlight = utils.get_icon(vim.tbl_extend("keep", {
+    filetype = vim.bo[buf.id].filetype,
+    directory = is_directory,
+    extension = buf.extension,
+    type = buf.buftype,
+  }, formatter_opts))
 
   buf.name = name
 
