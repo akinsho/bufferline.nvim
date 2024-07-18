@@ -121,6 +121,7 @@ function Tabpage:new(tab)
     tab.name = tab.name_formatter({
       name = tab.name,
       path = tab.path,
+      bufnr = tab.buf,
       tabnr = tab.id,
       buffers = tab.buffers,
     }) or tab.name
