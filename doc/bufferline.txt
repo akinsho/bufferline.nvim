@@ -80,10 +80,10 @@ The available configuration are:
                 style = 'icon' | 'underline' | 'none',
             },
             buffer_close_icon = '󰅖',
-            modified_icon = '●',
-            close_icon = '',
-            left_trunc_marker = '',
-            right_trunc_marker = '',
+            modified_icon = '● ',
+            close_icon = ' ',
+            left_trunc_marker = ' ',
+            right_trunc_marker = ' ',
             --- name_formatter can be used to change the buffer's label in the bufferline.
             --- Please note some names can/will break the
             --- bufferline so use this at your discretion knowing that it has
@@ -316,7 +316,7 @@ a custom function in your setup.
     --- this should return a string
     --- Don't get too fancy as this function will be executed a lot
     diagnostics_indicator = function(count, level)
-        local icon = level:match("error") and " " or ""
+        local icon = level:match("error") and " " or " "
         return " " .. icon .. count
     end
 <
@@ -337,7 +337,7 @@ current buffer and only have them appear for other buffers.
             return ''
         end
 
-        return ''
+        return ' '
     end
 <
 
@@ -361,7 +361,7 @@ In order to group buffers specify a list of groups in your config e.g.
         name = "Tests", -- Mandatory
         highlight = {underline = true, sp = "blue"}, -- Optional
         priority = 2, -- determines where it will appear relative to other groups (Optional)
-        icon = "", -- Optional
+        icon = " ", -- Optional
         matcher = function(buf) -- Mandatory
           return buf.filename:match('%_test') or buf.filename:match('%_spec')
         end,
@@ -439,7 +439,7 @@ to other groups e.g.
     options = {
         groups = {
             items = {
-                require('bufferline.groups').builtin.pinned:with({ icon = "󰐃" })
+                require('bufferline.groups').builtin.pinned:with({ icon = "󰐃 " })
                 ... -- other items
             }
         }
