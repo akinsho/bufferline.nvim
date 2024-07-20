@@ -9,6 +9,12 @@ local C = lazy.require("bufferline.constants") ---@module "bufferline.constants"
 
 local fn = vim.fn
 
+------------------------
+--- @PR. Group tab and pill creation and rendering updates. All changes are in this file alone.
+--- 1. Fixed/enhanced the separator.tab and separator.pill logic (lines 47-157)
+--- 2. Fixed the render function  (lines 628:700)
+------------------------
+
 ----------------------------------------------------------------------------------------------------
 -- CONSTANTS
 ----------------------------------------------------------------------------------------------------
@@ -39,25 +45,88 @@ local separator = {}
 
 local function space_end(hl_groups) return { { highlight = hl_groups.fill.hl_group, text = C.padding } } end
 
+-- Proposing these options - if the user wants to mark the start/ends of the groups
+-- initialized in setup() by reading config
+-- local group_sep_position = "both" -- "start" , "end" , "both"
+local group_sep_left, group_sep_right = "▏", "▏" -- thin/thick/custom
+
+--- Utils for making group handling modular and configurable
+--- @param group bufferline.Group,
+--- @param hls  table<string, table<string, string>>
+--- @return string
+--- @return string
+local function get_label_sep_hls(group, hls)
+  local name = group.name
+  local label_grp = hls[fmt("%s_label", name)]
+  local label_hl = label_grp and label_grp.hl_group or hls.group_label.hl_group
+  local sep_grp = hls[fmt("%s_separator", name)]
+  local sep_hl = sep_grp and sep_grp.hl_group or hls.group_separator.hl_group
+  return label_hl, sep_hl
+end
+
+--- @param group bufferline.Group,
+--- @param count string
+--- @return string
+local function get_tab_label_text(group, count)
+  local group_name = group.display_name or group.name
+  local count_text = count and #count > 0 and " " .. count or ""
+  return fmt("%s%s", group_name, count_text)
+end
+
+--- Centralize the segment creation and apply padding here optionally
+--- @param hl string
+--- @param text string
+--- @param pad_left integer?
+--- @param pad_right integer?
+--- @return bufferline.Segment
+local function create_style(hl, text, pad_left, pad_right)
+  local left_padding = pad_left and string.rep(" ", pad_left) or ""
+  local right_padding = pad_right and string.rep(" ", pad_right) or ""
+  return { highlight = hl, text = left_padding .. text .. right_padding }
+end
+
 ---@param group bufferline.Group,
 ---@param hls  table<string, table<string, string>>
 ---@param count string
 ---@return bufferline.Separators
 function separator.pill(group, hls, count)
-  local bg_hl = hls.fill.hl_group
-  local name, display_name = group.name, group.display_name
-  local sep_grp, label_grp = hls[fmt("%s_separator", name)], hls[fmt("%s_label", name)]
-  local sep_hl = sep_grp and sep_grp.hl_group or hls.group_separator.hl_group
-  local label_hl = label_grp and label_grp.hl_group or hls.group_label.hl_group
+  local label_hl, sep_hl = get_label_sep_hls(group, hls)
+  local pill_indicator = create_style(label_hl, get_tab_label_text(group, count))
+
   local left, right = "█", "█"
-  local indicator = {
-    { text = C.padding, highlight = bg_hl },
-    { text = left, highlight = sep_hl },
-    { text = display_name .. count, highlight = label_hl },
-    { text = right, highlight = sep_hl },
-    { text = C.padding, highlight = bg_hl },
+
+  -- left and right for the group label
+  local group_label_left, group_label_right = create_style(sep_hl, left), create_style(sep_hl, right, 0, 1)
+
+  -- e.g proposing here - user can control if they want to mark the ends/starts/or both for a group
+  -- in setup() - we read from config and set the group_sep_left and group_sep_right
+  local start_group_indicator, group_end_indicator =
+    create_style(sep_hl, group_sep_left), create_style(sep_hl, group_sep_right)
+
+  local group_start_indicator = {
+    start_group_indicator,
+    group_label_left,
+    pill_indicator,
+    group_label_right,
   }
-  return { sep_start = indicator, sep_end = space_end(hls) }
+
+  return { sep_start = group_start_indicator, sep_end = { group_end_indicator } }
+
+  -- old pill creation
+  --  local bg_hl = hls.fill.hl_group
+  --  local name, display_name = group.name, group.display_name
+  --  local sep_grp, label_grp = hls[fmt("%s_separator", name)], hls[fmt("%s_label", name)]
+  --  local sep_hl = sep_grp and sep_grp.hl_group or hls.group_separator.hl_group
+  --  local label_hl = label_grp and label_grp.hl_group or hls.group_label.hl_group
+  --  local left, right = "█", "█"
+  --  local indicator = {
+  --    { text = C.padding, highlight = bg_hl },
+  --    { text = left, highlight = sep_hl },
+  --    { text = display_name .. count, highlight = label_hl },
+  --    { text = right, highlight = sep_hl },
+  --    { text = C.padding, highlight = bg_hl },
+  --  }
+  --  return { sep_start = indicator, sep_end = space_end(hls) }
 end
 
 ---@param group bufferline.Group,
@@ -66,14 +135,26 @@ end
 ---@return bufferline.Separators
 ---@type GroupSeparator
 function separator.tab(group, hls, count)
-  local hl = hls.fill.hl_group
-  local indicator_hl = hls.buffer.hl_group
-  local indicator = {
-    { highlight = hl, text = C.padding },
-    { highlight = indicator_hl, text = C.padding .. group.name .. count .. C.padding },
-    { highlight = hl, text = C.padding },
-  }
-  return { sep_start = indicator, sep_end = space_end(hls) }
+  local label_hl, sep_hl = get_label_sep_hls(group, hls)
+
+  -- the label text - e.g GroupName (2)
+  local tab_label = create_style(label_hl, get_tab_label_text(group, count), 1, 1)
+
+  -- e.g proposing here - user can control if they want to mark the ends/starts/or both for a group
+  -- the beginning and end of the group (before and after the buffers)
+  local start_tab_sep, end_tab_sep = create_style(sep_hl, group_sep_left), create_style(sep_hl, group_sep_right)
+  local tab_start_indicator = { tab_label, start_tab_sep }
+  return { sep_start = tab_start_indicator, sep_end = { end_tab_sep } }
+
+  -- old tab creation
+  --  local hl = hls.fill.hl_group
+  --  local indicator_hl = hls.buffer.hl_group
+  --  local indicator = {
+  --    { highlight = hl, text = C.padding },
+  --    { highlight = indicator_hl, text = C.padding .. group.name .. count .. C.padding },
+  --    { highlight = hl, text = C.padding },
+  --  }
+  --  return { sep_start = indicator, sep_end = space_end(hls) }
 end
 
 ---@type GroupSeparator
@@ -160,6 +241,26 @@ local function persist_pinned_buffers()
   end
 end
 
+--------------------------------
+--- @Remove Group feature added, simply moves a buffer from the group to the ungrouped group
+--- Remove a buffer from the group
+--- @param buf_id integer
+--- @param group_id string
+function M.remove_buf_from_group(buf_id, group_id)
+  for _, group in ipairs(group_state.components_by_group) do
+    if group.id == group_id then
+      for j, buf in ipairs(group) do
+        if buf.id == buf_id then
+          table.remove(group, j) -- remove Buffer from the group
+          break
+        end
+      end
+    end
+  end
+  ui.refresh() -- refresh ui once removed
+end
+----------------------------
+---
 ---@param element bufferline.TabElement
 ---@return string
 local function get_manual_group(element) return group_state.manual_groupings[element.id] end
@@ -500,39 +601,142 @@ function M.handle_group_enter()
   end, state.components)
 end
 
+--------------------------------------------
+--- Intermediary types
+--- @class UserGroup
+--- @field id  string
+--- @field name string
+--- @field priority integer
+--- @field hidden boolean
+--- @field display_name string
+
+---@class BufferInfo
+---@field id number
+---@field index number
+
+--- @class GroupBuffers
+--- @field id string
+--- @field name string
+--- @field priority integer
+--- @field hidden boolean
+--- @field display_name string
+--- @field [integer] BufferInfo
+
+--- @alias UserGroups table<integer, GroupBuffers>
+
+--- @utils for render
+--------------------------------------------
+--- Creates a UserGroups container to store each Group info and a List of the buffers
+--- @return  UserGroups
+local function create_user_groups_list() return generate_sublists(vim.tbl_count(group_state.user_groups)) end
+
+--- Get the buffer group from the tab/buf - and return the priority as we use Priority to index our user groups.
+--- using priority gives us the index where the buffers will be placed
+--- @param buf bufferline.Buffer|bufferline.Tab
+local function get_buf_group_and_priority(buf)
+  local buf_group = group_state.user_groups[buf.group]
+  return buf_group, buf_group.priority
+end
+
+--- If the user group containing buffers is fresh (has no name,display name..) - set the fields from the child buffer
+--- @param usergroup GroupBuffers
+--- @param buf bufferline.Buffer|bufferline.Tab
+local function set_usergroup_fields(usergroup, buf)
+  if not usergroup.name then
+    local buf_group = group_state.user_groups[buf.group]
+    usergroup.id = buf_group.id
+    usergroup.name = buf_group.name
+    usergroup.priority = buf_group.priority
+    usergroup.hidden = buf_group.hidden
+    usergroup.display_name = buf_group.display_name
+  end
+end
+
+--- @param usergroup UserGroup
+--- @param result bufferline.Component[]
+local function insert_group_with_start_end(usergroup, result)
+  if #usergroup > 0 then
+    local group_start, group_end = get_group_marker(usergroup.id, usergroup)
+    if group_start then table.insert(result, group_start) end
+    for _, tab in ipairs(usergroup) do
+      table.insert(result, tab)
+    end
+    if group_end then table.insert(result, group_end) end
+  end
+end
+
+--- Revamped logic without redundant looping , using functions (same as render_new)
+---@param components bufferline.Component[]
+---@return bufferline.Component[]
+local function render_new(components, sorter)
+  -- we store only the id and name in the persistent component state (minimal)
+  local user_groups, user_groups_minimal = create_user_groups_list(), create_user_groups_list()
+
+  for index, tab in ipairs(components) do
+    local buf = tab:as_element()
+    if buf then
+      local buf_group, priority = get_buf_group_and_priority(buf)
+      local user_group, minimal = user_groups[priority], user_groups_minimal[priority]
+      if not user_group.name then
+        set_usergroup_fields(user_group, buf)
+        set_usergroup_fields(minimal, buf)
+      end
+      tab.hidden = buf_group.hidden -- if the group is hidden - set tab to be hidden too
+      table.insert(user_group, tab)
+      table.insert(minimal, { id = buf.id, index = index })
+    end
+  end
+
+  -- Set Group State with the minimal table that only has id and index for buffers
+  group_state.components_by_group = user_groups_minimal
+
+  if vim.tbl_isempty(user_groups) then return components end
+
+  local result = {} ---@type bufferline.Component[]
+  for _, usergroup in ipairs(user_groups) do
+    usergroup = sorter(usergroup) -- No Op
+    if #usergroup > 0 then insert_group_with_start_end(usergroup, result) end
+  end
+  return result
+end
+
+--------------------------------------------
+
 -- FIXME: this function does a lot of looping that can maybe be consolidated
 --
 ---@param components bufferline.Component[]
 ---@param sorter fun(list: bufferline.Component[]):bufferline.Component[]
 ---@return bufferline.Component[]
 function M.render(components, sorter)
-  components, group_state.components_by_group = sort_by_groups(components)
-  if vim.tbl_isempty(group_state.components_by_group) then return components end
-  local result = {} ---@type bufferline.Component[]
-  for _, sublist in ipairs(group_state.components_by_group) do
-    local buf_group_id = sublist.id
-    local buf_group = group_state.user_groups[buf_group_id]
-    --- convert our components by group which is essentially and index of tab positions and ids
-    --- to the actual tab by pulling the full value out of the tab map
-    local items = utils.map(function(map)
-      local t = components[map.index]
-      --- filter out tab views that are hidden
-      t.hidden = buf_group and buf_group.hidden
-      return t
-    end, sublist)
-    --- Sort *each* group, TODO: in the future each group should be able to have it's own sorter
-    items = sorter(items)
+  return render_new(components, sorter)
 
-    if #sublist > 0 then
-      local group_start, group_end = get_group_marker(buf_group_id, sublist)
-      if group_start then
-        table.insert(items, 1, group_start)
-        items[#items + 1] = group_end
-      end
-    end
-    result = utils.merge_lists(result, items)
-  end
-  return result
+  --  components, group_state.components_by_group = sort_by_groups(components)
+  --  if vim.tbl_isempty(group_state.components_by_group) then return components end
+  --  local result = {} ---@type bufferline.Component[]
+  --  for _, sublist in ipairs(group_state.components_by_group) do
+  --    local buf_group_id = sublist.id
+  --    local buf_group = group_state.user_groups[buf_group_id]
+  --    --- convert our components by group which is essentially and index of tab positions and ids
+  --    --- to the actual tab by pulling the full value out of the tab map
+  --    local items = utils.map(function(map)
+  --      local t = components[map.index]
+  --      --- filter out tab views that are hidden
+  --      t.hidden = buf_group and buf_group.hidden
+  --      return t
+  --    end, sublist)
+  --    --- Sort *each* group, TODO: in the future each group should be able to have it's own sorter
+  --    items = sorter(items)
+  --
+  --    if #sublist > 0 then
+  --      local group_start, group_end = get_group_marker(buf_group_id, sublist)
+  --      if group_start then
+  --        table.insert(items, 1, group_start)
+  --        items[#items + 1] = group_end
+  --      end
+  --    end
+  --    result = utils.merge_lists(result, items)
+  --  end
+  --  return result
 end
 
 M.builtin = builtin
