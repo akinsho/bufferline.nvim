@@ -179,7 +179,7 @@ function Group:new(o, index)
     id = o.id or name,
     hidden = o.hidden == nil and false or o.hidden,
     name = name,
-    display_name = o.name,
+    display_name = o.display_name or o.name,
     priority = o.priority or index,
   })
   return setmetatable(o, self)
