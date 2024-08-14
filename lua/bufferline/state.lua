@@ -18,6 +18,7 @@ local state = {
   visible_components = {},
   left_offset_size = 0,
   right_offset_size = 0,
+  buf_mngr = nil,
 }
 
 ---@param list bufferline.Component[]

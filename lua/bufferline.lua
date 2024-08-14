@@ -10,6 +10,7 @@ local commands = lazy.require("bufferline.commands") ---@module "bufferline.comm
 local tabpages = lazy.require("bufferline.tabpages") ---@module "bufferline.tabpages"
 local highlights = lazy.require("bufferline.highlights") ---@module "bufferline.highlights"
 local hover = lazy.require("bufferline.hover") ---@module "bufferline.hover"
+local manage = lazy.require("bufferline.manage") ---@module "bufferline.manage"
 
 -- @v:lua@ in the tabline only supports global functions, so this is
 -- the only way to add click handlers without autoloaded vimscript functions
@@ -34,6 +35,7 @@ local M = {
   rename_tab = commands.rename_tab,
   close_others = commands.close_others,
   unpin_and_close = commands.unpin_and_close,
+  toggle_buffer_manager = commands.toggle_buffer_manager,
 
   ---@deprecated
   pick_buffer = commands.pick,
@@ -82,6 +84,7 @@ local function bufferline()
     --- size data stored for use elsewhere e.g. hover positioning
     left_offset_size = tabline.left_offset_size,
     right_offset_size = tabline.right_offset_size,
+    buf_mngr = manage.BuffersUi,
   })
   return tabline.str, tabline.segments
 end
@@ -171,6 +174,7 @@ local function setup_commands()
   command("BufferLineGoToBuffer", function(opts) M.go_to(opts.args) end, { nargs = 1 })
   command("BufferLineTogglePin", function() groups.toggle_pin() end, { nargs = 0 })
   command("BufferLineTabRename", function(opts) M.rename_tab(opts.fargs) end, { nargs = "*" })
+  command("BufferLineManageBuffers", function() M.toggle_buffer_manager() end, { nargs = "*" })
   command("BufferLineGroupClose", function(opts) groups.action(opts.args, "close") end, {
     nargs = 1,
     complete = groups.complete,

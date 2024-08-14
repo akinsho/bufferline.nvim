@@ -10,6 +10,7 @@ local groups = lazy.require("bufferline.groups") ---@module "bufferline.groups"
 local sorters = lazy.require("bufferline.sorters") ---@module "bufferline.sorters"
 local pick = lazy.require("bufferline.pick") ---@module "bufferline.pick"
 local tabpage = lazy.require("bufferline.tabpages") ---@module "bufferline.tabpages"
+local manage = lazy.require("bufferline.manage") ---@module "bufferline.manage"
 
 local M = {}
 
@@ -259,6 +260,16 @@ end
 function M.sort_by(sort_by)
   if next(state.components) == nil then return utils.notify("Unable to find elements to sort, sorry", "warn") end
   sorters.sort(state.components, { sort_by = sort_by })
+  state.custom_sort = utils.get_ids(state.components)
+  local opts = config.options
+  if opts.persist_buffer_sort then utils.save_positions(state.custom_sort) end
+  ui.refresh()
+end
+
+--- manage buffers (reorder/delete)
+function M.toggle_buffer_manager()
+  if next(state.components) == nil then return utils.notify("Unable to find elements to manage, sorry", "warn") end
+  manage.toggle_buf_mngr(state.components, state.buf_mngr)
   state.custom_sort = utils.get_ids(state.components)
   local opts = config.options
   if opts.persist_buffer_sort then utils.save_positions(state.custom_sort) end

@@ -108,6 +108,10 @@
 ---@field focusable boolean
 ---@field type 'group_end' | 'group_start' | 'buffer' | 'tabpage'
 
+---@class BuffersUi
+---@field win_id number
+---@field bufnr number
+
 ---@generic T
 ---@alias bufferline.AncestorSearch fun(self: T, depth: integer, formatter: (fun(string, integer): string)?): string
 
@@ -222,6 +226,7 @@
 ---@field custom_sort number[]?
 ---@field left_offset_size number
 ---@field right_offset_size number
+---@field buf_mngr bufferline.BuffwersUi
 
 ---@alias bufferline.Sorter fun(buf_a: bufferline.Buffer, buf_b: bufferline.Buffer): boolean
 
