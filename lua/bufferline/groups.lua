@@ -286,12 +286,10 @@ end
 ---Execute a command on each buffer of a group
 ---@param group_name string
 ---@param callback fun(b: bufferline.Buffer)
-local function command(group_name, callback)
+local function buf_exec(group_name, callback)
   local group = utils.find(function(list) return list.name == group_name end, group_state.components_by_group)
-
   if not group then return end
-
-  utils.for_each(callback, group)
+  utils.for_each(callback, group, function(item) return type(item) == "table" end)
 end
 
 ---@generic T
@@ -344,10 +342,9 @@ function M.set_hidden(id, value)
   if group then group.hidden = value end
 end
 
----@param priority number?
----@param name string?
-function M.toggle_hidden(priority, name)
-  local group = priority and group_by_priority(priority) or group_by_name(name)
+---@param opts {priority: number?, name: string?}
+function M.toggle_hidden(opts)
+  local group = opts.priority and group_by_priority(opts.priority) or group_by_name(opts.name)
   if group then group.hidden = not group.hidden end
 end
 
@@ -453,26 +450,50 @@ end
 
 function M.get_all() return group_state.user_groups end
 
----@alias group_actions "close" | "toggle"
----Execute an action on a group of buffers
----@param name string
----@param action group_actions | fun(b: bufferline.Buffer)
-function M.action(name, action)
-  assert(name, "A name must be passed to execute a group action")
-  if action == "close" then
-    command(name, function(b) api.nvim_buf_delete(b.id, { force = true }) end)
-    ui.refresh()
-
-    if name == PINNED_NAME then vim.g[PINNED_KEY] = {} end
-    for buf, group_id in pairs(group_state.manual_groupings) do
-      if group_id == name then group_state.manual_groupings[buf] = nil end
-    end
-  elseif action == "toggle" then
-    M.toggle_hidden(nil, name)
-    ui.refresh()
-  elseif type(action) == "function" then
-    command(name, action)
+---@param group_name string
+local function close_group(group_name)
+  buf_exec(group_name, function(b) api.nvim_buf_delete(b.id, { force = true }) end)
+  if group_name == PINNED_NAME then vim.g[PINNED_KEY] = "" end
+  for buf, group_id in pairs(group_state.manual_groupings) do
+    if group_id == group_name then group_state.manual_groupings[buf] = nil end
   end
+end
+
+---@param args string?
+---@param except string[]?
+---@return nil
+local function handle_close(args, except)
+  if except then
+    return utils.for_each(function(group)
+      if not vim.tbl_contains(except, group.id) then close_group(group.id) end
+    end, group_state.user_groups)
+  end
+
+  if args then close_group(args) end
+end
+
+---@alias bufferline.GroupCLIArgs {except: string[]?}
+
+local arguments = {
+  except = function(value) return vim.split(value, ",") end,
+}
+
+---Execute an action on a group of buffers
+---@alias group_actions "close" | "toggle"
+---@param args string
+---@param action group_actions | fun(b: bufferline.Buffer)
+function M.action(args, action)
+  assert(args, "arguments must be passed to execute a group action")
+  local opts = utils.parse_args(args, arguments) ---@type bufferline.GroupCLIArgs
+
+  if action == "close" then
+    handle_close(args, opts.except)
+  elseif action == "toggle" then
+    M.toggle_hidden({ name = args })
+  elseif type(action) == "function" then
+    buf_exec(args, action)
+  end
+  ui.refresh()
 end
 
 function M.toggle_pin()
