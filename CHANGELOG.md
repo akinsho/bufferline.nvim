@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.8.0](https://github.com/akinsho/bufferline.nvim/compare/v4.7.0...v4.8.0) (2024-10-22)
+
+
+### Features
+
+* **tabpages:** pass the bufnr to the `name_formatter` ([#941](https://github.com/akinsho/bufferline.nvim/issues/941)) ([28e347d](https://github.com/akinsho/bufferline.nvim/commit/28e347dbc6d0e8367ea56fb045fb9d135579ff79))
+
 ## [4.7.0](https://github.com/akinsho/bufferline.nvim/compare/v4.6.1...v4.7.0) (2024-07-10)
 
 
