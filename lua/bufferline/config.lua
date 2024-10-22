@@ -674,6 +674,9 @@ local function get_defaults()
     groups = { items = {}, options = { toggle_hidden_on_enter = true } },
     hover = { enabled = false, reveal = {}, delay = 200 },
     debug = { logging = false },
+    pick = {
+      alphabet = "abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ1234567890",
+    },
   }
   return { options = opts, highlights = derive_colors(opts.style_preset) }
 end
