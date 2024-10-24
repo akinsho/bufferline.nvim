@@ -90,7 +90,7 @@ end
 local function toggle_bufferline()
   if not config.options.auto_toggle_bufferline then return end
   local item_count = config:is_tabline() and utils.get_tab_count() or utils.get_buf_count()
-  local status = (config.options.always_show_bufferline or item_count > 1) and 2 or 0
+  local status = (config.options.always_show_bufferline or item_count > 1) and 2 or 1
   if vim.o.showtabline ~= status then vim.o.showtabline = status end
 end
 
