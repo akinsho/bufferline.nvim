@@ -150,7 +150,9 @@ local group_state = {
 local function persist_pinned_buffers()
   local pinned = {}
   for buf, group in pairs(group_state.manual_groupings) do
-    if group == PINNED_ID then table.insert(pinned, api.nvim_buf_get_name(buf)) end
+    if group == PINNED_ID and vim.fn.bufexists(buf) == 1 then
+        table.insert(pinned, api.nvim_buf_get_name(buf))
+    end
   end
 
   if #pinned == 0 then
