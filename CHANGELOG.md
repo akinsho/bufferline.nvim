@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.9.0](https://github.com/akinsho/bufferline.nvim/compare/v4.8.0...v4.9.0) (2024-10-24)
+
+
+### Features
+
+* **pick:** add config option for pick alphabet ([#972](https://github.com/akinsho/bufferline.nvim/issues/972)) ([5cc447c](https://github.com/akinsho/bufferline.nvim/commit/5cc447cb2b463cb499c82eaeabbed4f5fa6a0a44))
+
 ## [4.8.0](https://github.com/akinsho/bufferline.nvim/compare/v4.7.0...v4.8.0) (2024-10-22)
 
 
