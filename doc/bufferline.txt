@@ -170,7 +170,10 @@ The available configuration are:
                 local modified_a = vim.fn.getftime(buffer_a.path)
                 local modified_b = vim.fn.getftime(buffer_b.path)
                 return modified_a > modified_b
-            end
+            end,
+            pick = {
+              alphabet = "abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ1234567890",
+            },
         }
     }
 <
@@ -657,6 +660,19 @@ this can also be mapped to something like
 >vim
   nnoremap <silent> gD :BufferLinePickClose<CR>
 >
+
+You can configure the characters used for selecting buffers using the 
+`pick.alphabet` option. By default, both uppercase and lowercase 
+alphanumeric characters are used.
+>lua
+    options = {
+        pick = {
+            alphabet = "abcdefghijklmopqrstuvwxyz"
+        }
+    }
+<
+
+With the configuration above, bufferline will only use lowercase letters.
 
 ==============================================================================
 MOUSE ACTIONS                                     *bufferline-mouse-actions*

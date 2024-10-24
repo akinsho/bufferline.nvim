@@ -10,8 +10,6 @@ local strwidth = vim.api.nvim_strwidth
 
 M.current = {}
 
-local valid = "abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ"
-
 function M.reset() M.current = {} end
 
 -- Prompts user to select a buffer then applies a function to the buffer
@@ -35,15 +33,17 @@ end
 ---@param element bufferline.Tab|bufferline.Buffer
 ---@return string?
 function M.get(element)
-  local first_letter = element.name:sub(1, 1)
-  -- should only match alphanumeric characters
-  local invalid_char = first_letter:match("[^%w]")
+  local valid_alphabet = config.options.pick.alphabet
 
-  if not M.current[first_letter] and not invalid_char then
+  local first_letter = element.name:sub(1, 1)
+
+  local is_valid_char = first_letter:match("[" .. valid_alphabet .. "]")
+
+  if not M.current[first_letter] and is_valid_char then
     M.current[first_letter] = element.id
     return first_letter
   end
-  for letter in valid:gmatch(".") do
+  for letter in valid_alphabet:gmatch(".") do
     if not M.current[letter] then
       M.current[letter] = element.id
       return letter
