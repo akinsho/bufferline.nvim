@@ -176,7 +176,9 @@ function M.notify(msg, level, opts)
   level = vim.log.levels[level:upper()]
   if type(msg) == "table" then msg = table.concat(msg, "\n") end
   local nopts = { title = "Bufferline" }
-  if opts.once then return vim.schedule(function() vim.notify_once(msg, level, nopts) end) end
+  if opts.once then
+    return vim.schedule(function() vim.notify_once(msg, level, nopts) end)
+  end
   vim.schedule(function() vim.notify(msg, level, nopts) end)
 end
 
