@@ -34,6 +34,7 @@ local M = {
   rename_tab = commands.rename_tab,
   close_others = commands.close_others,
   unpin_and_close = commands.unpin_and_close,
+  close_current = commands.close_current,
 
   ---@deprecated
   pick_buffer = commands.pick,
@@ -162,6 +163,7 @@ local function setup_commands()
   command("BufferLineCloseRight", function() M.close_in_direction("right") end)
   command("BufferLineCloseLeft", function() M.close_in_direction("left") end)
   command("BufferLineCloseOthers", function() M.close_others() end)
+  command("BufferLineCloseCurrent", function() M.close_current() end)
   command("BufferLineMoveNext", function() M.move(1) end)
   command("BufferLineMovePrev", function() M.move(-1) end)
   command("BufferLineSortByExtension", function() M.sort_by("extension") end)
