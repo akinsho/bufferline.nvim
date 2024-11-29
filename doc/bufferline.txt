@@ -97,11 +97,11 @@ The available configuration are:
             end,
             max_name_length = 18,
             max_prefix_length = 15, -- prefix used when a buffer is de-duplicated
-            truncate_names = true, -- whether or not tab names should be truncated
+            truncate_names = true | false, -- whether or not tab names should be truncated
             tab_size = 18,
             diagnostics = false | "nvim_lsp" | "coc",
-            diagnostics_update_in_insert = false, -- only applies to coc
-            diagnostics_update_on_event = true, -- use nvim's diagnostic handler
+            diagnostics_update_in_insert = false | true, -- only applies to coc
+            diagnostics_update_on_event = true | false, -- use nvim's diagnostic handler
             -- The diagnostics indicator can be set to nil to keep the buffer name highlight but delete the highlighting
             diagnostics_indicator = function(count, level, diagnostics_dict, context)
                 return "("..count..")"
@@ -131,7 +131,7 @@ The available configuration are:
                     filetype = "NvimTree",
                     text = "File Explorer" | function ,
                     text_align = "left" | "center" | "right"
-                    separator = true
+                    separator = true | false
                 }
             },
             color_icons = true | false, -- whether or not to add the filetype icon highlights
@@ -151,9 +151,9 @@ The available configuration are:
             show_close_icon = true | false,
             show_tab_indicators = true | false,
             show_duplicate_prefix = true | false, -- whether to show duplicate buffer prefix
-            duplicates_across_groups = true, -- whether to consider duplicate paths in different groups as duplicates
-            persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
-            move_wraps_at_ends = false, -- whether or not the move command "wraps" at the first or last position
+            duplicates_across_groups = true | false, -- whether to consider duplicate paths in different groups as duplicates
+            persist_buffer_sort = true | false, -- whether or not custom sorted buffers should persist
+            move_wraps_at_ends = false | true, -- whether or not the move command "wraps" at the first or last position
             -- can also be a table containing 2 custom separators
             -- [focused and unfocused]. eg: { '|', '|' }
             separator_style = "slant" | "slope" | "thick" | "thin" | { 'any', 'any' },
@@ -161,7 +161,7 @@ The available configuration are:
             always_show_bufferline = true | false,
             auto_toggle_bufferline = true | false,
             hover = {
-                enabled = true,
+                enabled = true | false,
                 delay = 200,
                 reveal = {'close'}
             },
