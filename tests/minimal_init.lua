@@ -38,3 +38,7 @@ vim.o.swapfile = false
 _G.__TEST = true
 
 M.setup()
+
+-- Run tests:
+-- nvim --headless --noplugin -u tests/minimal_init.lua -c \
+-- "lua require('plenary.test_harness').test_directory('/bufferline.nvim/tests', {minimal_init = 'tests/minimal_init.lua'})"
