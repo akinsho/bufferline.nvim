@@ -248,8 +248,13 @@ function M.close_others()
   local index = M.get_current_element_index(state)
   if not index then return end
 
-  for i, item in ipairs(state.components) do
-    if i ~= index then delete_element(item.id) end
+  local id = 1
+  for i in ipairs(state.components) do
+    if i ~= index then
+      delete_element(id)
+    else
+      id = 2
+    end
   end
   ui.refresh()
 end
