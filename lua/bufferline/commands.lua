@@ -51,7 +51,7 @@ end
 
 ---@param position number
 local function handle_group_click(position)
-  groups.toggle_hidden(position)
+  groups.toggle_hidden({ priority = position })
   ui.refresh()
 end
 
