@@ -26,7 +26,7 @@
 ---@field public style_preset? bufferline.StylePreset | bufferline.StylePreset[]
 ---@field public view? string
 ---@field public debug? bufferline.DebugOpts
----@field public numbers? string | fun(ordinal: number, id: number, lower: number_helper, raise: number_helper): string
+---@field public numbers? 'none' | 'ordinal' | 'buffer_id' | 'both' | fun(opts: { ordinal: number, id: number, lower: number_helper, raise: number_helper }): string
 ---@field public buffer_close_icon? string
 ---@field public modified_icon? string
 ---@field public close_icon? string
@@ -58,7 +58,7 @@
 ---@field public persist_buffer_sort? boolean
 ---@field public move_wraps_at_ends? boolean
 ---@field public max_prefix_length? number
----@field public sort_by? string
+---@field public sort_by? 'insert_after_current' | 'insert_at_end' | 'id' | 'extension' | 'relative_directory' | 'directory' | 'tabs' | fun(buffer_a: bufferline.Buffer, buffer_b: bufferline.Buffer): boolean
 ---@field public diagnostics? boolean | 'nvim_lsp' | 'coc'
 ---@field public diagnostics_indicator? bufferline.DiagnosticIndicator
 ---@field public diagnostics_update_in_insert? boolean
