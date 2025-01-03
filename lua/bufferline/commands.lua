@@ -282,15 +282,14 @@ function M.close_current()
   if not index then return end
   
   local current_item = state.components[index]
-
   local length = #state.components
-  if length == 1 then return end
-     
-  local item = state.components[index+1]
-  if not item then 
-    item = state.components[index-1]
+
+  local item = current_item
+  if length ~= 1 then
+      item = state.components[index + 1]
+      if not item then item = state.components[index - 1] end
   end
- 
+
   delete_element(current_item.id)
   open_element(item.id)
 end
