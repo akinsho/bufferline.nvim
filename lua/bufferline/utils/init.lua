@@ -217,6 +217,9 @@ function M.get_icon(opts)
     if icon then return icon, hl end
   end
 
+  if not config.show_buffer_icons then
+    return "", ""
+  end
   local loaded, webdev_icons = pcall(require, "nvim-web-devicons")
   if opts.directory then
     local hl = loaded and "DevIconDefault" or nil
