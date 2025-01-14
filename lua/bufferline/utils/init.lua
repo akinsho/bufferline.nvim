@@ -104,7 +104,7 @@ end
 ---@param callback fun(item: T)
 ---@param matcher (fun(item: T):boolean)?
 function M.for_each(callback, list, matcher)
-  for _, item in ipairs(list) do
+  for _, item in pairs(list) do
     if not matcher or matcher(item) then callback(item) end
   end
 end
@@ -277,5 +277,18 @@ M.is_list = vim.isarray or vim.islist or vim.tbl_isarray or vim.tbl_islist
 
 ---@diagnostic disable: deprecated
 function M.tbl_flatten(t) return is_version_11 and vim.iter(t):flatten(math.huge):totable() or vim.tbl_flatten(t) end
+
+---parse command line arguments into a table
+---@generic T
+---@param args string
+---@param expected {[string]: fun(arg: string): any}
+---@return T:table<string, any>
+function M.parse_args(args, expected)
+  local opts = {}
+  for arg_name, arg_value in args:gmatch("(%S+)=(%S+)") do
+    if expected[arg_name] then opts[arg_name] = expected[arg_name](arg_value) end
+  end
+  return opts
+end
 
 return M
