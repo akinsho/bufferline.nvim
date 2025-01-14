@@ -155,11 +155,31 @@ function M.move_to(to_index, from_index)
   if not index then return utils.notify("Unable to find buffer to move, sorry", "warn") end
   -- Calculate next index depending on the sign of `to_index`
   local next_index = to_index > 0 and to_index or #state.components + 1 + to_index
-  if next_index >= 1 and next_index <= #state.components then
+  if next_index >= 1 and next_index <= #state.components and next_index ~= from_index then
     local item = state.components[index]
     local destination_buf = state.components[next_index]
     state.components[next_index] = item
     state.components[index] = destination_buf
+    state.custom_sort = utils.get_ids(state.components)
+    local opts = config.options
+    if opts.persist_buffer_sort then utils.save_positions(state.custom_sort) end
+    ui.refresh()
+  end
+end
+
+--- Slide the buffer at index `from_index` (or current index if not specified) to position `to_index`
+--- @param to_index number negative indices are accepted (counting from the right instead of the left, e.g. -1 for the last position, -2 for the second-last, etc.)
+--- @param from_index number?
+function M.slide_to(to_index, from_index)
+  -- Calculate next index depending on the sign of `to_index`
+  local next_index = to_index > 0 and to_index or #state.components + 1 + to_index
+  if next_index >= 1 and next_index <= #state.components and next_index ~= from_index then
+    local step = (from_index < next_index and 1) or -1
+    local from_buf = state.components[from_index]
+    for cur_index = from_index, next_index - step, step do
+      state.components[cur_index] = state.components[cur_index + step]
+    end
+    state.components[next_index] = from_buf
     state.custom_sort = utils.get_ids(state.components)
     local opts = config.options
     if opts.persist_buffer_sort then utils.save_positions(state.custom_sort) end
