@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.9.1](https://github.com/akinsho/bufferline.nvim/compare/v4.9.0...v4.9.1) (2025-01-14)
+
+
+### Bug Fixes
+
+* **utils:** correctly check for showing buffer icons ([1363a05](https://github.com/akinsho/bufferline.nvim/commit/1363a05043f1bca8012b979474fd35936f264d7c))
+
 ## [4.9.0](https://github.com/akinsho/bufferline.nvim/compare/v4.8.0...v4.9.0) (2024-10-24)
 
 
