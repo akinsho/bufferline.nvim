@@ -249,8 +249,8 @@ see `:help bufferline-groups` for more information on how to set these up
 
 ![bufferline with numbers](https://user-images.githubusercontent.com/22454918/119562833-b5f2c200-bd9e-11eb-81d3-06876024bf30.png)
 
-You can prefix buffer names with either the `ordinal` or `buffer id`, using the `numbers` option.
-Currently this can be specified as either a string of `buffer_id` | `ordinal` or a function
+You can prefix buffer names with either the `ordinal` or `buffer id` or `visible`, using the `numbers` option.
+Currently this can be specified as either a string of `buffer_id` | `ordinal` | `visible` or a function
 
 ![numbers](https://user-images.githubusercontent.com/22454918/130784872-936d4c55-b9dd-413b-871d-7bc66caf8f17.png)
 

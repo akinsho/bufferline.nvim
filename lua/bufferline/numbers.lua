@@ -1,4 +1,6 @@
 local config = require("bufferline.config")
+local lazy = require("bufferline.lazy")
+local state = lazy.require("bufferline.state") ---@module "bufferline.state"
 
 ---@class NumbersFuncOpts
 ---@field ordinal number
@@ -61,6 +63,27 @@ end
 
 local lower, raise = to_style(subscript_numbers), to_style(superscript_numbers)
 
+--- Get the visible index of a tab using bufferline.state
+---@param tab_element bufferline.TabElement The tab element to find
+---@return integer|nil The visible index (1-based) or nil if not found
+local function get_visible_index_from_state(tab_element)
+  local visible_tabs = state.visible_components -- Get the visible components list
+
+  if not visible_tabs or type(visible_tabs) ~= "table" then
+    return nil
+  end
+
+  -- Find the index of the tab_element in the visible tabs
+  for index, element in ipairs(visible_tabs) do
+    if element.id == tab_element.id then
+      return index
+    end
+  end
+
+  return nil
+end
+
+
 ---Add a number prefix to the buffer matching a user's preference
 ---@param buffer bufferline.TabElement
 ---@param numbers numbers_opt
@@ -79,7 +102,13 @@ local function prefix(buffer, numbers)
   -- buffer_id at top left and ordinal number at bottom right
   if numbers == "both" then return construct_number(buffer.id) .. construct_number(buffer.ordinal, maps.subscript) end
 
-  return construct_number(numbers == "ordinal" and buffer.ordinal or buffer.id)
+  if numbers == "ordinal" then
+    return construct_number(buffer.ordinal)
+  elseif numbers == "visible" then
+    return construct_number(get_visible_index_from_state(buffer) or buffer.id)
+  else
+    return construct_number(buffer.id)
+  end
 end
 
 --- @param context bufferline.RenderContext
