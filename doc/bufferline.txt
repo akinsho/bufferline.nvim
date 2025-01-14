@@ -266,9 +266,9 @@ e.g.
 ==============================================================================
 NUMBERS                                                    *bufferline-numbers*
 
-You can prefix buffer names with either the `ordinal` or `buffer id`, using
+You can prefix buffer names with either the `ordinal` or `buffer id` or `visible`, using
 the `numbers` option. Currently this can be specified as either a string of
-`buffer_id` | `ordinal` or a function This function allows maximum flexibility
+`buffer_id` | `ordinal` | `visible` or a function This function allows maximum flexibility
 in determining the appearance of this section.
 
 It is passed a table with the following keys:
