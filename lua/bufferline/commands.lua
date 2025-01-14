@@ -276,6 +276,24 @@ function M.rename_tab(args)
   tabpage.rename_tab(tabnr, name)
 end
 
+---Close current buffer 
+function M.close_current()
+  local index = M.get_current_element_index(state)
+  if not index then return end
+  
+  local current_item = state.components[index]
+  local length = #state.components
+
+  local item = current_item
+  if length ~= 1 then
+      item = state.components[index + 1]
+      if not item then item = state.components[index - 1] end
+  end
+
+  delete_element(current_item.id)
+  open_element(item.id)
+end
+
 _G.___bufferline_private.handle_close = handle_close
 _G.___bufferline_private.handle_click = handle_click
 _G.___bufferline_private.handle_group_click = handle_group_click
