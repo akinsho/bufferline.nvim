@@ -36,5 +36,6 @@ M.visibility = {
 M.FOLDER_ICON = ""
 
 M.ELLIPSIS = "…"
+M.DUPLICATED = "(duplicated) "
 
 return M

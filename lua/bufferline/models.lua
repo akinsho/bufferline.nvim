@@ -147,7 +147,7 @@ function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 --- @param formatter fun(string, number)
 --- @return string
 function Tabpage:ancestor(depth, formatter)
-  if self.duplicated == "element" then return "(duplicated) " end
+  if self.duplicated == "element" then return constants.DUPLICATED end
   return self:__ancestor(depth, formatter)
 end
 
