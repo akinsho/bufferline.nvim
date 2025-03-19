@@ -105,7 +105,7 @@ function M.set_icon_highlight(state, hls, base_hl)
   if icon_hl_cache[icon_hl] then return icon_hl end
 
   local color_icons = config.options.color_icons
-  local color = not color_icons and "NONE"
+  local color = not color_icons and parent.fg or nil
   local hl_colors = vim.tbl_extend("force", parent, {
     fg = color or colors.get_color({ name = base_hl, attribute = "fg" }),
     ctermfg = color or colors.get_color({ name = base_hl, attribute = "fg", cterm = true }),
