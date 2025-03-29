@@ -38,7 +38,7 @@
 ---@field public indicator? bufferline.Indicator
 ---@field public left_trunc_marker? string
 ---@field public right_trunc_marker? string
----@field public separator_style? string | {[1]: string, [2]: string}
+---@field public separator_style? string | {[1]: string, [2]: string, [3]: string}
 ---@field public name_formatter? (fun(path: string):string)?
 ---@field public tab_size? number
 ---@field public truncate_names? boolean

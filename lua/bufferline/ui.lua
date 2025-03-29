@@ -251,10 +251,16 @@ end
 --- @param focused boolean
 --- @param style table | string
 local function get_separator(focused, style)
-  if type(style) == "table" then return focused and style[1] or style[2] end
+  if type(style) == "table" then
+    if style[3] == "always" then
+      return style[1], style[2]
+    else
+      return focused and style[1] or style[2]
+    end
+  end
   ---@diagnostic disable-next-line: undefined-field
   local chars = sep_chars[style] or sep_chars.thin
-  if is_slant(style) then return chars[1], chars[2] end
+  if type(style) == "string" and is_slant(style) then return chars[1], chars[2] end
   return focused and chars[1] or chars[2]
 end
 
@@ -341,7 +347,8 @@ local function add_separators(context)
   local style = options.separator_style
   local focused = context.tab:current() or context.tab:visible()
   local right_sep, left_sep = get_separator(focused, style)
-  local sep_hl = is_slant(style) and context.current_highlights.separator or hl.separator.hl_group
+  local sep_hl = (is_slant(style) or (style[3] == "always")) and context.current_highlights.separator
+    or hl.separator.hl_group
 
   local left_separator = left_sep and { text = left_sep, highlight = sep_hl } or nil
   local right_separator = { text = right_sep, highlight = sep_hl }

@@ -156,7 +156,10 @@ The available configuration are:
             move_wraps_at_ends = false, -- whether or not the move command "wraps" at the first or last position
             -- can also be a table containing 2 custom separators
             -- [focused and unfocused]. eg: { '|', '|' }
-            separator_style = "slant" | "slope" | "thick" | "thin" | { 'any', 'any' },
+            separator_style = "slant" | "slope" | "thick" | "thin" | { 'any', 'any', 'always?'}, -- when using custom separators, include 'always' as the third item
+            -- in the table to apply separators to *every* buffer, like "slant"/"slope".
+            -- The default behavior is to share separators between buffers
+            -- for thick, thin and custom separators
             enforce_regular_tabs = false | true,
             always_show_bufferline = true | false,
             auto_toggle_bufferline = true | false,
