@@ -446,7 +446,9 @@ end
 ---@return integer
 local function get_tab_indicator(tab_indicators, options)
   local items, length = {}, 0
-  if not options.show_tab_indicators or #tab_indicators <= 1 then return items, length end
+  if not options.show_tab_indicators or (not (options.show_tab_indicators == "always") and #tab_indicators <= 1) then
+    return items, length
+  end
   for _, tab in ipairs(tab_indicators) do
     local component = tab.component
     table.insert(items, component)

@@ -49,7 +49,7 @@
 ---@field public show_buffer_default_icon? boolean
 ---@field public get_element_icon? fun(opts: bufferline.IconFetcherOpts): string?, string?
 ---@field public show_close_icon? boolean
----@field public show_tab_indicators? boolean
+---@field public show_tab_indicators? boolean | '"always"'-
 ---@field public show_duplicate_prefix? boolean
 ---@field public duplicates_across_groups? boolean
 ---@field public enforce_regular_tabs? boolean
