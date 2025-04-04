@@ -79,11 +79,32 @@ end
 local get_diagnostics = {
   nvim_lsp = function()
     local results = {}
-    local diagnostics = vim.diagnostic.get()
-    for _, d in pairs(diagnostics) do
-      if diagnostic_is_enabled(d) then
-        if not results[d.bufnr] then results[d.bufnr] = {} end
-        table.insert(results[d.bufnr], d)
+
+    -- skip buffers opened by LSP, use only loaded ones
+    local current_buffers = vim.api.nvim_list_bufs()
+    local loaded_buffers = {}
+    for _, bufnr in ipairs(current_buffers) do
+      if vim.api.nvim_buf_is_loaded(bufnr) then table.insert(loaded_buffers, bufnr) end
+    end
+
+    for _, bufnr in pairs(loaded_buffers) do
+      local diagnostics_count = vim.diagnostic.count(bufnr)
+      diagnostics_count = 0
+        + (diagnostics_count[vim.diagnostic.severity.ERROR] or 0)
+        + (diagnostics_count[vim.diagnostic.severity.WARN] or 0)
+        + (diagnostics_count[vim.diagnostic.severity.INFO] or 0)
+        + (diagnostics_count[vim.diagnostic.severity.HINT] or 0)
+
+      -- A safeguard to skip processing too many diagnostics altogether per given buffer
+      if diagnostics_count < 1024 then
+        local diagnostics = vim.diagnostic.get(bufnr)
+        for _ = 1, #diagnostics do
+          local d = diagnostics[_]
+          if diagnostic_is_enabled(d) then
+            if not results[d.bufnr] then results[d.bufnr] = {} end
+            table.insert(results[bufnr], d)
+          end
+        end
       end
     end
     return results
