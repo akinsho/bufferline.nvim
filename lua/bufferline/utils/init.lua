@@ -166,7 +166,11 @@ end
 ---@return integer
 function M.get_tab_count() return #fn.gettabinfo() end
 
-function M.close_tab(tabhandle) vim.cmd("tabclose " .. api.nvim_tabpage_get_number(tabhandle)) end
+function M.close_tab(tabhandle)
+  -- Fix #1014
+  if M.get_tab_count() == 1 then vim.cmd("tabnew") end
+  vim.cmd("tabclose " .. api.nvim_tabpage_get_number(tabhandle))
+end
 
 --- Wrapper around `vim.notify` that adds message metadata
 ---@param msg string | string[]
