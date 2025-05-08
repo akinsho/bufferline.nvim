@@ -431,7 +431,21 @@ end
 ---@param icon_hl string
 ---@param count number
 ---@return bufferline.Segment[]?
-local function get_trunc_marker(trunc_icon, count_hl, icon_hl, count)
+local function get_left_trunc_marker(trunc_icon, count_hl, icon_hl, count)
+  if count > 0 then
+    return {
+      { highlight = icon_hl, text = padding .. trunc_icon },
+      { highlight = count_hl, text = padding .. count .. padding },
+    }
+  end
+end
+
+---@param trunc_icon string
+---@param count_hl string
+---@param icon_hl string
+---@param count number
+---@return bufferline.Segment[]?
+local function get_right_trunc_marker(trunc_icon, count_hl, icon_hl, count)
   if count > 0 then
     return {
       { highlight = count_hl, text = padding .. count .. padding },
@@ -678,8 +692,8 @@ function M.tabline(items, tab_indicators)
   })
 
   local marker_hl = hl.trunc_marker.hl_group
-  local left_marker = get_trunc_marker(left_trunc_icon, marker_hl, marker_hl, marker.left_count)
-  local right_marker = get_trunc_marker(right_trunc_icon, marker_hl, marker_hl, marker.right_count)
+  local left_marker = get_left_trunc_marker(left_trunc_icon, marker_hl, marker_hl, marker.left_count)
+  local right_marker = get_right_trunc_marker(right_trunc_icon, marker_hl, marker_hl, marker.right_count)
 
   local core = join(
     utils.merge_lists(
