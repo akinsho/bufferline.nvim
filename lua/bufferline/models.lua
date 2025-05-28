@@ -2,6 +2,7 @@ local lazy = require("bufferline.lazy")
 local utils = lazy.require("bufferline.utils") ---@module "bufferline.utils"
 local log = lazy.require("bufferline.utils.log") ---@module "bufferline.utils.log"
 local constants = lazy.require("bufferline.constants") ---@module "bufferline.constants"
+local config = lazy.require("bufferline.config") ---@module "bufferline.config"
 
 local M = {}
 
@@ -147,7 +148,7 @@ function Tabpage:visible() return api.nvim_get_current_tabpage() == self.id end
 --- @param formatter fun(string, number)
 --- @return string
 function Tabpage:ancestor(depth, formatter)
-  if self.duplicated == "element" then return "(duplicated) " end
+  if self.duplicated == "element" then return config.options.default_duplicate_prefix end
   return self:__ancestor(depth, formatter)
 end
 

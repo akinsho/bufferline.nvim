@@ -151,6 +151,7 @@ The available configuration are:
             show_close_icon = true | false,
             show_tab_indicators = true | false,
             show_duplicate_prefix = true | false, -- whether to show duplicate buffer prefix
+            default_duplicate_prefix = "(duplicated) ", -- prefix added to buffers when there is no other way to differentiate them
             duplicates_across_groups = true, -- whether to consider duplicate paths in different groups as duplicates
             persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
             move_wraps_at_ends = false, -- whether or not the move command "wraps" at the first or last position
@@ -661,8 +662,8 @@ this can also be mapped to something like
   nnoremap <silent> gD :BufferLinePickClose<CR>
 >
 
-You can configure the characters used for selecting buffers using the 
-`pick.alphabet` option. By default, both uppercase and lowercase 
+You can configure the characters used for selecting buffers using the
+`pick.alphabet` option. By default, both uppercase and lowercase
 alphanumeric characters are used.
 >lua
     options = {

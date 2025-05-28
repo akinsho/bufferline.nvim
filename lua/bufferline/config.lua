@@ -658,6 +658,7 @@ local function get_defaults()
     show_close_icon = true,
     show_tab_indicators = true,
     show_duplicate_prefix = true,
+    default_duplicate_prefix = "(duplicated) ",
     duplicates_across_groups = true,
     enforce_regular_tabs = false,
     always_show_bufferline = true,
