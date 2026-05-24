@@ -9,6 +9,7 @@ local log = lazy.require("bufferline.utils.log") ---@module "bufferline.utils.lo
 
 local api = vim.api
 local visibility = constants.visibility
+local if_nil = vim.nonnil or vim.F.if_nil
 ---------------------------------------------------------------------------//
 -- Highlights
 ---------------------------------------------------------------------------//
@@ -63,7 +64,7 @@ end
 function M.set(name, opts)
   if not opts or vim.tbl_isempty(opts) then return end
   local hl = filter_invalid_keys(opts)
-  hl.default = vim.F.if_nil(opts.default, config.options.themable)
+  hl.default = if_nil(opts.default, config.options.themable)
   local ok, msg = pcall(api.nvim_set_hl, 0, name, hl)
   if ok then return hl end
   utils.notify(fmt("Failed setting %s highlight, something isn't configured correctly: %s", name, msg), "error")

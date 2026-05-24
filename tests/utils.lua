@@ -1,6 +1,7 @@
 local M = {}
 
 local fn = vim.fn
+local if_nil = vim.nonnil or vim.F.if_nil
 
 local MockBuffer = {}
 
@@ -39,15 +40,15 @@ function MockBuffer:new(o)
   return o
 end
 
-function MockBuffer:is_end() return vim.F.if_nil(self.is_end, false) end
+function MockBuffer:is_end() return if_nil(self.is_end, false) end
 
-function MockBuffer:current() return vim.F.if_nil(self._is_current, true) end
+function MockBuffer:current() return if_nil(self._is_current, true) end
 
 function MockBuffer:as_element() return self end
 
-function MockBuffer:visibility() return vim.F.if_nil(self._visiblity, 0) end
+function MockBuffer:visibility() return if_nil(self._visiblity, 0) end
 
-function MockBuffer:visible() return vim.F.if_nil(self._is_visible, true) end
+function MockBuffer:visible() return if_nil(self._is_visible, true) end
 
 ---@param name string
 ---@param state bufferline.State
