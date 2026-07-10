@@ -10,6 +10,7 @@ local commands = lazy.require("bufferline.commands") ---@module "bufferline.comm
 local tabpages = lazy.require("bufferline.tabpages") ---@module "bufferline.tabpages"
 local highlights = lazy.require("bufferline.highlights") ---@module "bufferline.highlights"
 local hover = lazy.require("bufferline.hover") ---@module "bufferline.hover"
+local scroll = lazy.require("bufferline.scroll") ---@module "bufferline.scroll"
 
 -- @v:lua@ in the tabline only supports global functions, so this is
 -- the only way to add click handlers without autoloaded vimscript functions
@@ -70,6 +71,16 @@ local function bufferline()
   local _, current_idx = utils.find(function(component) return component:current() end, components)
 
   state.set({ current_element_index = current_idx })
+
+  -- if the view is being mouse-scrolled, snap back to auto centring when the active buffer
+  -- changed (a keyboard switch) or the buffer list grew/shrank, so the new active buffer is
+  -- revealed rather than leaving the user stranded on a stale scroll position
+  if state.scroll_offset ~= nil then
+    local current = components[current_idx]
+    if (current and current.id) ~= state.scroll_current_id or #components ~= state.scroll_count then
+      state.set({ scroll_offset = vim.NIL, scroll_current_id = vim.NIL, scroll_count = vim.NIL })
+    end
+  end
   components = not is_tabline and groups.render(components, sorter) or sorter(components)
   local tabline = ui.tabline(components, tabpages.get())
 
@@ -199,6 +210,7 @@ function M.setup(conf)
   -- on loading (and reloading) the plugin's config reset all the highlights
   highlights.set_all(preferences)
   hover.setup(preferences)
+  scroll.setup(preferences)
   setup_commands()
   setup_autocommands(preferences)
   setup_diagnostic_handler(preferences)

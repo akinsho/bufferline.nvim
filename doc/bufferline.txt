@@ -12,6 +12,7 @@ Introduction...........................: |bufferline-introduction|
 Usage..................................: |bufferline-usage|
 Configuration..........................: |bufferline-configuration|
 Hover Events...........................: |bufferline-hover-events|
+Mouse Scrolling........................: |bufferline-mouse-scroll|
 Styling................................: |bufferline-styling|
 Style Presets..........................: |bufferline-style-presets|
 Tabpages...............................: |bufferline-tabpages|
@@ -165,6 +166,10 @@ The available configuration are:
                 delay = 200,
                 reveal = {'close'}
             },
+            mouse_scroll = {
+                enabled = true,
+                step = 1,
+            },
             sort_by = 'insert_after_current' |'insert_at_end' | 'id' | 'extension' | 'relative_directory' | 'directory' | 'tabs' | function(buffer_a, buffer_b)
                 -- add custom logic
                 local modified_a = vim.fn.getftime(buffer_a.path)
@@ -197,6 +202,31 @@ NOTE: currently only hiding/revealing the buffer close icon is possible.
 
 With the above configuration, the hover events will be emitted after hovering for `200ms`
 and the close button will be hidden until you hover on it.
+
+==============================================================================
+MOUSE SCROLLING                                        *bufferline-mouse-scroll*
+
+When more buffers/tabs are open than fit on screen, you can scroll the mouse
+wheel while hovering over the bufferline to shift the visible window left and
+right and reveal the buffers that are off-screen. This is opt-in and disabled
+by default. It requires |'mouse'| to be enabled.
+>lua
+    options = {
+        mouse_scroll = {
+            enabled = true,
+            step = 1,
+        }
+    }
+<
+Notes:
+* Scrolling only moves the *view* - it does NOT change the active buffer. As
+  soon as you switch buffers (or the buffer list changes) the view snaps back
+  to follow the active buffer.
+* Both the vertical wheel (`<ScrollWheelUp>`/`<ScrollWheelDown>`) and the
+  horizontal wheel (`<ScrollWheelLeft>`/`<ScrollWheelRight>`) are mapped;
+  scrolling up/left moves towards the start of the list.
+* `step` controls how many buffers each wheel tick moves the view by.
+* Scrolling anywhere other than over the bufferline is unaffected.
 
 ==============================================================================
 STYLING                                                  *bufferline-styling*

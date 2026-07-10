@@ -673,6 +673,7 @@ local function get_defaults()
     offsets = {},
     groups = { items = {}, options = { toggle_hidden_on_enter = true } },
     hover = { enabled = false, reveal = {}, delay = 200 },
+    mouse_scroll = { enabled = false, step = 1 },
     debug = { logging = false },
     pick = {
       alphabet = "abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ1234567890",

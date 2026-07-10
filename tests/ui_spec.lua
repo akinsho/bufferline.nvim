@@ -151,4 +151,53 @@ describe("UI Tests", function()
       assert.is_falsy(s2:match(config.options.buffer_close_icon))
     end)
   end)
+
+  describe("Mouse scroll - ", function()
+    local function flat_items()
+      return {
+        { id = 1, length = 10, component = function() return {} end },
+        { id = 2, length = 10, component = function() return {} end },
+        { id = 3, length = 10, component = function() return {} end },
+        { id = 4, length = 10, component = function() return {} end },
+      }
+    end
+
+    it("should clamp the scroll pivot so the last page stays flush against the right edge", function()
+      -- suffix {3,4} = 20 fits in 25, {2,3,4} = 30 does not, so the furthest pivot is 3
+      assert.equal(3, ui.max_scroll_pivot(flat_items(), 25))
+    end)
+
+    it("should build the visible window from the pivot and count the hidden markers", function()
+      local marker = { left_count = 0, right_count = 0, left_element_size = 0, right_element_size = 0 }
+      local _, m, visible = ui.scroll_window(flat_items(), 2, 25, marker)
+      assert.equal(2, #visible)
+      assert.equal(2, visible[1].id)
+      assert.equal(3, visible[2].id)
+      assert.equal(1, m.left_count)
+      assert.equal(1, m.right_count)
+    end)
+
+    it("should update, capture and clamp the scroll offset on the handler", function()
+      local scroll = utils.reload("bufferline.scroll")
+      config.setup({ options = { mouse_scroll = { enabled = true, step = 1 } } })
+      config.apply()
+      state.set({
+        components = flat_items(),
+        visible_components = flat_items(),
+        current_element_index = 1,
+        scroll_pivot_hint = 0,
+      })
+
+      scroll.on_scroll(1)
+      scroll.on_scroll(1)
+      assert.equal(2, state.scroll_offset)
+      -- the active id and list size are captured once, when scroll mode is entered
+      assert.equal(1, state.scroll_current_id)
+      assert.equal(4, state.scroll_count)
+
+      -- scrolling back past the start is clamped to 0 (the upper clamp is render-side)
+      scroll.on_scroll(-5)
+      assert.equal(0, state.scroll_offset)
+    end)
+  end)
 end)
