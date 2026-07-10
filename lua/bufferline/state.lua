@@ -18,6 +18,15 @@ local state = {
   visible_components = {},
   left_offset_size = 0,
   right_offset_size = 0,
+  --- horizontal mouse-scroll: nil = auto (centre on current), k = show flat list from index k+1
+  scroll_offset = nil,
+  --- active element id captured when scroll mode was entered (detects keyboard buffer switch)
+  scroll_current_id = nil,
+  --- component count captured when scroll mode was entered (detects buffer add/remove)
+  scroll_count = nil,
+  --- flat index of the first visible component in auto mode; used to seed the scroll offset
+  --- so the first wheel tick continues from the current view rather than jumping to the start
+  scroll_pivot_hint = 0,
 }
 
 ---@param list bufferline.Component[]

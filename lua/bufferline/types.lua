@@ -19,6 +19,7 @@
 ---@alias bufferline.DiagnosticIndicator fun(count: number, level: string, errors: table<string, any>, ctx: table<string, any>): string
 
 ---@alias bufferline.HoverOptions {reveal: string[], delay: integer, enabled: boolean}
+---@alias bufferline.MouseScrollOptions {enabled: boolean, step: integer}
 ---@alias bufferline.IconFetcherOpts {directory: boolean, path: string, extension: string, filetype: string?}
 
 ---@class bufferline.Options
@@ -67,6 +68,7 @@
 ---@field public groups? bufferline.GroupOpts
 ---@field public themable? boolean
 ---@field public hover? bufferline.HoverOptions
+---@field public mouse_scroll? bufferline.MouseScrollOptions
 
 ---@class bufferline.HLLink
 ---@field attribute 'fg' | 'bg'
@@ -226,6 +228,10 @@
 ---@field custom_sort number[]?
 ---@field left_offset_size number?
 ---@field right_offset_size number?
+---@field scroll_offset integer?
+---@field scroll_current_id integer?
+---@field scroll_count integer?
+---@field scroll_pivot_hint integer?
 
 ---@alias bufferline.Sorter fun(buf_a: bufferline.Buffer, buf_b: bufferline.Buffer): boolean
 

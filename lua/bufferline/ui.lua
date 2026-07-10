@@ -615,6 +615,57 @@ local function truncate(before, current, after, available_width, marker, visible
   end
 end
 
+--- The largest leftmost index the view can be scrolled to while still filling the width,
+--- i.e. so the final "page" stays flush against the right edge and you can't scroll past the end.
+---@param flat bufferline.Component[] components in display order, hidden removed
+---@param available_width number
+---@return integer
+local function max_scroll_pivot(flat, available_width)
+  local acc = 0
+  for i = #flat, 1, -1 do
+    acc = acc + flat[i].length
+    if acc > available_width then return math.min(i + 1, #flat) end
+  end
+  return 1
+end
+
+--- Build the visible window starting at `pivot`, mirroring truncate's fit-branch output.
+--- Unlike truncate (which anchors on the active buffer) this anchors on the scroll position,
+--- so the active buffer may legitimately be scrolled off-screen.
+---@param flat bufferline.Component[] components in display order, hidden removed
+---@param pivot integer 1-based index of the first visible component
+---@param available_width number
+---@param marker table
+---@return bufferline.Segment[][]
+---@return table
+---@return bufferline.Component[]
+local function scroll_window(flat, pivot, available_width, marker)
+  -- reserve room for the truncation markers (these element sizes are generous estimates,
+  -- so this errs towards leaving a cell spare rather than overflowing)
+  local budget = available_width
+  if pivot > 1 then budget = budget - marker.left_element_size end
+
+  local visible, used, last = {}, 0, #flat
+  for i = pivot, #flat do
+    local reserve = (i < #flat) and marker.right_element_size or 0
+    if used + flat[i].length + reserve > budget then
+      last = i - 1
+      break
+    end
+    used = used + flat[i].length
+    visible[#visible + 1] = flat[i]
+  end
+
+  marker.left_count = pivot - 1
+  marker.right_count = #flat - last
+
+  local items = {}
+  for index, item in ipairs(visible) do
+    table.insert(items, item.component(visible[index + 1]))
+  end
+  return items, marker, visible
+end
+
 ---@param list bufferline.Segment[][]
 local function join(list)
   local str = ""
@@ -670,12 +721,36 @@ function M.tabline(items, tab_indicators)
     - tab_close_button_length
 
   local before, current, after = get_sections(items)
-  local segments, marker, visible_components = truncate(before, current, after, available_width, {
+  local total_length = before.length + current.length + after.length
+
+  local marker = {
     left_count = 0,
     right_count = 0,
     left_element_size = left_element_size,
     right_element_size = right_element_size,
-  })
+  }
+
+  local segments, visible_components
+  -- NOTE: while the user is mouse-scrolling (scroll_offset ~= nil) and the content actually
+  -- overflows, render a window anchored on the scroll position instead of centring on the
+  -- active buffer. Otherwise fall back to the default centring truncation, and clear any stale
+  -- scroll offset so scrolling is a genuine no-op when everything already fits.
+  if state.scroll_offset ~= nil and total_length > available_width then
+    local flat = {}
+    for _, item in ipairs(items) do
+      if not item.hidden then flat[#flat + 1] = item end
+    end
+    local max_pivot = max_scroll_pivot(flat, available_width)
+    local pivot = math.min(math.max(state.scroll_offset + 1, 1), max_pivot)
+    if pivot - 1 ~= state.scroll_offset then state.set({ scroll_offset = pivot - 1 }) end
+    segments, marker, visible_components = scroll_window(flat, pivot, available_width, marker)
+  else
+    if state.scroll_offset ~= nil then state.set({ scroll_offset = vim.NIL }) end
+    segments, marker, visible_components = truncate(before, current, after, available_width, marker)
+    -- record where the auto view starts (how many components are off the left edge) so a
+    -- subsequent wheel tick can seed the scroll offset from the current view
+    state.set({ scroll_pivot_hint = marker.left_count })
+  end
 
   local marker_hl = hl.trunc_marker.hl_group
   local left_marker = get_trunc_marker(left_trunc_icon, marker_hl, marker_hl, marker.left_count)
@@ -718,6 +793,8 @@ if utils.is_test() then
   M.set_id = set_id
   M.add_indicator = add_indicator
   M.get_name = get_name
+  M.max_scroll_pivot = max_scroll_pivot
+  M.scroll_window = scroll_window
 end
 
 return M
