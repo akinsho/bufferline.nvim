@@ -37,6 +37,12 @@ function M.fold(callback, list, accum)
   return accum
 end
 
+---Strip whitespace from a string
+---@param str string
+function M.stripString(str)
+  return str:gsub("^%s*(.-)%s*$", "%1")
+end
+
 ---Variant of some that sums up the display size of characters
 ---@vararg string
 ---@return integer

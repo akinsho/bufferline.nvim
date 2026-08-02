@@ -47,6 +47,9 @@ local M = {
   style_preset = config.STYLE_PRESETS,
 
   groups = groups,
+
+  ---@type fun(tabIndex: number): boolean
+  tab_filter = function(tabIndex) return true end
 }
 -----------------------------------------------------------------------------//
 
@@ -190,8 +193,10 @@ local function setup_diagnostic_handler(preferences)
   end
 end
 
+
 ---@param conf bufferline.UserConfig?
 function M.setup(conf)
+
   conf = conf or {}
   config.setup(conf)
   groups.setup(conf) -- Groups must be set up before the config is applied
@@ -204,6 +209,7 @@ function M.setup(conf)
   setup_diagnostic_handler(preferences)
   vim.o.tabline = "%!v:lua.nvim_bufferline()"
   toggle_bufferline()
+  M.tab_filter = config.options.tab_filter or M.tab_filter
 end
 
 return M
