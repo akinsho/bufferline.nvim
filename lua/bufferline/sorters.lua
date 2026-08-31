@@ -81,12 +81,17 @@ end
 ---@param components bufferline.TabElement[]
 ---@return bufferline.Sorter
 local sort_by_new_after_existing = function(components)
+  local previous_positions = {}
+  for index, component in ipairs(components or {}) do
+    previous_positions[component.id] = index
+  end
+
   return function(item_a, item_b)
-    if item_a:newly_opened(components) and item_b:previously_opened(components) then
-      return false
-    elseif item_a:previously_opened(components) and item_b:newly_opened(components) then
-      return true
-    end
+    local a_position = previous_positions[item_a.id]
+    local b_position = previous_positions[item_b.id]
+    if a_position and b_position then return a_position < b_position end
+    if a_position then return true end
+    if b_position then return false end
     return item_a.id < item_b.id
   end
 end

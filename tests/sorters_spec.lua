@@ -81,6 +81,35 @@ describe("Sorters - ", function()
     assert.is_true(comp.name:match("g.txt") ~= nil)
   end)
 
+  it("should keep newly listed buffers at the end", function()
+    bufferline.setup({
+      options = {
+        sort_by = "insert_at_end",
+      },
+    })
+    vim.cmd("edit! d.txt")
+    local d_id = vim.api.nvim_get_current_buf()
+    vim.bo[d_id].buflisted = false
+    vim.bo[d_id].bufhidden = "hide"
+    vim.cmd("edit a.txt")
+    vim.cmd("edit b.txt")
+    vim.cmd("edit c.txt")
+    assert.is_true(d_id < vim.fn.bufnr("a.txt"))
+    nvim_bufferline()
+
+    vim.bo[d_id].buflisted = true
+    vim.api.nvim_set_current_buf(d_id)
+    nvim_bufferline()
+
+    local function buffer_names()
+      return vim.tbl_map(function(buf) return buf.name end, state.components)
+    end
+
+    assert.same({ "a.txt", "b.txt", "c.txt", "d.txt" }, buffer_names())
+    nvim_bufferline()
+    assert.same({ "a.txt", "b.txt", "c.txt", "d.txt" }, buffer_names())
+  end)
+
   it("should open the new buffer beside the current", function()
     bufferline.setup({
       options = {
